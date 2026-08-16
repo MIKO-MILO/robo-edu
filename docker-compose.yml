@@ -11,6 +11,20 @@ services:
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-uroot",
+          "-p${DB_ROOT_PASSWORD}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -33,15 +47,19 @@ services:
 
   app:
     build:
-      context: ./app
+      context: .
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - .env
     depends_on:
-      - mysql
-      - redis
-      - minio
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
     ports:
-      - "3000:3000"
+      - "3001:3000"
 
   nginx:
     image: nginx:alpine
