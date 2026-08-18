@@ -5,11 +5,55 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  /* ===== BRAND — Primary (aksi utama, link, tombol utama) ===== */
+  --color-primary-100: #DEECF8;
+  --color-primary-300: #A7CDEC;
+  --color-primary: #2483D0;      /* base/500 */
+  --color-primary-600: #1F6FB1;  /* hover */
+  --color-primary-700: #195C92;  /* active/pressed */
+  --color-primary-900: #103B5E;  /* teks di atas primary-100, dsb */
+
+  /* ===== BRAND — Secondary (teks utama, heading, kontras tinggi) ===== */
+  --color-secondary-100: #ECEAE6;
+  --color-secondary-300: #C5BFB2;
+  --color-secondary: #3D2900;    /* base/500 */
+  --color-secondary-700: #312100;
+
+  /* ===== NEUTRAL / SURFACE ===== */
+  --color-background: #F3EFE4;
+  --color-foreground: #3D2900;       /* = secondary, kontras 12:1 di atas background */
+  --color-card: #FFFFFF;
+  --color-card-foreground: #3D2900;
+  --color-muted: #ECEAE6;            /* = secondary-100, background kartu/section pasif */
+  --color-muted-foreground: #8F8267; /* teks sekunder/caption, kontras 3.3:1 (cukup utk teks besar/label) */
+  --color-border: #DBD7CD;
+  --color-border-strong: #C7C4BB;
+  --color-ring: #2483D0;             /* = primary, buat focus ring */
+
+  /* ===== SEMANTIC / STATE (fungsional, bukan dekoratif) ===== */
+  --color-success: #4C684E;          /* teks/icon di atas accent-green */
+  --color-success-bg: #A9E8AE;       /* = pastel green */
+  --color-warning: #736D39;
+  --color-warning-bg: #FFF37E;       /* = pastel yellow */
+  --color-danger: #7A2E22;
+  --color-danger-bg: #FFAFA3;        /* = pastel peach, dipakai buat error ringan/soft */
+  --color-info: #406173;
+  --color-info-bg: #8ED8FF;          /* = pastel blue */
+
+  /* ===== ACCENT — Pastel (khusus aksen komponen: badge, tag, ilustrasi, chip kategori) ===== */
+  --color-accent-yellow: #FFF37E;
+  --color-accent-purple: #A3B1FF;
+  --color-accent-soft-blue: #C9E9F6;
+  --color-accent-blue: #8ED8FF;
+  --color-accent-green: #A9E8AE;
+  --color-accent-pink: #FFC0DD;
+  --color-accent-orange: #FFD9A0;
+  --color-accent-peach: #FFAFA3;
+
+  /* Font */
+  --font-heading: var(--font-unbounded), sans-serif;
+  --font-body: var(--font-outfit), sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
