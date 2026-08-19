@@ -30,7 +30,7 @@ export function ProductCard({
       className={`${bgColorClass} rounded-3xl p-4 flex flex-col gap-4 border-2 border-foreground shadow-[4px_4px_0px_0px_#3D2900]`}
     >
       {/* Container Gambar */}
-      <div className="bg-card rounded-2xl aspect-square overflow-hidden border border-foreground/10 relative">
+      <div className="bg-card rounded-2xl aspect-square overflow-hidden border border-foreground relative">
         <Image
           src={imageUrl}
           alt={name}

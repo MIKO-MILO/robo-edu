@@ -6,7 +6,7 @@ export function HeroSection() {
   return (
     <section className="w-full flex-grow flex flex-col md:flex-row min-h-[calc(100vh-80px)]">
       {/* Left Column: Image */}
-      <div className="w-full md:w-1/2 h-[50vh] md:h-auto relative border-b-2 md:border-b-0 border-on-surface">
+      <div className="w-full md:w-1/2 h-[50vh] md:h-auto relative border-b-2 md:border-b-0 border-foreground">
         <Image
           src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=85"
           alt="Anak-anak sedang bermain kit edukasi RoboEdu"
