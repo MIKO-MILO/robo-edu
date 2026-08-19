@@ -1,4 +1,5 @@
 import React from "react";
+import Navbar from "../../components/user/navbar";
 
 export default function UserLayout({
     children,
@@ -7,8 +8,10 @@ export default function UserLayout({
 }) {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col font-body">
-            {/* Spacer reserved for teammate's branch navbar (approx 80px / h-20) */}
-            <div className="h-20 w-full flex-shrink-0" aria-hidden="true" />
+            {/* Header / Navbar */}
+            <header className="w-full px-4 sm:px-6 lg:px-8">
+                <Navbar />
+            </header>
 
             {/* Main content area */}
             <main className="flex-grow w-full flex flex-col">

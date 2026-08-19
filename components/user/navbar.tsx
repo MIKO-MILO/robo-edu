@@ -16,9 +16,8 @@ export default function Navbar() {
 
   return (
     <nav
-      className="shadow-md mx-auto flex justify-between items-center px-12 py-4"
+      className="shadow-md mx-auto flex justify-between items-center px-6 sm:px-12 py-4 w-full max-w-7xl"
       style={{
-        width: "984px",
         height: "95px",
         backgroundColor: "var(--color-primary)", // #2483D0
         borderRadius: "100px",

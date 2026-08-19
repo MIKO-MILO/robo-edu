@@ -3,7 +3,6 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Navbar from "../../../components/user/navbar";
 
 interface CartItem {
   id: string;
@@ -201,7 +200,6 @@ export default function CartPage() {
   const total = subtotal - discountAmount + shipping + estimatedTax;
 
   return (
-    
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       {/* 2-Column Main Layout: Cart List on Left, Summary on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
@@ -438,12 +436,12 @@ export default function CartPage() {
                   onChange={(e) => setCouponCode(e.target.value)}
                   className="flex-grow font-body text-sm border-2 border-border-strong rounded-full px-4 py-2 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary bg-background/30"
                 />
-                <button
-                  type="submit"
-                  className="font-body font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full bg-secondary text-white hover:bg-secondary-700 transition-colors duration-200 shadow-sm active:scale-95"
-                >
-                  Apply
-                </button>
+               <button 
+                type="submit" 
+                className="font-body font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full bg-[#D5C9AE] text-[#3D2900] hover:bg-[#D5C9AE] transition-colors duration-200 shadow-sm active:scale-95"
+              >
+                Apply
+              </button>
               </div>
               
               {/* Feedback messages */}
@@ -547,13 +545,13 @@ export default function CartPage() {
     You might like
   </h2>
 
-  <Image
-    src="/images/line.png"
-    alt=""
-    width={170}
-    height={70}
-    className="absolute left-24 -bottom-7"
-  />
+ <Image
+  src="/images/line.png"
+  alt=""
+  width={200}
+  height={86}
+  className="absolute left-9 -bottom-7 top-6"
+/>
 </div>
 
   {/* Circular slider arrows */}
