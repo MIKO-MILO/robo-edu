@@ -26,7 +26,9 @@
   --color-card-foreground: #3D2900;
   --color-muted: #ECEAE6;            /* = secondary-100, background kartu/section pasif */
   --color-muted-foreground: #8F8267; /* teks sekunder/caption, kontras 3.3:1 (cukup utk teks besar/label) */
-  --color-border: #DBD7CD;
+  
+  /* BORDER DIUBAH KE COKLAT TUA AGAR COCOK DENGAN NEO-BRUTALISM SHADOW */
+  --color-border: #3D2900;           
   --color-border-strong: #C7C4BB;
   --color-ring: #2483D0;             /* = primary, buat focus ring */
 
@@ -49,6 +51,9 @@
   --color-accent-pink: #FFC0DD;
   --color-accent-orange: #FFD9A0;
   --color-accent-peach: #FFAFA3;
+
+  /* ==== ACCENT BUTTER === */
+  --color-accent-butter: #FAF1CA;
 
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
@@ -100,24 +105,27 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Nilai oklch bawaan Shadcn dihapus, diganti Hex dari @theme agar selaras & tidak nabrak */
+  --background: #F3EFE4;
+  --foreground: #3D2900;
+  --card: #FFFFFF;
+  --card-foreground: #3D2900;
+  --popover: #FFFFFF;
+  --popover-foreground: #3D2900;
+  --primary: #2483D0;
+  --primary-foreground: #DEECF8;
+  --secondary: #3D2900;
+  --secondary-foreground: #ECEAE6;
+  --muted: #ECEAE6;
+  --muted-foreground: #8F8267;
+  --accent: #FFF37E;
+  --accent-foreground: #3D2900;
+  --destructive: #7A2E22;
+  --border: #3D2900; /* Border utama sekarang menggunakan warna coklat tua */
+  --input: #DBD7CD;
+  --ring: #2483D0;
+  
+  /* Sisanya (chart/sidebar) dibiarkan default sementara jika belum dikustomisasi */
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -183,16 +191,16 @@
    ========================================== */
 
 @utility neo-shadow {
-  box-shadow: 4px 4px 0px 0px #2D2D2D;
+  box-shadow: 4px 4px 0px 0px #3D2900;
 }
 
 @utility neo-shadow-hover {
   &:hover {
-    box-shadow: 2px 2px 0px 0px #2D2D2D;
+    box-shadow: 2px 2px 0px 0px #3D2900;
     transform: translate(2px, 2px);
   }
 }
 
 @utility neo-shadow-icon {
-  box-shadow: 2px 2px 0px 0px #2D2D2D;
+  box-shadow: 2px 2px 0px 0px #3D2900;
 }

@@ -17,10 +17,11 @@ export function FilterButton({
       type="button"
       className={`
         px-6 py-2.5 rounded-full font-body font-semibold text-sm transition-all duration-100 ease-in-out active:scale-95 cursor-pointer whitespace-nowrap
+        border-2 !border-[var(--foreground)]
         ${
           isActive
-            ? "bg-foreground text-background border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-            : "bg-card text-foreground border-2 border-foreground neo-shadow neo-shadow-hover"
+            ? "bg-foreground text-background shadow-[2px_2px_0px_0px_#3D2900]"
+            : "bg-card text-foreground neo-shadow neo-shadow-hover"
         }
         ${className}
       `}
