@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Heart, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface ProductCardProps {
   id?: string;
@@ -61,20 +62,20 @@ export function ProductCard({
 
       {/* Action Buttons */}
       <div className="flex justify-between items-center mt-auto pt-2">
-        <button
-          onClick={onDetailClick}
-          className="bg-card text-foreground font-body font-semibold text-xs px-5 py-2 rounded-full border border-foreground neo-shadow neo-shadow-hover transition-all duration-100 ease-in-out active:scale-95 cursor-pointer"
-        >
+        <Button onClick={onDetailClick} variant="card" size="sm">
           Product Detail
-        </button>
+        </Button>
 
-        <button
+
+        <Button
           onClick={onWishlistClick}
           aria-label="Add to wishlist"
-          className="bg-card text-danger rounded-full w-9 h-9 flex items-center justify-center border border-foreground neo-shadow-icon active:scale-95 transition-transform cursor-pointer"
+          variant="card"
+          size="icon-sm"
+          className="text-danger"
         >
           <Heart className="w-4 h-4 fill-danger text-danger" />
-        </button>
+        </Button>
       </div>
     </div>
   );
