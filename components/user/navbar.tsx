@@ -16,12 +16,12 @@ export default function Navbar() {
 
   return (
     <nav
-      className="shadow-md mx-auto flex justify-between items-center px-6 sm:px-12 py-4 w-full max-w-7xl"
+      className="shadow-md mx-auto flex justify-between items-center px-4 sm:px-8 lg:px-12 py-3 sm:py-4 w-full max-w-7xl"
       style={{
-        height: "95px",
+        minHeight: "72px",
         backgroundColor: "var(--color-primary)", // #2483D0
         borderRadius: "100px",
-        marginTop: "16px",
+        marginTop: "12px",
       }}
     >
       {/* Brand / Logo */}
@@ -32,18 +32,15 @@ export default function Navbar() {
         <Image
           src="/assets/svg/logo.svg"
           alt="Roboedu Logo"
-          width={32}
-          height={32}
+          width={28}
+          height={28}
+          className="sm:w-8 sm:h-8"
           aria-hidden="true"
         />
         <span
+          className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight"
           style={{
             fontFamily: "var(--font-body)",
-            fontSize: "32px",
-            lineHeight: "40px",
-            letterSpacing: "-0.02em",
-            fontWeight: 700,
-            color: "#ffffff",
           }}
         >
           Roboedu
