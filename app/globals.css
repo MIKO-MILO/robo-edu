@@ -180,9 +180,14 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
   /* font-body = Outfit (dari --font-outfit CSS var yang di-inject layout.tsx) */
   body {
     @apply bg-background text-foreground font-body;
+    overflow-x: hidden;
   }
 }
 
@@ -203,4 +208,30 @@
 
 @utility neo-shadow-icon {
   box-shadow: 2px 2px 0px 0px #3D2900;
+}
+
+/* ==========================================
+   Waving Robot Hand Animation
+   ========================================== */
+@keyframes wave-hand {
+  0% {
+    transform: rotate(0deg) translateY(0px);
+  }
+  25% {
+    transform: rotate(-14deg) translateY(-2px);
+  }
+  50% {
+    transform: rotate(2deg) translateY(1px);
+  }
+  75% {
+    transform: rotate(-10deg) translateY(-1px);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0px);
+  }
+}
+
+.animate-waving-hand {
+  animation: wave-hand 2.4s ease-in-out infinite;
+  transform-origin: 15% 85%;
 }
