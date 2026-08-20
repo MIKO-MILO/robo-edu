@@ -55,6 +55,9 @@
   /* ==== ACCENT BUTTER === */
   --color-accent-butter: #FAF1CA;
 
+  /* ==== HEART === */
+  --color-heart: #FF4040;
+
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
   --font-body: var(--font-outfit), sans-serif;

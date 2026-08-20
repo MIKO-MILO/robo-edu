@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { HeroSection } from "@/components/user/products/hero-section";
 import { SearchBar } from "@/components/user/products/search-bar";
-import { FilterButton } from "@/components/ui/filter-button";
+import { FilterButton, PASTEL_VARIANTS } from "@/components/ui/filter-button";
 import { ProductCard } from "@/components/user/products/product-card";
 import type { ProductListItem } from "@/types";
 
@@ -19,21 +19,6 @@ const CATEGORIES = [
   { id: "elektronik", label: "Elektronik" },
   { id: "energi", label: "Energi" },
   { id: "kendaraan", label: "Kendaraan" },
-];
-
-/**
- * bgColorClass cycles through the pastel accent colours defined in globals.css
- * (--color-accent-*). Maps to Tailwind utility classes added via @theme.
- */
-const CARD_BG_CLASSES = [
-  "bg-accent-pink",
-  "bg-accent-soft-blue",
-  "bg-accent-peach",
-  "bg-accent-green",
-  "bg-accent-yellow",
-  "bg-accent-blue",
-  "bg-accent-orange",
-  "bg-accent-purple",
 ];
 
 interface DummyProduct
@@ -180,9 +165,10 @@ export default function CatalogPage() {
           aria-label="Filter kategori"
           className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"
         >
-          {CATEGORIES.map((cat) => (
+          {CATEGORIES.map((cat, index) => (
             <FilterButton
               key={cat.id}
+              index={index}
               isActive={activeCategory === cat.id}
               onClick={() => setActiveCategory(cat.id)}
               aria-pressed={activeCategory === cat.id}
@@ -224,7 +210,7 @@ export default function CatalogPage() {
                   product.primary_image_url ??
                   "/images/placeholder-product.jpg"
                 }
-                bgColorClass={CARD_BG_CLASSES[index % CARD_BG_CLASSES.length]}
+                bgColorClass={PASTEL_VARIANTS[index % PASTEL_VARIANTS.length]}
                 onDetailClick={() => {
                   // TODO: router.push(`/catalog/${product.slug}`)
                   console.log("Go to detail:", product.slug);
