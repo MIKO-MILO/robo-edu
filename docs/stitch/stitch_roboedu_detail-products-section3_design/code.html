@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RoboEdu - Ulasan Pengguna</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6b3b00",
+                        "surface-tint": "#0062a2",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c0c7d3",
+                        "tertiary-fixed": "#ffdcc0",
+                        "tertiary-container": "#ac6200",
+                        "primary-fixed-dim": "#9dcaff",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#445f7e",
+                        "inverse-primary": "#9dcaff",
+                        "background": "#f8f9ff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#0b78c4",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001d35",
+                        "secondary-fixed": "#d1e4ff",
+                        "on-secondary-fixed-variant": "#2d4966",
+                        "tertiary": "#894d00",
+                        "on-primary-fixed-variant": "#00497b",
+                        "primary": "#005f9e",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eff0f7",
+                        "surface-container-high": "#e6e8ef",
+                        "surface-container-low": "#f1f3fa",
+                        "on-primary-container": "#fdfcff",
+                        "on-surface-variant": "#404751",
+                        "surface-container": "#eceef4",
+                        "secondary-fixed-dim": "#adc9ec",
+                        "on-primary-fixed": "#001d35",
+                        "on-background": "#181c21",
+                        "inverse-surface": "#2d3136",
+                        "on-tertiary-container": "#fffbff",
+                        "on-tertiary-fixed": "#2d1600",
+                        "surface-variant": "#e0e2e9",
+                        "on-surface": "#181c21",
+                        "surface-container-highest": "#e0e2e9",
+                        "outline": "#707882",
+                        "secondary": "#45607f",
+                        "surface": "#f8f9ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#bedafe",
+                        "surface-dim": "#d8dae1",
+                        "tertiary-fixed-dim": "#ffb875",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed": "#d1e4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "base": "8px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "lg": "48px",
+                        "margin-desktop": "64px",
+                        "xl": "80px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": [
+                            "Unbounded", "sans-serif"
+                        ],
+                        "headline-lg-mobile": [
+                            "Unbounded", "sans-serif"
+                        ],
+                        "display-hero": [
+                            "Unbounded", "sans-serif"
+                        ],
+                        "headline-md": [
+                            "Unbounded", "sans-serif"
+                        ],
+                        "label-md": [
+                            "Outfit", "sans-serif"
+                        ],
+                        "body-md": [
+                            "Outfit", "sans-serif"
+                        ],
+                        "body-lg": [
+                            "Outfit", "sans-serif"
+                        ],
+                        "label-sm": [
+                            "Outfit", "sans-serif"
+                        ]
+                    },
+                    "fontSize": {
+                        "headline-lg": [
+                            "48px",
+                            {
+                                "lineHeight": "120%",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "headline-lg-mobile": [
+                            "32px",
+                            {
+                                "lineHeight": "120%",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "display-hero": [
+                            "120px",
+                            {
+                                "lineHeight": "110%",
+                                "letterSpacing": "-0.04em",
+                                "fontWeight": "900"
+                            }
+                        ],
+                        "headline-md": [
+                            "24px",
+                            {
+                                "lineHeight": "130%",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "label-md": [
+                            "14px",
+                            {
+                                "lineHeight": "140%",
+                                "letterSpacing": "0.02em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "body-md": [
+                            "16px",
+                            {
+                                "lineHeight": "160%",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "body-lg": [
+                            "18px",
+                            {
+                                "lineHeight": "160%",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "label-sm": [
+                            "12px",
+                            {
+                                "lineHeight": "140%",
+                                "fontWeight": "500"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Unbounded:wght@600;700;900&display=swap');
+    </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&amp;family=Unbounded:wght@600;700;900&amp;display=swap" data-snapdom="injected-import"></head>
+<body class="bg-surface font-body-md text-on-surface antialiased">
+
+<main class="w-full px-margin-mobile md:px-margin-desktop py-xl">
+<section class="flex flex-col gap-lg max-w-[1200px] mx-auto">
+<div class="flex justify-between items-center border-b-2 border-outline pb-sm">
+<h2 class="font-headline-md text-headline-md uppercase text-primary">ULASAN PENGGUNA</h2>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">LIHAT SEMUA ULASAN</a>
+</div>
+<div class="flex flex-col md:flex-row gap-lg items-center md:items-start w-full">
+<!-- Global Rating -->
+<div class="flex flex-col items-center md:items-start md:w-1/4 gap-sm">
+<div class="font-display-hero text-display-hero text-primary tracking-tighter" style="letter-spacing: -0.03em;">4,9<span class="text-headline-lg font-headline-lg">/5</span></div>
+<div class="flex text-[#FFD700]">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star_half</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Berdasarkan 128 ulasan</p>
+</div>
+<!-- Carousel Area -->
+<div class="flex items-center gap-sm md:w-3/4 w-full relative group">
+<button class="absolute -left-sm z-10 w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center hover:bg-primary-container transition-colors opacity-0 group-hover:opacity-100 shadow-md border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<div class="flex overflow-x-auto gap-md w-full pb-md snap-x snap-mandatory hide-scrollbar" style="scrollbar-width: none; -ms-overflow-style: none;">
+<!-- Card 1 -->
+<div class="min-w-[280px] md:min-w-[300px] bg-surface rounded-xl p-md border border-outline-variant flex flex-col gap-sm snap-center shadow-sm">
+<div class="flex text-[#FFD700]">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</div>
+<p class="font-body-md text-body-md flex-grow">"Anak saya sangat suka! ROBO KIT CAR ini sangat membantu belajarnya. Instrukturnya sangat jelas."</p>
+<div class="flex justify-between items-end mt-sm pt-sm border-t border-surface-variant"><div class="flex items-center gap-sm"> <div class="w-10 h-10 rounded-full border-2 border-outline bg-surface-container-highest flex items-center justify-center"> <span class="material-symbols-outlined text-on-surface-variant">person</span> </div> <div> <h4 class="font-label-md text-label-md text-on-surface font-bold">Budi. S</h4> <span class="font-label-sm text-label-sm text-on-surface-variant">Pembeli Terverifikasi</span> </div> </div> <span class="material-symbols-outlined text-primary" style="font-variation-settings: &quot;FILL&quot; 1;">verified</span></div>
+</div>
+<!-- Card 2 -->
+<div class="min-w-[280px] md:min-w-[300px] bg-surface rounded-xl p-md border border-outline-variant flex flex-col gap-sm snap-center shadow-sm">
+<div class="flex text-[#FFD700]">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</div>
+<p class="font-body-md text-body-md flex-grow">"Materi pembelajaran futuristik yang mudah dipahami anak-anak. Kualitas kit sangat solid."</p>
+<div class="flex justify-between items-end mt-sm pt-sm border-t border-surface-variant"><div class="flex items-center gap-sm"> <div class="w-10 h-10 rounded-full border-2 border-outline bg-surface-container-highest flex items-center justify-center"> <span class="material-symbols-outlined text-on-surface-variant">person</span> </div> <div> <h4 class="font-label-md text-label-md text-on-surface font-bold">Siti Aminah</h4> <span class="font-label-sm text-label-sm text-on-surface-variant">Pembeli Terverifikasi</span> </div> </div> <span class="material-symbols-outlined text-primary" style="font-variation-settings: &quot;FILL&quot; 1;">verified</span></div>
+</div>
+<!-- Card 3 -->
+<div class="min-w-[280px] md:min-w-[300px] bg-surface rounded-xl p-md border border-outline-variant flex flex-col gap-sm snap-center shadow-sm">
+<div class="flex text-[#FFD700]">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</div>
+<p class="font-body-md text-body-md flex-grow">"Pengalaman merakit yang luar biasa. Edukasi STEM terbaik yang pernah kami beli."</p>
+<div class="flex justify-between items-end mt-sm pt-sm border-t border-surface-variant"><div class="flex items-center gap-sm"> <div class="w-10 h-10 rounded-full border-2 border-outline bg-surface-container-highest flex items-center justify-center"> <span class="material-symbols-outlined text-on-surface-variant">person</span> </div> <div> <h4 class="font-label-md text-label-md text-on-surface font-bold">Andi W.</h4> <span class="font-label-sm text-label-sm text-on-surface-variant">Pembeli Terverifikasi</span> </div> </div> <span class="material-symbols-outlined text-primary" style="font-variation-settings: &quot;FILL&quot; 1;">verified</span></div>
+</div>
+</div>
+<button class="absolute -right-sm z-10 w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center hover:bg-primary-container transition-colors opacity-0 group-hover:opacity-100 shadow-md border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+
+
+
+</body></html>

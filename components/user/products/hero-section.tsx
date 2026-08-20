@@ -22,11 +22,11 @@ export function HeroSection() {
         {/* Content Box */}
         <div className="max-w-md w-full mx-auto md:mx-0 relative z-20">
           <span className="font-body font-semibold text-xs md:text-sm uppercase tracking-widest text-primary mb-4 block">
-            a new way to play
+            BUILD. LEARN. CREATE.
           </span>
 
           <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl text-foreground mb-6 leading-tight">
-            Main Belajar Jadi Lebih Seru!
+            Bring Your Ideas to Life!
           </h1>
 
           <p className="font-body text-base md:text-lg text-foreground/80 mb-8">
