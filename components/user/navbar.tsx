@@ -16,7 +16,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="shadow-md mx-auto flex justify-between items-center px-12 py-4"
+      className="sticky top-4 z-20 shadow-md mx-auto flex justify-between items-center px-12 py-4"
       style={{
         width: "984px",
         height: "95px",
