@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
-
-import { HeroSection } from "@/components/user/catalog/hero-section";
-import { FilterButton } from "@/components/user/catalog/filter-button";
-import { ProductCard } from "@/components/user/catalog/product-card";
+import { HeroSection } from "@/components/user/products/hero-section";
+import { SearchBar } from "@/components/user/products/search-bar";
+import { FilterButton, PASTEL_VARIANTS } from "@/components/ui/filter-button";
+import { ProductCard } from "@/components/user/products/product-card";
 import type { ProductListItem } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -20,21 +19,6 @@ const CATEGORIES = [
   { id: "elektronik", label: "Elektronik" },
   { id: "energi", label: "Energi" },
   { id: "kendaraan", label: "Kendaraan" },
-];
-
-/**
- * bgColorClass cycles through the pastel accent colours defined in globals.css
- * (--color-accent-*). Maps to Tailwind utility classes added via @theme.
- */
-const CARD_BG_CLASSES = [
-  "bg-accent-pink",
-  "bg-accent-soft-blue",
-  "bg-accent-peach",
-  "bg-accent-green",
-  "bg-accent-yellow",
-  "bg-accent-blue",
-  "bg-accent-orange",
-  "bg-accent-purple",
 ];
 
 interface DummyProduct
@@ -173,31 +157,7 @@ export default function CatalogPage() {
         className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-8"
       >
         {/* Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-2 border-foreground rounded-2xl p-4 bg-card shadow-[4px_4px_0px_0px_#3D2900]">
-          <label
-            htmlFor="catalog-search"
-            className="font-heading font-bold text-foreground text-lg whitespace-nowrap"
-          >
-            What you&apos;re up for?
-          </label>
-          <div className="flex flex-1 items-center gap-2 bg-background rounded-xl border border-border px-4 py-2">
-            <Search className="w-5 h-5 text-muted-foreground shrink-0" />
-            <input
-              id="catalog-search"
-              type="search"
-              placeholder="Cari kit, sparepart, atau komponen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-sm font-body"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-foreground text-background font-semibold font-body px-6 py-2.5 rounded-xl border-2 border-foreground neo-shadow neo-shadow-hover transition-all duration-100 active:scale-95"
-          >
-            Search
-          </button>
-        </div>
+        <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
         {/* Category Filter Pills */}
         <div
@@ -205,9 +165,10 @@ export default function CatalogPage() {
           aria-label="Filter kategori"
           className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"
         >
-          {CATEGORIES.map((cat) => (
+          {CATEGORIES.map((cat, index) => (
             <FilterButton
               key={cat.id}
+              index={index}
               isActive={activeCategory === cat.id}
               onClick={() => setActiveCategory(cat.id)}
               aria-pressed={activeCategory === cat.id}
@@ -249,7 +210,7 @@ export default function CatalogPage() {
                   product.primary_image_url ??
                   "/images/placeholder-product.jpg"
                 }
-                bgColorClass={CARD_BG_CLASSES[index % CARD_BG_CLASSES.length]}
+                bgColorClass={PASTEL_VARIANTS[index % PASTEL_VARIANTS.length]}
                 onDetailClick={() => {
                   // TODO: router.push(`/catalog/${product.slug}`)
                   console.log("Go to detail:", product.slug);

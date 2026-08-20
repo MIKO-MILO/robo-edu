@@ -20,8 +20,12 @@ const outfit = Outfit({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={cn(unbounded.variable, outfit.variable, inter.variable)}>
-      <body className="font-body bg-background text-foreground">
+    <html
+      lang="id"
+      className={cn(unbounded.variable, outfit.variable, inter.variable)}
+      suppressHydrationWarning
+    >
+      <body className="font-body bg-background text-foreground" suppressHydrationWarning>
         {children}
       </body>
     </html>
