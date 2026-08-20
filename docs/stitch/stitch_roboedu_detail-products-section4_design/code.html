@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RoboEdu - Product Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Unbounded:wght@600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#00497b",
+                    "on-primary-fixed": "#001d35",
+                    "tertiary-container": "#ac6200",
+                    "surface-container": "#eceef4",
+                    "on-background": "#181c21",
+                    "inverse-on-surface": "#eff0f7",
+                    "secondary-fixed-dim": "#adc9ec",
+                    "primary": "#005f9e",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#d1e4ff",
+                    "on-tertiary-fixed": "#2d1600",
+                    "secondary-fixed": "#d1e4ff",
+                    "surface-dim": "#d8dae1",
+                    "background": "#f8f9ff",
+                    "surface": "#f8f9ff",
+                    "outline": "#707882",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#fffbff",
+                    "on-secondary-container": "#445f7e",
+                    "primary-fixed-dim": "#9dcaff",
+                    "tertiary-fixed-dim": "#ffb875",
+                    "surface-tint": "#0062a2",
+                    "secondary": "#45607f",
+                    "tertiary": "#894d00",
+                    "surface-container-low": "#f1f3fa",
+                    "on-secondary-fixed": "#001d35",
+                    "on-surface-variant": "#404751",
+                    "surface-variant": "#e0e2e9",
+                    "on-tertiary-fixed-variant": "#6b3b00",
+                    "on-surface": "#181c21",
+                    "surface-container-highest": "#e0e2e9",
+                    "surface-bright": "#f8f9ff",
+                    "secondary-container": "#bedafe",
+                    "outline-variant": "#c0c7d3",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#9dcaff",
+                    "surface-container-high": "#e6e8ef",
+                    "on-error": "#ffffff",
+                    "primary-container": "#0b78c4",
+                    "on-secondary-fixed-variant": "#2d4966",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#fdfcff",
+                    "tertiary-fixed": "#ffdcc0",
+                    "inverse-surface": "#2d3136"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "margin-mobile": "16px",
+                    "md": "24px",
+                    "base": "8px",
+                    "xl": "80px",
+                    "lg": "48px",
+                    "gutter": "24px",
+                    "sm": "12px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": [
+                            "Outfit"
+                    ],
+                    "label-md": [
+                            "Outfit"
+                    ],
+                    "headline-md": [
+                            "Unbounded"
+                    ],
+                    "display-hero": [
+                            "Unbounded"
+                    ],
+                    "headline-lg-mobile": [
+                            "Unbounded"
+                    ],
+                    "body-md": [
+                            "Outfit"
+                    ],
+                    "headline-lg": [
+                            "Unbounded"
+                    ],
+                    "body-lg": [
+                            "Outfit"
+                    ]
+            },
+            "fontSize": {
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "140%",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "140%",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "130%",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-hero": [
+                            "120px",
+                            {
+                                    "lineHeight": "110%",
+                                    "letterSpacing": "-0.04em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "120%",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "160%",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "120%",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "160%",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .neo-shadow {
+            box-shadow: 4px 4px 0px 0px #181c21;
+        }
+        .neo-shadow-sm {
+            box-shadow: 2px 2px 0px 0px #181c21;
+        }
+        .neo-border {
+            border: 2px solid #181c21;
+        }
+        .hover-neo-shadow:hover {
+            box-shadow: 4px 4px 0px 0px #181c21;
+            transform: translate(-2px, -2px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<!-- Main Content Area (Padding for Nav) -->
+<main class="flex-grow pt-20">
+<!-- Section 4: You Might Also Like -->
+<section class="w-full bg-[#FFF37E] py-xl px-margin-mobile md:px-margin-desktop relative overflow-hidden">
+<div class="max-w-7xl mx-auto">
+<h2 class="font-display-hero text-headline-lg-mobile md:text-headline-lg tracking-[-0.06em] text-on-background mb-lg uppercase">
+                    YOU MIGHT ALSO LIKE...
+                </h2>
+<!-- Carousel Container -->
+<div class="relative w-full">
+<div class="flex gap-gutter overflow-x-auto pb-sm hide-scrollbar snap-x snap-mandatory">
+<!-- Card 1 (Pink) -->
+<div class="flex-none w-[280px] md:w-[320px] bg-[#FFC0DD] rounded-xl p-md neo-border neo-shadow flex flex-col gap-sm snap-start">
+<div class="w-full aspect-square bg-surface-container-lowest rounded-lg neo-border overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A playful pink robot building kit laid out on a table with colorful wires and plastic gears, bright lighting, high contrast modern style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzp64I7KxJ2xLlnURX5aaowFMMGYPMOf7ef029lHOWRxVCGBsvly_bAPnQJsYI9XjwY6i5zy6rAjFiup8ZpJSe7jNBaBm7YB8duMQQ9Hz0_1GbIPHUrPKJl8nggSIevLh-lGEk4xCwN68_-VDnZ5ZNJEB6LA5a2Ke4nXBRR0zpgTqHQni06UOdSVQHuucsyRvxfvnOhokoIekMOMC2m8OLH0JYDKYGD7eLd1pRxg0hAsiAEv7b56_T"/>
+</div>
+<div class="flex flex-col gap-xs mt-sm">
+<h3 class="font-label-md text-label-md text-on-background">Robo Kit Car</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[16px]" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="font-label-sm text-label-sm">5.0 (1.2k reviews)</span>
+</div>
+<p class="font-headline-md text-[20px] font-bold mt-xs">Rp 450.000</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-sm">
+<button class="bg-surface-container-lowest text-on-background font-label-md text-label-md py-2 px-4 rounded-full neo-border hover-neo-shadow transition-all">
+                                    Product Detail
+                                </button>
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center neo-border hover-neo-shadow transition-all text-error">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>favorite</span>
+</button>
+</div>
+</div>
+<!-- Card 2 (Blue) -->
+<div class="flex-none w-[280px] md:w-[320px] bg-[#8ED8FF] rounded-xl p-md neo-border neo-shadow flex flex-col gap-sm snap-start">
+<div class="w-full aspect-square bg-surface-container-lowest rounded-lg neo-border overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A blue mechanical windmill kit with small solar panels attached, resting on a white seamless background, studio lighting, technical educational style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRaUv-8qSmAliwDPGA6O17bwlb8AU1S_-4s6CAsKtSREesa3H6H1oTvOjR3ot4A0tcrPGN-WLyHUa7A0Pf5vl0sBdu4SiYhGq6OMjWLOMTOKVyRUW7yK1rEGh9Fqm-k80t8_-YI1B3dEREGZjdhY96cI_LiUWAUAFI6HiK-1vG39fOYYmVD9-6b6x-28IpC4p198EbMqYmF8RJSDmq7vDb7B4jame75MJ-YQYatMyxa91_GRq8oCUi"/>
+</div>
+<div class="flex flex-col gap-xs mt-sm">
+<h3 class="font-label-md text-label-md text-on-background">Robo Kit Wind Mill</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[16px]" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="font-label-sm text-label-sm">4.9 (850 reviews)</span>
+</div>
+<p class="font-headline-md text-[20px] font-bold mt-xs">Rp 320.000</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-sm">
+<button class="bg-surface-container-lowest text-on-background font-label-md text-label-md py-2 px-4 rounded-full neo-border hover-neo-shadow transition-all">
+                                    Product Detail
+                                </button>
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center neo-border hover-neo-shadow transition-all text-outline">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+<!-- Card 3 (Green) -->
+<div class="flex-none w-[280px] md:w-[320px] bg-[#A9E8AE] rounded-xl p-md neo-border neo-shadow flex flex-col gap-sm snap-start">
+<div class="w-full aspect-square bg-surface-container-lowest rounded-lg neo-border overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A green robotic arm assembly kit with visible servos and control board, clean modern aesthetic, flat lay photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAihi_QCJFiHnQKAr2hnRorulwJ1ynIttCOmpEsZEC_SYrif89M9E7toAZnk9yFxYKPXRzRs1hUvnKd0ioCTNROJyslt2vdzKZz8LtLg3njgRU4D5oti9SqhBdVxb6FbNAAioZzp-yAvCQtFxnygQq5io4gvUfu6NeIs_d1Gl6mAZNWruKXZ2zI-FSCPfOrpPSJRjvnD5qx-qW0k2LmoJM9uZFUA9kRggYnU7zhvct2MDzEBdY814SM"/>
+</div>
+<div class="flex flex-col gap-xs mt-sm">
+<h3 class="font-label-md text-label-md text-on-background">Robotic Arm Pro</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[16px]" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="font-label-sm text-label-sm">4.8 (2.1k reviews)</span>
+</div>
+<p class="font-headline-md text-[20px] font-bold mt-xs">Rp 850.000</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-sm">
+<button class="bg-surface-container-lowest text-on-background font-label-md text-label-md py-2 px-4 rounded-full neo-border hover-neo-shadow transition-all">
+                                    Product Detail
+                                </button>
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center neo-border hover-neo-shadow transition-all text-outline">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+<!-- Card 4 (Orange) -->
+<div class="flex-none w-[280px] md:w-[320px] bg-[#FFD9A0] rounded-xl p-md neo-border neo-shadow flex flex-col gap-sm snap-start">
+<div class="w-full aspect-square bg-surface-container-lowest rounded-lg neo-border overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="An orange smart home starter kit featuring small sensors, leds and a central hub on a clean white surface, soft high key lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwEvnOVrqoO9FZOzzbjHU71OIEEs6m2fJrivInyEq9sGh62MFTCBunxqp0ZsU0qdg_pCcqD6DL71NKd7flxhPFxnC-1Eq_GE48zYbHWzXHbh1OtrlXAWAalsqVeUVdHTQrEUzDbcfWI7yRE0-01tzSnO0gYKmGZKg-c-IS9kp_svtgxhPtm2ErzbvU5ridVvqwm7RDuKXqLt8Cceedld9mCWqHYPCsxo6dZOj30ChpA_Tespr6oHiW"/>
+</div>
+<div class="flex flex-col gap-xs mt-sm">
+<h3 class="font-label-md text-label-md text-on-background">Smart Home Starter</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[16px]" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="font-label-sm text-label-sm">5.0 (420 reviews)</span>
+</div>
+<p class="font-headline-md text-[20px] font-bold mt-xs">Rp 550.000</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-sm">
+<button class="bg-surface-container-lowest text-on-background font-label-md text-label-md py-2 px-4 rounded-full neo-border hover-neo-shadow transition-all">
+                                    Product Detail
+                                </button>
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center neo-border hover-neo-shadow transition-all text-error">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>favorite</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative Line & Navigation -->
+<div class="mt-lg flex justify-between items-center w-full border-t border-on-background pt-sm">
+<div class="w-2/3 h-px bg-on-background hidden md:block"></div>
+<div class="flex gap-sm ml-auto">
+<button class="w-12 h-12 rounded-full border-2 border-on-background flex items-center justify-center hover:bg-on-background hover:text-[#FFF37E] transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-12 h-12 rounded-full border-2 border-on-background flex items-center justify-center hover:bg-on-background hover:text-[#FFF37E] transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .hide-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</body></html>

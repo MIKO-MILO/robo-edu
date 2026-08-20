@@ -1,10 +1,10 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HeroSection } from "@/components/user/products/hero-section";
 import { SearchBar } from "@/components/user/products/search-bar";
 import { FilterButton } from "@/components/ui/filter-button";
-import { ProductCard } from "@/components/user/products/product-card";
+import { ProductCard } from "@/components/ui/product-card";
 import type { ProductListItem } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -149,6 +149,7 @@ const DUMMY_PRODUCTS: DummyProduct[] = [
 // ---------------------------------------------------------------------------
 
 export default function CatalogPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -227,7 +228,7 @@ export default function CatalogPage() {
                 bgColorClass={CARD_BG_CLASSES[index % CARD_BG_CLASSES.length]}
                 onDetailClick={() => {
                   // TODO: router.push(`/catalog/${product.slug}`)
-                  console.log("Go to detail:", product.slug);
+                  router.push(`/products/${product.slug}`);
                 }}
                 onWishlistClick={() => {
                   // TODO: call POST /wishlist API
