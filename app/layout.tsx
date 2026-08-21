@@ -1,4 +1,4 @@
-import { Unbounded, Outfit, Inter } from "next/font/google";
+import { Unbounded, Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
