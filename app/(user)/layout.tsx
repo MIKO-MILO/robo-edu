@@ -1,22 +1,27 @@
-import React from "react";
-import Navbar from "../../components/user/navbar";
+import Navbar from "@/components/user/navbar";
+import Footer from "@/components/user/footer";
 
 export default function UserLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col font-body">
-            {/* Header / Navbar */}
-            <header className="w-full px-4 sm:px-6 lg:px-8">
-                <Navbar />
-            </header>
+  return (
+    <>
+      {/* ── Sticky Navbar ───────────────────────────────────
+          Lives at the layout level — direct child of <body> via
+          Next.js layout nesting. No trapping ancestor with overflow
+          or position that could break position:sticky.
+      ─────────────────────────────────────────────────────── */}
+      <header className="sticky top-4 z-50 w-full flex justify-center px-4">
+        <Navbar />
+      </header>
 
-            {/* Main content area */}
-            <main className="flex-grow w-full flex flex-col">
-                {children}
-            </main>
-        </div>
-    );
+      {/* ── Page Content ──────────────────────────────────── */}
+      {children}
+
+      {/* ── Footer ───────────────────────────────────────── */}
+      <Footer />
+    </>
+  );
 }

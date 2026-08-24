@@ -47,7 +47,7 @@ export default function CarouselLogo() {
 
       <div
         className="w-full h-14 overflow-hidden flex items-center"
-        style={{ backgroundColor: "var(--color-accent-yellow)" }}
+        style={{ backgroundColor: "var(--color-accent-butter)" }}
       >
         <div className="w-full h-full overflow-hidden whitespace-nowrap flex items-center">
           <div className="marquee-track flex items-center w-max">
