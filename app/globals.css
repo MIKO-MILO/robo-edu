@@ -1,5 +1,4 @@
 @import "tailwindcss";
-/* @import "tw-animate-css"; */
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -185,12 +184,12 @@
   }
   html {
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
   }
   /* font-body = Outfit (dari --font-outfit CSS var yang di-inject layout.tsx) */
   body {
     @apply bg-background text-foreground font-body;
-    overflow-x: hidden;
+    overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
   }
 }
 

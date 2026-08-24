@@ -15,8 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { ProductCard } from "@/components/ui/product-card";
-import Navbar from "@/components/user/navbar";
-import Footer from "@/components/user/footer";
+
 
 // ---------------------------------------------------------------------------
 // Dummy product data — replace with real API call using `params.slug`
@@ -636,7 +635,7 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <Navbar />
+
       <main className="w-full px-4 md:px-16 py-12 bg-background min-h-screen">
       {/* Product Grid */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-10 gap-10">
@@ -854,7 +853,7 @@ export default function ProductDetailPage() {
     </main>
     {/* ── Section 4: You Might Also Like (full-bleed) ── */}
     <RelatedProductsSection products={product.relatedProducts} />
-    <Footer />
+
     </>
   );
 }

@@ -1,4 +1,4 @@
-import Navbar from "@/components/user/navbar";
+
 import HeroRobot from "@/components/user/hero-robot";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,11 +8,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       {/* Hero Section Container (Background #DEF4FF) - overflow-visible agar awan bisa keluar menembus section */}
-      <section className="relative bg-accent-blue pt-4 pb-53 sm:pb-64 overflow-visible">
-        {/* Navigation Bar */}
-        <header className="relative z-20 px-4 mb-6 md:mb-10 w-full flex justify-center">
-          <Navbar />
-        </header>
+      <section className="relative bg-accent-blue pt-6 pb-53 sm:pb-64 overflow-visible">
 
         {/* Hero Main Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center pt-2">
@@ -99,10 +95,10 @@ export default function HomePage() {
         </div>
 
         {/* Gambar Awan Diposisikan Menjorok Turun ke Bawah Menembus Section */}
-        <div className="absolute bottom-0 left-0 right-0 translate-y-[65%] sm:translate-y-[28%] z-2 pointer-events-none leading-none">
+        <div className="absolute  bottom-0 left-0 right-0  z-2 pointer-events-none leading-none">
           <Image
             src="/images/awannn.png"
-            alt="Ilustrasi Awan"
+            alt="Ilustrasi Awan"    
             width={1920}
             height={150}
             className="w-full h-auto object-cover object-bottom"
