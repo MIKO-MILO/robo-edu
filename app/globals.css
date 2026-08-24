@@ -1,8 +1,13 @@
 @import "tailwindcss";
+<<<<<<< HEAD
 /* @import "tw-animate-css"; */
 /* @import "shadcn/tailwind.css"; */
 
 
+=======
+@import "shadcn/tailwind.css";
+
+>>>>>>> aa477acf1de6902a6f8b32b783cc7373e8d44a05
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -55,6 +60,9 @@
 
   /* ==== ACCENT BUTTER === */
   --color-accent-butter: #FAF1CA;
+
+  /* ==== HEART === */
+  --color-heart: #FF4040;
 
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
@@ -181,9 +189,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+<<<<<<< HEAD
   /* font-body = Outfit (dari --font-outfit CSS var yang di-inject layout.tsx) */
   body {
     @apply bg-background text-foreground font-body;
+=======
+  html {
+    overflow-y: auto;
+    overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
+  }
+  /* font-body = Outfit (dari --font-outfit CSS var yang di-inject layout.tsx) */
+  body {
+    @apply bg-background text-foreground font-body;
+    overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
+>>>>>>> aa477acf1de6902a6f8b32b783cc7373e8d44a05
   }
 }
 
@@ -204,4 +223,33 @@
 
 @utility neo-shadow-icon {
   box-shadow: 2px 2px 0px 0px #3D2900;
+<<<<<<< HEAD
+=======
+}
+
+/* ==========================================
+   Waving Robot Hand Animation
+   ========================================== */
+@keyframes wave-hand {
+  0% {
+    transform: rotate(0deg) translateY(0px);
+  }
+  25% {
+    transform: rotate(-14deg) translateY(-2px);
+  }
+  50% {
+    transform: rotate(2deg) translateY(1px);
+  }
+  75% {
+    transform: rotate(-10deg) translateY(-1px);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0px);
+  }
+}
+
+.animate-waving-hand {
+  animation: wave-hand 2.4s ease-in-out infinite;
+  transform-origin: 15% 85%;
+>>>>>>> aa477acf1de6902a6f8b32b783cc7373e8d44a05
 }

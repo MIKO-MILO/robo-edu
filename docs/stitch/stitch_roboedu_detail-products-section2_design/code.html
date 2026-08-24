@@ -1,0 +1,206 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RoboEdu - Product Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&amp;family=Outfit:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f8f9ff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#9dcaff",
+                        "tertiary-container": "#ac6200",
+                        "surface-container-high": "#e6e8ef",
+                        "outline": "#707882",
+                        "on-primary-fixed": "#001d35",
+                        "outline-variant": "#c0c7d3",
+                        "secondary-container": "#bedafe",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#d1e4ff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#fffbff",
+                        "primary-fixed": "#d1e4ff",
+                        "surface-tint": "#0062a2",
+                        "primary": "#005f9e",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffdcc0",
+                        "surface-dim": "#d8dae1",
+                        "on-tertiary-fixed-variant": "#6b3b00",
+                        "inverse-primary": "#9dcaff",
+                        "on-background": "#181c21",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb875",
+                        "surface-container": "#eceef4",
+                        "on-primary-container": "#fdfcff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#181c21",
+                        "inverse-surface": "#2d3136",
+                        "inverse-on-surface": "#eff0f7",
+                        "secondary": "#45607f",
+                        "tertiary": "#894d00",
+                        "background": "#f8f9ff",
+                        "surface-container-highest": "#e0e2e9",
+                        "secondary-fixed-dim": "#adc9ec",
+                        "on-tertiary-fixed": "#2d1600",
+                        "surface": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "primary-container": "#0b78c4",
+                        "on-secondary-fixed": "#001d35",
+                        "surface-container-low": "#f1f3fa",
+                        "on-primary-fixed-variant": "#00497b",
+                        "on-secondary-container": "#445f7e",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e0e2e9",
+                        "on-surface-variant": "#404751",
+                        "on-secondary-fixed-variant": "#2d4966"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "base": "8px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "xl": "80px",
+                        "lg": "48px",
+                        "xs": "4px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Unbounded"],
+                        "headline-lg": ["Unbounded"],
+                        "display-hero": ["Unbounded"],
+                        "label-sm": ["Outfit"],
+                        "headline-lg-mobile": ["Unbounded"],
+                        "body-lg": ["Outfit"],
+                        "body-md": ["Outfit"],
+                        "label-md": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "130%", "fontWeight": "600" }],
+                        "headline-lg": ["48px", { "lineHeight": "120%", "fontWeight": "700" }],
+                        "display-hero": ["120px", { "lineHeight": "110%", "letterSpacing": "-0.04em", "fontWeight": "900" }],
+                        "label-sm": ["12px", { "lineHeight": "140%", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "120%", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "160%", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "160%", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "140%", "letterSpacing": "0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .neo-border { border: 2px solid #181c21; }
+        .neo-shadow { box-shadow: 4px 4px 0px 0px #181c21; }
+        .neo-card {
+            background-color: theme('colors.surface-bright');
+            border: 2px solid theme('colors.on-surface');
+            border-radius: theme('borderRadius.lg');
+            box-shadow: 4px 4px 0px 0px theme('colors.on-surface');
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .neo-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px theme('colors.on-surface');
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- Top Navigation -->
+
+<!-- Main Content Area -->
+<main class="flex-grow px-margin-mobile md:px-margin-desktop py-xl">
+<section class="max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl">
+<!-- Left Column: Description -->
+<div class="flex flex-col gap-lg pr-0 md:pr-lg border-b-2 md:border-b-0 md:border-r-2 border-outline-variant pb-lg md:pb-0">
+<div class="flex items-center gap-sm">
+<h2 class="font-headline-md text-headline-md text-primary uppercase">deskripsi produk</h2>
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: &quot;FILL&quot; 1;">arrow_back_ios_new</span>
+</div>
+<div class="flex flex-col gap-md font-body-lg text-on-surface-variant">
+<p class="">
+                            Le Kit Robot Éducatif stimule intensément la créativité et renforce les compétences logiques grâce à son approche d'apprentissage ultra-interactive.
+                        </p>
+<p class="">
+                            Enrichi de modules programmables, de capteurs intelligents et de composants modulaires, il consolide la pensée critique, améliore la résolution de problèmes et révèle le potentiel d'ingénierie naturel de l'enfant.
+                        </p>
+</div>
+<ul class="flex flex-col gap-sm mt-md font-body-md text-on-surface font-medium">
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                            Convient à tous les niveaux (débutant à avancé)
+                        </li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                            Idéal pour une routine d'apprentissage quotidienne
+                        </li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                            Composants sûrs et durables
+                        </li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                            Testé et approuvé par des éducateurs
+                        </li>
+</ul>
+</div>
+<!-- Right Column: Key Components -->
+<div class="flex flex-col gap-lg pl-0 md:pl-lg">
+<div class="flex items-center gap-sm">
+<h2 class="font-headline-md text-headline-md text-secondary uppercase">component pada produk</h2>
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: &quot;FILL&quot; 1;">arrow_back_ios_new</span>
+</div>
+<div class="flex flex-col gap-md">
+<!-- Component Item 1 -->
+<div class="flex items-center gap-md border-b border-outline-variant pb-sm">
+<div class="w-16 h-16 rounded-full overflow-hidden neo-border flex-shrink-0 bg-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="Close up shot of a bright blue programmable micro-controller board with intricate silver circuitry, top-down view, brightly lit in a modern technical style against a stark white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz3wg5NltTZZCafvNA25gtiGIkWzg6LD4EVpxgIoPFNKP7xLSjwY706qCY-nVcelo3wBbWMqXWALl04RFur9Z63g_h1WiTZg4zLCLoRjdzGoUM69KwdUKJqOip9Gbix392kFdNqCZcpVTU_RSL_yK2qzaZKXjQ1Olw5MfoIxS18Hjhr3IlzMgBfqUlPdbn_-skCRn7uO8I8p1NyBA-glVR40-DWf0y98cQS9muDUhKLHjnNqZfLJYx">
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-md text-label-md uppercase text-on-surface">Microcontrôleur Central</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Traite les données en profondeur et exécute les programmes.</p>
+</div>
+</div>
+<!-- Component Item 2 -->
+<div class="flex items-center gap-md border-b border-outline-variant pb-sm">
+<div class="w-16 h-16 rounded-full overflow-hidden neo-border flex-shrink-0 bg-error-container">
+<img class="w-full h-full object-cover" data-alt="A vivid red ultrasonic distance sensor module looking like two small eyes, set against a clean white background with high contrast lighting, technical educational style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEqFBuszY_MKYpo5PRWfLJIrzWeEq6qPwStGvHcZCZu7BND77LiFhXg840UWZ_3dButeCaTW9sVeonPs0Xb0EH2SXng4Kjs5zRKV_MU6qmhzNPC3lnMapfuIev2xvRwQ1uSUr0oJEH2M3tMqsA0GHAc7sqH2GzG_j6mY_G-01boSPCJ7yy2CfEljVP1vMjNECZ_ggAkFZY2P54_KenkQMnjkgx9-Iyvhf3k8ew30aLgsXNGYwnkMQS">
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-md text-label-md uppercase text-on-surface">Capteur Ultrasonique</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Riche en précision, il détecte les obstacles et ravive l'interaction.</p>
+</div>
+</div>
+<!-- Component Item 3 -->
+<div class="flex items-center gap-md pb-sm">
+<div class="w-16 h-16 rounded-full overflow-hidden neo-border flex-shrink-0 bg-tertiary-fixed">
+<img class="w-full h-full object-cover" data-alt="A collection of vibrant yellow and orange interlocking plastic gears and structural beams, brightly lit macro photography, playful modern educational aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAW_BFZN5LRip7mnewOxrjTF116yTUn1bHFroxGkSyYuQMOmLaQvm96AupvVuja9GrQieO7Wrlgxlx4ZOBypoAdzOD0CR4Ta9QgZju3kC58l1sVmil1NpR3UM65WkyZArLvSdErO9wOMseLbPmV3cNUiqYKuTar56P8JQf5fM3H0Fkso4WKKcVCGdHHFs0Ed7RwrT2m2UISW6k2Yfzto7qe0OSdkc1ycwvjxLLuU_XU3sQhZJMdt9rS">
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-md text-label-md uppercase text-on-surface">Pièces Modulaires</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Améliore la structure du robot et unifie la construction.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+
+
+
+</body></html>

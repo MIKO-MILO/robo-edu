@@ -16,9 +16,10 @@ export default function Navbar() {
 
   return (
     <nav
-      className="sticky top-4 z-20 shadow-md mx-auto flex justify-between items-center px-12 py-4"
+      className="w-full shadow-md mx-auto flex justify-between items-center px-12 py-4"
       style={{
-        width: "984px",
+        maxWidth: "984px",
+        width: "100%",
         height: "95px",
         backgroundColor: "var(--color-primary)", // #2483D0
         borderRadius: "100px",

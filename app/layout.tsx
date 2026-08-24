@@ -1,5 +1,6 @@
 import { Unbounded, Outfit } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -17,8 +18,12 @@ const outfit = Outfit({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${unbounded.variable} ${outfit.variable}`}>
-      <body className="font-body bg-background text-foreground">
+    <html
+      lang="id"
+      className={cn(unbounded.variable, outfit.variable)}
+      suppressHydrationWarning
+    >
+      <body className="font-body bg-background text-foreground" suppressHydrationWarning>
         {children}
       </body>
     </html>

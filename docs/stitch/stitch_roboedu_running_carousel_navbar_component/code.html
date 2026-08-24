@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roboedu Marquee</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#9dcaff",
+                        "on-secondary-container": "#5f6369",
+                        "inverse-surface": "#2f3133",
+                        "on-tertiary-fixed-variant": "#6b3b00",
+                        "outline": "#707882",
+                        "primary": "#005f9e",
+                        "surface-container": "#eeeef0",
+                        "surface-bright": "#f9f9fc",
+                        "tertiary-fixed": "#ffdcc0",
+                        "secondary-fixed-dim": "#c3c7cd",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#fdfcff",
+                        "tertiary-container": "#ac6200",
+                        "on-background": "#1a1c1e",
+                        "surface-dim": "#dadadc",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#894d00",
+                        "on-tertiary-fixed": "#2d1600",
+                        "background": "#f9f9fc",
+                        "on-primary-fixed-variant": "#00497c",
+                        "on-secondary-fixed-variant": "#43474d",
+                        "secondary-fixed": "#dfe2e9",
+                        "surface-variant": "#e2e2e5",
+                        "on-surface-variant": "#404751",
+                        "surface-container-highest": "#e2e2e5",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1a1c1e",
+                        "secondary": "#5b5f64",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary-fixed": "#181c21",
+                        "on-primary-fixed": "#001d35",
+                        "primary-fixed-dim": "#9dcaff",
+                        "primary-container": "#0a78c5",
+                        "primary-fixed": "#d1e4ff",
+                        "secondary-container": "#dce0e7",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f0f0f3",
+                        "tertiary-fixed-dim": "#ffb875",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f3f6",
+                        "surface-tint": "#0062a2",
+                        "surface": "#f9f9fc",
+                        "surface-container-high": "#e8e8ea",
+                        "outline-variant": "#c0c7d3",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "marquee-bg": "#FAF1CA",
+                        "marquee-text": "#2483D0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Outfit"],
+                        "label-sm": ["Outfit"],
+                        "logo": ["Outfit"],
+                        "headline-lg-mobile": ["Outfit"],
+                        "nav-link": ["Outfit"],
+                        "headline-lg": ["Outfit"],
+                        "marquee": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "marquee": [
+                            "24px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "600"
+                            }
+                        ]
+                    },
+                    "animation": {
+                        "marquee": "marquee 20s linear infinite"
+                    },
+                    "keyframes": {
+                        "marquee": {
+                            "0%": { transform: "translateX(0%)" },
+                            "100%": { transform: "translateX(-50%)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+        .marquee-content {
+            display: flex;
+            align-items: center;
+            width: max-content;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex items-center justify-center">
+<div class="w-full max-w-[1440px] mx-auto h-[56px] bg-marquee-bg overflow-hidden flex items-center">
+<div class="marquee-container w-full h-full overflow-hidden whitespace-nowrap">
+<div class="marquee-content animate-marquee">
+<!-- Group 1 -->
+<div class="flex items-center gap-8 pr-8">
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeqbgzg-XyWCTE_HW-XramlpzCojjAByfyV9XFRFmUur39XrnvhupKwvfFHX6A-5JN5IZNKmLdE4Z9G2ZDcHcLHqexlUyQd5fx1a4rY90z4Mruqu20rdU5AiPoL0JkIBISQI9t2m4JXMkuwfusNJQzU18ABOD4Ll0aeiCvg7Rodk68EL5dwN1yWt1w2ezQERhvXNUX0eoTGBdx0UsaItBH7Yqv5Lj3bBDSDetvN-uZruRAcQegZ25fCgDRJ4mBnBqeYA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-WpWa9NiNq-jrzLWfhx494WaXkpgn2YW1_M-Edy2ARy5Oi_goN70UyxVhqF5resvoahdr54ltqoGvz2le2lDwptE03GNj69ZjlrI3Za_61w9rfZWTC52TV9NEVbmDavxpAHQOHgm9W8Pzs-I5plov-nZwaxSm29bYecTIOO2uUHfRW_7Qw4xfAKnuWev1Mm7lzF3EJWKnfXel_lbs9sxwfNF3o1GEyu_1t5p5YH-ceaPm7wEQRswaXtC4TYq-Orwg"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlXYwJJMFdUTUl04c6dgXEYoXSDOEWA7h4f8YyWy2PwyPM3-y6uCvLYag-ls6nZPdjndVA0XI9d9hlDbIXcy9L3tmDNTaU4X_pnl6lMFtaah9TmcVi7bN6iTSCojlsh-ilYi27noR5AMbXQq54RyULXg5decUogvtDLCzlbYuh-PALolqWBBZP0d7xts9WAqeZuVx8F2iM3n-0qb5YpMjdtbQqaymBXYyHyhfFAxZVhcJ15pINh-KDmvu6gCQlHSt91Q"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc0hsUWkwqpdLAJFvjuszUsOgQ8zvsO7gaK_Vv4tJ9TFrqLUPGcbM916A4YR5eaFfSXvLjPNBHt91zhc9J0mR-xT5FSCWzdJY5kgRne9fvjSmnUBdilYssqDjRvVx13w8eO24gf0RMbkmkxcMNbo3ScXv1xtWOnrzUA3ABjg3IdG8zA6RuAQwFpDGLKtoYsIPiEidFBMKw8GsxF1NnRx8xi0zWE3ckDknYuo-U7CyHyOpRqPOJgxrBimPojQqozF9P0A"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-71miIpfONMqxYaP9kI8MJGFlO2ajiMxoIDFki_bzQN5_4RdcVKiH2ehgNiKsidvOkVC8DB_atkPlkqUbQSeBXswl0QWQ3CT6qgX9FGI3kHjsIosDhuWV0xErwNcfn6s3JmSxUjhSyQaCQiFeK2m9iOIjIzZxCCUyg8Il8uR6tUSMj0ZLdvhqEpVtijZXHD-mcvSiFctTOaPC811wAtuTn0HDDgkOMU79_3y4__-m4miYpzpapUJbJldAi3hRSX0SOA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCsjA9jnN9XIyz0roYyxkNbVfWwJPD7SbziCYd8d9AqX8gDXNembR5fvrQM9lTGD_Pxe3PM0jG5na2EXbhWeuCEw2kpN6aF2deSSWJgdoljMCMYe5gSUNK_GPsQ8o8Qw9sHAWy96iBDRygaKTCNE07ZS7zhAiUYbpnVbuWPPc0EtUjHV9xfnjwRAYButLAUWr79Q0yk5lYYanEDi3B0tLrOJLIevAx-pkY34KpcyfarfrysBxMKoBTNR8SRmeNNEULA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeqbgzg-XyWCTE_HW-XramlpzCojjAByfyV9XFRFmUur39XrnvhupKwvfFHX6A-5JN5IZNKmLdE4Z9G2ZDcHcLHqexlUyQd5fx1a4rY90z4Mruqu20rdU5AiPoL0JkIBISQI9t2m4JXMkuwfusNJQzU18ABOD4Ll0aeiCvg7Rodk68EL5dwN1yWt1w2ezQERhvXNUX0eoTGBdx0UsaItBH7Yqv5Lj3bBDSDetvN-uZruRAcQegZ25fCgDRJ4mBnBqeYA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-WpWa9NiNq-jrzLWfhx494WaXkpgn2YW1_M-Edy2ARy5Oi_goN70UyxVhqF5resvoahdr54ltqoGvz2le2lDwptE03GNj69ZjlrI3Za_61w9rfZWTC52TV9NEVbmDavxpAHQOHgm9W8Pzs-I5plov-nZwaxSm29bYecTIOO2uUHfRW_7Qw4xfAKnuWev1Mm7lzF3EJWKnfXel_lbs9sxwfNF3o1GEyu_1t5p5YH-ceaPm7wEQRswaXtC4TYq-Orwg"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlXYwJJMFdUTUl04c6dgXEYoXSDOEWA7h4f8YyWy2PwyPM3-y6uCvLYag-ls6nZPdjndVA0XI9d9hlDbIXcy9L3tmDNTaU4X_pnl6lMFtaah9TmcVi7bN6iTSCojlsh-ilYi27noR5AMbXQq54RyULXg5decUogvtDLCzlbYuh-PALolqWBBZP0d7xts9WAqeZuVx8F2iM3n-0qb5YpMjdtbQqaymBXYyHyhfFAxZVhcJ15pINh-KDmvu6gCQlHSt91Q"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc0hsUWkwqpdLAJFvjuszUsOgQ8zvsO7gaK_Vv4tJ9TFrqLUPGcbM916A4YR5eaFfSXvLjPNBHt91zhc9J0mR-xT5FSCWzdJY5kgRne9fvjSmnUBdilYssqDjRvVx13w8eO24gf0RMbkmkxcMNbo3ScXv1xtWOnrzUA3ABjg3IdG8zA6RuAQwFpDGLKtoYsIPiEidFBMKw8GsxF1NnRx8xi0zWE3ckDknYuo-U7CyHyOpRqPOJgxrBimPojQqozF9P0A"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-71miIpfONMqxYaP9kI8MJGFlO2ajiMxoIDFki_bzQN5_4RdcVKiH2ehgNiKsidvOkVC8DB_atkPlkqUbQSeBXswl0QWQ3CT6qgX9FGI3kHjsIosDhuWV0xErwNcfn6s3JmSxUjhSyQaCQiFeK2m9iOIjIzZxCCUyg8Il8uR6tUSMj0ZLdvhqEpVtijZXHD-mcvSiFctTOaPC811wAtuTn0HDDgkOMU79_3y4__-m4miYpzpapUJbJldAi3hRSX0SOA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCsjA9jnN9XIyz0roYyxkNbVfWwJPD7SbziCYd8d9AqX8gDXNembR5fvrQM9lTGD_Pxe3PM0jG5na2EXbhWeuCEw2kpN6aF2deSSWJgdoljMCMYe5gSUNK_GPsQ8o8Qw9sHAWy96iBDRygaKTCNE07ZS7zhAiUYbpnVbuWPPc0EtUjHV9xfnjwRAYButLAUWr79Q0yk5lYYanEDi3B0tLrOJLIevAx-pkY34KpcyfarfrysBxMKoBTNR8SRmeNNEULA"/>
+</div>
+</div>
+<!-- Group 2 -->
+<div class="flex items-center gap-8 pr-8">
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeqbgzg-XyWCTE_HW-XramlpzCojjAByfyV9XFRFmUur39XrnvhupKwvfFHX6A-5JN5IZNKmLdE4Z9G2ZDcHcLHqexlUyQd5fx1a4rY90z4Mruqu20rdU5AiPoL0JkIBISQI9t2m4JXMkuwfusNJQzU18ABOD4Ll0aeiCvg7Rodk68EL5dwN1yWt1w2ezQERhvXNUX0eoTGBdx0UsaItBH7Yqv5Lj3bBDSDetvN-uZruRAcQegZ25fCgDRJ4mBnBqeYA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-WpWa9NiNq-jrzLWfhx494WaXkpgn2YW1_M-Edy2ARy5Oi_goN70UyxVhqF5resvoahdr54ltqoGvz2le2lDwptE03GNj69ZjlrI3Za_61w9rfZWTC52TV9NEVbmDavxpAHQOHgm9W8Pzs-I5plov-nZwaxSm29bYecTIOO2uUHfRW_7Qw4xfAKnuWev1Mm7lzF3EJWKnfXel_lbs9sxwfNF3o1GEyu_1t5p5YH-ceaPm7wEQRswaXtC4TYq-Orwg"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlXYwJJMFdUTUl04c6dgXEYoXSDOEWA7h4f8YyWy2PwyPM3-y6uCvLYag-ls6nZPdjndVA0XI9d9hlDbIXcy9L3tmDNTaU4X_pnl6lMFtaah9TmcVi7bN6iTSCojlsh-ilYi27noR5AMbXQq54RyULXg5decUogvtDLCzlbYuh-PALolqWBBZP0d7xts9WAqeZuVx8F2iM3n-0qb5YpMjdtbQqaymBXYyHyhfFAxZVhcJ15pINh-KDmvu6gCQlHSt91Q"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc0hsUWkwqpdLAJFvjuszUsOgQ8zvsO7gaK_Vv4tJ9TFrqLUPGcbM916A4YR5eaFfSXvLjPNBHt91zhc9J0mR-xT5FSCWzdJY5kgRne9fvjSmnUBdilYssqDjRvVx13w8eO24gf0RMbkmkxcMNbo3ScXv1xtWOnrzUA3ABjg3IdG8zA6RuAQwFpDGLKtoYsIPiEidFBMKw8GsxF1NnRx8xi0zWE3ckDknYuo-U7CyHyOpRqPOJgxrBimPojQqozF9P0A"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-71miIpfONMqxYaP9kI8MJGFlO2ajiMxoIDFki_bzQN5_4RdcVKiH2ehgNiKsidvOkVC8DB_atkPlkqUbQSeBXswl0QWQ3CT6qgX9FGI3kHjsIosDhuWV0xErwNcfn6s3JmSxUjhSyQaCQiFeK2m9iOIjIzZxCCUyg8Il8uR6tUSMj0ZLdvhqEpVtijZXHD-mcvSiFctTOaPC811wAtuTn0HDDgkOMU79_3y4__-m4miYpzpapUJbJldAi3hRSX0SOA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCsjA9jnN9XIyz0roYyxkNbVfWwJPD7SbziCYd8d9AqX8gDXNembR5fvrQM9lTGD_Pxe3PM0jG5na2EXbhWeuCEw2kpN6aF2deSSWJgdoljMCMYe5gSUNK_GPsQ8o8Qw9sHAWy96iBDRygaKTCNE07ZS7zhAiUYbpnVbuWPPc0EtUjHV9xfnjwRAYButLAUWr79Q0yk5lYYanEDi3B0tLrOJLIevAx-pkY34KpcyfarfrysBxMKoBTNR8SRmeNNEULA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeqbgzg-XyWCTE_HW-XramlpzCojjAByfyV9XFRFmUur39XrnvhupKwvfFHX6A-5JN5IZNKmLdE4Z9G2ZDcHcLHqexlUyQd5fx1a4rY90z4Mruqu20rdU5AiPoL0JkIBISQI9t2m4JXMkuwfusNJQzU18ABOD4Ll0aeiCvg7Rodk68EL5dwN1yWt1w2ezQERhvXNUX0eoTGBdx0UsaItBH7Yqv5Lj3bBDSDetvN-uZruRAcQegZ25fCgDRJ4mBnBqeYA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-WpWa9NiNq-jrzLWfhx494WaXkpgn2YW1_M-Edy2ARy5Oi_goN70UyxVhqF5resvoahdr54ltqoGvz2le2lDwptE03GNj69ZjlrI3Za_61w9rfZWTC52TV9NEVbmDavxpAHQOHgm9W8Pzs-I5plov-nZwaxSm29bYecTIOO2uUHfRW_7Qw4xfAKnuWev1Mm7lzF3EJWKnfXel_lbs9sxwfNF3o1GEyu_1t5p5YH-ceaPm7wEQRswaXtC4TYq-Orwg"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlXYwJJMFdUTUl04c6dgXEYoXSDOEWA7h4f8YyWy2PwyPM3-y6uCvLYag-ls6nZPdjndVA0XI9d9hlDbIXcy9L3tmDNTaU4X_pnl6lMFtaah9TmcVi7bN6iTSCojlsh-ilYi27noR5AMbXQq54RyULXg5decUogvtDLCzlbYuh-PALolqWBBZP0d7xts9WAqeZuVx8F2iM3n-0qb5YpMjdtbQqaymBXYyHyhfFAxZVhcJ15pINh-KDmvu6gCQlHSt91Q"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc0hsUWkwqpdLAJFvjuszUsOgQ8zvsO7gaK_Vv4tJ9TFrqLUPGcbM916A4YR5eaFfSXvLjPNBHt91zhc9J0mR-xT5FSCWzdJY5kgRne9fvjSmnUBdilYssqDjRvVx13w8eO24gf0RMbkmkxcMNbo3ScXv1xtWOnrzUA3ABjg3IdG8zA6RuAQwFpDGLKtoYsIPiEidFBMKw8GsxF1NnRx8xi0zWE3ckDknYuo-U7CyHyOpRqPOJgxrBimPojQqozF9P0A"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-71miIpfONMqxYaP9kI8MJGFlO2ajiMxoIDFki_bzQN5_4RdcVKiH2ehgNiKsidvOkVC8DB_atkPlkqUbQSeBXswl0QWQ3CT6qgX9FGI3kHjsIosDhuWV0xErwNcfn6s3JmSxUjhSyQaCQiFeK2m9iOIjIzZxCCUyg8Il8uR6tUSMj0ZLdvhqEpVtijZXHD-mcvSiFctTOaPC811wAtuTn0HDDgkOMU79_3y4__-m4miYpzpapUJbJldAi3hRSX0SOA"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-marquee text-marquee text-marquee-text">roboedu</span>
+<img alt="Roboedu Logo" class="w-[27px] h-[30px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCsjA9jnN9XIyz0roYyxkNbVfWwJPD7SbziCYd8d9AqX8gDXNembR5fvrQM9lTGD_Pxe3PM0jG5na2EXbhWeuCEw2kpN6aF2deSSWJgdoljMCMYe5gSUNK_GPsQ8o8Qw9sHAWy96iBDRygaKTCNE07ZS7zhAiUYbpnVbuWPPc0EtUjHV9xfnjwRAYButLAUWr79Q0yk5lYYanEDi3B0tLrOJLIevAx-pkY34KpcyfarfrysBxMKoBTNR8SRmeNNEULA"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
