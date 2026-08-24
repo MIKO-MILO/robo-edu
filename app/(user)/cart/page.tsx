@@ -218,7 +218,7 @@ export default function CartPage() {
           {cartItems.length === 0 ? (
             <div className="bg-white/80 rounded-3xl p-6 sm:p-8 text-center border-2 border-dashed border-border-strong my-6 sm:my-8">
               <p className="font-body text-muted-foreground text-base sm:text-lg mb-6">
-                Your shopping cart is currently empty. Let's find some robots!
+                Your shopping cart is currently empty. Let&apos;s find some robots!
               </p>
               <Link
                 href="/"
@@ -522,7 +522,7 @@ export default function CartPage() {
                 ROBO-EDU GUARANTEE
               </h4>
               <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-1 leading-relaxed">
-                Every robotic toy is calibrated for fun and learning. Return within 90 days if it doesn't meet your expectations.{" "}
+                Every robotic toy is calibrated for fun and learning. Return within 90 days if it doesn&apos;t meet your expectations.{" "}
                 <a href="#" className="underline font-bold text-foreground hover:text-primary transition-colors">
                   Details
                 </a>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image, { ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -46,13 +46,15 @@ export function ProductImage({
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   ...props
 }: ProductImageProps) {
+  const [prevProps, setPrevProps] = useState({ src, fallbackSrc });
   const [imgSrc, setImgSrc] = useState<string>(src || fallbackSrc);
   const [hasError, setHasError] = useState<boolean>(!src);
 
-  useEffect(() => {
+  if (prevProps.src !== src || prevProps.fallbackSrc !== fallbackSrc) {
+    setPrevProps({ src, fallbackSrc });
     setImgSrc(src || fallbackSrc);
     setHasError(!src);
-  }, [src, fallbackSrc]);
+  }
 
   const containerSizeClass = size !== "full" ? SIZE_MAP[size] : "";
   const aspectClass = aspectRatio !== "auto" ? ASPECT_MAP[aspectRatio] : "";

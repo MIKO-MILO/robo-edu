@@ -1,11 +1,16 @@
 import { HeroSection } from "@/components/user/products/hero-section";
 import { SearchBar } from "@/components/user/products/search-bar";
 import { CategoryFilterList } from "@/components/user/products/category-filter-list";
-import { ProductCard } from "@/components/ui/product-card";
+import { WishlistAwareProductCard } from "@/components/user/wishlist/wishlist-aware-product-card";
 import { Pagination } from "@/components/ui/pagination";
 import { PASTEL_VARIANTS } from "@/components/ui/filter-button";
 import CarouselLogo from "@/components/user/carousel-logo";
 import type { ProductListItem } from "@/types";
+
+/** Parse string harga dummy (mis. "Rp50.000") ke number (50000). */
+function parsePriceString(priceStr: string): number {
+  return parseInt(priceStr.replace(/\D/g, ""), 10) || 0;
+}
 
 const CATEGORIES = [
   { id: "all", label: "Semua" },
@@ -264,11 +269,13 @@ export default async function ProductsPage(props: ProductsPageProps) {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
               {paginatedProducts.map((product, index) => (
-                <ProductCard
+                <WishlistAwareProductCard
                   key={product.id}
                   id={product.id}
+                  slug={product.slug}
                   name={product.name}
                   price={product.price}
+                  priceRaw={parsePriceString(product.price)}
                   rating={product.rating_average ?? 5.0}
                   reviewCount={product.reviewCount}
                   imageUrl={

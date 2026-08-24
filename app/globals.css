@@ -1,13 +1,6 @@
 @import "tailwindcss";
-<<<<<<< HEAD
-/* @import "tw-animate-css"; */
-/* @import "shadcn/tailwind.css"; */
-
-
-=======
 @import "shadcn/tailwind.css";
 
->>>>>>> aa477acf1de6902a6f8b32b783cc7373e8d44a05
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -189,11 +182,6 @@
   * {
     @apply border-border outline-ring/50;
   }
-<<<<<<< HEAD
-  /* font-body = Outfit (dari --font-outfit CSS var yang di-inject layout.tsx) */
-  body {
-    @apply bg-background text-foreground font-body;
-=======
   html {
     overflow-y: auto;
     overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
@@ -202,7 +190,6 @@
   body {
     @apply bg-background text-foreground font-body;
     overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
->>>>>>> aa477acf1de6902a6f8b32b783cc7373e8d44a05
   }
 }
 
@@ -223,8 +210,6 @@
 
 @utility neo-shadow-icon {
   box-shadow: 2px 2px 0px 0px #3D2900;
-<<<<<<< HEAD
-=======
 }
 
 /* ==========================================
@@ -251,5 +236,4 @@
 .animate-waving-hand {
   animation: wave-hand 2.4s ease-in-out infinite;
   transform-origin: 15% 85%;
->>>>>>> aa477acf1de6902a6f8b32b783cc7373e8d44a05
 }

@@ -8,10 +8,10 @@ import Image from "next/image";
  *   - Background : --color-accent-yellow (#FFF37E)
  *   - Teks       : --color-primary       (#2483D0)
  */
-export default function CarouselLogo() {
-  const ITEMS_PER_GROUP = 6;
+const ITEMS_PER_GROUP = 6;
 
-  const MarqueeItems = () => (
+function MarqueeItems() {
+  return (
     <>
       {Array.from({ length: ITEMS_PER_GROUP }).map((_, i) => (
         <div key={i} className="flex items-center gap-4">
@@ -32,7 +32,9 @@ export default function CarouselLogo() {
       ))}
     </>
   );
+}
 
+export default function CarouselLogo() {
   return (
     <>
       <style>{`
