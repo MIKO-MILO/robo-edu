@@ -1,20 +1,10 @@
-<<<<<<< HEAD
-"use client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { HeroSection } from "@/components/user/products/hero-section";
-import { SearchBar } from "@/components/user/products/search-bar";
-import { FilterButton, PASTEL_VARIANTS } from "@/components/ui/filter-button";
-import { ProductCard } from "@/components/ui/product-card";
-=======
 import { HeroSection } from "@/components/user/products/hero-section";
 import { SearchBar } from "@/components/user/products/search-bar";
 import { CategoryFilterList } from "@/components/user/products/category-filter-list";
-import { ProductCard } from "@/components/user/products/product-card";
+import { ProductCard } from "@/components/ui/product-card";
 import { Pagination } from "@/components/ui/pagination";
 import { PASTEL_VARIANTS } from "@/components/ui/filter-button";
 import CarouselLogo from "@/components/user/carousel-logo";
->>>>>>> frontend-catalog
 import type { ProductListItem } from "@/types";
 
 const CATEGORIES = [
@@ -191,19 +181,12 @@ type ProductsPageProps = {
   }>;
 };
 
-<<<<<<< HEAD
-export default function CatalogPage() {
-  const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-=======
 export default async function ProductsPage(props: ProductsPageProps) {
   const searchParams = await props.searchParams;
   const searchQuery = searchParams.search || "";
   const activeCategory = searchParams.category || "all";
   const currentPage = Math.max(1, Number(searchParams.page) || 1);
   const itemsPerPage = 8;
->>>>>>> frontend-catalog
 
   // Filter produk berdasarkan Search dan Category (Server-side rendering logic)
   const filteredProducts = DUMMY_PRODUCTS.filter((product) => {
@@ -277,34 +260,6 @@ export default async function ProductsPage(props: ProductsPageProps) {
         </div>
 
         {/* Product Grid */}
-<<<<<<< HEAD
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-            {filteredProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                rating={product.rating_average ?? 5.0}
-                reviewCount={product.reviewCount}
-                imageUrl={
-                  product.primary_image_url ??
-                  "/images/placeholder-product.jpg"
-                }
-                bgColorClass={PASTEL_VARIANTS[index % PASTEL_VARIANTS.length]}
-                onDetailClick={() => {
-                  // TODO: router.push(`/catalog/${product.slug}`)
-                  router.push(`/products/${product.slug}`);
-                }}
-                onWishlistClick={() => {
-                  // TODO: call POST /wishlist API
-                  console.log("Add to wishlist:", product.id);
-                }}
-              />
-            ))}
-          </div>
-=======
         {paginatedProducts.length > 0 ? (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -335,7 +290,6 @@ export default async function ProductsPage(props: ProductsPageProps) {
               totalPages={totalPages}
             />
           </>
->>>>>>> frontend-catalog
         ) : (
           /* Empty State */
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
