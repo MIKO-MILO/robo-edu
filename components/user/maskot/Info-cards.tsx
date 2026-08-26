@@ -59,14 +59,36 @@ const cards: CardData[] = [
 export default function InfoCards() {
   return (
     <section className="relative bg-[#F1ECE0] pt-8 pb-16 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Header Section Aligned to the Right */}
-        <div className="flex justify-end items-center gap-1 sm:gap-2 mb-16 sm:mb-20 translate-x-9 sm:translate-x-19 mt-4 sm:mt-6">
-          <h3 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-2 sm:pt-4 translate-x-3 sm:translate-x-4">
+      {/* Dekorasi Gear 1 (Kiri Atas - Makin Besar) */}
+      <div className="absolute top-0 left-0 w-52 h-52 sm:w-72 sm:h-72 lg:w-96 lg:h-96 pointer-events-none z-0">
+        <Image
+          src="/images/gear1.png"
+          alt="Dekorasi Gear Kiri"
+          fill
+          className="object-contain object-top-left"
+          priority
+        />
+      </div>
+
+      {/* Dekorasi Gear 2 (Kanan Atas - Agak Bawah) */}
+      <div className="absolute top-6 sm:top-10 lg:top-12 right-0 w-32 h-32 sm:w-44 sm:h-44 lg:w-56 lg:h-56 pointer-events-none z-0">
+        <Image
+          src="/images/gear2.png"
+          alt="Dekorasi Gear Kanan"
+          fill
+          className="object-contain object-top-right"
+          priority
+        />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        {/* Header Section */}
+        <div className="w-full flex justify-center items-center gap-0 sm:gap-1 mb-16 sm:mb-20 mt-4 sm:mt-6 mx-auto translate-x-4 sm:translate-x-8">
+          <h3 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-4 sm:pt-6 translate-x-2 sm:translate-x-4 translate-y-3 sm:translate-y-4">
             Kenapa RoboEdu
           </h3>
-          
-          <div className="relative w-25 h-25 sm:w-30 sm:h-28 lg:w-32 lg:h-32 flex-shrink-0">
+
+          <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex-shrink-0 -translate-y-2 sm:translate-y-3">
             <Image
               src="/images/5.png"
               alt="Tanda Tanya RoboEdu"
@@ -115,42 +137,75 @@ export default function InfoCards() {
         </div>
       </div>
 
-      {/* Bottom Wavy Carousel / Marquee Banner aligned directly to the ribbon center path */}
-      <div className="w-full overflow-hidden relative mt-18 sm:mt-12 py-2">
+      {/* Bottom Wavy Carousel / Marquee Banner with 3D overlapping ribbon loop */}
+      <div className="w-full overflow-hidden relative mt-4 sm:mt-6 py-2">
         <svg
-          viewBox="0 0 1440 320"
-          className="w-full h-auto min-w-[1000px] md:min-w-full block"
+          viewBox="0 0 1500 390"
+          className="w-full h-auto min-w-[1500px] md:min-w-full block"
           preserveAspectRatio="none"
         >
           <defs>
-            {/* Midline path exact center of the ribbon geometry */}
+            {/* Bagian 1: Jalur Belakang (Ujung bawah dibuat lebih lancip/tirus) */}
             <path
-              id="robo-reference-wave-path"
-              d="M -1440,215 C -1340,282.5 -1240,267.5 -1160,157.5 C -1070,32.5 -920,72.5 -810,172.5 C -700,272.5 -550,307.5 -450,232.5 C -340,152.5 -160,112.5 0,182.5 C 100,250 200,235 280,125 C 370,0 520,40 630,140 C 740,240 890,275 990,200 C 1100,120 1280,80 1440,150 C 1540,217.5 1640,202.5 1720,92.5 C 1810,-32.5 1960,7.5 2070,107.5 C 2180,207.5 2330,242.5 2430,167.5 C 2540,87.5 2720,47.5 2880,117.5"
+              id="robo-wave-path-back"
+              d="M 20 60 C 150 150, 300 170, 450 140 C 600 110, 680 70, 820 80 C 960 90, 1090 120, 1030 250 C 990 340, 880 355, 835 285"
+              fill="none"
+            />
+            {/* Bagian 2: Jalur Depan (Keluar dari simpul lancip ke kanan) */}
+            <path
+              id="robo-wave-path-front"
+              d="M 835 285 C 800 200, 910 155, 980 160 C 1120 170, 1300 120, 1480 50"
               fill="none"
             />
           </defs>
 
-          {/* Ribbon shape matching reference image */}
-          <path
-            d="M 0,175 C 100,240 200,225 280,115 C 370,-10 520,30 630,130 C 740,230 890,265 990,190 C 1100,110 1280,70 1440,140 L 1440,230 C 1280,160 1100,200 990,270 C 890,345 740,310 630,210 C 520,110 370,70 280,195 C 200,305 100,320 0,255 Z"
-            fill="#6188D0"
+          {/* LAYER 1: JALUR BELAKANG */}
+          <use
+            href="#robo-wave-path-back"
+            stroke="#EFD265"
+            strokeWidth="68"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
           />
-
-          {/* Animated Curved Text aligned to exact center */}
           <text
-            dy="6"
-            className="fill-white font-extrabold text-lg sm:text-xl tracking-[0.2em] lowercase font-heading select-none"
+            dy="0.35em"
+            className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
           >
-            <textPath href="#robo-reference-wave-path" startOffset="0%">
+            <textPath href="#robo-wave-path-back" startOffset="0%">
               <animate
                 attributeName="startOffset"
                 from="-50%"
                 to="0%"
-                dur="20s"
+                dur="22s"
                 repeatCount="indefinite"
               />
-              roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu &nbsp; • &nbsp; roboedu
+              roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan
+            </textPath>
+          </text>
+
+          {/* LAYER 2: JALUR DEPAN */}
+          <use
+            href="#robo-wave-path-front"
+            stroke="#EFD265"
+            strokeWidth="68"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <text
+            dy="0.35em"
+            className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
+          >
+            <textPath href="#robo-wave-path-front" startOffset="0%">
+              <animate
+                attributeName="startOffset"
+                from="-50%"
+                to="0%"
+                dur="22s"
+                repeatCount="indefinite"
+              />
+              roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan
             </textPath>
           </text>
         </svg>
