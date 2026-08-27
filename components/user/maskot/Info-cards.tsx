@@ -11,6 +11,7 @@ interface CardData {
   textColor: string;
   mascotSrc: string;
   altText: string;
+  borderRadius: string;
 }
 
 const cards: CardData[] = [
@@ -18,48 +19,56 @@ const cards: CardData[] = [
     id: 1,
     titleLine1: "Aman & Sesuai",
     titleLine2: "Usia 6+",
-    bgColor: "#C3CDF0",
-    shadowColor: "#9EACDF",
-    textColor: "#354272",
+    bgColor: "#C5DCFD",
+    shadowColor: "#A5C6F8",
+    textColor: "#233B5E",
     mascotSrc: "/images/4.png",
     altText: "Maskot RoboEdu Usia 6+",
+    // Sudut tumpul diagonal (kiri-atas & kanan-bawah membulat lebar)
+    borderRadius: "44px 20px 44px 20px",
   },
   {
     id: 2,
     titleLine1: "Aman & Mudah",
     titleLine2: "Dirakit",
-    bgColor: "#F4C4C8",
-    shadowColor: "#DBADB1",
-    textColor: "#66292E",
+    bgColor: "#FDCBD1",
+    shadowColor: "#F7ACB5",
+    textColor: "#5C2830",
     mascotSrc: "/images/3.png",
     altText: "Maskot RoboEdu Mudah Dirakit",
+    // Sudut tumpul diagonal berlawanan
+    borderRadius: "20px 44px 20px 44px",
   },
   {
     id: 3,
     titleLine1: "Melatih Logika &",
     titleLine2: "Kesabaran",
-    bgColor: "#EFBFE1",
-    shadowColor: "#D79BC5",
-    textColor: "#79195C",
+    bgColor: "#EAD8FD",
+    shadowColor: "#D6B5F7",
+    textColor: "#48236B",
     mascotSrc: "/images/22.png",
     altText: "Maskot RoboEdu Logika & Kesabaran",
+    // Lengkungan tumpul halus di bagian atas
+    borderRadius: "48px 48px 24px 24px",
   },
   {
     id: 4,
     titleLine1: "Sukses Selesaikan",
     titleLine2: "Misi",
-    bgColor: "#F5E8BA",
-    shadowColor: "#D9CA97",
-    textColor: "#684B0F",
+    bgColor: "#FDECB1",
+    shadowColor: "#F5D67C",
+    textColor: "#59420F",
     mascotSrc: "/images/11.png",
     altText: "Maskot RoboEdu Sukses Selesaikan Misi",
+    // Lengkungan tumpul halus di bagian bawah
+    borderRadius: "24px 24px 48px 48px",
   },
 ];
 
 export default function InfoCards() {
   return (
     <section className="relative bg-[#F1ECE0] pt-8 pb-16 overflow-hidden">
-      {/* Dekorasi Gear 1 (Kiri Atas - Makin Besar) */}
+      {/* Dekorasi Gear 1 */}
       <div className="absolute top-0 left-0 w-52 h-52 sm:w-72 sm:h-72 lg:w-96 lg:h-96 pointer-events-none z-0">
         <Image
           src="/images/gear1.png"
@@ -70,7 +79,7 @@ export default function InfoCards() {
         />
       </div>
 
-      {/* Dekorasi Gear 2 (Kanan Atas - Agak Bawah) */}
+      {/* Dekorasi Gear 2 */}
       <div className="absolute top-6 sm:top-10 lg:top-12 right-0 w-32 h-32 sm:w-44 sm:h-44 lg:w-56 lg:h-56 pointer-events-none z-0">
         <Image
           src="/images/gear2.png"
@@ -83,8 +92,8 @@ export default function InfoCards() {
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         {/* Header Section */}
-        <div className="w-full flex justify-center items-center gap-0 sm:gap-1 mb-16 sm:mb-20 mt-4 sm:mt-6 mx-auto translate-x-4 sm:translate-x-8">
-          <h3 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-4 sm:pt-6 translate-x-2 sm:translate-x-4 translate-y-3 sm:translate-y-4">
+        <div className="w-full flex justify-center items-center gap-0 sm:gap-1 mb-16 sm:mb-20 mt-5 sm:mt-11 mx-auto translate-x-8 sm:translate-x-16 lg:translate-x-20 translate-y-4 sm:translate-y-6">
+          <h3 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-4 sm:pt-6 translate-x-4 sm:translate-x-8 translate-y-3 sm:translate-y-4">
             Kenapa RoboEdu
           </h3>
 
@@ -99,20 +108,20 @@ export default function InfoCards() {
           </div>
         </div>
 
-        {/* 4 Cards Grid - Uniform Sizes with Bottom-Right Shadow */}
+        {/* 4 Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pt-8">
           {cards.map((card) => (
-            <div key={card.id} className="relative flex flex-col items-center">
-              {/* Card Container with Uniform Height & Right-Bottom Shadow */}
+            <div key={card.id} className="relative flex flex-col items-center group">
               <div
-                className="relative w-full h-[180px] sm:h-[195px] rounded-[28px] pt-16 sm:pt-20 pb-6 px-4 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1"
+                className="relative w-full h-[190px] sm:h-[210px] border-[5px] border-white pt-16 sm:pt-20 pb-6 px-4 flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02]"
                 style={{
                   backgroundColor: card.bgColor,
-                  boxShadow: `13px 15px 0px 0px ${card.shadowColor}`,
+                  borderRadius: card.borderRadius,
+                  boxShadow: `0 16px 30px -6px ${card.shadowColor}77, 0 6px 12px -4px rgba(0, 0, 0, 0.08)`,
                 }}
               >
-                {/* Mascot Image Overflowing at Top Center */}
-                <div className="absolute -top-24 sm:-top-25 left-1/2 -translate-x-1/2 w-40 h-40 sm:w-44 sm:h-44 pointer-events-none drop-shadow-sm flex items-center justify-center">
+                {/* Mascot Image */}
+                <div className="absolute -top-24 sm:-top-26 left-1/2 -translate-x-1/2 w-40 h-40 sm:w-44 sm:h-44 pointer-events-none drop-shadow-md flex items-center justify-center">
                   <Image
                     src={card.mascotSrc}
                     alt={card.altText}
@@ -137,7 +146,7 @@ export default function InfoCards() {
         </div>
       </div>
 
-      {/* Bottom Wavy Carousel / Marquee Banner with 3D overlapping ribbon loop */}
+      {/* Bottom Wavy Banner */}
       <div className="w-full overflow-hidden relative mt-4 sm:mt-6 py-2">
         <svg
           viewBox="0 0 1500 390"
@@ -145,13 +154,11 @@ export default function InfoCards() {
           preserveAspectRatio="none"
         >
           <defs>
-            {/* Bagian 1: Jalur Belakang (Ujung bawah dibuat lebih lancip/tirus) */}
             <path
               id="robo-wave-path-back"
               d="M 20 60 C 150 150, 300 170, 450 140 C 600 110, 680 70, 820 80 C 960 90, 1090 120, 1030 250 C 990 340, 880 355, 835 285"
               fill="none"
             />
-            {/* Bagian 2: Jalur Depan (Keluar dari simpul lancip ke kanan) */}
             <path
               id="robo-wave-path-front"
               d="M 835 285 C 800 200, 910 155, 980 160 C 1120 170, 1300 120, 1480 50"
@@ -159,7 +166,6 @@ export default function InfoCards() {
             />
           </defs>
 
-          {/* LAYER 1: JALUR BELAKANG */}
           <use
             href="#robo-wave-path-back"
             stroke="#EFD265"
@@ -184,7 +190,6 @@ export default function InfoCards() {
             </textPath>
           </text>
 
-          {/* LAYER 2: JALUR DEPAN */}
           <use
             href="#robo-wave-path-front"
             stroke="#EFD265"
