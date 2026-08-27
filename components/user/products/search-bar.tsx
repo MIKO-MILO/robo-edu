@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,17 +28,14 @@ export function SearchBar({
     const searchParams = useSearchParams();
 
     const urlSearch = searchParams?.get("search") || "";
-    const [internalValue, setInternalValue] = useState(
-        controlledValue !== undefined ? controlledValue : urlSearch
-    );
+    const targetValue = controlledValue !== undefined ? controlledValue : urlSearch;
+    const [prevTargetValue, setPrevTargetValue] = useState(targetValue);
+    const [internalValue, setInternalValue] = useState(targetValue);
 
-    useEffect(() => {
-        if (controlledValue !== undefined) {
-            setInternalValue(controlledValue);
-        } else {
-            setInternalValue(urlSearch);
-        }
-    }, [controlledValue, urlSearch]);
+    if (prevTargetValue !== targetValue) {
+        setPrevTargetValue(targetValue);
+        setInternalValue(targetValue);
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

@@ -8,10 +8,10 @@ import Image from "next/image";
  *   - Background : --color-accent-yellow (#FFF37E)
  *   - Teks       : --color-primary       (#2483D0)
  */
-export default function CarouselLogo() {
-  const ITEMS_PER_GROUP = 6;
+const ITEMS_PER_GROUP = 6;
 
-  const MarqueeItems = () => (
+function MarqueeItems() {
+  return (
     <>
       {Array.from({ length: ITEMS_PER_GROUP }).map((_, i) => (
         <div key={i} className="flex items-center gap-4">
@@ -32,7 +32,17 @@ export default function CarouselLogo() {
       ))}
     </>
   );
+}
 
+/**
+ * CarouselLogo - Running marquee / ticker strip yang menampilkan
+ * teks "roboedu" dan logo Roboedu secara berulang dari kiri ke kanan.
+ *
+ * Warna mengacu pada CSS variables yang didefinisikan di globals.css:
+ *   - Background : --color-accent-yellow (#FFF37E)
+ *   - Teks       : --color-primary       (#2483D0)
+ */
+export default function CarouselLogo() {
   return (
     <>
       <style>{`
