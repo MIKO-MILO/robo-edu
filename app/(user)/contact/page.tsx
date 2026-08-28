@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ContactHeroSection, ContactMainSection } from "@/components/user/contact";
-import CarouselLogo from "@/components/user/carousel-logo";
 
 export const metadata: Metadata = {
   title: "Hubungi Kami | RoboEdu - Kit Robotika Edukasi & Sparepart",

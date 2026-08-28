@@ -40,7 +40,6 @@ export function ContactForm() {
     e.preventDefault();
     setErrorMessage("");
 
-    // Client-side validation
     if (!formData.name.trim()) {
       setErrorMessage("Mohon masukkan nama lengkap Anda.");
       return;
@@ -57,7 +56,6 @@ export function ContactForm() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API submit delay (ready for future backend integration)
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsSubmitting(false);
       setIsSubmitted(true);
@@ -81,7 +79,7 @@ export function ContactForm() {
 
   if (isSubmitted) {
     return (
-      <div className="bg-card border-2 border-foreground rounded-3xl p-8 sm:p-10 neo-shadow flex flex-col items-center text-center gap-6">
+      <div className="bg-card border-2 border-foreground rounded-[28px] p-8 sm:p-10 neo-shadow flex flex-col items-center text-center gap-6">
         <div className="w-16 h-16 rounded-2xl bg-accent-green border-2 border-foreground flex items-center justify-center neo-shadow-icon">
           <CheckCircle2 className="w-10 h-10 text-success" />
         </div>
@@ -91,7 +89,7 @@ export function ContactForm() {
             Pesan Berhasil Dikirim!
           </h3>
           <p className="font-body text-sm sm:text-base text-muted-foreground max-w-md">
-            Terima kasih telah menghubungi RoboEdu. Tim kami telah menerima pesan Anda dan akan merespon via email <strong className="text-foreground">{formData.email}</strong> dalam kurun waktu 1x24 jam.
+            Terima kasih telah menghubungi RoboEdu. Tim kami akan merespon via email <strong className="text-foreground">{formData.email}</strong> dalam 1x24 jam.
           </p>
         </div>
 
@@ -109,17 +107,7 @@ export function ContactForm() {
   }
 
   return (
-    <div className="bg-card border-2 border-foreground rounded-3xl p-6 sm:p-8 neo-shadow flex flex-col gap-6">
-      {/* Header Form */}
-      <div className="flex flex-col gap-1 pb-2 border-b-2 border-foreground/10">
-        <h3 className="font-heading font-bold text-2xl text-foreground">
-          Kirim Pesan Langsung
-        </h3>
-        <p className="font-body text-xs sm:text-sm text-muted-foreground">
-          Isi formulir di bawah ini, tim kami akan merespon pertanyaan Anda secara mendalam.
-        </p>
-      </div>
-
+    <div className="bg-card border-2 border-foreground rounded-[28px] p-6 sm:p-8 neo-shadow flex flex-col gap-5">
       {/* Error Alert */}
       {errorMessage && (
         <div className="bg-accent-peach border-2 border-foreground rounded-2xl p-4 flex items-center gap-3 text-danger font-body text-xs sm:text-sm font-semibold neo-shadow-icon">
@@ -146,7 +134,7 @@ export function ContactForm() {
             value={formData.name}
             onChange={handleChange}
             required
-            className="border-2 border-foreground rounded-2xl h-11 bg-background text-foreground placeholder:text-muted-foreground font-body text-sm px-4 focus:ring-0 focus:border-primary"
+            className="border-2 border-foreground rounded-full h-11 bg-[#ECEAE6] text-foreground placeholder:text-muted-foreground/70 font-body text-sm px-4 focus:ring-0 focus:border-primary"
           />
         </div>
 
@@ -168,7 +156,7 @@ export function ContactForm() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="border-2 border-foreground rounded-2xl h-11 bg-background text-foreground placeholder:text-muted-foreground font-body text-sm px-4 focus:ring-0 focus:border-primary"
+              className="border-2 border-foreground rounded-full h-11 bg-[#ECEAE6] text-foreground placeholder:text-muted-foreground/70 font-body text-sm px-4 focus:ring-0 focus:border-primary"
             />
           </div>
 
@@ -187,7 +175,7 @@ export function ContactForm() {
               placeholder="081234567890"
               value={formData.phone}
               onChange={handleChange}
-              className="border-2 border-foreground rounded-2xl h-11 bg-background text-foreground placeholder:text-muted-foreground font-body text-sm px-4 focus:ring-0 focus:border-primary"
+              className="border-2 border-foreground rounded-full h-11 bg-[#ECEAE6] text-foreground placeholder:text-muted-foreground/70 font-body text-sm px-4 focus:ring-0 focus:border-primary"
             />
           </div>
         </div>
@@ -205,7 +193,7 @@ export function ContactForm() {
             name="subject"
             value={formData.subject}
             onChange={handleChange}
-            className="w-full h-11 border-2 border-foreground rounded-2xl bg-background text-foreground font-body text-sm px-4 focus:outline-none focus:border-primary cursor-pointer"
+            className="w-full h-11 border-2 border-foreground rounded-full bg-[#ECEAE6] text-foreground font-body text-sm px-4 focus:outline-none focus:border-primary cursor-pointer"
           >
             {SUBJECT_OPTIONS.map((opt, i) => (
               <option key={i} value={opt}>
@@ -231,7 +219,7 @@ export function ContactForm() {
             value={formData.message}
             onChange={handleChange}
             required
-            className="w-full border-2 border-foreground rounded-2xl bg-background text-foreground placeholder:text-muted-foreground font-body text-sm p-4 focus:outline-none focus:border-primary resize-none"
+            className="w-full border-2 border-foreground rounded-[20px] bg-[#ECEAE6] text-foreground placeholder:text-muted-foreground/70 font-body text-sm p-4 focus:outline-none focus:border-primary resize-none"
           />
         </div>
 
@@ -242,7 +230,7 @@ export function ContactForm() {
           size="lg"
           neo
           disabled={isSubmitting}
-          className="w-full font-bold text-base mt-2 py-4 rounded-full"
+          className="w-full font-heading font-bold text-sm sm:text-base mt-2 py-4 rounded-full"
         >
           {isSubmitting ? (
             <>

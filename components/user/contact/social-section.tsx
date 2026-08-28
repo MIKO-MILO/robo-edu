@@ -94,20 +94,12 @@ export function SocialSection() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <span className="font-body font-bold text-xs uppercase tracking-widest text-primary bg-accent-yellow px-3.5 py-1 rounded-full border-2 border-foreground neo-shadow-icon self-start">
-          SALURAN RESMI
-        </span>
-        <h2 className="font-heading font-bold text-2xl sm:text-3xl text-foreground">
-          Kanal Komunikasi Kami
-        </h2>
-        <p className="font-body text-sm text-muted-foreground">
-          Pilih kanal komunikasi yang paling nyaman bagi Anda untuk terhubung langsung dengan tim RoboEdu.
-        </p>
-      </div>
+      <h2 className="font-heading font-bold text-3xl sm:text-4xl text-foreground">
+        Kunjungi Kami
+      </h2>
 
       {/* 4 Social Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {contacts.map(({ contact, icon }) => (
           <SocialCard key={contact.id} contact={contact} icon={icon} />
         ))}
