@@ -16,9 +16,6 @@ export default function ContactPage() {
 
       {/* 2. Main 2-Column Section (Left: 4 Social Cards, Right: Message Form) */}
       <ContactMainSection />
-
-      {/* 3. Logo Marquee Carousel */}
-      <CarouselLogo />
     </main>
   );
 }

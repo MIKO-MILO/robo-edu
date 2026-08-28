@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import CarouselLogo from "@/components/user/carousel-logo";
 
@@ -15,15 +16,15 @@ import CarouselLogo from "@/components/user/carousel-logo";
  */
 
 const paymentMethods = [
-  "BNI",
-  "BRI",
-  "BCA",
-  "DANA",
-  "ShopeePay",
-  "Google Pay",
-  "GoPay",
-  "QRIS",
-  "Mandiri",
+  { src: "/assets/images/BNI.png", alt: "BNI" },
+  { src: "/assets/images/BRI.png", alt: "Bank BRI" },
+  { src: "/assets/images/BCA.png", alt: "BCA" },
+  { src: "/assets/images/Dana.png", alt: "DANA" },
+  { src: "/assets/images/Spay.png", alt: "ShopeePay" },
+  { src: "/assets/images/Google-pay.png", alt: "Google Pay" },
+  { src: "/assets/images/gopay.png", alt: "GoPay" },
+  { src: "/assets/images/QRIS.png", alt: "QRIS" },
+  { src: "/assets/images/Mandiri.png", alt: "Mandiri" },
 ];
 
 const jelajahiLinks = [
@@ -127,17 +128,20 @@ export default function Footer() {
             >
               Metode Pembayaran
             </h3>
-            <div className="grid grid-cols-3 gap-2.5 items-center">
-              {paymentMethods.map((name) => (
+            <div className="grid grid-cols-3 gap-x-4 gap-y-5 items-center">
+              {paymentMethods.map((method) => (
                 <div
-                  key={name}
-                  className="flex items-center justify-center border border-accent-butter/40 rounded-lg px-2.5 py-1.5 bg-accent-butter/10"
+                  key={method.alt}
+                  className="flex items-center justify-start"
                 >
-                  <span
-                    className="text-xs font-bold font-heading text-accent-butter tracking-tight truncate"
-                  >
-                    {name}
-                  </span>
+                  <Image
+                    src={method.src}
+                    alt={method.alt}
+                    width={80}
+                    height={32}
+                    className="h-8 w-auto object-contain"
+                    style={{ filter: "brightness(0) invert(1)" }}
+                  />
                 </div>
               ))}
             </div>
@@ -199,4 +203,3 @@ export default function Footer() {
     </footer>
   );
 }
-
