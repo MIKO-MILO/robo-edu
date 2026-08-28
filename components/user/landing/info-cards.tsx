@@ -171,7 +171,7 @@ export default function InfoCards() {
 
           <use
             href="#robo-wave-path-back"
-            stroke="#F8EB6F"
+            stroke="#F3E669"
             strokeWidth="68"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -195,7 +195,7 @@ export default function InfoCards() {
 
           <use
             href="#robo-wave-path-front"
-            stroke="#F8EB6F"
+            stroke="#F3E669"
             strokeWidth="68"
             strokeLinecap="round"
             strokeLinejoin="round"
