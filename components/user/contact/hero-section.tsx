@@ -11,11 +11,6 @@ export function ContactHeroSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column: Title, Highlighted Badge, Subtitle */}
         <div className="lg:col-span-7 flex flex-col items-start space-y-6">
-          {/* Playful Tag Badge */}
-          <div className="inline-flex items-center gap-2 bg-accent-yellow border-2 border-foreground neo-shadow-icon px-4 py-1.5 rounded-full font-body font-bold text-xs sm:text-sm text-foreground">
-            <MessageSquare className="w-4 h-4 text-primary fill-primary" />
-            <span>Dukungan Pelanggan & Kemitraan</span>
-          </div>
 
           {/* Main Headline with Highlighted Badge */}
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.2] text-foreground tracking-tight">
