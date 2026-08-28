@@ -1,5 +1,9 @@
 import Link from "next/link";
+<<<<<<< HEAD
 import { ArrowRight, Rocket } from "lucide-react";
+=======
+import { ArrowRight } from "lucide-react";
+>>>>>>> origin/frontend-contact
 import { Button } from "@/components/ui/button";
 
 export function AboutFinalCtaSection() {
@@ -11,7 +15,10 @@ export function AboutFinalCtaSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Yellow Banner Container Card */}
         <div className="bg-accent-yellow border-2 border-foreground rounded-3xl p-8 sm:p-14 neo-shadow flex flex-col items-center text-center gap-6 max-w-4xl mx-auto relative">
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/frontend-contact
           {/* Main Headline */}
           <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-foreground leading-[1.2] tracking-tight">
             Siap Wujudkan{" "}

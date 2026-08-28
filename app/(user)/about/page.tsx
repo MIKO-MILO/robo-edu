@@ -21,7 +21,7 @@ export default function AboutPage() {
       <AboutHeroSection />
 
       {/* 2. Our Story Section */}
-      <OurStorySection />
+      <OurStorySection /> 
 
       {/* 3. Guarantee Kid Safe Section */}
       <KidSafeSection />
@@ -31,7 +31,6 @@ export default function AboutPage() {
 
       {/* 5. Final CTA Section */}
       <AboutFinalCtaSection />
-
     </main>
   );
 }

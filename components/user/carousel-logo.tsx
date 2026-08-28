@@ -34,6 +34,17 @@ function MarqueeItems() {
   );
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * CarouselLogo - Running marquee / ticker strip yang menampilkan
+ * teks "roboedu" dan logo Roboedu secara berulang dari kiri ke kanan.
+ *
+ * Warna mengacu pada CSS variables yang didefinisikan di globals.css:
+ *   - Background : --color-accent-yellow (#FFF37E)
+ *   - Teks       : --color-primary       (#2483D0)
+ */
+>>>>>>> origin/frontend-contact
 export default function CarouselLogo() {
   return (
     <>

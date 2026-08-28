@@ -46,12 +46,21 @@ export function ProductImage({
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   ...props
 }: ProductImageProps) {
+<<<<<<< HEAD
   const [prevProps, setPrevProps] = useState({ src, fallbackSrc });
   const [imgSrc, setImgSrc] = useState<string>(src || fallbackSrc);
   const [hasError, setHasError] = useState<boolean>(!src);
 
   if (prevProps.src !== src || prevProps.fallbackSrc !== fallbackSrc) {
     setPrevProps({ src, fallbackSrc });
+=======
+  const [prevSrc, setPrevSrc] = useState<string | null | undefined>(src);
+  const [imgSrc, setImgSrc] = useState<string>(src || fallbackSrc);
+  const [hasError, setHasError] = useState<boolean>(!src);
+
+  if (prevSrc !== src) {
+    setPrevSrc(src);
+>>>>>>> origin/frontend-contact
     setImgSrc(src || fallbackSrc);
     setHasError(!src);
   }
