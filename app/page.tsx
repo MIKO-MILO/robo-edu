@@ -14,7 +14,6 @@ export default function HomePage() {
       <InfoCards />
       <CardProduct />
       <VideoDemo />
-      <DiskonPromo />
       <Testimoni />
       <FAQ />
     </main>

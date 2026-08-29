@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronDown, HelpCircle, type LucideIcon } from "lucide-react";
 
 // ==========================================
-// 1. TYPE DEFINITIONS & CONFIGS
+// 1. TYPE DEFINITIONS & CONFIGS (Backend-Ready)
 // ==========================================
 export interface FAQItemData {
   id: string;
@@ -13,10 +13,22 @@ export interface FAQItemData {
   answer: string;
 }
 
+export interface PromoBannerData {
+  title: string;
+  description: string;
+  thumbnails: Array<{
+    id: string;
+    src: string;
+    alt: string;
+    className?: string;
+  }>;
+}
+
 export interface FAQProps {
   items?: FAQItemData[];
   title?: string;
   description?: string;
+  promoData?: PromoBannerData;
 }
 
 const DEFAULT_FAQS: FAQItemData[] = [
@@ -51,6 +63,40 @@ const DEFAULT_FAQS: FAQItemData[] = [
       "Pengiriman diproses dalam 1x24 jam. Estimasi pengiriman untuk pulau Jawa adalah 1-3 hari kerja, sedangkan luar pulau Jawa 3-5 hari kerja.",
   },
 ];
+
+const DEFAULT_PROMO_DATA: PromoBannerData = {
+  title: "Yuk, Beli Kit Mainan Edukasi RoboEdu Sekarang!",
+  description:
+    "Dapatkan promo spesial hari ini dan bantu si kecil belajar koding serta merakit robot dengan cara yang seru!",
+  thumbnails: [
+    {
+      id: "thumb-1",
+      src: "/images/foto.jpg",
+      alt: "Anak bermain robot",
+      className:
+        "ml-2 md:ml-6 lg:ml-0 xl:ml-5 translate-x-4 md:translate-x-2 lg:translate-x-16 xl:translate-x-4 2xl:translate-x-6",
+    },
+    {
+      id: "thumb-2",
+      src: "/images/foto2.jpg",
+      alt: "Merakit robot",
+      className: "",
+    },
+    {
+      id: "thumb-3",
+      src: "/images/foto3.jpg",
+      alt: "Belajar koding",
+      className:
+        "-ml-2 md:-ml-6 lg:-ml-0 xl:-ml-5 -translate-x-4 md:-translate-x-2 lg:-translate-x-16 xl:-translate-x-1 2xl:-translate-x-2",
+    },
+    {
+      id: "thumb-4",
+      src: "/images/foto4.jpg",
+      alt: "Robot edukasi",
+      className: "xl:translate-x-4 2xl:translate-x-6",
+    },
+  ],
+};
 
 // ==========================================
 // 2. ATOMIC SUB-COMPONENTS
@@ -92,15 +138,12 @@ function AccordionItem({
         <span className="font-heading font-semibold text-xs sm:text-sm text-foreground group-hover:text-[#18598D] transition-colors">
           {item.question}
         </span>
-        
-        {/*
-          Logika Ikon Panah:
-          - Panah Bawah + Background Biru = Terbuka (Tampil Judul + Deskripsi)
-          - Panah Atas (rotate-180) + Background Muted = Tertutup (Cuma Judul)
-        */}
+
         <div
           className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 ${
-            isOpen ? "rotate-0 bg-[#18598D] text-card" : "rotate-180 bg-muted text-foreground"
+            isOpen
+              ? "rotate-0 bg-[#18598D] text-card"
+              : "rotate-180 bg-muted text-foreground"
           }`}
         >
           <ChevronDown className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
@@ -125,50 +168,96 @@ function AccordionItem({
   );
 }
 
-// Organism: Promo Banner
-function PromoBanner() {
+// Molecule: Promo Thumbnail Item
+function PromoThumbnail({
+  src,
+  alt,
+  customClass = "",
+}: {
+  src: string;
+  alt: string;
+  customClass?: string;
+}) {
   return (
-    <div className="relative w-full h-[450px] md:h-[620px] lg:h-[700px] xl:h-[740px] 2xl:h-[800px] bg-background">
+    <div
+      className={`relative w-20 md:w-32 lg:w-40 xl:w-48 2xl:w-56 h-20 md:h-32 lg:h-40 xl:h-48 2xl:h-56 overflow-hidden rounded-2xl md:rounded-3xl shadow-sm sm:shadow-none ${customClass}`}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 768px) 80px, (max-width: 1024px) 128px, 192px"
+        className="object-cover"
+      />
+    </div>
+  );
+}
+
+// Organism: Promo Banner
+function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) {
+  const leftThumbnails = data.thumbnails.slice(0, 2);
+  const rightThumbnails = data.thumbnails.slice(2, 4);
+
+  return (
+    <div className="relative w-full h-[400px] md:h-[540px] lg:h-[600px] xl:h-[640px] 2xl:h-[700px] bg-background">
       <div className="max-w-6xl mx-auto h-full px-6 lg:px-8 relative flex items-center justify-between">
         
-        {/* Header Text */}
-        <div className="absolute top-16 md:top-32 lg:top-40 xl:top-36 2xl:top-40 left-1/2 -translate-x-1/2 text-center z-20 w-full max-w-5xl px-4 pointer-events-none">
+        {/* Header Text (Diturunkan dari top-16 md:top-32 menjadi top-6 md:top-16 agar ikut naik ke atas) */}
+        <div className="absolute top-6 md:top-16 lg:top-24 xl:top-20 2xl:top-24 left-1/2 -translate-x-1/2 text-center z-20 w-full max-w-5xl px-4 pointer-events-none">
           <h1 className="font-heading text-base md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-[#18598D] tracking-tight whitespace-normal md:whitespace-nowrap leading-snug md:leading-normal mb-2 sm:mb-3 px-2 sm:px-0">
-            Yuk, Beli Kit Mainan Edukasi RoboEdu Sekarang!
+            {data.title}
           </h1>
           <p className="font-body text-[11px] md:text-sm lg:text-base 2xl:text-lg font-medium text-secondary leading-relaxed whitespace-normal md:whitespace-nowrap text-center max-w-xs md:max-w-none mx-auto">
-            Dapatkan promo spesial hari ini dan bantu si kecil belajar koding serta merakit robot dengan cara yang seru!
+            {data.description}
           </p>
         </div>
 
-        {/* Thumbnail Left Container */}
-        <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-16 md:translate-y-28 lg:translate-y-36 xl:translate-y-40 2xl:translate-y-44 translate-x-1 md:translate-x-4 lg:translate-x-12 xl:translate-x-10 2xl:translate-x-16">
-          <div className="relative ml-2 md:ml-6 lg:ml-0 xl:ml-5 translate-x-4 md:translate-x-2 lg:translate-x-16 xl:translate-x-4 2xl:translate-x-6 w-20 md:w-32 lg:w-40 xl:w-48 2xl:w-56 h-20 md:h-32 lg:h-40 xl:h-48 2xl:h-56 overflow-hidden rounded-2xl md:rounded-3xl shadow-sm sm:shadow-none">
-            <Image src="/images/foto.jpg" alt="Anak bermain robot" fill sizes="(max-width: 768px) 80px, (max-width: 1024px) 128px, 192px" className="object-cover" />
-          </div>
-          <div className="relative w-20 md:w-32 lg:w-40 xl:w-48 2xl:w-56 h-20 md:h-32 lg:h-40 xl:h-48 2xl:h-56 overflow-hidden rounded-2xl md:rounded-3xl shadow-sm sm:shadow-none">
-            <Image src="/images/foto2.jpg" alt="Merakit robot" fill sizes="(max-width: 768px) 80px, (max-width: 1024px) 128px, 192px" className="object-cover" />
-          </div>
+        {/* Thumbnail Left Container (translate-y dikurangi agar ikut naik ke atas) */}
+        <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-8 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 translate-x-1 md:translate-x-4 lg:translate-x-12 xl:translate-x-10 2xl:translate-x-16">
+          {leftThumbnails.map((thumb) => (
+            <PromoThumbnail
+              key={thumb.id}
+              src={thumb.src}
+              alt={thumb.alt}
+              customClass={thumb.className}
+            />
+          ))}
         </div>
 
         {/* Hero Center Illustration */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-10 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 z-30 flex items-end justify-center -space-x-12 md:-space-x-20 lg:-space-x-28 xl:-space-x-34 2xl:-space-x-40 px-4 w-full max-w-6xl pointer-events-none">
           <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square translate-x-3 md:translate-x-4 lg:translate-x-6 xl:translate-x-8">
-            <Image src="/images/girl.png" alt="Anak Perempuan" width={450} height={450} priority className="object-contain w-full h-full" />
+            <Image
+              src="/images/girl.png"
+              alt="Anak Perempuan"
+              width={450}
+              height={450}
+              priority
+              className="object-contain w-full h-full"
+            />
           </div>
           <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square scale-110 md:scale-115 lg:scale-120 xl:scale-125 2xl:scale-130 scale-y-110 origin-bottom">
-            <Image src="/images/boy.png" alt="Anak Laki-laki" width={500} height={550} priority className="object-contain w-full h-full" />
+            <Image
+              src="/images/boy.png"
+              alt="Anak Laki-laki"
+              width={500}
+              height={550}
+              priority
+              className="object-contain w-full h-full"
+            />
           </div>
         </div>
 
-        {/* Thumbnail Right Container */}
-        <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-16 md:translate-y-28 lg:translate-y-36 xl:translate-y-40 2xl:translate-y-44 -translate-x-1 md:-translate-x-4 lg:-translate-x-12 xl:-translate-x-10 2xl:-translate-x-16">
-          <div className="relative -ml-2 md:-ml-6 lg:-ml-0 xl:-ml-5 -translate-x-4 md:-translate-x-2 lg:-translate-x-16 xl:-translate-x-1 2xl:-translate-x-2 w-20 md:w-32 lg:w-40 xl:w-48 2xl:w-56 h-20 md:h-32 lg:h-40 xl:h-48 2xl:h-56 overflow-hidden rounded-2xl md:rounded-3xl shadow-sm sm:shadow-none">
-            <Image src="/images/foto3.jpg" alt="Belajar koding" fill sizes="(max-width: 768px) 80px, (max-width: 1024px) 128px, 192px" className="object-cover" />
-          </div>
-          <div className="relative xl:translate-x-4 2xl:translate-x-6 w-20 md:w-32 lg:w-40 xl:w-48 2xl:w-56 h-20 md:h-32 lg:h-40 xl:h-48 2xl:h-56 overflow-hidden rounded-2xl md:rounded-3xl shadow-sm sm:shadow-none">
-            <Image src="/images/foto4.jpg" alt="Robot edukasi" fill sizes="(max-width: 768px) 80px, (max-width: 1024px) 128px, 192px" className="object-cover" />
-          </div>
+        {/* Thumbnail Right Container (translate-y dikurangi agar ikut naik ke atas) */}
+        <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-8 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 -translate-x-1 md:-translate-x-4 lg:-translate-x-12 xl:-translate-x-10 2xl:-translate-x-16">
+          {rightThumbnails.map((thumb) => (
+            <PromoThumbnail
+              key={thumb.id}
+              src={thumb.src}
+              alt={thumb.alt}
+              customClass={thumb.className}
+            />
+          ))}
         </div>
 
       </div>
@@ -183,6 +272,7 @@ export default function FAQ({
   items = DEFAULT_FAQS,
   title = "Pertanyaan yang Sering Diajukan",
   description = "Punya pertanyaan mengenai RoboEdu? Temukan jawaban lengkap mengenai produk, usia pengguna, hingga pengiriman di sini.",
+  promoData = DEFAULT_PROMO_DATA,
 }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
@@ -192,11 +282,16 @@ export default function FAQ({
 
   return (
     <section className="relative z-20 bg-[#18598D] text-card pb-24 sm:pb-23 overflow-hidden">
-      <PromoBanner />
+      <PromoBanner data={promoData} />
 
       {/* SVG Shape Divider */}
       <div className="relative w-full overflow-hidden leading-none z-0 pointer-events-none">
-        <svg viewBox="0 0 1370 211" preserveAspectRatio="none" className="relative block w-full h-20 md:h-28 lg:h-36 xl:h-40 text-background" fill="currentColor">
+        <svg
+          viewBox="0 0 1370 211"
+          preserveAspectRatio="none"
+          className="relative block w-full h-20 md:h-28 lg:h-36 xl:h-40 text-background"
+          fill="currentColor"
+        >
           <path d="M0 0H1370V121.548C1370 121.548 957.116 -9.52688 649.615 0.552926C370.339 9.70758 0 121.548 0 121.548V0Z" />
         </svg>
       </div>
