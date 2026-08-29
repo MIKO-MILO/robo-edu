@@ -5,7 +5,7 @@ import { Bot, Sparkles, Smile, Cpu } from "lucide-react";
 
 export default function MaskotProduct() {
   return (
-    <section className="relative bg-[#18598D] py-16 sm:py-24 text-white overflow-hidden">
+    <section className="relative bg-[#F3EFE4] py-16 sm:py-24 text-white overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#2483D0]/30 rounded-full blur-3xl pointer-events-none" />
 

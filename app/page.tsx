@@ -16,7 +16,6 @@ export default function HomePage() {
       <VideoDemo />
       <DiskonPromo />
       <Testimoni />
-      <MaskotProduct />
       <FAQ />
     </main>
   );
