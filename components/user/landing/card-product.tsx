@@ -1,176 +1,307 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { Star, ShoppingBag, ArrowRight, Zap, Award } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
-interface Product {
+// ==========================================
+// 1. TYPES & INTERFACES (Backend-Ready)
+// ==========================================
+export interface ProductItem {
   id: number;
   name: string;
-  age: string;
-  price: string;
-  originalPrice: string;
-  rating: number;
-  reviews: number;
-  badge: string;
-  badgeBg: string;
+  category: string;
+  description: string;
   image: string;
-  features: string[];
+  age: string;
+  size: string;
+  duration: string;
 }
 
-const products: Product[] = [
+export interface ProductShowcaseProps {
+  products?: ProductItem[];
+}
+
+const DEFAULT_PRODUCTS: ProductItem[] = [
   {
     id: 1,
-    name: "RoboEdu Starter Kit",
-    age: "Usia 6 - 8 Tahun",
-    price: "Rp 299.000",
-    originalPrice: "Rp 399.000",
-    rating: 4.9,
-    reviews: 128,
-    badge: "Terfavorit",
-    badgeBg: "bg-[#2483D0] text-white",
-    image: "/images/3.png",
-    features: ["15 Proyek Rakit", "Buku Panduan Berwarna", "Sistem Block Snap"],
+    name: "IoT Smart Walking Dog",
+    category: "IoT Robotics",
+    description: "Robot anjing pintar yang bisa berjalan dan berekspresi menggunakan kontrol jarak jauh berbasis Wi-Fi.",
+    image: "/images/foto.jpg",
+    age: "8-12 Years",
+    size: "24 Series",
+    duration: "45 Mins",
   },
   {
     id: 2,
-    name: "RoboEdu Explorer Kit",
-    age: "Usia 8 - 12 Tahun",
-    price: "Rp 449.000",
-    originalPrice: "Rp 599.000",
-    rating: 5.0,
-    reviews: 95,
-    badge: "Rekomendasi",
-    badgeBg: "bg-[#F5C045] text-[#3D2900]",
-    image: "/images/4.png",
-    features: ["25 Proyek Sensor", "App Control Bluetooth", "Lampu LED RGB"],
+    name: "Smart Servo Mechanical Cat",
+    category: "IoT Animals",
+    description: "Merakit robot kucing interaktif dengan kendali sensor gerak dan servo motor via aplikasi smartphone.",
+    image: "/images/foto.jpg",
+    age: "9-14 Years",
+    size: "28 Series",
+    duration: "60 Mins",
   },
   {
     id: 3,
-    name: "RoboEdu AI & IoT Kit",
-    age: "Usia 10+ Tahun",
-    price: "Rp 699.000",
-    originalPrice: "Rp 899.000",
-    rating: 4.8,
-    reviews: 64,
-    badge: "Tingkat Lanjut",
-    badgeBg: "bg-[#48236B] text-white",
-    image: "/images/22.png",
-    features: ["Pemrograman Python", "Kamera Pintar AI", "Konektivitas WiFi"],
+    name: "IoT Obstacle Avoiding Dino",
+    category: "Smart Automation",
+    description: "Dinosaurus robot pintar yang dapat mendeteksi rintangan dan bergerak otomatis dengan sensor ultrasonik.",
+    image: "/images/foto.jpg",
+    age: "10-15 Years",
+    size: "32 Series",
+    duration: "75 Mins",
+  },
+  {
+    id: 4,
+    name: "Bluetooth Racing Mech Bug",
+    category: "IoT & Display",
+    description: "Buggy robot serangga nirkabel yang gesit bergerak menggunakan kontrol Bluetooth dari ponsel.",
+    image: "/images/foto.jpg",
+    age: "7-12 Years",
+    size: "20 Series",
+    duration: "40 Mins",
+  },
+  {
+    id: 5,
+    name: "Smart IoT Climbing Monkey",
+    category: "IoT Robotics",
+    description: "Robot monyet cerdas yang dirancang khusus untuk memanjat tali dengan mekanisme servo berkecepatan tinggi.",
+    image: "/images/foto.jpg",
+    age: "11-15 Years",
+    size: "35 Series",
+    duration: "90 Mins",
   },
 ];
 
-export default function CardProduct() {
+// ==========================================
+// 2. SUB-COMPONENTS (Atomic Elements)
+// ==========================================
+
+// Atom: Background Gear Decoration
+function GearDecoration() {
   return (
-    <section className="relative bg-[#F1ECE0] pt-0 pb-10 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-        
-        {/* Header Mentok Paling Atas */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pt-0 mt-0 mb-6">
-          <div className="max-w-xl text-left">
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#3D2900] tracking-tight leading-none">
-              Pilih Kit Robotik Impian Si Kecil
-            </h2>
-            <p className="font-body text-xs sm:text-sm text-[#3D2900]/70 mt-1">
-              Dirancang khusus sesuai tahapan perkembangan motorik dan pemikiran logis anak.
-            </p>
-          </div>
+    <div className="absolute top-2 left-0 sm:top-4 sm:left-2 w-36 h-36 sm:w-48 sm:h-48 pointer-events-none select-none z-0 opacity-75 rotate-12 scale-x-[-1] -translate-x-6 sm:-translate-x-10">
+      <Image
+        src="/images/gear2.png"
+        alt="Gear Decoration"
+        fill
+        className="object-contain"
+        priority
+      />
+    </div>
+  );
+}
 
-          {/* Tombol Ujung Kanan Atas Mentok */}
-          <div className="shrink-0 pt-1">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 text-[#2483D0] font-bold hover:text-[#18598D] transition-colors text-xs sm:text-sm cursor-pointer group"
-            >
-              <span>Lihat Semua Produk & Aksesori</span>
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
+// Atom: Navigation Button
+function NavButton({
+  direction,
+  onClick,
+  ariaLabel,
+  className = "",
+}: {
+  direction: "left" | "right";
+  onClick: () => void;
+  ariaLabel: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={`w-12 h-12 sm:w-14 sm:h-14 bg-card text-[#103B5E] rounded-full flex items-center justify-center shadow-lg transition-transform duration-200 hover:scale-105 cursor-pointer border-0 ${className}`}
+    >
+      {direction === "left" ? (
+        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+      ) : (
+        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+      )}
+    </button>
+  );
+}
+
+// Molecule: Product Card Specifications Pill
+function ProductSpecsPill({
+  age,
+  size,
+  duration,
+  productName,
+}: {
+  age: string;
+  size: string;
+  duration: string;
+  productName: string;
+}) {
+  return (
+    <div className="bg-[#103B5E] text-[#DEECF8] rounded-full py-1.5 px-3 sm:p-2 flex items-center justify-between shadow-md shrink-0 w-full">
+      <div className="grid grid-cols-3 divide-x divide-[#DEECF8]/20 flex-1 text-center px-1 min-w-0">
+        <div className="truncate px-0.5">
+          <span className="block text-[7px] sm:text-[8px] text-[#A7CDEC] font-medium">Age</span>
+          <span className="text-[9px] sm:text-[10px] font-bold text-[#DEECF8] truncate block">{age}</span>
+        </div>
+        <div className="truncate px-0.5">
+          <span className="block text-[7px] sm:text-[8px] text-[#A7CDEC] font-medium">Size</span>
+          <span className="text-[9px] sm:text-[10px] font-bold text-[#DEECF8] truncate block">{size}</span>
+        </div>
+        <div className="truncate px-0.5">
+          <span className="block text-[7px] sm:text-[8px] text-[#A7CDEC] font-medium">Duration</span>
+          <span className="text-[9px] sm:text-[10px] font-bold text-[#DEECF8] truncate block">{duration}</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        aria-label={`Pesan ${productName}`}
+        className="w-6 h-6 sm:w-7 sm:h-7 bg-accent text-[#3D2900] hover:bg-accent/90 rounded-full flex items-center justify-center shrink-0 ml-1.5 transition-transform duration-200 hover:scale-105 cursor-pointer shadow-sm border-0"
+      >
+        <ArrowRight className="w-3 h-3 text-[#3D2900]" />
+      </button>
+    </div>
+  );
+}
+
+// Molecule: Individual Product Card (Image-Dominant Layout)
+function ProductCard({ product }: { product: ProductItem }) {
+  return (
+    <div className="relative bg-card p-4 sm:p-5 shadow-xl shadow-black/[0.04] hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[285px] sm:max-w-none mx-auto h-full">
+      <div className="flex flex-col flex-1">
+        {/* Area Gambar Diperbesar (Dominan) */}
+        <div className="relative w-full h-44 sm:h-56 bg-muted overflow-hidden mb-3 rounded-[1.25rem] sm:rounded-[1.75rem] shrink-0">
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            className="object-cover transform group-hover:scale-105 transition-transform duration-500"
+          />
         </div>
 
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="relative bg-white rounded-[2.5rem] p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 group border border-black/5"
-            >
-              {/* Notch Left & Right */}
-              <div className="absolute top-1/2 -left-4 -translate-y-1/2 w-8 h-8 bg-[#F1ECE0] rounded-full border-r border-black/5 shadow-inner" />
-              <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 bg-[#F1ECE0] rounded-full border-l border-black/5 shadow-inner" />
+        {/* Deskripsi dihapus, hanya menyisakan Judul & Kategori agar lebih ringkas */}
+        <h3 className="font-heading text-sm sm:text-base font-bold text-foreground mb-0.5 line-clamp-1">
+          {product.name}
+        </h3>
+        <span className="text-[10px] sm:text-[11px] font-semibold text-primary block mb-3 truncate">
+          {product.category}
+        </span>
+      </div>
 
-              {/* Badge */}
-              <div className="absolute top-6 left-6 z-10">
-                <span className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide shadow-sm ${product.badgeBg}`}>
-                  {product.badge}
-                </span>
-              </div>
+      <div className="mt-auto">
+        <ProductSpecsPill
+          age={product.age}
+          size={product.size}
+          duration={product.duration}
+          productName={product.name}
+        />
+      </div>
+    </div>
+  );
+}
 
-              <div>
-                {/* Image Container */}
-                <div className="relative w-full h-52 bg-[#F7F5F0] rounded-[2rem] flex items-center justify-center overflow-hidden mb-5">
-                  <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 bg-white rounded-full z-10" />
-                  <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 bg-white rounded-full z-10" />
+// ==========================================
+// 3. MAIN ORGANISM COMPONENT
+// ==========================================
+export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: ProductShowcaseProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={180}
-                    height={180}
-                    className="object-contain transform group-hover:scale-105 transition-transform duration-300 rounded-2xl"
-                  />
-                </div>
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+  };
 
-                {/* Rating & Age */}
-                <div className="flex items-center justify-between mb-2 text-xs">
-                  <div className="flex items-center gap-1 text-[#F5C045] font-bold">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span>{product.rating}</span>
-                    <span className="text-gray-400 font-normal">({product.reviews})</span>
-                  </div>
-                  <span className="bg-[#18598D]/10 text-[#18598D] px-2.5 py-0.5 rounded-full font-semibold">
-                    {product.age}
-                  </span>
-                </div>
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
+  };
 
-                {/* Product Name */}
-                <h3 className="font-heading text-xl font-bold text-[#3D2900] mb-3">
-                  {product.name}
-                </h3>
+  const getVisibleProducts = (breakpoint: 'mobile' | 'tablet' | 'desktop') => {
+    if (breakpoint === 'mobile') {
+      return [products[currentIndex]];
+    }
+    const count = breakpoint === 'tablet' ? 2 : 3;
+    const visible = [];
+    for (let i = 0; i < count; i++) {
+      const index = (currentIndex + i) % products.length;
+      visible.push(products[index]);
+    }
+    return visible;
+  };
 
-                {/* Features List */}
-                <ul className="space-y-2 mb-6">
-                  {product.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-xs sm:text-sm text-[#3D2900]/80">
-                      <Award className="w-4 h-4 text-[#2483D0] shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+  return (
+    <section className="relative bg-background py-6 px-4 sm:px-6 overflow-hidden">
+      <GearDecoration />
 
-              {/* Price & Action */}
-              <div className="pt-4 border-t border-gray-100 flex items-center justify-between z-10">
-                <div>
-                  <span className="text-xs text-gray-400 line-through block">
-                    {product.originalPrice}
-                  </span>
-                  <span className="text-xl font-extrabold text-[#18598D]">
-                    {product.price}
-                  </span>
-                </div>
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="relative px-0 sm:px-14">
+          {/* Navigation Left */}
+          <NavButton
+            direction="left"
+            onClick={handlePrev}
+            ariaLabel="Previous slide"
+            className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 hover:bg-card/90"
+          />
 
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center gap-2 bg-[#FFF6A0] hover:bg-[#F8EB6F] text-[#3D2900] font-extrabold px-4 py-2.5 rounded-2xl shadow transition-all duration-200 cursor-pointer"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span className="text-xs sm:text-sm">Pesan</span>
-                </button>
-              </div>
+          {/* Navigation Right */}
+          <NavButton
+            direction="right"
+            onClick={handleNext}
+            ariaLabel="Next slide"
+            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 hover:bg-card/90"
+          />
+
+          {/* Product Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            {/* Mobile View: 1 produk */}
+            <div className="block md:hidden w-full flex justify-center">
+              <ProductCard product={products[currentIndex]} />
             </div>
-          ))}
-        </div>
 
+            {/* Tablet View: 2 produk */}
+            <div className="hidden md:contents lg:hidden">
+              {getVisibleProducts('tablet').map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {/* Desktop View: 3 produk */}
+            <div className="hidden lg:contents">
+              {getVisibleProducts('desktop').map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+
+          {/* Horizontal Indicator Lines */}
+          <div className="flex justify-center items-center gap-2 mt-8">
+            {products.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setCurrentIndex(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer border-0 ${
+                  currentIndex === index
+                    ? "w-10 bg-[#103B5E]"
+                    : "w-4 bg-[#103B5E]/20 hover:bg-[#103B5E]/40"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Mobile & Tablet Navigation Controls */}
+          <div className="flex md:hidden justify-center items-center gap-4 mt-6">
+            <NavButton
+              direction="left"
+              onClick={handlePrev}
+              ariaLabel="Previous slide"
+              className="w-12 h-12 shadow-md"
+            />
+            <NavButton
+              direction="right"
+              onClick={handleNext}
+              ariaLabel="Next slide"
+              className="w-12 h-12 shadow-md"
+            />
+          </div>
+        </div>
       </div>
     </section>
   );

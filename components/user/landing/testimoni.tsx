@@ -243,7 +243,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
           </h2>
 
           <p className="font-body text-xs xs:text-sm sm:text-base lg:text-lg text-[#DEECF8] font-medium mt-2 sm:mt-4 px-1 xs:px-2">
-            Lebih dari <strong>10.000+ anak Indonesia</strong> sudah membuktikan asyiknya belajar koding dan logika sejak dini. Yuk, dengar cerita mereka! 🎉
+            Lebih dari <strong>10.000+ anak Indonesia</strong> sudah membuktikan asyiknya belajar koding dan logika sejak dini. Yuk, dengar cerita mereka! 
           </p>
         </div>
 

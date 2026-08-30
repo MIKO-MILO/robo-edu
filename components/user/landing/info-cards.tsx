@@ -63,11 +63,11 @@ const cards: CardData[] = [
 
 export default function InfoCards() {
   return (
-    <section className="relative bg-[#F1ECE0] pt-6 sm:pt-8 pb-16 overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
+    <section className="relative bg-[#F3EFE4] pt-2 sm:pt-8 pb-0 sm:pb-5 overflow-hidden">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Header Section */}
-        <div className="w-full flex justify-center items-center gap-2 sm:gap-3 mb-6 sm:mb-8 mt-3 sm:mt-5 mx-auto pl-4 sm:pl-8 lg:pl-12">
-          <h3 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-1">
+        <div className="w-full flex flex-row justify-center items-center gap-2 sm:gap-3 mb-1 sm:mb-8 mt-1 sm:mt-5 mx-auto">
+          <h3 className="font-heading text-xl xs:text-2xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-1 text-center">
             Kenapa{" "}
             <span className="relative inline-block text-[#2483D0] px-1 pb-2">
               RoboEdu
@@ -87,7 +87,7 @@ export default function InfoCards() {
             </span>
           </h3>
 
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 flex-shrink-0 -translate-y-1">
+          <div className="relative w-16 h-16 xs:w-20 xs:h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 flex-shrink-0 -translate-y-1">
             <Image
               src="/images/5.png"
               alt="Tanda Tanya RoboEdu"
@@ -98,13 +98,13 @@ export default function InfoCards() {
           </div>
         </div>
 
-        {/* 4 Cards Grid - Jarak mt dinaikkan agar card bergeser ke bawah */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7 lg:gap-8 pt-4 mt-13 sm:mt-23 lg:mt-18 justify-items-center">
+        {/* 4 Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-7 lg:gap-8 pt-10 sm:pt-4 mt-0 sm:mt-18 mb-1 sm:mb-14 justify-items-center">
           {cards.map((card) => (
-            <div key={card.id} className="relative flex flex-col items-center w-full max-w-[232px]">
+            <div key={card.id} className="relative flex flex-col items-center w-full max-w-[175px] xs:max-w-[190px] sm:max-w-[232px]">
               {/* Outer Wrapper */}
               <div
-                className="relative w-full h-[174px] sm:h-[184px] p-1.5"
+                className="relative w-full h-[135px] sm:h-[184px] p-1.5"
                 style={{
                   backgroundColor: "#FFFFFF",
                   borderRadius: card.borderRadius,
@@ -113,7 +113,7 @@ export default function InfoCards() {
               >
                 {/* Inner Card Container */}
                 <div
-                  className="w-full h-full pt-[56px] sm:pt-[64px] pb-3 px-3 flex flex-col items-center justify-center text-center relative overflow-hidden"
+                  className="w-full h-full pt-[35px] sm:pt-[64px] pb-2 sm:pb-3 px-2.5 sm:px-3 flex flex-col items-center justify-center text-center relative overflow-hidden"
                   style={{
                     backgroundColor: card.bgColor,
                     borderRadius: `calc(${card.borderRadius} - 4px)`,
@@ -124,7 +124,7 @@ export default function InfoCards() {
 
                   {/* Card Title Text */}
                   <h3
-                    className="font-heading text-xs sm:text-xs lg:text-sm font-extrabold leading-snug tracking-tight z-10"
+                    className="font-heading text-[11px] xs:text-xs sm:text-xs lg:text-sm font-extrabold leading-snug tracking-tight z-10"
                     style={{ color: card.textColor }}
                   >
                     {card.titleLine1}
@@ -134,7 +134,7 @@ export default function InfoCards() {
                 </div>
 
                 {/* Mascot Image */}
-                <div className="absolute -top-23 sm:-top-25 left-1/2 -translate-x-1/2 w-40 h-40 sm:w-44 sm:h-44 pointer-events-none drop-shadow-md flex items-center justify-center z-20">
+                <div className="absolute -top-12 xs:-top-14 sm:-top-25 left-1/2 -translate-x-1/2 w-28 h-28 xs:w-32 xs:h-32 sm:w-44 sm:h-44 pointer-events-none drop-shadow-md flex items-center justify-center z-30">
                   <Image
                     src={card.mascotSrc}
                     alt={card.altText}
@@ -150,73 +150,141 @@ export default function InfoCards() {
       </div>
 
       {/* Bottom Wavy Banner */}
-      <div className="w-full overflow-hidden relative mt-8 sm:mt-10 py-2">
-        <svg
-          viewBox="0 0 1500 390"
-          className="w-full h-auto min-w-[1500px] md:min-w-full block"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <path
-              id="robo-wave-path-back"
-              d="M 20 60 C 150 150, 300 170, 450 140 C 600 110, 680 70, 820 80 C 960 90, 1090 120, 1030 250 C 990 340, 880 355, 835 285"
-              fill="none"
-            />
-            <path
-              id="robo-wave-path-front"
-              d="M 835 285 C 800 200, 910 155, 980 160 C 1120 170, 1300 120, 1480 50"
-              fill="none"
-            />
-          </defs>
-
-          <use
-            href="#robo-wave-path-back"
-            stroke="#F3E669"
-            strokeWidth="68"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
+      <div className="w-full overflow-hidden relative mt-0 sm:mt-6 pb-0 sm:pb-0">
+        {/* Gambar gear2.png (Disembunyikan di ukuran mobile) */}
+       <div className="hidden sm:block absolute right-0 bottom-0 w-28 sm:w-44 lg:w-56 h-auto pointer-events-none select-none z-0 opacity-75 translate-x-2 sm:translate-x-8 lg:translate-x-12 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16">
+          <Image
+            src="/images/gear2.png"
+            alt="Gear Decoration"
+            width={220}
+            height={220}
+            className="object-contain"
+            priority
           />
-          <text
-            dy="0.35em"
-            className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
-          >
-            <textPath href="#robo-wave-path-back" startOffset="0%">
-              <animate
-                attributeName="startOffset"
-                from="-50%"
-                to="0%"
-                dur="22s"
-                repeatCount="indefinite"
-              />
-              roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan
-            </textPath>
-          </text>
+        </div>
+        {/* Wrapper Responsif Banner Bawah dengan negative margin bawah yang jauh lebih tinggi khusus 320px-425px */}
+        <div className="w-full overflow-x-hidden sm:overflow-visible -my-[135px] max-[375px]:-my-[155px] max-[425px]:-my-[150px] sm:my-0">
+          <div className="min-w-[1500px] sm:min-w-full origin-left scale-[0.22] xs:scale-[0.24] min-[375px]:scale-[0.25] min-[390px]:scale-[0.26] min-[412px]:scale-[0.27] min-[425px]:scale-[0.28] sm:scale-100">
+            <svg
+              viewBox="0 0 1500 450"
+              className="w-full h-auto block relative z-10"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <path
+                  id="robo-wave-path-back"
+                  d="M 20 60 C 150 150, 300 170, 450 140 C 600 110, 680 70, 820 80 C 960 90, 1090 120, 1030 250 C 990 340, 880 355, 835 285"
+                  fill="none"
+                />
+                <path
+                  id="robo-wave-path-front"
+                  d="M 835 285 C 800 200, 910 155, 980 160 C 1120 170, 1300 120, 1480 50"
+                  fill="none"
+                />
+              </defs>
 
-          <use
-            href="#robo-wave-path-front"
-            stroke="#F3E669"
-            strokeWidth="68"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-          <text
-            dy="0.35em"
-            className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
-          >
-            <textPath href="#robo-wave-path-front" startOffset="0%">
-              <animate
-                attributeName="startOffset"
-                from="-50%"
-                to="0%"
-                dur="22s"
-                repeatCount="indefinite"
+              <use
+                href="#robo-wave-path-back"
+                stroke="#F3E669"
+                strokeWidth="68"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
               />
-              roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan
-            </textPath>
-          </text>
-        </svg>
+              <text
+                dy="0.35em"
+                className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
+              >
+                <textPath href="#robo-wave-path-back" startOffset="0%">
+                  <animate
+                    attributeName="startOffset"
+                    from="-50%"
+                    to="0%"
+                    dur="22s"
+                    repeatCount="indefinite"
+                  />
+                  roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan
+                </textPath>
+              </text>
+
+              <use
+                href="#robo-wave-path-front"
+                stroke="#F3E669"
+                strokeWidth="68"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+              <text
+                dy="0.35em"
+                className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
+              >
+                <textPath href="#robo-wave-path-front" startOffset="0%">
+                  <animate
+                    attributeName="startOffset"
+                    from="-50%"
+                    to="0%"
+                    dur="22s"
+                    repeatCount="indefinite"
+                  />
+                  roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan &nbsp; | &nbsp; roboedu &nbsp; | &nbsp; belajar merakit robot &nbsp; | &nbsp; kreatif dan menyenangkan
+                </textPath>
+              </text>
+
+              {/* Teks di Kiri (Font diperbesar di ukuran 320-425px) */}
+              <text
+  x="195"
+  y="330"
+  textAnchor="start"
+  className="select-none font-heading"
+>
+  <tspan
+    x="195"
+    dy="0"
+    className="text-xs sm:text-sm font-bold tracking-[0.18em] uppercase fill-[#B85C38]"
+  >
+    Koleksi Pilihan
+  </tspan>
+  <tspan
+    x="195"
+    dy="52"
+    style={{ fontSize: "43px" }}
+    className="font-extrabold tracking-tight fill-[#3D2900]"
+  >
+    Mainan & Robot IoT
+  </tspan>
+  <tspan
+    x="195"
+    dy="46"
+    style={{ fontSize: "43px" }}
+    className="font-extrabold tracking-tight fill-[#3D2900]"
+  >
+    Canggih
+  </tspan>
+</text>
+
+{/* Tombol di Kanan */}
+<g className="cursor-pointer group">
+  <rect
+    x="1100"
+    y="360"
+    width="230"
+    height="50"
+    rx="25"
+    className="fill-[#195C92] transition-all duration-300 group-hover:fill-[#103B5E]"
+  />
+  <text
+    x="1215"
+    y="390"
+    textAnchor="middle"
+    className="fill-[#FAF1CA] font-bold text-xs sm:text-sm tracking-wider font-heading select-none pointer-events-none"
+  >
+    Lihat Selengkapnya
+  </text>
+</g>
+            </svg>
+          </div>
+        </div>
       </div>
     </section>
   );
