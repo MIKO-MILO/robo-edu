@@ -85,9 +85,8 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 function TestimonialCard({ item }: { item: Testimonial }) {
   return (
     <article className="relative flex flex-col group w-full">
-      {/* Mengatur tinggi minimum dan flex container agar isi tertata di tengah */}
       <div
-        className={`relative rounded-[24px] sm:rounded-[32px] p-3.5 xs:p-4 sm:p-6 ${item.accentBg} transition-transform duration-200 group-hover:-translate-y-1 flex flex-col justify-center h-full min-h-[220px] xs:min-h-[240px] sm:min-h-[260px] lg:min-h-[280px] shadow-sm`}
+        className={`relative rounded-[24px] sm:rounded-[32px] p-3.5 xs:p-4 sm:p-6 ${item.accentBg} transition-transform duration-200 group-hover:-translate-y-1 flex flex-col justify-between h-full min-h-[200px] xs:min-h-[220px] sm:min-h-[260px] lg:min-h-[280px] shadow-sm`}
       >
         {/* Garis Dalam (Inner Border Utama) */}
         <div
@@ -103,10 +102,10 @@ function TestimonialCard({ item }: { item: Testimonial }) {
           <Quote className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 fill-current rotate-180" />
         </div>
 
-        {/* Content Container - Menggunakan justify-center agar konten persis di tengah secara vertikal */}
-        <div className="relative z-10 flex flex-col justify-center h-full my-auto py-2">
+        {/* Content Container */}
+        <div className="relative z-10 flex flex-col justify-between h-full pt-1 sm:pt-2">
           {/* Header Card */}
-          <div className="flex items-center gap-2.5 xs:gap-3 mb-2 sm:mb-3">
+          <div className="flex items-center gap-2.5 xs:gap-3 pt-1 mb-2 sm:mb-3">
             <div className="relative w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full bg-[#FFF37E] overflow-hidden shrink-0 flex items-center justify-center border border-[#3D2900]/10">
               <Image
                 src={item.avatar}
@@ -163,18 +162,18 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 // 3. MAIN COMPONENT CONTAINER
 // ==========================================
 export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: TestimoniProps) {
-  const [startIndex, setStartIndex] = useState(0);
+  const [startIndex, setstartIndex] = useState(0);
 
   if (!testimonials || testimonials.length === 0) {
     return null;
   }
 
   const handlePrev = () => {
-    setStartIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
+    setstartIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
-    setStartIndex((prev) => (prev + 1) % testimonials.length);
+    setstartIndex((prev) => (prev + 1) % testimonials.length);
   };
 
   const visibleTestimonials = [
@@ -189,7 +188,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
   ];
 
   return (
-    <section className="relative bg-[#2A699C] text-[#3D2900] pb-32 sm:pb-36 lg:pb-44 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
+    <section className="relative bg-[#2A699C] text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
       {/* Lengkungan Atas */}
       <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none" aria-hidden="true">
         <svg
@@ -273,7 +272,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
               ))}
             </div>
 
-            {/* Tampilan Mobile (< md): 1 Kolom */}
+            {/* Tampilan Mobile (< md / termasuk layar 230px): 1 Kolom */}
             <div className="flex md:hidden justify-center w-full">
               <div className="w-full max-w-[280px] xs:max-w-sm">
                 <TestimonialCard item={testimonials[startIndex]} />
@@ -291,17 +290,55 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
         </div>
       </div>
 
-      {/* Lengkungan Bawah */}
-      <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none" aria-hidden="true">
+      {/* Bagian Bawah: Bayangan 1 tetap, Bayangan 2 dibuat jauh lebih terang / cerah (#7EBAE3) dengan ujung kanan melengkung turun */}
+      <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
+        {/* Definisi Gradasi Linear untuk Bayangan Kedua dengan warna yang jauh lebih terang (#7EBAE3) */}
+        <svg width="0" height="0" className="absolute block">
+          <defs>
+            <linearGradient id="shadowRightFade" x1="20%" y1="0%" x2="90%" y2="0%">
+              <stop offset="0%" stopColor="#7EBAE3" stopOpacity="0" />
+              <stop offset="45%" stopColor="#7EBAE3" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#7EBAE3" stopOpacity="0.75" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Lapisan Bayangan Pertama (#3D83B7) */}
         <svg
-          className="relative block w-full h-16 sm:h-24 lg:h-36 text-[#F3EFE4]"
-          viewBox="0 0 1200 120"
+          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 text-[#3D83B7] -translate-y-5 sm:-translate-y-7 lg:-translate-y-9 z-10 overflow-visible"
+          viewBox="0 0 1440 120"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
             fill="currentColor"
-            d="M0,0 L0,120 L1200,120 L1200,20 C850,90 350,-20 0,70 Z"
+            d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
+          />
+        </svg>
+
+        {/* Lapisan Bayangan Kedua dengan warna jauh lebih terang (#7EBAE3) dan kurva ujung kanan melengkung turun */}
+        <svg
+          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16 z-15 overflow-visible"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="url(#shadowRightFade)"
+            d="M0,32 C320,96 420,96 720,64 C1020,32 1220,20 1440,45 L1440,120 L0,120 Z"
+          />
+        </svg>
+
+        {/* Lapisan Utama Lengkungan Bawah (#F3EFE4) */}
+        <svg
+          className="relative block w-full h-16 sm:h-24 lg:h-36 text-[#F3EFE4] z-20 overflow-visible"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="currentColor"
+            d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
           />
         </svg>
       </div>

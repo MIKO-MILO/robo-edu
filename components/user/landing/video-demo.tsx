@@ -1,97 +1,197 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { Play, Sparkles, CheckCircle } from "lucide-react";
+import { Play, X } from "lucide-react";
 
-export default function VideoDemo() {
+// ==========================================
+// 1. TYPES & INTERFACES (Backend-Ready)
+// ==========================================
+export interface VideoDemoProps {
+  title?: string;
+  description?: string;
+  thumbnailSrc?: string;
+  videoSrc?: string;
+}
+
+// ==========================================
+// 2. SUB-COMPONENTS (Atomic Elements)
+// ==========================================
+
+// Atom: Background Decorative Cloud
+function CloudAccent({
+  src,
+  alt,
+  className,
+  width,
+  height,
+}: {
+  src: string;
+  alt: string;
+  className: string;
+  width: number;
+  height: number;
+}) {
   return (
-    <section className="relative bg-[#18598D] py-16 sm:py-24 text-white overflow-hidden">
-      {/* Decorative Cloud Accents */}
-      <div className="absolute top-0 right-0 w-64 h-64 opacity-20 pointer-events-none">
-        <Image
-          src="/images/awan11.png"
-          alt="Awan Accent"
-          fill
-          className="object-contain"
-        />
+    <div className={`absolute opacity-60 pointer-events-none z-0 ${className}`}>
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className="w-auto h-auto object-contain"
+      />
+    </div>
+  );
+}
+
+// Molecule: Video Preview Thumbnail with Play Button
+function VideoThumbnail({
+  thumbnailSrc,
+  altText,
+  onOpen,
+}: {
+  thumbnailSrc: string;
+  altText: string;
+  onOpen: () => void;
+}) {
+  return (
+    <div
+      onClick={onOpen}
+      className="relative overflow-hidden cursor-pointer bg-white/45 w-full max-w-[280px] xs:max-w-[340px] sm:max-w-[560px] lg:max-w-[420px] xl:max-w-[560px] z-10 transition-transform duration-200 hover:scale-[1.01]"
+      style={{
+        borderRadius: "90px / 65px",
+        boxShadow: "6px 6px 0px 0px #3D2900",
+      }}
+    >
+      <div className="relative w-full aspect-video bg-slate-200">
+        <Image src={thumbnailSrc} alt={altText} fill className="object-cover" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-black/50 text-white flex items-center justify-center shadow-lg transition-transform duration-200 hover:scale-110">
+          <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-current ml-0.5 sm:ml-1 text-white" aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Molecule: Video Modal / Popup Player
+function VideoModal({
+  isOpen,
+  videoSrc,
+  onClose,
+}: {
+  isOpen: boolean;
+  videoSrc: string;
+  onClose: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-4xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/95 transition-colors cursor-pointer"
+          aria-label="Tutup video"
+        >
+          <X className="w-6 h-6" aria-hidden="true" />
+        </button>
+
+        <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+          <video src={videoSrc} controls autoPlay className="w-full h-full object-contain">
+            Browser Anda tidak mendukung pemutar video.
+          </video>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 3. MAIN ORGANISM COMPONENT
+// ==========================================
+export default function VideoDemo({
+  title = "Merakit Robot Pertama",
+  description = "Saksikan keseruan anak-anak belajar merakit robot dengan langkah-langkah yang mudah dipahami, interaktif, dan penuh keceriaan.",
+  thumbnailSrc = "/images/foto.jpg",
+  videoSrc = "/videos/demo.mp4",
+}: VideoDemoProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <section className="relative bg-[#F3EFE4] pt-24 sm:pt-45 pb-10 sm:pb-10 text-[#3D2900] overflow-hidden">
+      {/* Decorative Clouds - Awan kiri diturunkan khusus pada ukuran tablet */}
+      <CloudAccent
+        src="/images/awan3.png"
+        alt="Awan Accent Kiri"
+        className="top-12 sm:top-20 md:top-20 lg:top-11 -left-16 sm:-left-16 max-w-[180px] sm:max-w-[320px] scale-x-[-1]"
+        width={360}
+        height={360}
+      />
+      <CloudAccent
+        src="/images/awan3.png"
+        alt="Awan Accent Kanan"
+        className="top-1 sm:top-3 -right-12 sm:-right-12 max-w-[200px] sm:max-w-[380px]"
+        width={360}
+        height={360}
+      />
+
+      {/* Container utama konten */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Menggunakan padding kiri (lg:pl-16 xl:pl-24) khusus pada ukuran laptop/lg ke atas agar seluruh isi grid bergeser ke kanan */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center lg:pl-20">
           {/* Left Column - Video Preview Container */}
-          <div className="lg:col-span-7">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 group cursor-pointer bg-black/40">
-              {/* Thumbnail Image */}
-              <div className="relative w-full aspect-video bg-slate-800">
-                <Image
-                  src="/images/ChatGPT Image 24 Agu 2026, 11.56.23.png"
-                  alt="Video Demo RoboEdu"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-                />
-              </div>
-
-              {/* Play Button Overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-[2px] group-hover:bg-black/20 transition-all">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFF6A0] text-[#3D2900] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Play className="w-8 h-8 fill-current ml-1" />
-                </div>
-                <span className="mt-3 font-heading font-extrabold text-sm sm:text-base text-white tracking-wide drop-shadow-md">
-                  Putar Video Demo (1 Min)
-                </span>
-              </div>
-
-              {/* Duration Tag */}
-              <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-mono text-white/90">
-                01:45
-              </div>
-            </div>
+          <div className="lg:col-span-6 flex justify-center lg:justify-end relative">
+            <VideoThumbnail
+              thumbnailSrc={thumbnailSrc}
+              altText={`Video Demo: ${title}`}
+              onOpen={() => setIsOpen(true)}
+            />
           </div>
 
-          {/* Right Column - Explanation & Highlights */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-[#FFF6A0] font-bold text-xs sm:text-sm backdrop-blur-sm border border-white/20">
-              <Sparkles className="w-4 h-4 text-[#FFF6A0]" />
-              <span>Mudah & Menyenangkan</span>
+          {/* Right Column - Title & Description */}
+          <div className="lg:col-span-6 space-y-3 sm:space-y-4 text-center lg:text-left xl:pl-6">
+            <div className="space-y-1">
+              <div className="relative inline-block pb-[calc(1.5rem-3px)] sm:pb-[calc(2rem-3px)]">
+                <h2 className="font-heading text-xl sm:text-3xl lg:text-4xl font-extrabold leading-tight text-[#3D2900] tracking-tight relative z-10">
+                  {title}
+                </h2>
+                <div className="absolute -bottom-5 sm:-bottom-7 left-1/2 -translate-x-1/2 lg:translate-x-0 lg:left-0 w-full max-w-[200px] sm:max-w-[320px] pointer-events-none z-0" aria-hidden="true">
+                  <svg
+                    width="400"
+                    height="100"
+                    viewBox="0 0 400 100"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-full h-auto"
+                  >
+                    <path
+                      d="M 30,50 Q 200,25 370,40"
+                      stroke="#f0ad4e"
+                      strokeWidth="7"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold leading-tight">
-              Saksikan Bagaimana Anak Merakit Robot Pertama Mereka!
-            </h2>
-
-            <p className="font-body text-sm sm:text-base text-white/80 leading-relaxed">
-              Hanya dalam 3 langkah praktis, anak dapat merakit komponen, menghubungkan modul, dan menjalankan instruksi robotik pertama tanpa kesulitan.
+            <p className="text-sm sm:text-lg text-[#3D2900]/80 font-normal leading-relaxed max-w-md sm:max-w-lg mx-auto lg:mx-0">
+              {description}
             </p>
-
-            {/* Steps List */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3 bg-white/10 p-3.5 rounded-2xl border border-white/10">
-                <CheckCircle className="w-5 h-5 text-[#FFF6A0] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-white">1. Unbox & Snap Assembly</h4>
-                  <p className="text-xs text-white/75 mt-0.5">Komponen tanpa lem atau solder, aman 100% untuk jari anak.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 bg-white/10 p-3.5 rounded-2xl border border-white/10">
-                <CheckCircle className="w-5 h-5 text-[#FFF6A0] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-white">2. Sambungkan Maskot Interaktif</h4>
-                  <p className="text-xs text-white/75 mt-0.5">Maskot RoboEdu memberikan panduan suara & ekspresi lucu.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 bg-white/10 p-3.5 rounded-2xl border border-white/10">
-                <CheckCircle className="w-5 h-5 text-[#FFF6A0] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-white">3. Selesaikan Misi Coding</h4>
-                  <p className="text-xs text-white/75 mt-0.5">Level petualangan bertahap yang mengasah logika problem solving.</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
+
+      {/* Modal / Popup Video Player */}
+      <VideoModal
+        isOpen={isOpen}
+        videoSrc={videoSrc}
+        onClose={() => setIsOpen(false)}
+      />
     </section>
   );
 }

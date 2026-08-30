@@ -62,6 +62,12 @@ const DEFAULT_FAQS: FAQItemData[] = [
     answer:
       "Pengiriman diproses dalam 1x24 jam. Estimasi pengiriman untuk pulau Jawa adalah 1-3 hari kerja, sedangkan luar pulau Jawa 3-5 hari kerja.",
   },
+  {
+    id: "faq-6",
+    question: "Berapa lama estimasi pengiriman paket RoboEdu?",
+    answer:
+      "Pengiriman diproses dalam 1x24 jam. Estimasi pengiriman untuk pulau Jawa adalah 1-3 hari kerja, sedangkan luar pulau Jawa 3-5 hari kerja.",
+  },
 ];
 
 const DEFAULT_PROMO_DATA: PromoBannerData = {
@@ -202,7 +208,7 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
     <div className="relative w-full h-[400px] md:h-[540px] lg:h-[600px] xl:h-[640px] 2xl:h-[700px] bg-background">
       <div className="max-w-6xl mx-auto h-full px-6 lg:px-8 relative flex items-center justify-between">
         
-        {/* Header Text (Diturunkan dari top-16 md:top-32 menjadi top-6 md:top-16 agar ikut naik ke atas) */}
+        {/* Header Text */}
         <div className="absolute top-6 md:top-16 lg:top-24 xl:top-20 2xl:top-24 left-1/2 -translate-x-1/2 text-center z-20 w-full max-w-5xl px-4 pointer-events-none">
           <h1 className="font-heading text-base md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-[#18598D] tracking-tight whitespace-normal md:whitespace-nowrap leading-snug md:leading-normal mb-2 sm:mb-3 px-2 sm:px-0">
             {data.title}
@@ -212,7 +218,7 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
           </p>
         </div>
 
-        {/* Thumbnail Left Container (translate-y dikurangi agar ikut naik ke atas) */}
+        {/* Thumbnail Left Container */}
         <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-8 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 translate-x-1 md:translate-x-4 lg:translate-x-12 xl:translate-x-10 2xl:translate-x-16">
           {leftThumbnails.map((thumb) => (
             <PromoThumbnail
@@ -224,31 +230,37 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
           ))}
         </div>
 
-        {/* Hero Center Illustration */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-10 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 z-30 flex items-end justify-center -space-x-12 md:-space-x-20 lg:-space-x-28 xl:-space-x-34 2xl:-space-x-40 px-4 w-full max-w-6xl pointer-events-none">
-          <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square translate-x-3 md:translate-x-4 lg:translate-x-6 xl:translate-x-8">
-            <Image
-              src="/images/girl.png"
-              alt="Anak Perempuan"
-              width={450}
-              height={450}
-              priority
-              className="object-contain w-full h-full"
-            />
-          </div>
-          <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square scale-110 md:scale-115 lg:scale-120 xl:scale-125 2xl:scale-130 scale-y-110 origin-bottom">
-            <Image
-              src="/images/boy.png"
-              alt="Anak Laki-laki"
-              width={500}
-              height={550}
-              priority
-              className="object-contain w-full h-full"
-            />
-          </div>
-        </div>
+        {/* Hero Center Illustration & Ground Shadows (Bayangan Lebih Gelap Dikit) */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-10 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 z-30 flex items-end justify-center -space-x-12 md:-space-x-20 lg:-space-x-28 xl:-space-x-34 2xl:-space-x-40 px-4 w-full max-w-6xl pointer-events-none">
+            
+            {/* Karakter Anak Perempuan + Bayangan */}
+            <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square translate-x-3 md:translate-x-4 lg:translate-x-6 xl:translate-x-8 z-10 flex flex-col items-center">
+              <div className="absolute bottom-1 w-[45%] h-4 bg-black/35 rounded-full blur-sm z-0" />
+              <Image
+                src="/images/girl.png"
+                alt="Anak Perempuan"
+                width={450}
+                height={450}
+                priority
+                className="object-contain w-full h-full relative z-10"
+              />
+            </div>
 
-        {/* Thumbnail Right Container (translate-y dikurangi agar ikut naik ke atas) */}
+            {/* Karakter Anak Laki-laki + Bayangan */}
+            <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square scale-110 md:scale-115 lg:scale-120 xl:scale-125 2xl:scale-130 scale-y-110 origin-bottom z-10 flex flex-col items-center">
+              <div className="absolute bottom-1 w-[45%] h-4 bg-black/35 rounded-full blur-sm z-0" />
+              <Image
+                src="/images/boy.png"
+                alt="Anak Laki-laki"
+                width={500}
+                height={550}
+                priority
+                className="object-contain w-full h-full relative z-10"
+              />
+            </div>
+          </div>
+
+        {/* Thumbnail Right Container */}
         <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-8 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 -translate-x-1 md:-translate-x-4 lg:-translate-x-12 xl:-translate-x-10 2xl:-translate-x-16">
           {rightThumbnails.map((thumb) => (
             <PromoThumbnail
@@ -309,6 +321,17 @@ export default function FAQ({
             <p className="font-body text-xs md:text-sm text-card/80 mt-2.5 leading-relaxed">
               {description}
             </p>
+          <div className="mt-6 flex justify-center lg:justify-start">
+            <div className="w-48 sm:w-56 md:w-64 h-auto translate-x-10 sm:translate-x-16 rotate-0 opacity-80">
+              <Image
+                src="/images/arrow1.png"
+                alt="Panah penunjuk"
+                width={300}
+                height={150}
+                className="object-contain w-full h-full"
+              />
+            </div>
+          </div>
           </div>
 
           {/* List Column */}
