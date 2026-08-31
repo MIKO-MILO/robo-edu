@@ -14,11 +14,6 @@ export function AboutHeroSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column: Title, Highlighted Badge, Subtitle, CTA */}
         <div className="lg:col-span-7 flex flex-col items-start space-y-6">
-          {/* Playful Tag Badge */}
-          <div className="inline-flex items-center gap-2 bg-accent-yellow border-2 border-foreground neo-shadow-icon px-4 py-1.5 rounded-full font-body font-bold text-xs sm:text-sm text-foreground">
-            <Zap className="w-4 h-4 text-primary fill-primary" />
-            <span>Platform #1 Pembelajaran Robotik Edukasi</span>
-          </div>
 
           {/* Main Headline with Highlighted Badge */}
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.2] text-foreground tracking-tight">
@@ -56,11 +51,6 @@ export function AboutHeroSection() {
         {/* Right Column: Yellow Showcase Card */}
         <div className="lg:col-span-5 flex justify-center items-center">
           <div className="relative w-full max-w-sm bg-accent-yellow border-2 border-foreground rounded-3xl p-6 sm:p-8 neo-shadow flex flex-col items-center text-center gap-5">
-            {/* Top Pill Badge */}
-            <div className="inline-flex items-center gap-1.5 bg-card border-2 border-foreground neo-shadow-icon px-3.5 py-1 rounded-full font-body font-bold text-xs text-foreground">
-              <Bot className="w-4 h-4 text-primary" />
-              <span>Made-by-Order Quota</span>
-            </div>
 
             {/* Toy Image Container */}
             <div className="w-48 h-48 sm:w-56 sm:h-56 bg-card border-2 border-foreground rounded-2xl p-4 flex items-center justify-center neo-shadow-icon relative overflow-hidden">

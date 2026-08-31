@@ -39,11 +39,6 @@ export function KidSafeSection() {
         <div className="bg-card border-2 border-foreground rounded-3xl p-6 sm:p-10 lg:p-12 neo-shadow grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           {/* Left Column: Title, Subtitle, 2x2 Feature Grid */}
           <div className="lg:col-span-7 flex flex-col items-start space-y-6">
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 bg-accent-green border-2 border-foreground neo-shadow-icon px-4 py-1.5 rounded-full font-body font-bold text-xs sm:text-sm text-foreground">
-              <ShieldCheck className="w-4 h-4 text-foreground" />
-              <span>ROBO-EDU GUARANTEE KID-SAFE</span>
-            </div>
 
             {/* Main Heading */}
             <h2 className="font-heading text-3xl sm:text-4xl font-bold leading-[1.2] text-foreground tracking-tight">

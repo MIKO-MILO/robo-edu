@@ -47,11 +47,6 @@ export function OurStorySection() {
 
         {/* Right Column: Narrative Story & Feature Cards */}
         <div className="lg:col-span-7 flex flex-col items-start space-y-6">
-          {/* Pill Badge */}
-          <div className="inline-flex items-center gap-2 bg-accent-butter border-2 border-foreground neo-shadow-icon px-4 py-1.5 rounded-full font-body font-bold text-xs sm:text-sm text-foreground">
-            <BookOpen className="w-4 h-4 text-foreground" />
-            <span>Kisah & Perjalanan RoboEdu</span>
-          </div>
 
           {/* Headline */}
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.2] text-foreground tracking-tight">
