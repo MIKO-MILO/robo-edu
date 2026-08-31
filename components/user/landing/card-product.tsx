@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ProductCard } from "@/components/ui/product-card";
 
 // ==========================================
 // 1. TYPES & INTERFACES (Backend-Ready)
@@ -16,6 +17,10 @@ export interface ProductItem {
   age: string;
   size: string;
   duration: string;
+  price: string;
+  rating?: number;
+  reviewCount?: string;
+  bgColorClass?: string;
 }
 
 export interface ProductShowcaseProps {
@@ -32,6 +37,10 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     age: "8-12 Years",
     size: "24 Series",
     duration: "45 Mins",
+    price: "Rp 450.000",
+    rating: 4.8,
+    reviewCount: "1.2k ulasan",
+    bgColorClass: "bg-accent-pink",
   },
   {
     id: 2,
@@ -42,6 +51,10 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     age: "9-14 Years",
     size: "28 Series",
     duration: "60 Mins",
+    price: "Rp 520.000",
+    rating: 4.9,
+    reviewCount: "980 ulasan",
+    bgColorClass: "bg-accent-yellow",
   },
   {
     id: 3,
@@ -52,6 +65,10 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     age: "10-15 Years",
     size: "32 Series",
     duration: "75 Mins",
+    price: "Rp 610.000",
+    rating: 4.7,
+    reviewCount: "760 ulasan",
+    bgColorClass: "bg-accent-blue",
   },
   {
     id: 4,
@@ -62,6 +79,10 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     age: "7-12 Years",
     size: "20 Series",
     duration: "40 Mins",
+    price: "Rp 380.000",
+    rating: 4.6,
+    reviewCount: "540 ulasan",
+    bgColorClass: "bg-accent-pink",
   },
   {
     id: 5,
@@ -72,6 +93,10 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     age: "11-15 Years",
     size: "35 Series",
     duration: "90 Mins",
+    price: "Rp 690.000",
+    rating: 5.0,
+    reviewCount: "1.5k ulasan",
+    bgColorClass: "bg-accent-yellow",
   },
 ];
 
@@ -119,82 +144,6 @@ function NavButton({
         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
       )}
     </button>
-  );
-}
-
-// Molecule: Product Card Specifications Pill
-function ProductSpecsPill({
-  age,
-  size,
-  duration,
-  productName,
-}: {
-  age: string;
-  size: string;
-  duration: string;
-  productName: string;
-}) {
-  return (
-    <div className="bg-[#103B5E] text-[#DEECF8] rounded-full py-1.5 px-3 sm:p-2 flex items-center justify-between shadow-md shrink-0 w-full">
-      <div className="grid grid-cols-3 divide-x divide-[#DEECF8]/20 flex-1 text-center px-1 min-w-0">
-        <div className="truncate px-0.5">
-          <span className="block text-[7px] sm:text-[8px] text-[#A7CDEC] font-medium">Age</span>
-          <span className="text-[9px] sm:text-[10px] font-bold text-[#DEECF8] truncate block">{age}</span>
-        </div>
-        <div className="truncate px-0.5">
-          <span className="block text-[7px] sm:text-[8px] text-[#A7CDEC] font-medium">Size</span>
-          <span className="text-[9px] sm:text-[10px] font-bold text-[#DEECF8] truncate block">{size}</span>
-        </div>
-        <div className="truncate px-0.5">
-          <span className="block text-[7px] sm:text-[8px] text-[#A7CDEC] font-medium">Duration</span>
-          <span className="text-[9px] sm:text-[10px] font-bold text-[#DEECF8] truncate block">{duration}</span>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        aria-label={`Pesan ${productName}`}
-        className="w-6 h-6 sm:w-7 sm:h-7 bg-accent text-[#3D2900] hover:bg-accent/90 rounded-full flex items-center justify-center shrink-0 ml-1.5 transition-transform duration-200 hover:scale-105 cursor-pointer shadow-sm border-0"
-      >
-        <ArrowRight className="w-3 h-3 text-[#3D2900]" />
-      </button>
-    </div>
-  );
-}
-
-// Molecule: Individual Product Card (Image-Dominant Layout)
-function ProductCard({ product }: { product: ProductItem }) {
-  return (
-    <div className="relative bg-card p-4 sm:p-5 shadow-xl shadow-black/[0.04] hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[285px] sm:max-w-none mx-auto h-full">
-      <div className="flex flex-col flex-1">
-        {/* Area Gambar Diperbesar (Dominan) */}
-        <div className="relative w-full h-44 sm:h-56 bg-muted overflow-hidden mb-3 rounded-[1.25rem] sm:rounded-[1.75rem] shrink-0">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover transform group-hover:scale-105 transition-transform duration-500"
-          />
-        </div>
-
-        {/* Deskripsi dihapus, hanya menyisakan Judul & Kategori agar lebih ringkas */}
-        <h3 className="font-heading text-sm sm:text-base font-bold text-foreground mb-0.5 line-clamp-1">
-          {product.name}
-        </h3>
-        <span className="text-[10px] sm:text-[11px] font-semibold text-primary block mb-3 truncate">
-          {product.category}
-        </span>
-      </div>
-
-      <div className="mt-auto">
-        <ProductSpecsPill
-          age={product.age}
-          size={product.size}
-          duration={product.duration}
-          productName={product.name}
-        />
-      </div>
-    </div>
   );
 }
 
@@ -248,23 +197,48 @@ export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: Product
           />
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Mobile View: 1 produk */}
-            <div className="block md:hidden w-full flex justify-center">
-              <ProductCard product={products[currentIndex]} />
+            <div className="block md:hidden flex justify-center">
+              <div className="w-full max-w-xs">
+                <ProductCard
+                  name={products[currentIndex].name}
+                  price={products[currentIndex].price}
+                  rating={products[currentIndex].rating}
+                  reviewCount={products[currentIndex].reviewCount}
+                  imageUrl={products[currentIndex].image}
+                  bgColorClass={products[currentIndex].bgColorClass}
+                />
+              </div>
             </div>
 
             {/* Tablet View: 2 produk */}
             <div className="hidden md:contents lg:hidden">
               {getVisibleProducts('tablet').map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  name={product.name}
+                  price={product.price}
+                  rating={product.rating}
+                  reviewCount={product.reviewCount}
+                  imageUrl={product.image}
+                  bgColorClass={product.bgColorClass}
+                />
               ))}
             </div>
 
             {/* Desktop View: 3 produk */}
             <div className="hidden lg:contents">
               {getVisibleProducts('desktop').map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  name={product.name}
+                  price={product.price}
+                  rating={product.rating}
+                  reviewCount={product.reviewCount}
+                  imageUrl={product.image}
+                  bgColorClass={product.bgColorClass}
+                />
               ))}
             </div>
           </div>

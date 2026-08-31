@@ -6,8 +6,8 @@ export default function Awan() {
       <Image
         src="/images/awann.png"
         alt="Ilustrasi Awan"
-        width={1920}
-        height={150}
+        width={1927}
+        height={155}
         className="w-full h-auto object-cover object-bottom scale-[1.01] origin-bottom"
         priority
       />

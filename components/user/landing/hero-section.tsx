@@ -6,8 +6,59 @@ import Awan from "@/components/user/landing/awan";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Play } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const dynamicItems = [
+  {
+    text: "Usia 6+ Tahun!",
+    bg: "bg-[#FFF6A0]", // Kuning Cerah
+    textColor: "text-[#3D2900]", // Coklat Tua
+  },
+  {
+    text: "Mudah Dipahami!",
+    bg: "bg-[#A3B1FF]", // Ungu Soft
+    textColor: "text-[#103B5E]", // Biru Pekat
+  },
+{
+    text: "Kreatif & Interaktif!",
+    bg: "bg-[#C9E9F6]", // Soft Cyan
+    textColor: "text-[#103B5E]", // Biru Gelap
+  },
+];
 
 export default function HeroSection() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentItem = dynamicItems[currentIndex];
+    const fullText = currentItem.text;
+
+    const typingSpeed = isDeleting ? 40 : 80;
+
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        setDisplayedText(fullText.substring(0, displayedText.length + 1));
+
+        if (displayedText === fullText) {
+          setTimeout(() => setIsDeleting(true), 1800);
+        }
+      } else {
+        setDisplayedText(fullText.substring(0, displayedText.length - 1));
+
+        if (displayedText === "") {
+          setIsDeleting(false);
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % dynamicItems.length);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [displayedText, isDeleting, currentIndex]);
+
+  const currentStyle = dynamicItems[currentIndex];
+
   return (
     <section className="relative bg-[#18598D] pt-4 pb-20 sm:pb-32 lg:pb-48 overflow-hidden">
       {/* Gambar Awan Kiri Atas */}
@@ -21,7 +72,7 @@ export default function HeroSection() {
         />
       </div>
 
-      {/* Gambar Awan Kanan (Posisi diturunkan dengan top-16 / sm:top-24 / lg:top-36) */}
+      {/* Gambar Awan Kanan */}
       <div className="absolute top-12 sm:top-18 lg:top-33 right-0 z-0 w-48 sm:w-72 md:w-96 aspect-square pointer-events-none">
         <Image
           src="/images/awan11.png"
@@ -41,10 +92,9 @@ export default function HeroSection() {
       <div className="relative z-10 max-w-6xl mx-auto px-6 pl-8 sm:pl-12 lg:pl-14 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-2 items-center pt-2">
         {/* Left Column: Text & Action */}
         <div className="lg:col-span-7 flex flex-col items-start space-y-4.5 text-left lg:pl-6">
-          {/* Judul Utama dengan gambar aksen di sebelah kanan kata "Mainkan" */}
+          {/* Judul Utama */}
           <h1 className="relative font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.18] text-white tracking-tight">
             Rakit & Mainkan{" "}
-            {/* Gambar 2.png - Ukuran Lebih Besar */}
             <span className="inline-block relative w-16 h-16 sm:w-20 sm:h-20 align-middle -mt-10 sm:-mt-16 -ml-2 sm:-ml-4">
               <Image
                 src="/images/2.png"
@@ -55,8 +105,17 @@ export default function HeroSection() {
               />
             </span>{" "}
             Robot Impian Anak{" "}
-            <span className="relative inline-block mt-4 sm:mt-6 px-2.5 py-0.5 bg-accent-yellow rounded-xl rotate-[-2deg] text-primary text-[0.85em]">
-              Usia 6+ Tahun!
+            {/* Badge Teks Dinamis dengan Dot di Sebelah Kiri */}
+            <span
+              className={`relative inline-flex items-center gap-2 mt-4 sm:mt-6 px-3 py-1 rounded-xl rotate-[-2deg] text-[0.85em] font-extrabold transition-colors duration-500 ease-in-out ${currentStyle.bg} ${currentStyle.textColor}`}
+            >
+              {/* Lingkaran Kecil (Warna mengikuti teks lewat bg-current) */}
+              <span className="w-2.5 h-2.5 rounded-full bg-current shrink-0" />
+              
+              <span>
+                {displayedText}
+                <span className="animate-pulse ml-0.5 opacity-80">|</span>
+              </span>
             </span>
           </h1>
 
@@ -64,18 +123,16 @@ export default function HeroSection() {
             Bantu si kecil belajar coding dan logika teknologi sejak dini melalui kit robotik interaktif yang seru, aman, dan mudah dimainkan.
           </p>
 
-          {/* CTA Buttons & Paper Plane Container */}
+          {/* CTA Buttons */}
           <div className="relative flex flex-col sm:flex-row items-center gap-3 pt-3 w-full sm:w-auto">
-            {/* Primary CTA */}
-            <Link
-              href="/product"
-              className="inline-flex items-center justify-center gap-2.5 bg-[#FFF6A0] hover:bg-[#ffadd4] text-[#3D2900] font-extrabold text-sm px-6 py-3.5 rounded-full shadow-md hover:scale-105 transition-all w-full sm:w-auto z-10"
-            >
-              <span>Jelajahi Mainan Robot</span>
-              <ArrowRight className="w-4 h-4 text-[#3D2900]" />
-            </Link>
+           <Link
+  href="/product"
+  className={`inline-flex items-center justify-center gap-2.5 font-extrabold text-sm px-6 py-3.5 rounded-full shadow-lg hover:scale-105 transition-all duration-500 ease-in-out w-full sm:w-auto z-10 ${currentStyle.bg} ${currentStyle.textColor}`}
+>
+  <span>Jelajahi Mainan Robot</span>
+  <ArrowRight className="w-4 h-4 text-current" />
+</Link>
 
-            {/* Secondary CTA */}
             <button
               type="button"
               className="inline-flex items-center justify-center gap-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm px-6 py-3.5 rounded-full border border-white/40 backdrop-blur-sm transition-all w-full sm:w-auto cursor-pointer z-10"
