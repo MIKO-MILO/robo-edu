@@ -14,7 +14,7 @@ RoboEdu adalah website e-commerce **single-store** yang menjual **kit robotika e
 - **Made-By-Order Quota:** Sebagian besar produk bersifat *made-by-order* (dibuat berdasarkan pesanan). Oleh karena itu, konsep **stock** di platform ini berfungsi sebagai **kuota/kapasitas kapasitas produksi harian/mingguan**, bukan inventaris gudang fisik tradisional.
 - **Mekanisme Reseller:** Status reseller disimpan sebagai properti akun customer (`reseller_status` = `"APPROVED"`), bukan role terpisah. Customer dengan status ini berhak mendapatkan akses `reseller_price` alih-alih `price` normal.
 - **Toko Tunggal (Single-Store):** Seluruh produk dikelola langsung oleh RoboEdu sendiri. Tidak ada merchant atau multi-vendor pihak ketiga.
-
+w
 ---
 
 ## 2. Struktur Data & Layout Native (Native Shape)
