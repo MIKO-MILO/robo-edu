@@ -1,0 +1,275 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RoboEdu - Register</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@400..900&amp;family=Outfit:wght@400..900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#005f9e",
+                    "surface-tint": "#0062a2",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb875",
+                    "surface-container-highest": "#e6e2d7",
+                    "accent-soft-blue": "#C9E9F6",
+                    "on-secondary-fixed": "#271900",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#ac6200",
+                    "primary-fixed": "#d1e4ff",
+                    "on-surface-variant": "#404751",
+                    "secondary": "#745a2b",
+                    "primary-container": "#0a78c5",
+                    "secondary-fixed": "#ffdea9",
+                    "tertiary-fixed": "#ffdcc0",
+                    "accent-purple": "#A3B1FF",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#894d00",
+                    "outline-variant": "#c0c7d3",
+                    "surface-container-lowest": "#ffffff",
+                    "accent-green": "#A9E8AE",
+                    "background": "#fdf9ee",
+                    "inverse-primary": "#9dcaff",
+                    "on-primary-fixed-variant": "#00497c",
+                    "accent-pink": "#FFC0DD",
+                    "on-primary-fixed": "#001d35",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#ece8dd",
+                    "on-secondary-fixed-variant": "#5a4316",
+                    "surface-variant": "#e6e2d7",
+                    "on-tertiary-fixed-variant": "#6b3b00",
+                    "inverse-surface": "#323129",
+                    "inverse-on-surface": "#f5f0e5",
+                    "accent-peach": "#FFAFA3",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f7f3e8",
+                    "accent-yellow": "#FFF37E",
+                    "muted-fg": "#8F8267",
+                    "surface-dim": "#dddacf",
+                    "on-tertiary-fixed": "#2d1600",
+                    "error": "#ba1a1a",
+                    "surface": "#fdf9ee",
+                    "secondary-fixed-dim": "#e4c289",
+                    "secondary-container": "#ffdba0",
+                    "primary-fixed-dim": "#9dcaff",
+                    "on-primary-container": "#fdfcff",
+                    "surface-container": "#f2eee3",
+                    "on-surface": "#1c1c15",
+                    "outline": "#707882",
+                    "accent-orange": "#FFD9A0",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#fffbff",
+                    "on-background": "#1c1c15",
+                    "on-secondary-container": "#795e2f",
+                    "surface-bright": "#fdf9ee",
+                    "muted-bg": "#ECEAE6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-lg": "1.5rem",
+                    "stack-md": "1rem",
+                    "stack-sm": "0.5rem",
+                    "section-gap": "4rem",
+                    "gutter": "1.5rem",
+                    "margin-page": "2rem"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "anybody"
+                    ],
+                    "headline-md": [
+                            "anybody"
+                    ],
+                    "label-sm": [
+                            "outfit"
+                    ],
+                    "headline-lg-mobile": [
+                            "anybody"
+                    ],
+                    "label-bold": [
+                            "outfit"
+                    ],
+                    "body-md": [
+                            "outfit"
+                    ],
+                    "display-lg": [
+                            "anybody"
+                    ],
+                    "body-lg": [
+                            "outfit"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "40px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "64px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Neo-Brutalist utility classes */
+        .neo-border {
+            border: 2px solid #3D2900;
+        }
+        .neo-shadow {
+            box-shadow: 4px 4px 0px 0px #3D2900;
+        }
+        .neo-shadow-sm {
+            box-shadow: 2px 2px 0px 0px #3D2900;
+        }
+        .neo-hover-interactive {
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+        }
+        .neo-hover-interactive:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #3D2900;
+        }
+        .neo-hover-interactive:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px #3D2900;
+        }
+        
+        .neo-input:focus {
+            outline: none;
+            box-shadow: 4px 4px 0px 0px var(--color-primary);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center p-4 md:p-gutter">
+<!-- Main Container -->
+<main class="w-full max-w-6xl flex flex-col md:flex-row bg-surface-container-lowest neo-border neo-shadow">
+<!-- Left Side: Visual / Brand Area -->
+<section class="hidden md:flex flex-col justify-end w-1/2 bg-accent-pink neo-border border-r-0 border-t-0 border-l-0 border-b-2 md:border-b-0 md:border-r-2 relative overflow-hidden group">
+<div class="absolute inset-0 z-0 opacity-20" style="background-image: radial-gradient(#3D2900 1px, transparent 1px); background-size: 20px 20px;"></div>
+<img class="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80 z-10" data-alt="A highly detailed 3D rendering of a cute, furry robotic mascot character with a glowing mechanical heart standing in a vibrant, slightly surreal landscape of colorful, oversized gears and botanical elements. The scene is lit with bright, playful, high-key studio lighting casting sharp shadows typical of a modern neo-brutalist aesthetic, utilizing a pastel pink and blue color palette to emphasize a fun, educational e-commerce vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsMTQjz0aAtDhmoqmzQfLJm6-TWt2t7LmU1t7y4ceoaZ_xR2oiXRrexRsy73tTYCgh7fZplEbRrfZ_K0AYl8TsSpQcrmsdDDbXPuJ4bzjnGAB61SwZUQobmvts361CP7eVVlUA9gDyYtGWCgaSp5BnVlJTGXevU3x-cgZhePQ1ip0D32_Ize_fYA_abz6sGLcPIJdMN3yjVdUHo_fTShAwuhf87WgG-BrMvwvTtycqIVSn1842JUbS">
+<div class="relative z-20 p-8">
+<h1 class="text-display-lg font-display-lg text-on-secondary-fixed break-words leading-none tracking-tight">BUILD.<br>LEARN.CREATE.</h1>
+</div>
+<!-- decorative mechanical bits -->
+<div class="absolute top-4 left-4 z-20 w-8 h-8 bg-surface-container-lowest rounded-full neo-border neo-shadow flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">settings</span>
+</div>
+<div class="absolute top-4 right-4 z-20 w-8 h-8 bg-surface-container-lowest rounded-full neo-border neo-shadow flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">memory</span>
+</div>
+</section>
+<!-- Right Side: Form Area -->
+<section class="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center">
+<div class="mb-8 text-center flex flex-col items-center">
+<div class="w-16 h-16 bg-primary mb-4 rounded-full neo-border neo-shadow flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface uppercase">RoboEdu</h2>
+<h3 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-on-surface mt-stack-md uppercase">Create Account</h3>
+<p class="text-body-md font-body-md text-muted-fg mt-2">Join the revolution of building and learning.</p>
+</div>
+<form class="flex flex-col gap-stack-md w-full max-w-sm mx-auto">
+<div class="flex flex-col gap-1">
+<label class="text-label-bold font-label-bold text-on-surface" for="name">Full Name</label>
+<input class="w-full bg-muted-bg text-on-surface text-body-md font-body-md p-3 neo-border rounded-none neo-input transition-shadow" id="name" placeholder="Ada Lovelace" required="" type="text">
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-label-bold font-label-bold text-on-surface" for="email">Email</label>
+<input class="w-full bg-muted-bg text-on-surface text-body-md font-body-md p-3 neo-border rounded-none neo-input transition-shadow" id="email" placeholder="ada@roboedu.com" required="" type="email">
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-label-bold font-label-bold text-on-surface" for="password">Password</label>
+<input class="w-full bg-muted-bg text-on-surface text-body-md font-body-md p-3 neo-border rounded-none neo-input transition-shadow" id="password" placeholder="••••••••" required="" type="password">
+</div>
+<div class="flex items-center gap-2 mt-2">
+<input class="w-5 h-5 bg-muted-bg border-2 border-on-surface text-primary rounded-none focus:ring-0 focus:ring-offset-0 cursor-pointer" id="terms" required="" type="checkbox">
+<label class="text-label-sm font-label-sm text-on-surface-variant cursor-pointer" for="terms">I agree to the <a class="text-primary hover:underline font-bold" href="#">Terms and Conditions</a></label>
+</div>
+<button class="w-full bg-primary text-on-primary text-label-bold font-label-bold uppercase tracking-wider py-4 mt-stack-md neo-border neo-shadow neo-hover-interactive" type="submit">
+                    Sign Up
+                </button>
+<div class="relative flex py-5 items-center">
+<div class="flex-grow border-t-2 border-on-surface"></div>
+<span class="flex-shrink-0 mx-4 text-label-bold font-label-bold text-muted-fg uppercase">Or</span>
+<div class="flex-grow border-t-2 border-on-surface"></div>
+</div>
+<button class="w-full bg-surface-container-lowest text-on-surface text-label-bold font-label-bold flex items-center justify-center gap-3 py-4 neo-border neo-shadow neo-hover-interactive" type="button">
+<img alt="Google Logo" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL514L96JHP_kTd5yz-oxImEjFajzPk4_zcS8VImwijjckZTipYDI1XCdWOj6rIcHwdEVEOnMn-s7NfS5dGQgj0jKZ_aUHJIDYEA9B7R_ErXxoTuTp84fjLPnn0-BkUwXg4fgtzdqmeSyoWiiT8wLZhFWfN7NiptBwOF1pdGbxmlXcL961hgRZuJb0dzkuRYVNIok3FGJ5Q-rxOoJj2zV_OWkAoOIVhsNBLyTKlnWIZNTRGpYc-4eH">
+                    Sign up with Google
+                </button>
+<p class="text-center text-body-md font-body-md text-on-surface-variant mt-stack-lg">
+                    Already have an account? <a class="text-primary font-bold hover:underline" href="#">Sign in</a>
+</p>
+</form>
+</section>
+</main>
+
+
+</body></html>

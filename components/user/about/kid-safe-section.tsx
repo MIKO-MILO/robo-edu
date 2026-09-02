@@ -80,7 +80,11 @@ export function KidSafeSection() {
           </div>
 
           {/* Right Column: Mint Green Approved Card */}
+<<<<<<< HEAD
           <div className="lg:col-span-5 flex justify-center rotate-[3deg]">
+=======
+          <div className="lg:col-span-5 flex justify-center">
+>>>>>>> origin/frontend-auth
             <div className="w-full max-w-sm bg-accent-green border-2 border-foreground rounded-3xl p-8 sm:p-10 flex flex-col items-center justify-center text-center gap-5 neo-shadow">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-card border-2 border-foreground flex items-center justify-center neo-shadow-icon">
                 <ShieldCheck className="w-10 h-10 sm:w-12 sm:h-12 text-foreground" />
