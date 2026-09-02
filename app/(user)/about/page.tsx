@@ -6,7 +6,6 @@ import {
   AboutValuesSection,
   AboutFinalCtaSection,
 } from "@/components/user/about";
-import CarouselLogo from "@/components/user/carousel-logo";
 
 export const metadata: Metadata = {
   title: "Tentang Kami | RoboEdu - Kit Robotika Edukasi & Sparepart",
