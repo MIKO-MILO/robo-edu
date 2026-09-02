@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Zap, Building2, Clock } from "lucide-react";
+import { Zap, Building2, Clock } from "lucide-react";
 
 export function ContactHeroSection() {
   return (
@@ -14,7 +14,7 @@ export function ContactHeroSection() {
 
           {/* Main Headline with Highlighted Badge */}
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.2] text-foreground tracking-tight">
-            Hubungi RoboEdu — Kami Siap{" "}
+            Hubungi RoboEdu & Kami Siap{" "}
             <span className="relative inline-block my-1 px-4 py-1 bg-accent-yellow rounded-2xl border-2 border-foreground neo-shadow rotate-[-1deg] text-foreground">
               Membantu!
             </span>

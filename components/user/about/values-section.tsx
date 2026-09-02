@@ -1,4 +1,4 @@
-import { Lightbulb, Search, BookOpen, Star } from "lucide-react";
+import { Lightbulb, Search, BookOpen } from "lucide-react";
 import { ValueCard } from "./value-card";
 
 export function AboutValuesSection() {
@@ -54,7 +54,6 @@ export function AboutValuesSection() {
               key={index}
               title={item.title}
               description={item.description}
-              badgeText={item.badgeText}
               icon={item.icon}
               bgColorClass={item.bgColorClass}
             />

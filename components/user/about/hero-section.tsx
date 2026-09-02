@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Zap, Bot } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AboutHeroSection() {
   return (
     <section className="relative w-full bg-accent-soft-blue border-b-2 border-foreground pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
-      {/* Polka Dot Background Accent */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none [background-image:radial-gradient(#3D2900_1.5px,transparent_0)] [background-size:24px_24px]" />
+      {/* Subtle Grid Background Accent */}
+      <div className="absolute inset-0 opacity-15 pointer-events-none [background-image:linear-gradient(to_right,#3D2900_1px,transparent_1px),linear-gradient(to_bottom,#3D2900_1px,transparent_1px)] [background-size:32px_32px]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column: Title, Highlighted Badge, Subtitle, CTA */}
@@ -19,7 +19,7 @@ export function AboutHeroSection() {
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.2] text-foreground tracking-tight">
             Membangun Generasi{" "}
             <span className="relative inline-block my-1 px-4 py-1 bg-accent-yellow rounded-2xl border-2 border-foreground neo-shadow rotate-[-1deg] text-foreground">
-              Inovator Robotik
+              Inovator
             </span>{" "}
             Masa Depan!
           </h1>
@@ -34,7 +34,7 @@ export function AboutHeroSection() {
 
           {/* CTA Button */}
           <div className="pt-2">
-            <Link href="/products">
+            <Link href="/product">
               <Button
                 variant="primary"
                 size="lg"
@@ -67,7 +67,7 @@ export function AboutHeroSection() {
             {/* Bottom Caption Box */}
             <div className="bg-card border-2 border-foreground rounded-xl p-3.5 neo-shadow-icon text-center">
               <p className="font-body text-xs sm:text-sm font-bold text-foreground leading-snug">
-                &ldquo;Setiap kit dirakit & diuji kualitasnya sebelum dikirim ke rumah Anda.&rdquo;
+                &ldquo;Setiap kit dirakit & diuji kualitasnya sebelum dikirimkan.&rdquo;
               </p>
             </div>
           </div>

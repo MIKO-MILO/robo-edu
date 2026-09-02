@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 export interface ValueCardProps {
   title: string;
   description: string;
-  badgeText?: string;
   icon: React.ComponentType<{ className?: string }>;
   bgColorClass: string;
   className?: string;
@@ -13,7 +12,6 @@ export interface ValueCardProps {
 export function ValueCard({
   title,
   description,
-  badgeText,
   icon: Icon,
   bgColorClass,
   className,
@@ -34,11 +32,6 @@ export function ValueCard({
           <Icon className="w-6 h-6 text-foreground" />
         </div>
 
-        {badgeText && (
-          <span className="font-body font-bold text-[10px] uppercase tracking-wider bg-card border-2 border-foreground px-3 py-1 rounded-full text-foreground neo-shadow-icon">
-            {badgeText}
-          </span>
-        )}
       </div>
 
       {/* Content */}
