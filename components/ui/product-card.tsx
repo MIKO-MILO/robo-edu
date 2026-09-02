@@ -31,7 +31,7 @@ export function ProductCard({
 }: ProductCardProps) {
   return (
     <div
-      className={`${bgColorClass} rounded-3xl p-4 flex flex-col gap-4 border-2 border-foreground shadow-[4px_4px_0px_0px_#3D2900]`}
+      className={`${bgColorClass} rounded-3xl p-4 flex flex-col gap-4 border-2 border-foreground`}
     >
       {/* Container Gambar (Reusable Component) */}
       <ProductImage src={imageUrl} alt={name} size="md" />

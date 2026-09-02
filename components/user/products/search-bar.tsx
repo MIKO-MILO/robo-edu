@@ -1,36 +1,72 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export interface SearchBarProps {
-    value: string;
-    onChange: (value: string) => void;
+    value?: string;
+    onChange?: (value: string) => void;
     onSubmit?: (e: React.FormEvent) => void;
     placeholder?: string;
     label?: string;
+    useUrlState?: boolean;
 }
 
 export function SearchBar({
-    value,
-    onChange,
-    onSubmit,
+    value: controlledValue,
+    onChange: controlledOnChange,
+    onSubmit: controlledOnSubmit,
     placeholder = "Cari kit, sparepart, atau komponen...",
     label = "What you're up for?",
+    useUrlState = true,
 }: SearchBarProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const urlSearch = searchParams?.get("search") || "";
+    const [prevProps, setPrevProps] = useState({ controlledValue, urlSearch });
+    const [internalValue, setInternalValue] = useState(
+        controlledValue !== undefined ? controlledValue : urlSearch
+    );
+
+    if (prevProps.controlledValue !== controlledValue || prevProps.urlSearch !== urlSearch) {
+        setPrevProps({ controlledValue, urlSearch });
+        setInternalValue(controlledValue !== undefined ? controlledValue : urlSearch);
+    }
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (onSubmit) {
-            onSubmit(e);
+        if (controlledOnSubmit) {
+            controlledOnSubmit(e);
+        }
+        if (useUrlState && controlledValue === undefined) {
+            const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
+            if (internalValue.trim()) {
+                params.set("search", internalValue.trim());
+            } else {
+                params.delete("search");
+            }
+            params.delete("page"); // Reset ke halaman 1 saat pencarian baru
+            router.push(`${pathname}?${params.toString()}`);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setInternalValue(val);
+        if (controlledOnChange) {
+            controlledOnChange(val);
         }
     };
 
     return (
         <form
             onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-2 border-foreground rounded-2xl p-4 bg-card shadow-[4px_4px_0px_0px_#3D2900]"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-2 border-foreground rounded-2xl p-4 bg-card"
         >
             <label
                 htmlFor="catalog-search"
@@ -45,8 +81,8 @@ export function SearchBar({
                     id="catalog-search"
                     type="search"
                     placeholder={placeholder}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
+                    value={internalValue}
+                    onChange={handleInputChange}
                     className="pl-11 pr-4 h-11 border-2 border-border bg-background text-foreground placeholder:text-muted-foreground font-body text-sm rounded-full"
                 />
             </div>
