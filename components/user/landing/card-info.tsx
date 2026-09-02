@@ -1,151 +1,196 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { Check, ArrowRight } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-interface CardData {
-  id: number;
-  titleLine1: string;
-  titleLine2: string;
-  bgColor: string;
-  shadowColor: string;
-  textColor: string;
-  mascotSrc: string;
-  altText: string;
-  borderRadius: string;
+export interface FeaturePoint {
+  id: string | number;
+  label: string;
 }
 
-const cards: CardData[] = [
-  {
-    id: 1,
-    titleLine1: "Aman & Sesuai",
-    titleLine2: "Usia 6+",
-    bgColor: "#C5DCFD",
-    shadowColor: "#A5C6F8",
-    textColor: "#233B5E",
-    mascotSrc: "/images/4.png",
-    altText: "Maskot RoboEdu Usia 6+",
-    borderRadius: "55px 22px 45px 22px / 22px 45px 22px 55px",
-  },
-  {
-    id: 2,
-    titleLine1: "Aman & Mudah",
-    titleLine2: "Dirakit",
-    bgColor: "#FDCBD1",
-    shadowColor: "#F7ACB5",
-    textColor: "#5C2830",
-    mascotSrc: "/images/3.png",
-    altText: "Maskot RoboEdu Mudah Dirakit",
-    borderRadius: "22px 55px 22px 45px / 45px 22px 55px 22px",
-  },
-  {
-    id: 3,
-    titleLine1: "Melatih Logika &",
-    titleLine2: "Kesabaran",
-    bgColor: "#EAD8FD",
-    shadowColor: "#D6B5F7",
-    textColor: "#48236B",
-    mascotSrc: "/images/22.png",
-    altText: "Maskot RoboEdu Logika & Kesabaran",
-    borderRadius: "45px 45px 28px 28px / 35px 35px 28px 28px",
-  },
-  {
-    id: 4,
-    titleLine1: "Sukses Selesaikan",
-    titleLine2: "Misi",
-    bgColor: "#FDECB1",
-    shadowColor: "#F5D67C",
-    textColor: "#59420F",
-    mascotSrc: "/images/11.png",
-    altText: "Maskot RoboEdu Sukses Selesaikan Misi",
-    borderRadius: "28px 28px 45px 45px / 28px 28px 35px 35px",
-  },
+export interface CardsInfoProps {
+  badgeCategory?: string;
+  titleMain?: string;
+  titleHighlight?: string;
+  description?: string;
+  statNumber?: string;
+  statLabel?: string;
+  features?: FeaturePoint[];
+  ctaText?: string;
+  ctaHref?: string;
+  imageSrc?: string;
+}
+
+const defaultFeatures: FeaturePoint[] = [
+  { id: 1, label: "Learning & Fun" },
+  { id: 2, label: "Aman Untuk Usia 6+" },
+  { id: 3, label: "Modul IoT Interaktif" },
+  { id: 4, label: "Mudah Dirakit (DIY)" },
 ];
 
-export default function ICardsInfo() {
+function FeatureItem({ label }: { label: string }) {
   return (
-    <section className="relative bg-[#F3EFE4] pt-2 sm:pt-8 pb-4 sm:pb-8 overflow-hidden">
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
-        {/* Header Section */}
-        <div className="w-full flex flex-row justify-center items-center gap-2 sm:gap-3 mb-1 sm:mb-8 mt-1 sm:mt-5 mx-auto">
-          <h3 className="font-heading text-xl xs:text-2xl sm:text-4xl lg:text-5xl font-extrabold text-[#3D2900] tracking-tight pt-1 text-center">
-            Kenapa{" "}
-            <span className="relative inline-block text-[#2483D0] px-1 pb-2">
-              RoboEdu
+    <div className="flex items-center gap-2.5 sm:gap-3 group">
+      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#F3EFE4] border-2 border-[#2483D0] text-[#2483D0] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-110">
+        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+      </div>
+      <span className="font-heading font-extrabold text-xs sm:text-sm text-[#3D2900] tracking-tight">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+export default function ICardsInfo({
+  badgeCategory = "Tentang Kami",
+  titleMain = "Aman, Seru & Edukatif —",
+  titleHighlight = "Impian Setiap Anak",
+  description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Ut enim ad minim veniam",
+  statNumber = "Usia 6+",
+  statLabel = "Mainan IoT Edukatif",
+  features = defaultFeatures,
+  ctaText = "Jelajahi Produk",
+  ctaHref = "/product",
+  imageSrc = "/images/11.png",
+}: CardsInfoProps) {
+  return (
+    <section className="relative bg-[#F3EFE4] py-10 sm:py-16 lg:py-26 overflow-hidden">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          
+          {/* LEFT COLUMN: SVG Blob Design + Image 11.png + Badge */}
+          <div className="lg:col-span-6 flex justify-center items-center relative">
+            <div className="relative w-full max-w-[480px] sm:max-w-[550px] lg:max-w-[620px] aspect-[773/583] flex items-center justify-center">
+              
+              {/* Custom SVG Background (Latar Belakang Blob - Tidak Diubah) */}
               <svg
-                className="absolute left-0 -bottom-1 w-full h-3 overflow-visible pointer-events-none"
-                viewBox="0 0 100 12"
+                viewBox="0 0 773 583"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                className="absolute inset-0 w-full h-full object-contain z-0 scale-[0.82] sm:scale-85 translate-y-8 sm:translate-y-10"
               >
                 <path
-                  d="M0 6 Q 25 1, 50 6 T 100 6"
-                  stroke="#F5C045"
-                  strokeWidth="4"
-                  strokeLinecap="round"
+                  d="M162.184 14.5394C250.968 -36.2552 315.938 62.4553 416.871 61.1634C511.214 59.9558 572.583 -35.1339 654.415 14.5394C740.069 66.5323 715.959 166.333 730.332 269.676C743.554 364.75 798.896 403.813 756.045 488.55C681.55 635.864 481.904 571.514 325.036 552.011C203.808 536.938 56.5773 577.714 9.12435 458.763C-22.1885 380.27 35.4192 334.954 56.8804 252.84C82.7581 153.828 76.7585 63.4122 162.184 14.5394Z"
+                  fill="#F2E583"
                 />
               </svg>
-            </span>
-          </h3>
 
-          <div className="relative w-16 h-16 xs:w-20 xs:h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 flex-shrink-0 -translate-y-1">
-            <Image
-              src="/images/5.png"
-              alt="Tanda Tanya RoboEdu"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
-        </div>
+            {/* Container Gambar + Bayangan di Bawah */}
+<div className="absolute w-[calc(100%-3px)] h-[calc(100%-3px)] z-10 bottom-8 sm:bottom-14 flex flex-col items-center justify-end">
+  {/* Gambar 11.png */}
+  <div className="relative w-full h-full">
+    <Image
+      src={imageSrc}
+      alt="Feature Visual"
+      fill
+      className="object-contain drop-shadow-lg"
+      priority
+    />
+  </div>
 
-        {/* 4 Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-7 lg:gap-8 pt-10 sm:pt-4 mt-0 sm:mt-18 mb-1 sm:mb-14 justify-items-center">
-          {cards.map((card) => (
-            <div key={card.id} className="relative flex flex-col items-center w-full max-w-[175px] xs:max-w-[190px] sm:max-w-[232px]">
-              {/* Outer Wrapper */}
-              <div
-                className="relative w-full h-[135px] sm:h-[184px] p-1.5"
-                style={{
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: card.borderRadius,
-                  boxShadow: `0 14px 24px -6px ${card.shadowColor}AA, 0 6px 12px -3px rgba(0, 0, 0, 0.06)`,
-                }}
-              >
-                {/* Inner Card Container */}
-                <div
-                  className="w-full h-full pt-[35px] sm:pt-[64px] pb-2 sm:pb-3 px-2.5 sm:px-3 flex flex-col items-center justify-center text-center relative overflow-hidden"
-                  style={{
-                    backgroundColor: card.bgColor,
-                    borderRadius: `calc(${card.borderRadius} - 4px)`,
-                  }}
-                >
-                  {/* Subtle Curved Accent Line */}
-                  <div className="absolute -bottom-8 -right-8 w-20 h-20 bg-white/20 rounded-full blur-sm pointer-events-none" />
+</div>
 
-                  {/* Card Title Text */}
-                  <h3
-                    className="font-heading text-[11px] xs:text-xs sm:text-xs lg:text-sm font-extrabold leading-snug tracking-tight z-10"
-                    style={{ color: card.textColor }}
+              {/* SVG Badge Biru (Diperkecil) */}
+              <div className="absolute bottom-4 right-1 sm:bottom-8 sm:right-4 z-20 w-[105px] sm:w-[130px] aspect-[304/324]">
+                <div className="relative w-full h-full flex items-center justify-center text-center">
+                  
+                  {/* Custom Blue Badge SVG */}
+                  <svg
+                    viewBox="0 0 304 324"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="absolute inset-0 w-full h-full object-contain drop-shadow-md"
                   >
-                    {card.titleLine1}
-                    <br />
-                    {card.titleLine2}
-                  </h3>
-                </div>
+                    <path
+                      d="M144.498 25.078C178.558 -0.909245 223.969 54.9436 250.605 88.0787C282.574 127.848 312.2 156.947 300.725 206.952C277.998 305.999 172.498 323.999 154.498 323.999C53.3287 323.999 14.0315 267.765 13.9981 179.295C13.9825 137.983 68.6883 82.9203 144.498 25.078Z"
+                      fill="#558FBD"
+                    />
+                    <path
+                      d="M26.3056 97.5803C83.66 20.037 144.571 -12.6343 166.998 10.0781C189.425 32.7905 274.065 110.873 285.535 164.046C302.215 241.367 171.922 323.649 114.586 312.571C24.7118 295.207 -31.0487 175.124 26.3056 97.5803Z"
+                      stroke="#FFFFFF"
+                      strokeWidth="6"
+                    />
+                  </svg>
 
-                {/* Mascot Image */}
-                <div className="absolute -top-12 xs:-top-14 sm:-top-25 left-1/2 -translate-x-1/2 w-28 h-28 xs:w-32 xs:h-32 sm:w-44 sm:h-44 pointer-events-none drop-shadow-md flex items-center justify-center z-30">
-                  <Image
-                    src={card.mascotSrc}
-                    alt={card.altText}
-                    fill
-                    className="object-contain object-center"
-                    priority
-                  />
+                  {/* Teks Usia 6+ Warna Putih */}
+                  <div className="relative z-10 flex items-center justify-center px-2">
+                    <span className="font-heading text-base sm:text-lg font-semibold text-white leading-tight">
+                      Usia 6+
+                    </span>
+                  </div>
+
                 </div>
               </div>
+
             </div>
-          ))}
+          </div>
+
+          {/* RIGHT COLUMN: Text & Details */}
+          <div className="lg:col-span-6 flex flex-col items-start space-y-5 sm:space-y-6 text-left">
+            
+           <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#FAEE7C] text-[#3D2900] text-xs sm:text-sm font-extrabold tracking-wide uppercase shadow-sm">
+  {badgeCategory}
+</span>
+            {/* Heading Section */}
+            <div className="relative w-full pb-6 sm:pb-8">
+              <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#3D2900] tracking-tight leading-snug relative z-10">
+                {titleMain}{" "}
+                <span className="block sm:inline text-[#3D2900]">
+                  {titleHighlight}
+                </span>
+              </h2>
+
+              {/* Garis SVG Lengkung */}
+              <div
+                className="absolute -bottom-1 sm:-bottom-2 left-1/2 -translate-x-1/2 lg:translate-x-0 lg:left-0 w-full max-w-[180px] sm:max-w-[260px] pointer-events-none z-0 translate-y-2 sm:translate-y-3"
+                aria-hidden="true"
+              >
+                <svg
+                  width="400"
+                  height="100"
+                  viewBox="0 0 400 100"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-full h-auto"
+                >
+                  <path
+                    d="M 30,50 Q 200,25 370,40"
+                    stroke="#F2E583"
+                    strokeWidth="7"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <p className="font-body text-sm sm:text-base text-[#5C4A27] leading-relaxed max-w-xl font-normal pt-1">
+              {description}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full pt-1">
+              {features.map((feature) => (
+                <FeatureItem key={feature.id} label={feature.label} />
+              ))}
+            </div>
+
+            <div className="pt-3 w-full sm:w-auto">
+              <Link
+                href={ctaHref}
+                className={cn(
+                  buttonVariants({ variant: "accent-orange", size: "lg", neo: true }),
+                  "w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-extrabold text-white bg-[#558FBD] hover:bg-[#257CC4] rounded-full transition-all duration-200 inline-flex items-center justify-center gap-2"
+                )}
+              >
+                <span>{ctaText}</span>
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
+              </Link>
+            </div>
+
+          </div>
+
         </div>
       </div>
     </section>

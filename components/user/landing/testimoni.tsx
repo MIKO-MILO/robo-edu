@@ -188,7 +188,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
   ];
 
   return (
-    <section className="relative bg-[#2A699C] text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
+    <section className="relative bg-[#558FBD] text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
       {/* Lengkungan Atas */}
       <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none" aria-hidden="true">
         <svg
@@ -242,7 +242,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
             TESTIMONI
           </h2>
 
-          <p className="font-body text-xs xs:text-sm sm:text-base lg:text-lg text-[#DEECF8] font-medium mt-2 sm:mt-4 px-1 xs:px-2">
+          <p className="font-body text-xs xs:text-sm sm:text-base lg:text-lg text-white font-medium mt-2 sm:mt-4 px-1 xs:px-2">
             Lebih dari <strong>10.000+ anak Indonesia</strong> sudah membuktikan asyiknya belajar koding dan logika sejak dini. Yuk, dengar cerita mereka! 
           </p>
         </div>
@@ -272,7 +272,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
               ))}
             </div>
 
-            {/* Tampilan Mobile (< md / termasuk layar 230px): 1 Kolom */}
+            {/* Tampilan Mobile (< md): 1 Kolom */}
             <div className="flex md:hidden justify-center w-full">
               <div className="w-full max-w-[280px] xs:max-w-sm">
                 <TestimonialCard item={testimonials[startIndex]} />
@@ -290,22 +290,22 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
         </div>
       </div>
 
-      {/* Bagian Bawah: Bayangan 1 tetap, Bayangan 2 dibuat jauh lebih terang / cerah (#7EBAE3) dengan ujung kanan melengkung turun */}
+      {/* Bagian Bawah: Bayangan Medium Gelap */}
       <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
-        {/* Definisi Gradasi Linear untuk Bayangan Kedua dengan warna yang jauh lebih terang (#7EBAE3) */}
+        {/* Gradasi Linear untuk Bayangan Kedua (#305C85) */}
         <svg width="0" height="0" className="absolute block">
           <defs>
             <linearGradient id="shadowRightFade" x1="20%" y1="0%" x2="90%" y2="0%">
-              <stop offset="0%" stopColor="#7EBAE3" stopOpacity="0" />
-              <stop offset="45%" stopColor="#7EBAE3" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#7EBAE3" stopOpacity="0.75" />
+              <stop offset="0%" stopColor="#305C85" stopOpacity="0" />
+              <stop offset="45%" stopColor="#305C85" stopOpacity="0.35" />
+              <stop offset="95%" stopColor="#305C85" stopOpacity="0.70" />
             </linearGradient>
           </defs>
         </svg>
 
-        {/* Lapisan Bayangan Pertama (#3D83B7) */}
+        {/* Lapisan Bayangan Pertama (#376996) */}
         <svg
-          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 text-[#3D83B7] -translate-y-5 sm:-translate-y-7 lg:-translate-y-9 z-10 overflow-visible"
+          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 text-[#376996] -translate-y-5 sm:-translate-y-7 lg:-translate-y-9 z-10 overflow-visible"
           viewBox="0 0 1440 120"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -316,7 +316,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
           />
         </svg>
 
-        {/* Lapisan Bayangan Kedua dengan warna jauh lebih terang (#7EBAE3) dan kurva ujung kanan melengkung turun */}
+        {/* Lapisan Bayangan Kedua dengan Gradient */}
         <svg
           className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16 z-15 overflow-visible"
           viewBox="0 0 1440 120"

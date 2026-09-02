@@ -141,7 +141,7 @@ function AccordionItem({
         aria-controls={contentId}
         className="w-full px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-between text-left gap-3 hover:bg-muted/50 transition-colors cursor-pointer group"
       >
-        <span className="font-heading font-semibold text-xs sm:text-sm text-foreground group-hover:text-[#18598D] transition-colors">
+        <span className="font-heading font-semibold text-xs sm:text-sm text-primary-900 group-hover:text-[#18598D] transition-colors">
           {item.question}
         </span>
 
@@ -293,7 +293,7 @@ export default function FAQ({
   };
 
   return (
-    <section className="relative z-20 bg-[#18598D] text-card pb-24 sm:pb-23 overflow-hidden">
+    <section className="relative z-20 bg-[#558FBD] text-card pb-24 sm:pb-23 overflow-hidden">
       <PromoBanner data={promoData} />
 
       {/* SVG Shape Divider */}
@@ -322,7 +322,7 @@ export default function FAQ({
               {description}
             </p>
           <div className="mt-6 flex justify-center lg:justify-start">
-            <div className="w-48 sm:w-56 md:w-64 h-auto translate-x-10 sm:translate-x-16 rotate-0 opacity-80">
+            <div className="w-48 sm:w-56 md:w-64 h-auto translate-x-10 sm:translate-x-16 rotate-0">
               <Image
                 src="/images/arrow1.png"
                 alt="Panah penunjuk"

@@ -60,7 +60,7 @@ export default function HeroSection() {
   const currentStyle = dynamicItems[currentIndex];
 
   return (
-    <section className="relative bg-[#18598D] pt-4 pb-20 sm:pb-32 lg:pb-48 overflow-hidden">
+    <section className="relative bg-[#6EADDF] pt-4 pb-20 sm:pb-32 lg:pb-48 overflow-hidden">
       {/* Gambar Awan Kiri Atas */}
       <div className="absolute top-4 sm:top-6 lg:top-12 left-0 z-0 w-48 sm:w-72 md:w-96 aspect-square pointer-events-none">
         <Image
