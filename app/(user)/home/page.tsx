@@ -1,5 +1,5 @@
 
-import HeroRobot from "@/components/user/hero-robot";
+import HeroRobot from "@/components/user/landing/robot";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Play, Bot, Rocket, Smile } from "lucide-react";
