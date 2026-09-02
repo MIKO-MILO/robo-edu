@@ -61,11 +61,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
+    <>
       {/* ── Card Shell ── */}
       <main
         aria-label="Login ke akun Roboedu"
-        className="w-full max-w-5xl flex flex-col md:flex-row bg-card border-2 border-border neo-shadow overflow-hidden rounded-none"
+        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden rounded-none"
       >
         {/* ════════════════════════════════════════════
             LEFT — Image canvas
@@ -77,7 +77,7 @@ export default function LoginPage() {
             flex flex-col justify-between
             bg-accent-soft-blue
             border-b-2 md:border-b-0 md:border-r-2 border-border
-            min-h-[320px] md:min-h-[560px]
+            min-h-[320px] md:min-h-0
             p-8
           "
         >
@@ -144,7 +144,7 @@ export default function LoginPage() {
         {/* ════════════════════════════════════════════
             RIGHT — Login form
             ════════════════════════════════════════════ */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card">
+        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
           {/* ── Header ── */}
           <div className="text-center mb-8">
             {/* Roboedu badge */}
@@ -176,7 +176,7 @@ export default function LoginPage() {
                 color: "var(--color-foreground)",
               }}
             >
-              Welcome Back
+              Welcome
             </h2>
             <p className="font-body text-sm text-muted-foreground">
               Masukkan email dan password untuk mengakses akunmu
@@ -291,7 +291,7 @@ export default function LoginPage() {
               size="lg"
               neo
               disabled={isLoading}
-              className="w-full rounded-none uppercase tracking-wide font-body font-bold text-sm"
+              className="w-full rounded-lg uppercase tracking-wide font-body font-bold text-sm"
             >
               {isLoading ? "Masuk…" : "Masuk"}
             </Button>
@@ -313,7 +313,7 @@ export default function LoginPage() {
               size="lg"
               neo
               onClick={handleGoogleSignIn}
-              className="w-full rounded-none font-body font-bold text-sm gap-3"
+              className="w-full rounded-lg font-body font-bold text-sm gap-3"
             >
               <GoogleIcon />
               Masuk dengan Google
@@ -332,6 +332,6 @@ export default function LoginPage() {
           </p>
         </div>
       </main>
-    </div>
+    </>
   );
 }

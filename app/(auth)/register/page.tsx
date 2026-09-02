@@ -78,11 +78,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
+    <>
       {/* ── Card Shell ── */}
       <main
         aria-label="Daftar akun Roboedu"
-        className="w-full max-w-5xl flex flex-col md:flex-row bg-card border-2 border-border neo-shadow overflow-hidden"
+        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden"
       >
         {/* ════════════════════════════════════════════
             LEFT — Image canvas (hidden on mobile)
@@ -146,7 +146,7 @@ export default function RegisterPage() {
         {/* ════════════════════════════════════════════
             RIGHT — Register form
             ════════════════════════════════════════════ */}
-        <section className="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center bg-card">
+        <section className="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
           {/* ── Header ── */}
           <div className="mb-8 text-center flex flex-col items-center">
             {/* Brand badge */}
@@ -265,7 +265,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Password */}
-            {/* <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="register-password"
                 className="font-body font-bold text-sm text-foreground"
@@ -293,7 +293,7 @@ export default function RegisterPage() {
                   transition-colors duration-150
                 "
               />
-            </div> */}
+            </div>
 
             {/* Phone (optional) */}
             <div className="flex flex-col gap-1.5">
@@ -367,7 +367,7 @@ export default function RegisterPage() {
               size="lg"
               neo
               disabled={isLoading || !agreedToTerms}
-              className="w-full rounded-none uppercase tracking-wide font-body font-bold text-sm mt-2"
+              className="w-full rounded-lg uppercase tracking-wide font-body font-bold text-sm mt-2"
             >
               {isLoading ? "Mendaftar…" : "Daftar"}
             </Button>
@@ -389,7 +389,7 @@ export default function RegisterPage() {
               size="lg"
               neo
               onClick={handleGoogleSignUp}
-              className="w-full rounded-none font-body font-bold text-sm gap-3"
+              className="w-full rounded-lg font-body font-bold text-sm gap-3"
             >
               <GoogleIcon />
               Daftar dengan Google
@@ -408,6 +408,6 @@ export default function RegisterPage() {
           </form>
         </section>
       </main>
-    </div>
+    </>
   );
 }
