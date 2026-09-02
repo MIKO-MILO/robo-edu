@@ -34,13 +34,6 @@ export function AboutValuesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-12 sm:gap-16">
         {/* Headline Center */}
         <div className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto">
-<<<<<<< HEAD
-=======
-          <div className="inline-flex items-center gap-2 bg-accent-butter border-2 border-foreground neo-shadow-icon px-4 py-1.5 rounded-full font-body font-bold text-xs sm:text-sm text-foreground">
-            <Star className="w-4 h-4 text-foreground fill-foreground" />
-            <span>Keunggulan Produk RoboEdu</span>
-          </div>
->>>>>>> origin/frontend-auth
 
           <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight">
             Keunggulan Utama Dalam{" "}
@@ -61,10 +54,6 @@ export function AboutValuesSection() {
               key={index}
               title={item.title}
               description={item.description}
-<<<<<<< HEAD
-=======
-              badgeText={item.badgeText}
->>>>>>> origin/frontend-auth
               icon={item.icon}
               bgColorClass={item.bgColorClass}
             />
