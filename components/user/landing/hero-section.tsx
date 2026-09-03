@@ -19,7 +19,7 @@ const dynamicItems = [
     bg: "bg-[#A3B1FF]", // Ungu Soft
     textColor: "text-[#103B5E]", // Biru Pekat
   },
-{
+  {
     text: "Kreatif & Interaktif!",
     bg: "bg-[#C9E9F6]", // Soft Cyan
     textColor: "text-[#103B5E]", // Biru Gelap
@@ -111,7 +111,7 @@ export default function HeroSection() {
             >
               {/* Lingkaran Kecil (Warna mengikuti teks lewat bg-current) */}
               <span className="w-2.5 h-2.5 rounded-full bg-current shrink-0" />
-              
+
               <span>
                 {displayedText}
                 <span className="animate-pulse ml-0.5 opacity-80">|</span>
@@ -125,13 +125,13 @@ export default function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="relative flex flex-col sm:flex-row items-center gap-3 pt-3 w-full sm:w-auto">
-           <Link
-  href="/product"
-  className={`inline-flex items-center justify-center gap-2.5 font-extrabold text-sm px-6 py-3.5 rounded-full shadow-lg hover:scale-105 transition-all duration-500 ease-in-out w-full sm:w-auto z-10 ${currentStyle.bg} ${currentStyle.textColor}`}
->
-  <span>Jelajahi Mainan Robot</span>
-  <ArrowRight className="w-4 h-4 text-current" />
-</Link>
+            <Link
+              href="/product"
+              className={`inline-flex items-center justify-center gap-2.5 font-extrabold text-sm px-6 py-3.5 rounded-full shadow-lg hover:scale-105 transition-all duration-500 ease-in-out w-full sm:w-auto z-10 ${currentStyle.bg} ${currentStyle.textColor}`}
+            >
+              <span>Jelajahi Mainan Robot</span>
+              <ArrowRight className="w-4 h-4 text-current" />
+            </Link>
 
             <button
               type="button"
