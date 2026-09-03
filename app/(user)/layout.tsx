@@ -16,7 +16,7 @@ export default function UserLayout({
           Next.js layout nesting. No trapping ancestor with overflow
           or position that could break position:sticky.
       ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-4 z-50 w-full flex justify-center px-4">
+      <header className="sticky top-2 z-50 w-full flex justify-center px-4">
         <Navbar />
       </header>
 

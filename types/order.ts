@@ -132,6 +132,25 @@ export interface OrderDetail extends Order {
   }) | null;
 }
 
+/**
+ * DTO ringan untuk endpoint list order — GET /orders?page=...
+ * Hanya field yang dibutuhkan halaman history order (ringkasan),
+ * bukan `OrderDetail` yang load payment + shipment + semua items.
+ * Kalau backend menambah/mengubah field preview, cukup ubah di sini.
+ */
+export interface OrderListItem
+  extends Pick<Order, "id" | "order_number" | "status" | "total" | "created_at"> {
+  /** Preview produk pertama — untuk thumbnail & nama di kartu order */
+  first_item: {
+    product_name_snapshot: string;
+    variant_name_snapshot: string | null;
+    /** URL gambar produk; null jika belum ada gambar */
+    image_url: string | null;
+  };
+  /** Total jumlah item dalam order (untuk label "+N produk lainnya") */
+  item_count: number;
+}
+
 /** Body — POST /checkout/summary DAN POST /orders (api.md §10) */
 export interface CreateOrderRequestBody {
   address_id: UUID;
