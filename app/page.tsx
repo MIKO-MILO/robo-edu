@@ -7,7 +7,7 @@ import DiskonPromo from "@/components/user/landing/diskon-promo";
 import Testimoni from "@/components/user/landing/testimoni";
 import MaskotProduct from "@/components/user/landing/maskot-product";
 import FAQ from "@/components/user/landing/faq";
-import CarouselLogo from "@/components/user/carousel-logo";
+import Footer from "@/components/user/footer";
 
 export default function HomePage() {
   return (
@@ -19,7 +19,7 @@ export default function HomePage() {
       <VideoDemo />
       <Testimoni />
       <FAQ />
-      <CarouselLogo />
+      <Footer />
     </main>
   );
 }
