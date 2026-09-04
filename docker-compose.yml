@@ -9,8 +9,10 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+    # Uncomment ports di bawah INGIN akses MySQL dari host (misal pakai DBeaver / npm run dev di luar docker)
+    # Kalau app hanya jalan di docker, tidak perlu di-expose — hindari konflik port 3306 di host
+    # ports:
+    #   - "3307:3306"
     healthcheck:
       test:
         [
@@ -31,6 +33,15 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    # Sama seperti MySQL: expose ke host hanya jika dibutuhkan (npm run dev di luar docker)
+    # Ganti ke 6380 di host agar tidak konflik dengan Redis lokal di port 6379
+    # ports:
+    #   - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   minio:
     image: minio/minio
@@ -42,12 +53,18 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9002:9000"   # API MinIO: host port 9002 → container 9000 (hindari konflik port 9000 di host)
+      - "9003:9001"   # Console UI MinIO: host port 9003 → container 9001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app:
     build:
       context: .
+      target: runner
     restart: unless-stopped
     env_file:
       - .env
@@ -55,11 +72,17 @@ services:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       minio:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "3001:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -70,7 +93,8 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 
 volumes:
   mysql_data:
