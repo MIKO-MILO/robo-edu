@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { RegisterRequestBody } from "@/types/user";
+import { useRouter } from "next/navigation";
 
 // ── Google SVG Icon ───────────────────────────────────────────────────────────
 function GoogleIcon() {
@@ -48,6 +49,7 @@ function DotGrid() {
 
 // ── Page Component ────────────────────────────────────────────────────────────
 export default function RegisterPage() {
+  const router = useRouter();
   // RegisterRequestBody: { name, email, password, phone? }
   const [form, setForm] = useState<RegisterRequestBody>({
     name: "",
@@ -67,9 +69,32 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!agreedToTerms) return;
     setIsLoading(true);
-    // TODO: wire up to POST /auth/register (api.md §2)
-    console.log("Register payload:", form);
-    setIsLoading(false);
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Registered:', data);
+        router.push('/login');
+      } else {
+        let errorMessage = 'Registration failed';
+        try {
+          const errData = await response.json();
+          if (errData && errData.message) errorMessage = errData.message;
+        } catch {
+          // ignore JSON parse errors
+        }
+        alert(errorMessage);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleGoogleSignUp() {

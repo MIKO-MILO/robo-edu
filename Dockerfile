@@ -53,4 +53,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]

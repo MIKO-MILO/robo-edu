@@ -7,6 +7,8 @@ services:
       MYSQL_USER: roboedu
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -58,7 +60,7 @@ services:
       context: .
       target: runner
     restart: unless-stopped
-    command: npm run dev
+    command: sh -c "npm run db:push && npm run dev"
     env_file:
       - .env
     depends_on:
