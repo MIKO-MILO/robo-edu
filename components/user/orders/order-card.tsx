@@ -106,7 +106,7 @@ export function OrderCard({
   return (
     <article
       aria-labelledby={`order-${order.id}-title`}
-      className="bg-card border-2 border-foreground rounded-3xl overflow-hidden flex flex-col neo-shadow transition-all"
+      className="w-full bg-card border-2 border-foreground rounded-3xl overflow-hidden flex flex-col neo-shadow transition-all"
     >
       {/* ── Order Header Bar ──────────────────────────────── */}
       <div className="bg-muted border-b-2 border-foreground p-4 sm:px-6 flex flex-wrap justify-between items-start sm:items-center gap-4 text-xs font-body">

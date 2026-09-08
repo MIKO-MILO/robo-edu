@@ -291,7 +291,7 @@ const INITIAL_ORDERS: FullOrderData[] = [
   },
 ];
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 3;
 
 function OrdersContent() {
   const [orders, setOrders] = useState<FullOrderData[]>(INITIAL_ORDERS);
@@ -432,8 +432,8 @@ function OrdersContent() {
   };
 
   return (
-    <main className="min-h-screen bg-background py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-[1200px] mx-auto flex flex-col gap-6 sm:gap-8">
+    <main className="w-full flex-1 min-w-0">
+      <div className="w-full flex flex-col gap-6 sm:gap-8">
         {/* ── Page Header ─────────────────────────────────── */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -465,7 +465,7 @@ function OrdersContent() {
         </header>
 
         {/* ── Filter Tabs & Controls Row ──────────────────── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-muted/30 p-2 sm:p-3 rounded-2xl border-2 border-foreground neo-shadow">
+        <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-muted/30 p-2 sm:p-3 rounded-2xl border-2 border-foreground neo-shadow">
           {/* Status Tabs */}
           <OrderStatusTabs
             activeTab={activeTab}

@@ -104,9 +104,10 @@ export default function Navbar() {
         </button>
 
         {/* Profile */}
-        <button
+        <Link
+          href="/profile/my-profile"
           aria-label="Account Profile"
-          className="transition-opacity hover:opacity-80"
+          className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
             src="/assets/svg/icon-user-profile.svg"
@@ -114,7 +115,7 @@ export default function Navbar() {
             width={36}
             height={36}
           />
-        </button>
+        </Link>
       </div>
     </nav>
   );
