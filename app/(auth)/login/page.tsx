@@ -77,7 +77,7 @@ export default function LoginPage() {
             flex flex-col justify-between
             bg-accent-soft-blue
             border-b-2 md:border-b-0 md:border-r-2 border-border
-            min-h-[320px] md:min-h-0
+            min-h-80 md:min-h-0
             p-8
           "
         >
@@ -103,7 +103,7 @@ export default function LoginPage() {
 
           {/* Logo mark — top-left */}
           <div className="relative z-20 self-start">
-            <Link href="/home" aria-label="Kembali ke beranda Roboedu">
+            <Link href="/" aria-label="Kembali ke beranda Roboedu">
               <span
                 style={{
                   fontFamily: "var(--font-heading)",
@@ -298,11 +298,11 @@ export default function LoginPage() {
 
             {/* Divider */}
             <div className="relative flex items-center py-1">
-              <div className="flex-grow border-t-2 border-border" />
+              <div className="grow border-t-2 border-border" />
               <span className="mx-4 font-body text-xs text-muted-foreground uppercase shrink-0">
                 atau
               </span>
-              <div className="flex-grow border-t-2 border-border" />
+              <div className="grow border-t-2 border-border" />
             </div>
 
             {/* Secondary CTA — Google */}

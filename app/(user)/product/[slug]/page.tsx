@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { ProductCard } from "@/components/ui/product-card";
+import { useWishlist } from "@/contexts/wishlist-context";
+import { useCart } from "@/contexts/cart-context";
 
 
 // ---------------------------------------------------------------------------
@@ -570,15 +572,13 @@ function RelatedProductsSection({
               className="flex-none w-[260px] md:w-[300px] snap-start"
             >
               <ProductCard
+                slug={item.id}
                 name={item.name}
                 price={item.price}
                 rating={item.rating}
                 reviewCount={item.reviewCount}
                 imageUrl={item.imageUrl}
                 bgColorClass={item.bgColorClass}
-                onDetailClick={() =>
-                  console.log("Detail:", item.id)
-                }
               />
             </div>
           ))}
@@ -628,10 +628,41 @@ export default function ProductDetailPage() {
   const product = DUMMY_PRODUCT;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addedSuccess, setAddedSuccess] = useState(false);
+
+  const { isWishlisted: checkWishlist, toggleItem } = useWishlist();
+  const { addToCart } = useCart();
+
+  const productId = "b3a1c2d4-9f7e-4a1b-8c6d-5e9f1a2b3c4d";
+  const isWishlisted = checkWishlist(productId);
 
   const handleDecrement = () => setQuantity((q) => Math.max(1, q - 1));
   const handleIncrement = () => setQuantity((q) => q + 1);
+
+  const handleToggleWishlist = () => {
+    toggleItem({
+      product_id: productId,
+      product_name: product.name,
+      product_slug: "robo-kit-starter-kit",
+      image_url: product.mainImage.src,
+      base_price: 450000,
+      in_stock: true,
+    });
+  };
+
+  const handleAddToCart = async () => {
+    setIsAdding(true);
+    const ok = await addToCart({
+      productId,
+      quantity,
+    });
+    setIsAdding(false);
+    if (ok) {
+      setAddedSuccess(true);
+      setTimeout(() => setAddedSuccess(false), 3000);
+    }
+  };
 
   return (
     <>
@@ -770,12 +801,15 @@ export default function ProductDetailPage() {
                 variant="primary"
                 size="lg"
                 neo
+                disabled={isAdding}
                 className="flex-1 rounded-full uppercase tracking-widest text-sm font-body font-bold"
-                onClick={() =>
-                  console.log("Add to cart:", product.name, quantity)
-                }
+                onClick={handleAddToCart}
               >
-                Tambah Ke Keranjang
+                {isAdding
+                  ? "Menambahkan..."
+                  : addedSuccess
+                  ? "✓ Berhasil Ditambahkan!"
+                  : "Tambah Ke Keranjang"}
               </Button>
 
               {/* Wishlist */}
@@ -786,7 +820,7 @@ export default function ProductDetailPage() {
                 aria-label={
                   isWishlisted ? "Hapus dari wishlist" : "Tambah ke wishlist"
                 }
-                onClick={() => setIsWishlisted((w) => !w)}
+                onClick={handleToggleWishlist}
               >
                 <Heart
                   size={20}

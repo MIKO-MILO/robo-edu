@@ -9,6 +9,11 @@ import React, {
 } from "react";
 import type { WishlistItemDetail } from "@/types";
 import type { UUID } from "@/types";
+import {
+  getWishlist,
+  addToWishlist,
+  removeFromWishlist,
+} from "@/src/lib/api/wishlist";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State & Action Types
@@ -78,7 +83,7 @@ const initialState: WishlistState = {
 
 function wishlistReducer(
   state: WishlistState,
-  action: WishlistAction
+  action: WishlistAction,
 ): WishlistState {
   switch (action.type) {
     case "SET_ITEMS":
@@ -95,7 +100,7 @@ function wishlistReducer(
       return {
         ...state,
         items: state.items.filter(
-          (i) => i.id !== action.payload.wishlist_item_id
+          (i) => i.id !== action.payload.wishlist_item_id,
         ),
       };
 
@@ -116,8 +121,6 @@ function wishlistReducer(
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
-const STORAGE_KEY = "roboedu_wishlist_v1";
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider
 // ─────────────────────────────────────────────────────────────────────────────
@@ -125,78 +128,77 @@ const STORAGE_KEY = "roboedu_wishlist_v1";
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(wishlistReducer, initialState);
 
-  // Hydrate dari localStorage saat mount (pre-backend persistence)
+  // Hydrate dari backend saat mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed: WishlistItemDetail[] = JSON.parse(stored);
-        dispatch({ type: "SET_ITEMS", payload: parsed });
+    async function initWishlist() {
+      dispatch({ type: "SET_LOADING", payload: true });
+      try {
+        const res = await getWishlist();
+        if (res.success) {
+          dispatch({ type: "SET_ITEMS", payload: res.data });
+        }
+      } catch (error) {
+        console.error("Gagal inisialisasi wishlist:", error);
+      } finally {
+        dispatch({ type: "SET_LOADING", payload: false });
       }
-    } catch {
-      // localStorage tidak tersedia (SSR / private mode) — abaikan
     }
+    initWishlist();
   }, []);
-
-  // Persist ke localStorage setiap kali items berubah
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
-    } catch {
-      // abaikan write error
-    }
-  }, [state.items]);
 
   // ── Service Layer ──────────────────────────────────────────────────────────
-  // Swap bagian ini saat backend siap — component tree tidak perlu diubah.
-  //
-  // Contoh migrasi ke backend:
-  //   async function addItem(product) {
-  //     const res = await fetch("/api/v1/wishlist", {
-  //       method: "POST",
-  //       body: JSON.stringify({ product_id: product.product_id }),
-  //       headers: { "Authorization": `Bearer ${token}` },
-  //     });
-  //     const data: ApiResponse<WishlistItemDetail> = await res.json();
-  //     dispatch({ type: "ADD_ITEM", payload: data.data });
-  //   }
-  // ──────────────────────────────────────────────────────────────────────────
 
-  const addItem = useCallback((product: WishlistProductInput) => {
-    // TODO(backend): POST /api/v1/wishlist → { product_id }
-    const newItem: WishlistItemDetail = {
-      id: `local-${product.product_id}-${Date.now()}`,
-      product_id: product.product_id,
-      product_name: product.product_name,
-      product_slug: product.product_slug,
-      image_url: product.image_url,
-      base_price: product.base_price,
-      in_stock: product.in_stock,
-      created_at: new Date().toISOString(),
-    };
-    dispatch({ type: "ADD_ITEM", payload: newItem });
+  const addItem = useCallback(async (product: WishlistProductInput) => {
+    try {
+      const res = await addToWishlist({ product_id: product.product_id });
+      if (res.success) {
+        // Karena response POST /wishlist hanya mengembalikan {id, userId, productId},
+        // kita perlu memetakan kembali ke WishlistItemDetail lengkap untuk UI.
+        const newItem: WishlistItemDetail = {
+          id: res.data.id,
+          product_id: product.product_id,
+          product_name: product.product_name,
+          product_slug: product.product_slug,
+          image_url: product.image_url,
+          base_price: product.base_price,
+          in_stock: product.in_stock,
+          created_at: new Date().toISOString(),
+        };
+        dispatch({ type: "ADD_ITEM", payload: newItem });
+      }
+    } catch (error) {
+      console.error("Gagal menambah wishlist:", error);
+      alert("Gagal menambah produk ke wishlist");
+    }
   }, []);
 
-  const removeItem = useCallback((wishlist_item_id: UUID) => {
-    // TODO(backend): DELETE /api/v1/wishlist/{wishlist_item_id}
-    dispatch({ type: "REMOVE_ITEM", payload: { wishlist_item_id } });
+  const removeItem = useCallback(async (wishlist_item_id: UUID) => {
+    try {
+      const res = await removeFromWishlist(wishlist_item_id);
+      if (res.success) {
+        dispatch({ type: "REMOVE_ITEM", payload: { wishlist_item_id } });
+      }
+    } catch (error) {
+      console.error("Gagal menghapus wishlist:", error);
+      alert("Gagal menghapus produk dari wishlist");
+    }
   }, []);
 
   const isWishlisted = useCallback(
     (product_id: UUID) => state.items.some((i) => i.product_id === product_id),
-    [state.items]
+    [state.items],
   );
 
   const getWishlistItemId = useCallback(
     (product_id: UUID): UUID | undefined =>
       state.items.find((i) => i.product_id === product_id)?.id,
-    [state.items]
+    [state.items],
   );
 
   const toggleItem = useCallback(
     (product: WishlistProductInput) => {
       const existing = state.items.find(
-        (i) => i.product_id === product.product_id
+        (i) => i.product_id === product.product_id,
       );
       if (existing) {
         removeItem(existing.id);
@@ -204,22 +206,22 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         addItem(product);
       }
     },
-    [state.items, addItem, removeItem]
+    [state.items, addItem, removeItem],
   );
 
   const openSidebar = useCallback(
     () => dispatch({ type: "SET_OPEN", payload: true }),
-    []
+    [],
   );
 
   const closeSidebar = useCallback(
     () => dispatch({ type: "SET_OPEN", payload: false }),
-    []
+    [],
   );
 
   const toggleSidebar = useCallback(
     () => dispatch({ type: "SET_OPEN", payload: !state.isOpen }),
-    [state.isOpen]
+    [state.isOpen],
   );
 
   const value: WishlistContextValue = {
@@ -253,7 +255,7 @@ export function useWishlist(): WishlistContextValue {
   if (!ctx) {
     throw new Error(
       "useWishlist() harus digunakan di dalam <WishlistProvider>. " +
-        "Pastikan komponen ini ada di dalam app/(user)/layout.tsx."
+        "Pastikan komponen ini ada di dalam app/(user)/layout.tsx.",
     );
   }
   return ctx;

@@ -1,12 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { ProductImage } from "@/components/ui/product-image";
 import { StarRating } from "@/components/ui/star-rating";
 import { WishlistButton } from "@/components/ui/wishlist-button";
 
 export interface ProductCardProps {
   id?: string;
+  slug?: string;
   name: string;
   price: string;
   rating?: number;
@@ -19,6 +21,7 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({
+  slug,
   name,
   price,
   rating = 5.0,
@@ -29,6 +32,14 @@ export function ProductCard({
   onDetailClick,
   onWishlistClick,
 }: ProductCardProps) {
+  const router = useRouter();
+  const handleDetail = () => {
+    if (onDetailClick) {
+      onDetailClick();
+    } else if (slug) {
+      router.push(`/product/${slug}`);
+    }
+  };
   return (
     <div
       className={`${bgColorClass} rounded-3xl p-4 flex flex-col gap-4 border-2 border-foreground`}
@@ -59,7 +70,7 @@ export function ProductCard({
 
       {/* Action Buttons */}
       <div className="flex justify-between items-center mt-auto pt-2">
-        <Button onClick={onDetailClick} variant="card" size="sm">
+        <Button onClick={handleDetail} variant="card" size="sm">
           Product Detail
         </Button>
 

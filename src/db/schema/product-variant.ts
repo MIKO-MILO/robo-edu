@@ -5,7 +5,7 @@ import { sql } from "drizzle-orm";
 export const productVariants = mysqlTable("product_variants", {
   id: varchar("id", { length: 36 }).primaryKey(),
   productId: varchar("product_id", { length: 36 }).notNull().references(() => products.id, { onDelete: "cascade", onUpdate: "cascade" }),
-  variantName: varchar("variant_name", { length: 150 }).notNull(),
+  variantName: varchar("variant_name", { length: 150 }).notNull().default("Standard"),
   sku: varchar("sku", { length: 100 }).notNull(),
   price: decimal("price", { precision: 15, scale: 2 }).notNull(),
   resellerPrice: decimal("reseller_price", { precision: 15, scale: 2 }).notNull(),

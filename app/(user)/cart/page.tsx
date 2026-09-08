@@ -3,17 +3,15 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCart } from "@/contexts/cart-context";
 
-interface CartItem {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  originalPrice: number;
-  quantity: number;
-  image: string;
-  bgColor: string; // Tailwind color class for playful card background
-  age: string;
+function formatPrice(val: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(val);
 }
 
 interface RecommendedProduct {
@@ -30,31 +28,7 @@ interface RecommendedProduct {
 }
 
 export default function CartPage() {
-  // 1. Cart Items State (Initial items matching description)
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "robo-1",
-      name: "RoboBuddy Mini",
-      category: "Interactive Spherical Robot",
-      price: 270.0,
-      originalPrice: 270.0,
-      quantity: 1,
-      image: "/images/robobuddy_toy.png",
-      bgColor: "bg-accent-orange/40",
-      age: "Ages 1-3",
-    },
-    {
-      id: "robo-2",
-      name: "BlockBot Builder",
-      category: "Modular Magnetic Robot",
-      price: 240.0,
-      originalPrice: 240.0,
-      quantity: 1,
-      image: "/images/blockbot_toy.png",
-      bgColor: "bg-accent-peach/40",
-      age: "Ages 3-5",
-    },
-  ]);
+  const { items: cartItems, isLoading, updateQuantity, removeItem, addToCart } = useCart();
 
   // 2. Recommended Products Data
   const recommendedProducts: RecommendedProduct[] = [
@@ -123,21 +97,20 @@ export default function CartPage() {
 
   const recommendationSliderRef = useRef<HTMLDivElement>(null);
 
-  // 4. Cart Logic Handlers
+  // 4. Cart Logic Handlers (Database-connected via useCart)
   const handleQuantityChange = (id: string, delta: number) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          return { ...item, quantity: Math.max(1, newQty) };
-        }
-        return item;
-      })
-    );
+    const item = cartItems.find((i) => i.id === id);
+    if (!item) return;
+    const newQty = item.quantity + delta;
+    if (newQty < 1) {
+      removeItem(id);
+    } else {
+      updateQuantity(id, newQty);
+    }
   };
 
   const handleRemoveItem = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    removeItem(id);
   };
 
   const handleApplyCoupon = (e: React.FormEvent) => {
@@ -161,25 +134,12 @@ export default function CartPage() {
     );
   };
 
-  const handleAddRecommendedToCart = (prod: RecommendedProduct) => {
-    // Check if product already exists in cart
-    const existingItem = cartItems.find((item) => item.name === prod.name);
-    if (existingItem) {
-      handleQuantityChange(existingItem.id, 1);
-    } else {
-      const newItem: CartItem = {
-        id: `robo-${Date.now()}`,
-        name: prod.name,
-        category: prod.category,
-        price: prod.price,
-        originalPrice: prod.originalPrice,
-        quantity: 1,
-        image: prod.image,
-        bgColor: prod.bgColor,
-        age: prod.age,
-      };
-      setCartItems((prev) => [...prev, newItem]);
-    }
+  const handleAddRecommendedToCart = async (prod: RecommendedProduct) => {
+    // Tambah produk ke keranjang database
+    await addToCart({
+      productId: "b3a1c2d4-9f7e-4a1b-8c6d-5e9f1a2b3c4d",
+      quantity: 1,
+    });
   };
 
   const handleScrollSlider = (direction: "left" | "right") => {
@@ -247,33 +207,34 @@ export default function CartPage() {
                     <div className="col-span-1 md:col-span-6 flex items-center gap-3 sm:gap-4 min-w-0">
                       {/* Playful Image Container */}
                       <div
-                        className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 ${item.bgColor} rounded-2xl flex items-center justify-center p-2 border-2 border-white shadow-sm flex-shrink-0 transition-transform duration-300 hover:scale-105`}
+                        className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-accent-orange/20 rounded-2xl flex items-center justify-center p-2 border-2 border-white shadow-sm flex-shrink-0 transition-transform duration-300 hover:scale-105"
                       >
                         <Image
-                          src={item.image}
+                          src={item.imageUrl || "/images/placeholder-product.jpg"}
                           alt={item.name}
                           width={80}
                           height={80}
                           className="object-contain max-h-full"
-                          priority
                         />
                       </div>
                       
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground mb-1 leading-tight">
-                          {item.name}
-                        </h3>
+                        <Link href={`/product/${item.slug || item.productId}`}>
+                          <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground mb-1 leading-tight hover:underline">
+                            {item.name}
+                          </h3>
+                        </Link>
                         <p className="font-body text-xs sm:text-sm text-muted-foreground mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span>{item.category}</span>
+                          <span>Varian: {item.variantName || "Standard"}</span>
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-border-strong flex-shrink-0"></span>
-                          <span className="font-semibold text-primary-900 flex-shrink-0">{item.age}</span>
+                          <span className="font-semibold text-primary-900 flex-shrink-0">{formatPrice(item.price)}</span>
                         </p>
                         
                         {/* Remove Action */}
                         <button
                           onClick={() => handleRemoveItem(item.id)}
-                          className="inline-flex items-center font-body text-xs text-danger hover:text-danger-bg font-semibold transition-colors duration-200"
+                          className="inline-flex items-center font-body text-xs text-danger hover:text-danger-bg font-semibold transition-colors duration-200 cursor-pointer"
                           aria-label={`Remove ${item.name} from cart`}
                         >
                           <svg
@@ -289,21 +250,21 @@ export default function CartPage() {
                               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                             />
                           </svg>
-                          Remove
+                          Hapus
                         </button>
                       </div>
                     </div>
 
                     {/* Quantity Selector */}
                     <div className="col-span-1 md:col-span-3 flex justify-between md:justify-center items-center py-2 md:py-0 border-t border-border/40 md:border-none">
-                      <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">Quantity</span>
+                      <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">Jumlah</span>
                       
                       <div className="flex items-center">
                         {/* Minus Button */}
                         <button
                           onClick={() => handleQuantityChange(item.id, -1)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200"
-                          aria-label="Decrease quantity"
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer"
+                          aria-label="Kurangi jumlah"
                         >
                           <svg
                             className="w-3 h-3 sm:w-3.5 sm:h-3.5"
@@ -324,8 +285,8 @@ export default function CartPage() {
                         {/* Plus Button */}
                         <button
                           onClick={() => handleQuantityChange(item.id, 1)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200"
-                          aria-label="Increase quantity"
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer"
+                          aria-label="Tambah jumlah"
                         >
                           <svg
                             className="w-3 h-3 sm:w-3.5 sm:h-3.5"
@@ -344,7 +305,7 @@ export default function CartPage() {
                     <div className="col-span-1 md:col-span-3 flex justify-between md:justify-end items-center py-2 md:py-0 border-t border-border/40 md:border-none">
                       <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">Subtotal</span>
                       <span className="font-heading font-bold text-base sm:text-lg text-foreground">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatPrice(item.price * item.quantity)}
                       </span>
                     </div>
                   </div>
@@ -354,7 +315,7 @@ export default function CartPage() {
               {/* Continue Shopping Link */}
               <div className="pt-6 border-t border-border flex justify-start">
                 <Link
-                  href="/"
+                  href="/product"
                   className="inline-flex items-center font-body text-xs sm:text-sm font-bold text-primary hover:text-primary-700 transition-colors duration-200 group"
                 >
                   <svg
@@ -366,7 +327,7 @@ export default function CartPage() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                   </svg>
-                  Continue Shopping
+                  Lanjut Belanja
                 </Link>
               </div>
             </div>
@@ -377,36 +338,36 @@ export default function CartPage() {
         <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 w-full">
           <div className="bg-[#FAF6ED] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm">
             <h2 className="font-heading text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground mb-4 sm:mb-6 pb-2 border-b border-border">
-              Order Summary
+              Ringkasan Pesanan
             </h2>
 
             <div className="space-y-3 sm:space-y-4 mb-6">
               {/* Subtotal */}
               <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
                 <span>Subtotal</span>
-                <span className="font-bold">${subtotal.toFixed(2)}</span>
+                <span className="font-bold">{formatPrice(subtotal)}</span>
               </div>
 
               {/* Coupon Discount (if applied) */}
               {appliedDiscount > 0 && (
                 <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-success font-semibold">
-                  <span>Discount (15%)</span>
-                  <span>-${discountAmount.toFixed(2)}</span>
+                  <span>Diskon (15%)</span>
+                  <span>-{formatPrice(discountAmount)}</span>
                 </div>
               )}
 
               {/* Shipping */}
               <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
-                <span>Shipping</span>
+                <span>Pengiriman</span>
                 <span className="font-bold text-success uppercase text-xs sm:text-sm bg-success-bg/20 px-2 py-0.5 rounded">
-                  Free
+                  Gratis
                 </span>
               </div>
 
               {/* Estimated Tax */}
               <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
-                <span>Estimated Tax</span>
-                <span className="font-bold">${estimatedTax.toFixed(2)}</span>
+                <span>Estimasi Pajak</span>
+                <span className="font-bold">{formatPrice(estimatedTax)}</span>
               </div>
 
               {/* Divider */}
@@ -415,7 +376,7 @@ export default function CartPage() {
                 <div className="flex justify-between items-end">
                   <span className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground">Total</span>
                   <span className="font-heading text-xl sm:text-2xl lg:text-3xl font-extrabold text-primary-900 leading-none">
-                    ${total.toFixed(2)}
+                    {formatPrice(total)}
                   </span>
                 </div>
               </div>

@@ -5,7 +5,7 @@ export default function ProductsLoading() {
     <main className="min-h-screen bg-background">
       {/* Hero Skeleton */}
       <section className="w-full min-h-[50vh] bg-card border-b-2 border-foreground p-8 md:p-16 flex flex-col justify-center">
-        <div className="max-w-screen-xl mx-auto w-full flex flex-col gap-4">
+        <div className="max-w-7xl mx-auto w-full flex flex-col gap-4">
           <Skeleton className="h-6 w-36 bg-accent-soft-blue/50" />
           <Skeleton className="h-12 w-3/4 max-w-lg bg-muted" />
           <Skeleton className="h-6 w-1/2 max-w-md bg-muted" />
@@ -13,7 +13,7 @@ export default function ProductsLoading() {
       </section>
 
       {/* Catalog Section Skeleton */}
-      <section className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-8">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-8">
         {/* Search Bar Skeleton */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-2 border-foreground rounded-2xl p-4 bg-card shadow-[4px_4px_0px_0px_#3D2900]">
           <Skeleton className="h-8 w-44 bg-muted shrink-0" />

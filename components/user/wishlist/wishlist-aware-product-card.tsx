@@ -69,6 +69,7 @@ export function WishlistAwareProductCard({
   return (
     <ProductCard
       id={id}
+      slug={slug}
       name={name}
       price={price}
       imageUrl={imageUrl}
