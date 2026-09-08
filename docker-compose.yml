@@ -79,6 +79,7 @@ services:
       - ./postcss.config.mjs:/app/postcss.config.mjs
       - ./components.json:/app/components.json
       - ./drizzle.config.ts:/app/drizzle.config.ts
+      - ./proxy.ts:/app/proxy.ts
     user: "${APP_USER:-0:0}"
     healthcheck:
       test: [ "CMD-SHELL", 'curl -fsS http://localhost:3000 || node -e "require(''http'').get(''http://localhost:3000'', r => process.exit(r.statusCode===200?0:1)).on(''error'',()=>process.exit(1))"' ]

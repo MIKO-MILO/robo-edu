@@ -91,7 +91,8 @@ export default function Navbar() {
       {/* Trailing Actions */}
       <div className="flex items-center gap-6">
         {/* Cart */}
-        <button
+        <Link
+          href="/cart"
           aria-label="Shopping Basket"
           className="transition-opacity hover:opacity-80"
         >
@@ -101,7 +102,7 @@ export default function Navbar() {
             width={34}
             height={34}
           />
-        </button>
+        </Link>
 
         {/* Profile */}
         <Link

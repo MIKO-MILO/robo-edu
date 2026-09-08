@@ -5,6 +5,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { LoginRequestBody } from "@/types/user";
 
@@ -40,6 +41,7 @@ export default function LoginPage() {
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -49,10 +51,26 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: wire up to POST /auth/login (api.md §2)
-    // const body: LoginRequestBody = { email: form.email, password: form.password };
-    console.log("Login payload:", form, { rememberMe });
-    setIsLoading(false);
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, rememberMe }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.message ?? "Login gagal.");
+        return;
+      }
+
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.replace(next?.startsWith("/") ? next : "/");
+      router.refresh();
+    } catch {
+      alert("Login gagal. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleGoogleSignIn() {

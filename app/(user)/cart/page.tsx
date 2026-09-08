@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface CartItem {
   id: string;
@@ -30,6 +31,7 @@ interface RecommendedProduct {
 }
 
 export default function CartPage() {
+  const router = useRouter();
   // 1. Cart Items State (Initial items matching description)
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
@@ -194,6 +196,15 @@ export default function CartPage() {
 
   // 5. Calculations
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  async function handleCheckout() {
+    const response = await fetch("/api/auth/me", { cache: "no-store" });
+    if (!response.ok) {
+      router.push("/login?next=/cart");
+      return;
+    }
+    alert("Proceeding to checkout mock sequence...");
+  }
   const discountAmount = subtotal * appliedDiscount;
   const shipping = subtotal > 0 ? 0 : 0; // FREE Shipping as per design
   const estimatedTax = (subtotal - discountAmount) * 0.08; // 8% Tax
@@ -460,7 +471,7 @@ export default function CartPage() {
 
             {/* Proceed to Checkout Button */}
             <button
-              onClick={() => alert("Proceeding to checkout mock sequence...")}
+              onClick={handleCheckout}
               className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg"
             >
               Proceed to Checkout

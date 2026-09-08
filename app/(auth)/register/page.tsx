@@ -5,6 +5,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { RegisterRequestBody } from "@/types/user";
 
@@ -57,6 +58,7 @@ export default function RegisterPage() {
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -67,9 +69,25 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!agreedToTerms) return;
     setIsLoading(true);
-    // TODO: wire up to POST /auth/register (api.md §2)
-    console.log("Register payload:", form);
-    setIsLoading(false);
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.message ?? "Pendaftaran gagal.");
+        return;
+      }
+
+      alert("Pendaftaran berhasil. Silakan masuk dengan akun baru kamu.");
+      router.replace("/login");
+    } catch {
+      alert("Pendaftaran gagal. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleGoogleSignUp() {
