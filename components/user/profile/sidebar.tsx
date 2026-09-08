@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, Lock, Bell, LogOut } from "lucide-react";
+import { User, Lock, Bell, LogOut, ShoppingCart } from "lucide-react";
 import clsx from "clsx";
 
 export default function Sidebar() {
@@ -12,6 +12,7 @@ export default function Sidebar() {
   const links = [
     { href: "/profile/my-profile", label: "Profile Settings", icon: User },
     { href: "/profile/settings", label: "Settings", icon: Lock },
+    { href: "/profile/orders", label: "Orders History", icon: ShoppingCart },
     { href: "/profile/notifications", label: "Notifications", icon: Bell },
   ];
 
