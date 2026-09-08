@@ -7,19 +7,12 @@ services:
       MYSQL_USER: roboedu
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-uroot",
-          "-p${DB_ROOT_PASSWORD}",
-        ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}" ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -30,7 +23,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -48,7 +41,7 @@ services:
       - "${MINIO_API_PORT:-9002}:9000"
       - "${MINIO_CONSOLE_PORT:-9003}:9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -58,9 +51,11 @@ services:
       context: .
       target: runner
     restart: unless-stopped
-    command: npm run dev
+    command: sh -c "npm run db:push && npm run dev -- --webpack"
     env_file:
       - .env
+    environment:
+      WATCHPACK_POLLING: "true"
     depends_on:
       mysql:
         condition: service_healthy
@@ -86,11 +81,7 @@ services:
       - ./drizzle.config.ts:/app/drizzle.config.ts
     user: "${APP_USER:-0:0}"
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'curl -fsS http://localhost:3000 || node -e "require(''http'').get(''http://localhost:3000'', r => process.exit(r.statusCode===200?0:1)).on(''error'',()=>process.exit(1))"',
-        ]
+      test: [ "CMD-SHELL", 'curl -fsS http://localhost:3000 || node -e "require(''http'').get(''http://localhost:3000'', r => process.exit(r.statusCode===200?0:1)).on(''error'',()=>process.exit(1))"' ]
       interval: 10s
       timeout: 10s
       retries: 20
