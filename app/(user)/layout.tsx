@@ -1,6 +1,7 @@
 import Navbar from "@/components/user/navbar";
 import Footer from "@/components/user/footer";
 import { WishlistProvider } from "@/contexts/wishlist-context";
+import { CartProvider } from "@/contexts/cart-context";
 import { WishlistFab } from "@/components/user/wishlist/wishlist-fab";
 import { WishlistSidebar } from "@/components/user/wishlist/wishlist-sidebar";
 
@@ -11,6 +12,7 @@ export default function UserLayout({
 }) {
   return (
     <WishlistProvider>
+      <CartProvider>
       {/* ── Sticky Navbar ───────────────────────────────────
           Lives at the layout level — direct child of <body> via
           Next.js layout nesting. No trapping ancestor with overflow
@@ -31,8 +33,9 @@ export default function UserLayout({
           oleh overflow atau stacking context dari page children.
           FAB z-40 < Sidebar z-50 < Navbar z-50 (sticky, separate stacking context).
       ─────────────────────────────────────────────────────── */}
-      <WishlistFab />
-      <WishlistSidebar />
+        <WishlistFab />
+        <WishlistSidebar />
+      </CartProvider>
     </WishlistProvider>
   );
 }

@@ -114,7 +114,7 @@ export default function RegisterPage() {
             flex-col justify-end
             bg-accent-pink
             border-r-2 border-border
-            min-h-[560px]
+            min-h-140
           "
         >
           {/* Dot grid decorative background */}
@@ -145,7 +145,7 @@ export default function RegisterPage() {
               Platform Robotika Edukasi
             </p>
             <h1
-              className="break-words leading-none tracking-tight uppercase"
+              className="wrap-break-word leading-none tracking-tight uppercase"
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: "clamp(2rem, 4.5vw, 4rem)",
@@ -392,11 +392,11 @@ export default function RegisterPage() {
 
             {/* Divider */}
             <div className="relative flex items-center py-1">
-              <div className="flex-grow border-t-2 border-border" />
+              <div className="grow border-t-2 border-border" />
               <span className="mx-4 font-body text-xs text-muted-foreground uppercase shrink-0">
                 atau
               </span>
-              <div className="flex-grow border-t-2 border-border" />
+              <div className="grow border-t-2 border-border" />
             </div>
 
             {/* Secondary CTA — Google */}
