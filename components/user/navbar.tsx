@@ -27,8 +27,8 @@ export default function Navbar() {
       }}
     >
       {/* Brand / Logo */}
-      <Link
-        href="/home"
+      <Link  
+        href="/"
         className="flex items-center gap-2 transition-opacity hover:opacity-90"
       >
         <Image

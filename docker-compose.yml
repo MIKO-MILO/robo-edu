@@ -63,6 +63,8 @@ services:
     command: sh -c "npm run db:push && npm run dev"
     env_file:
       - .env
+    environment:
+      WATCHPACK_POLLING: "true"
     depends_on:
       mysql:
         condition: service_healthy

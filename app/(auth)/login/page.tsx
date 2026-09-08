@@ -52,18 +52,18 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       if (response.ok) {
         const data = await response.json();
-        console.log('Logged in:', data);
+        console.log("Logged in:", data);
         // Redirect to homepage after successful login
-        router.push('/');
+        router.push("/");
       } else {
-        let errorMessage = 'Login failed';
+        let errorMessage = "Login failed";
         try {
           const errData = await response.json();
           if (errData && errData.message) errorMessage = errData.message;
@@ -73,106 +73,109 @@ export default function LoginPage() {
         alert(errorMessage);
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      alert('An error occurred during login');
+      console.error("Error during login:", error);
+      alert("An error occurred during login");
     } finally {
       setIsLoading(false);
     }
+  }
 
-    function handleGoogleSignIn() {
-      // TODO: wire up to OAuth flow
-      console.log("Sign in with Google");
-    }
+  function handleGoogleSignIn() {
+    // TODO: wire up to OAuth flow
+    console.log("Sign in with Google");
+  }
 
-    return (
-      <>
-        {/* ── Card Shell ── */}
-        <main
-          aria-label="Login ke akun Roboedu"
-          className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden rounded-none"
-        >
-          {/* ════════════════════════════════════════════
+  return (
+    <>
+      {/* ── Card Shell ── */}
+      <main
+        aria-label="Login ke akun Roboedu"
+        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden rounded-none"
+      >
+        {/* ════════════════════════════════════════════
             LEFT — Image canvas
             ════════════════════════════════════════════ */}
-          <div
-            className="
+        <div
+          className="
             w-full md:w-1/2
             relative overflow-hidden
             flex flex-col justify-between
             bg-accent-soft-blue
             border-b-2 md:border-b-0 md:border-r-2 border-border
-            min-h-[320px] md:min-h-0
+            min-h-80 md:min-h-0
             p-8
           "
-          >
-            {/* Background team photo */}
-            <Image
-              src="/images/[Sinergi dan Komitmen Bersama Roboedu Team]Rangkaian profil yang telah ditampilkan merupakan sa.webp"
-              alt="Tim Roboedu yang berkomitmen memberikan pengalaman belajar robotika terbaik"
-              fill
-              className="object-cover object-center"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+        >
+          {/* Background team photo */}
+          <Image
+            src="/images/[Sinergi dan Komitmen Bersama Roboedu Team]Rangkaian profil yang telah ditampilkan merupakan sa.webp"
+            alt="Tim Roboedu yang berkomitmen memberikan pengalaman belajar robotika terbaik"
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
 
-            {/* Gradient overlay — bottom-to-top so headline is readable */}
-            <div
-              className="absolute inset-0 z-10"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(36,131,208,0.85) 0%, rgba(36,131,208,0.35) 50%, rgba(36,131,208,0.10) 100%)",
-              }}
-              aria-hidden="true"
-            />
+          {/* Gradient overlay — bottom-to-top so headline is readable */}
+          <div
+            className="absolute inset-0 z-10"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(36,131,208,0.85) 0%, rgba(36,131,208,0.35) 50%, rgba(36,131,208,0.10) 100%)",
+            }}
+            aria-hidden="true"
+          />
 
-            {/* Logo mark — top-left */}
-            <div className="relative z-20 self-start">
-              <Link href="/home" aria-label="Kembali ke beranda Roboedu">
-                <span
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontSize: "20px",
-                    fontWeight: 800,
-                    color: "#ffffff",
-                    letterSpacing: "-0.03em",
-                  }}
-                >
-                  roboedu
-                </span>
-              </Link>
-            </div>
-
-            {/* Tagline — bottom-left */}
-            <div className="relative z-20 self-start mt-auto">
-              <p className="text-white/80 font-body text-sm mb-2 uppercase tracking-widest">
-                Platform Robotika Edukasi
-              </p>
-              <h1
+          {/* Logo mark — top-left */}
+          <div className="relative z-20 self-start">
+            <Link href="/" aria-label="Kembali ke beranda Roboedu">
+              <span
                 style={{
                   fontFamily: "var(--font-heading)",
-                  fontSize: "clamp(32px, 5vw, 52px)",
+                  fontSize: "20px",
                   fontWeight: 800,
                   color: "#ffffff",
-                  lineHeight: 1.1,
                   letterSpacing: "-0.03em",
-                  textShadow: "2px 2px 0px rgba(0,0,0,0.25)",
                 }}
               >
-                BUILD.<br />
-                LEARN.<br />
-                CREATE.
-              </h1>
-            </div>
+                roboedu
+              </span>
+            </Link>
           </div>
 
-          {/* ════════════════════════════════════════════
+          {/* Tagline — bottom-left */}
+          <div className="relative z-20 self-start mt-auto">
+            <p className="text-white/80 font-body text-sm mb-2 uppercase tracking-widest">
+              Platform Robotika Edukasi
+            </p>
+            <h1
+              style={{
+                fontFamily: "var(--font-heading)",
+                fontSize: "clamp(32px, 5vw, 52px)",
+                fontWeight: 800,
+                color: "#ffffff",
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
+                textShadow: "2px 2px 0px rgba(0,0,0,0.25)",
+              }}
+            >
+              BUILD.
+              <br />
+              LEARN.
+              <br />
+              CREATE.
+            </h1>
+          </div>
+        </div>
+
+        {/* ════════════════════════════════════════════
             RIGHT — Login form
             ════════════════════════════════════════════ */}
-          <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
-            {/* ── Header ── */}
-            <div className="text-center mb-8">
-              {/* Roboedu badge */}
-              {/* <div className="flex justify-center mb-5">
+        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
+          {/* ── Header ── */}
+          <div className="text-center mb-8">
+            {/* Roboedu badge */}
+            {/* <div className="flex justify-center mb-5">
               <div
                 className="w-14 h-14 rounded-full bg-primary flex items-center justify-center border-2 border-border neo-shadow-icon"
                 aria-hidden="true"
@@ -190,47 +193,78 @@ export default function LoginPage() {
                 </span>
               </div>
             </div> */}
-              <h2
-                className="uppercase mb-2"
-                style={{
-                  fontFamily: "var(--font-heading)",
-                  fontSize: "24px",
-                  fontWeight: 700,
-                  lineHeight: 1.3,
-                  color: "var(--color-foreground)",
-                }}
+            <h2
+              className="uppercase mb-2"
+              style={{
+                fontFamily: "var(--font-heading)",
+                fontSize: "24px",
+                fontWeight: 700,
+                lineHeight: 1.3,
+                color: "var(--color-foreground)",
+              }}
+            >
+              Welcome
+            </h2>
+            <p className="font-body text-sm text-muted-foreground">
+              Masukkan email dan password untuk mengakses akunmu
+            </p>
+          </div>
+
+          {/* ── Form ── */}
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="space-y-5 w-full max-w-sm mx-auto"
+          >
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="login-email"
+                className="block font-body font-bold text-sm text-foreground"
               >
-                Welcome
-              </h2>
-              <p className="font-body text-sm text-muted-foreground">
-                Masukkan email dan password untuk mengakses akunmu
-              </p>
+                Email
+              </label>
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Masukkan email kamu"
+                className="
+                  w-full
+                  bg-muted text-foreground
+                  border-2 border-border
+                  rounded-none
+                  px-3 py-2.5
+                  font-body text-sm
+                  placeholder:text-muted-foreground
+                  focus:outline-none focus:ring-0 focus:border-primary
+                  transition-colors duration-150
+                "
+              />
             </div>
 
-            {/* ── Form ── */}
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="space-y-5 w-full max-w-sm mx-auto"
-            >
-              {/* Email */}
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="login-email"
-                  className="block font-body font-bold text-sm text-foreground"
-                >
-                  Email
-                </label>
-                <input
-                  id="login-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Masukkan email kamu"
-                  className="
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="login-password"
+                className="block font-body font-bold text-sm text-foreground"
+              >
+                Password
+              </label>
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Masukkan password kamu"
+                className="
                   w-full
                   bg-muted text-foreground
                   border-2 border-border
@@ -241,52 +275,21 @@ export default function LoginPage() {
                   focus:outline-none focus:ring-0 focus:border-primary
                   transition-colors duration-150
                 "
-                />
-              </div>
+              />
+            </div>
 
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="login-password"
-                  className="block font-body font-bold text-sm text-foreground"
-                >
-                  Password
-                </label>
+            {/* Remember me + Forgot password */}
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="login-remember"
+                className="flex items-center gap-2 cursor-pointer font-body text-xs text-foreground select-none"
+              >
                 <input
-                  id="login-password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Masukkan password kamu"
+                  id="login-remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="
-                  w-full
-                  bg-muted text-foreground
-                  border-2 border-border
-                  rounded-none
-                  px-3 py-2.5
-                  font-body text-sm
-                  placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
-                  transition-colors duration-150
-                "
-                />
-              </div>
-
-              {/* Remember me + Forgot password */}
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="login-remember"
-                  className="flex items-center gap-2 cursor-pointer font-body text-xs text-foreground select-none"
-                >
-                  <input
-                    id="login-remember"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="
                     w-4 h-4
                     bg-muted
                     border-2 border-border
@@ -295,68 +298,67 @@ export default function LoginPage() {
                     cursor-pointer
                     focus:ring-0
                   "
-                  />
-                  Ingat saya
-                </label>
+                />
+                Ingat saya
+              </label>
 
-                <Link
-                  href="/forgot-password"
-                  className="font-body font-bold text-xs text-primary hover:underline"
-                >
-                  Lupa password?
-                </Link>
-              </div>
-
-              {/* Primary CTA — Sign In */}
-              <Button
-                id="btn-login-submit"
-                type="submit"
-                variant="primary"
-                size="lg"
-                neo
-                disabled={isLoading}
-                className="w-full rounded-lg uppercase tracking-wide font-body font-bold text-sm"
-              >
-                {isLoading ? "Masuk…" : "Masuk"}
-              </Button>
-
-              {/* Divider */}
-              <div className="relative flex items-center py-1">
-                <div className="flex-grow border-t-2 border-border" />
-                <span className="mx-4 font-body text-xs text-muted-foreground uppercase shrink-0">
-                  atau
-                </span>
-                <div className="flex-grow border-t-2 border-border" />
-              </div>
-
-              {/* Secondary CTA — Google */}
-              <Button
-                id="btn-login-google"
-                type="button"
-                variant="default"
-                size="lg"
-                neo
-                onClick={handleGoogleSignIn}
-                className="w-full rounded-lg font-body font-bold text-sm gap-3"
-              >
-                <GoogleIcon />
-                Masuk dengan Google
-              </Button>
-            </form>
-
-            {/* ── Footer link ── */}
-            <p className="text-center mt-8 font-body text-sm text-muted-foreground">
-              Belum punya akun?{" "}
               <Link
-                href="/register"
-                className="text-primary font-bold hover:underline"
+                href="/forgot-password"
+                className="font-body font-bold text-xs text-primary hover:underline"
               >
-                Daftar sekarang
+                Lupa password?
               </Link>
-            </p>
-          </div>
-        </main>
-      </>
-    );
-  }
+            </div>
+
+            {/* Primary CTA — Sign In */}
+            <Button
+              id="btn-login-submit"
+              type="submit"
+              variant="primary"
+              size="lg"
+              neo
+              disabled={isLoading}
+              className="w-full rounded-lg uppercase tracking-wide font-body font-bold text-sm"
+            >
+              {isLoading ? "Masuk…" : "Masuk"}
+            </Button>
+
+            {/* Divider */}
+            <div className="relative flex items-center py-1">
+              <div className="grow border-t-2 border-border" />
+              <span className="mx-4 font-body text-xs text-muted-foreground uppercase shrink-0">
+                atau
+              </span>
+              <div className="grow border-t-2 border-border" />
+            </div>
+
+            {/* Secondary CTA — Google */}
+            <Button
+              id="btn-login-google"
+              type="button"
+              variant="default"
+              size="lg"
+              neo
+              onClick={handleGoogleSignIn}
+              className="w-full rounded-lg font-body font-bold text-sm gap-3"
+            >
+              <GoogleIcon />
+              Masuk dengan Google
+            </Button>
+          </form>
+
+          {/* ── Footer link ── */}
+          <p className="text-center mt-8 font-body text-sm text-muted-foreground">
+            Belum punya akun?{" "}
+            <Link
+              href="/register"
+              className="text-primary font-bold hover:underline"
+            >
+              Daftar sekarang
+            </Link>
+          </p>
+        </div>
+      </main>
+    </>
+  );
 }
