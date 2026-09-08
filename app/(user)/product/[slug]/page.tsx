@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import {
   Star,
   StarHalf,
@@ -23,6 +24,8 @@ import { useCart } from "@/contexts/cart-context";
 // Dummy product data — replace with real API call using `params.slug`
 // ---------------------------------------------------------------------------
 const DUMMY_PRODUCT = {
+  id: "",
+  slug: "",
   name: "ROBO KIT CAR",
   description:
     "Kit robotika pemula yang interaktif. Bangun mobil pintar pertamamu dan pelajari dasar-dasar mekanika dan pemrograman dengan cara yang menyenangkan.",
@@ -64,6 +67,9 @@ const DUMMY_PRODUCT = {
     },
   ],
   price: "Rp 450.000",
+  basePrice: 450000,
+  defaultVariantId: null as string | null,
+  inStock: true,
   resellerNote: "Harga reseller tersedia mulai dari pembelian 5+ unit",
   rating: 4.5,
   reviewCount: 128,
@@ -625,7 +631,9 @@ function RelatedProductsSection({
 // Page Component
 // ---------------------------------------------------------------------------
 export default function ProductDetailPage() {
-  const product = DUMMY_PRODUCT;
+  const { slug } = useParams<{ slug: string }>();
+  const [product, setProduct] = useState<typeof DUMMY_PRODUCT | null>(null);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
@@ -634,27 +642,52 @@ export default function ProductDetailPage() {
   const { isWishlisted: checkWishlist, toggleItem } = useWishlist();
   const { addToCart } = useCart();
 
-  const productId = "b3a1c2d4-9f7e-4a1b-8c6d-5e9f1a2b3c4d";
+  useEffect(() => {
+    let active = true;
+    setIsLoadingProduct(true);
+    fetch(`/api/product/${encodeURIComponent(slug)}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Produk tidak ditemukan");
+        return response.json();
+      })
+      .then((response) => {
+        if (active) {
+          setProduct(response.data);
+          setSelectedImageIndex(0);
+        }
+      })
+      .catch(() => active && setProduct(null))
+      .finally(() => active && setIsLoadingProduct(false));
+
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+
+  const productId = product?.id ?? "";
   const isWishlisted = checkWishlist(productId);
 
   const handleDecrement = () => setQuantity((q) => Math.max(1, q - 1));
   const handleIncrement = () => setQuantity((q) => q + 1);
 
   const handleToggleWishlist = () => {
+    if (!product) return;
     toggleItem({
       product_id: productId,
       product_name: product.name,
-      product_slug: "robo-kit-starter-kit",
+      product_slug: product.slug,
       image_url: product.mainImage.src,
-      base_price: 450000,
-      in_stock: true,
+      base_price: product.basePrice,
+      in_stock: product.inStock,
     });
   };
 
   const handleAddToCart = async () => {
+    if (!product?.defaultVariantId) return;
     setIsAdding(true);
     const ok = await addToCart({
       productId,
+      variantId: product.defaultVariantId,
       quantity,
     });
     setIsAdding(false);
@@ -663,6 +696,14 @@ export default function ProductDetailPage() {
       setTimeout(() => setAddedSuccess(false), 3000);
     }
   };
+
+  if (isLoadingProduct) {
+    return <main className="min-h-screen bg-background flex items-center justify-center font-body">Memuat produk...</main>;
+  }
+
+  if (!product) {
+    return <main className="min-h-screen bg-background flex items-center justify-center font-body">Produk tidak ditemukan.</main>;
+  }
 
   return (
     <>
@@ -801,7 +842,7 @@ export default function ProductDetailPage() {
                 variant="primary"
                 size="lg"
                 neo
-                disabled={isAdding}
+                disabled={isAdding || !product.inStock || !product.defaultVariantId}
                 className="flex-1 rounded-full uppercase tracking-widest text-sm font-body font-bold"
                 onClick={handleAddToCart}
               >
@@ -809,6 +850,8 @@ export default function ProductDetailPage() {
                   ? "Menambahkan..."
                   : addedSuccess
                   ? "✓ Berhasil Ditambahkan!"
+                  : !product.inStock
+                  ? "Stok Habis"
                   : "Tambah Ke Keranjang"}
               </Button>
 

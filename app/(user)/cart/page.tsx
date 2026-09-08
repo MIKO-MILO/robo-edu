@@ -87,6 +87,8 @@ export default function CartPage() {
   const [appliedDiscount, setAppliedDiscount] = useState(0); // decimal e.g. 0.15
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
+  const [checkoutError, setCheckoutError] = useState("");
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, number>>({
     "rec-1": 0,
@@ -140,6 +142,27 @@ export default function CartPage() {
       productId: "b3a1c2d4-9f7e-4a1b-8c6d-5e9f1a2b3c4d",
       quantity: 1,
     });
+  };
+
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      setCheckoutError("Keranjang masih kosong.");
+      return;
+    }
+
+    setCheckoutError("");
+    setIsCheckingOut(true);
+    try {
+      const response = await fetch("/api/checkout/midtrans", { method: "POST" });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Gagal membuat pembayaran Midtrans.");
+      }
+      window.location.assign(result.data.redirectUrl);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : "Gagal membuat pembayaran Midtrans.");
+      setIsCheckingOut(false);
+    }
   };
 
   const handleScrollSlider = (direction: "left" | "right") => {
@@ -421,10 +444,11 @@ export default function CartPage() {
 
             {/* Proceed to Checkout Button */}
             <button
-              onClick={() => alert("Proceeding to checkout mock sequence...")}
+              onClick={handleCheckout}
+              disabled={isCheckingOut || cartItems.length === 0}
               className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg"
             >
-              Proceed to Checkout
+              {isCheckingOut ? "Mengalihkan ke Midtrans..." : "Proceed to Checkout"}
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse"
                 fill="none"
@@ -435,6 +459,9 @@ export default function CartPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </button>
+            {checkoutError && (
+              <p className="mb-4 text-center font-body text-xs font-semibold text-danger">{checkoutError}</p>
+            )}
 
             {/* Payment Icons */}
             <div className="flex justify-center items-center gap-3 sm:gap-4 py-2 opacity-70 hover:opacity-100 transition-opacity duration-300">
