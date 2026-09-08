@@ -19,7 +19,7 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-bold font-heading text-foreground">Account settings</h1>
-      
+
       <nav className="flex flex-col bg-white rounded-xl py-2 overflow-hidden" style={{ boxShadow: "0px 2px 12px rgba(0, 0, 0, 0.05)" }}>
         {links.map((link) => {
           const isActive = pathname === link.href;
@@ -39,11 +39,11 @@ export default function Sidebar() {
             </Link>
           );
         })}
-        
+
         <button
           onClick={() => {
             // Logic logout
-            router.push("/home");
+            router.push("/");
           }}
           className={clsx(
             "flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors border-r-[4px] text-left w-full",
