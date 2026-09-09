@@ -18,6 +18,10 @@ export const users = mysqlTable("users", {
   resellerApprovedAt: datetime("reseller_approved_at"),
   isActive: boolean("is_active").notNull().default(true),
   lastLoginAt: datetime("last_login_at"),
+  /** Hashed token for password reset. Null when no reset is pending. */
+  passwordResetToken: varchar("password_reset_token", { length: 255 }),
+  /** Expiry timestamp for the password reset token. */
+  passwordResetExpiresAt: datetime("password_reset_expires_at"),
   createdAt: datetime("created_at")
   .notNull()
   .default(sql`CURRENT_TIMESTAMP`),

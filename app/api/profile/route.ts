@@ -29,9 +29,14 @@ async function currentUser() {
 }
 
 export async function GET() {
-  const user = await currentUser();
-  if (!user) return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
-  return NextResponse.json({ success: true, data: profileResponse(user) });
+  try {
+    const user = await currentUser();
+    if (!user) return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
+    return NextResponse.json({ success: true, data: profileResponse(user) });
+  } catch (error) {
+    console.error("GET /api/profile error:", error);
+    return NextResponse.json({ success: false, message: "Gagal memuat profil." }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
@@ -90,9 +95,14 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const user = await currentUser();
-  if (!user) return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
-  await db.update(users).set({ avatarKey: null }).where(eq(users.id, user.id));
-  if (user.avatarKey) removeProfileAvatar(user.avatarKey).catch(() => undefined);
-  return NextResponse.json({ success: true });
+  try {
+    const user = await currentUser();
+    if (!user) return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
+    await db.update(users).set({ avatarKey: null }).where(eq(users.id, user.id));
+    if (user.avatarKey) removeProfileAvatar(user.avatarKey).catch(() => undefined);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/profile error:", error);
+    return NextResponse.json({ success: false, message: "Gagal menghapus foto profil." }, { status: 500 });
+  }
 }

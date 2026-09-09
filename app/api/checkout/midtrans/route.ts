@@ -3,18 +3,23 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { userAddresses } from "@/src/db/schema";
 import { createPaymentTransaction } from "@/src/lib/services/transaction-service";
-
-// TODO(auth): Replace with the authenticated user ID from the server session.
-// This matches the temporary cart identity used by /api/cart during development.
-const DEVELOPMENT_USER_ID = "user_01jmrmh71f4r18fbad28717ff";
+import { getSessionUserId } from "@/src/lib/auth/session";
 
 /** Creates a Snap transaction and returns a Midtrans-hosted checkout URL. */
 export async function POST() {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Silakan login terlebih dahulu." },
+        { status: 401 },
+      );
+    }
+
     const [address] = await db
       .select({ id: userAddresses.id })
       .from(userAddresses)
-      .where(and(eq(userAddresses.userId, DEVELOPMENT_USER_ID), eq(userAddresses.isPrimary, true)))
+      .where(and(eq(userAddresses.userId, userId), eq(userAddresses.isPrimary, true)))
       .orderBy(desc(userAddresses.updatedAt))
       .limit(1);
 
@@ -26,7 +31,7 @@ export async function POST() {
     }
 
     const transaction = await createPaymentTransaction({
-      userId: DEVELOPMENT_USER_ID,
+      userId,
       addressId: address.id,
       shippingCost: 0,
     });

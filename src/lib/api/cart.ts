@@ -19,8 +19,11 @@ export interface CartResponseData {
   subtotal: number;
 }
 
+const EMPTY_CART: CartResponseData = { cartId: "", items: [], totalItems: 0, subtotal: 0 };
+
 /**
  * Mengambil data keranjang user dari database.
+ * Mengembalikan keranjang kosong jika user belum login (401).
  */
 export async function getCart(): Promise<{
   success: boolean;
@@ -30,6 +33,11 @@ export async function getCart(): Promise<{
     method: "GET",
     cache: "no-store",
   });
+
+  // Not authenticated — treat as empty cart, not an error
+  if (response.status === 401) {
+    return { success: true, data: EMPTY_CART };
+  }
 
   if (!response.ok) {
     throw new Error("Gagal mengambil data keranjang");
@@ -45,7 +53,7 @@ export async function addToCart(payload: {
   productId: string;
   variantId?: string;
   quantity?: number;
-}): Promise<{ success: boolean; message: string; data?: any }> {
+}): Promise<{ success: boolean; message: string; data?: unknown }> {
   const response = await fetch("/api/cart", {
     method: "POST",
     headers: {
@@ -56,7 +64,11 @@ export async function addToCart(payload: {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Gagal menambahkan produk ke keranjang");
+    throw new Error(
+      response.status === 401
+        ? "Silakan login terlebih dahulu untuk menambahkan produk ke keranjang."
+        : (error.message || "Gagal menambahkan produk ke keranjang"),
+    );
   }
 
   return response.json();
@@ -68,7 +80,7 @@ export async function addToCart(payload: {
 export async function updateCartItemQuantity(
   cartItemId: string,
   quantity: number
-): Promise<{ success: boolean; message: string; data?: any }> {
+): Promise<{ success: boolean; message: string; data?: unknown }> {
   const response = await fetch(`/api/cart/${cartItemId}`, {
     method: "PATCH",
     headers: {

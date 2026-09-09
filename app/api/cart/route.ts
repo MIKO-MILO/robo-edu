@@ -8,39 +8,49 @@ import {
   productVariants,
   productImages,
 } from "@/src/db/schema";
+import { getSessionUserId } from "@/src/lib/auth/session";
 import crypto from "node:crypto";
 
-// TODO(backend): Ganti dengan user ID asli dari session/JWT setelah auth siap
-const DUMMY_USER_ID = "user_01jmrmh71f4r18fbad28717ff";
+export const runtime = "nodejs";
 
-/** Helper untuk memastikan user memiliki keranjang di DB */
+/**
+ * Ensures the authenticated user has exactly one cart row.
+ * Uses INSERT ... ON DUPLICATE KEY UPDATE to avoid a race condition
+ * between two concurrent requests both trying to create the first cart.
+ */
 async function getOrCreateCart(userId: string) {
-  const existing = await db
-    .select()
+  const cartId = crypto.randomUUID();
+
+  // Atomically insert or do nothing on duplicate userId.
+  // The `id` column is only set on the very first insert.
+  await db
+    .insert(carts)
+    .values({ id: cartId, userId })
+    .onDuplicateKeyUpdate({ set: { userId } }); // no-op update, just avoids the error
+
+  // Always re-read so we get the real id (which may differ from cartId if the
+  // row already existed before our insert above).
+  const [existing] = await db
+    .select({ id: carts.id, userId: carts.userId })
     .from(carts)
     .where(eq(carts.userId, userId))
     .limit(1);
 
-  if (existing.length > 0) {
-    return existing[0];
-  }
-
-  const newCartId = crypto.randomUUID();
-  await db.insert(carts).values({
-    id: newCartId,
-    userId: userId,
-  });
-
-  return { id: newCartId, userId: userId };
+  return existing!;
 }
 
 /**
  * GET /api/cart
- * Mengambil daftar item di keranjang belanja user dari database.
+ * Returns the authenticated user's cart items.
  */
 export async function GET() {
   try {
-    const userCart = await getOrCreateCart(DUMMY_USER_ID);
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
+    }
+
+    const userCart = await getOrCreateCart(userId);
 
     const items = await db
       .select({
@@ -78,7 +88,7 @@ export async function GET() {
         productVariants.variantName,
         productVariants.price,
         productVariants.stock,
-        cartItems.createdAt
+        cartItems.createdAt,
       )
       .orderBy(cartItems.createdAt);
 
@@ -101,41 +111,34 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: {
-        cartId: userCart.id,
-        items: formattedItems,
-        totalItems,
-        subtotal,
-      },
+      data: { cartId: userCart.id, items: formattedItems, totalItems, subtotal },
     });
   } catch (error) {
     console.error("GET /api/cart error:", error);
-    return NextResponse.json(
-      { success: false, message: "Gagal mengambil data keranjang" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Gagal mengambil data keranjang" }, { status: 500 });
   }
 }
 
 /**
  * POST /api/cart
- * Menambahkan item ke keranjang belanja di database.
+ * Adds or increments an item in the authenticated user's cart.
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
+    }
+
     const body = await request.json();
     const { productId, variantId, quantity = 1 } = body;
 
     if (!productId) {
-      return NextResponse.json(
-        { success: false, message: "Product ID wajib diisi" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: "Product ID wajib diisi" }, { status: 400 });
     }
 
     const qtyToAdd = Math.max(1, Number(quantity) || 1);
 
-    // Ambil atau validasi variantId
     let selectedVariantId = variantId;
     if (!selectedVariantId) {
       const variants = await db
@@ -145,35 +148,22 @@ export async function POST(request: NextRequest) {
         .limit(1);
 
       if (variants.length === 0) {
-        return NextResponse.json(
-          { success: false, message: "Produk belum memiliki varian harga" },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, message: "Produk belum memiliki varian harga" }, { status: 404 });
       }
       selectedVariantId = variants[0].id;
     }
 
-    const userCart = await getOrCreateCart(DUMMY_USER_ID);
+    const userCart = await getOrCreateCart(userId);
 
-    // Cek apakah item sudah ada di keranjang
     const existingItem = await db
       .select()
       .from(cartItems)
-      .where(
-        and(
-          eq(cartItems.cartId, userCart.id),
-          eq(cartItems.variantId, selectedVariantId)
-        )
-      )
+      .where(and(eq(cartItems.cartId, userCart.id), eq(cartItems.variantId, selectedVariantId)))
       .limit(1);
 
     if (existingItem.length > 0) {
       const newQty = existingItem[0].quantity + qtyToAdd;
-      await db
-        .update(cartItems)
-        .set({ quantity: newQty })
-        .where(eq(cartItems.id, existingItem[0].id));
-
+      await db.update(cartItems).set({ quantity: newQty }).where(eq(cartItems.id, existingItem[0].id));
       return NextResponse.json({
         success: true,
         message: "Jumlah produk di keranjang diperbarui",
@@ -185,24 +175,17 @@ export async function POST(request: NextRequest) {
     await db.insert(cartItems).values({
       id: newItemId,
       cartId: userCart.id,
-      productId: productId,
+      productId,
       variantId: selectedVariantId,
       quantity: qtyToAdd,
     });
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Produk berhasil ditambahkan ke keranjang",
-        data: { id: newItemId, quantity: qtyToAdd },
-      },
-      { status: 201 }
+      { success: true, message: "Produk berhasil ditambahkan ke keranjang", data: { id: newItemId, quantity: qtyToAdd } },
+      { status: 201 },
     );
   } catch (error) {
     console.error("POST /api/cart error:", error);
-    return NextResponse.json(
-      { success: false, message: "Gagal menambahkan produk ke keranjang" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Gagal menambahkan produk ke keranjang" }, { status: 500 });
   }
 }

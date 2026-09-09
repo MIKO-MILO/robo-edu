@@ -155,7 +155,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         // Karena response POST /wishlist hanya mengembalikan {id, userId, productId},
         // kita perlu memetakan kembali ke WishlistItemDetail lengkap untuk UI.
         const newItem: WishlistItemDetail = {
-          id: res.data.id,
+          id: (res.data as { id: string }).id,
           product_id: product.product_id,
           product_name: product.product_name,
           product_slug: product.product_slug,
@@ -167,8 +167,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "ADD_ITEM", payload: newItem });
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal menambah produk ke wishlist";
+      // Unauthenticated — redirect to login instead of alerting
+      if (message.includes("login terlebih dahulu")) {
+        window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+        return;
+      }
       console.error("Gagal menambah wishlist:", error);
-      alert("Gagal menambah produk ke wishlist");
+      alert(message);
     }
   }, []);
 

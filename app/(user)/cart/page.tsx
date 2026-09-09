@@ -1,13 +1,10 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-<<<<<<< HEAD
 import { useRouter } from "next/navigation";
-=======
 import { useCart } from "@/contexts/cart-context";
->>>>>>> cab42f32d22f95f33d9a8312a15661daf7ddf636
 
 function formatPrice(val: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -32,36 +29,8 @@ interface RecommendedProduct {
 }
 
 export default function CartPage() {
-<<<<<<< HEAD
+  const { items: cartItems, updateQuantity, removeItem, addToCart } = useCart();
   const router = useRouter();
-  // 1. Cart Items State (Initial items matching description)
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "robo-1",
-      name: "RoboBuddy Mini",
-      category: "Interactive Spherical Robot",
-      price: 270.0,
-      originalPrice: 270.0,
-      quantity: 1,
-      image: "/images/robobuddy_toy.png",
-      bgColor: "bg-accent-orange/40",
-      age: "Ages 1-3",
-    },
-    {
-      id: "robo-2",
-      name: "BlockBot Builder",
-      category: "Modular Magnetic Robot",
-      price: 240.0,
-      originalPrice: 240.0,
-      quantity: 1,
-      image: "/images/blockbot_toy.png",
-      bgColor: "bg-accent-peach/40",
-      age: "Ages 3-5",
-    },
-  ]);
-=======
-  const { items: cartItems, isLoading, updateQuantity, removeItem, addToCart } = useCart();
->>>>>>> cab42f32d22f95f33d9a8312a15661daf7ddf636
 
   // 2. Recommended Products Data
   const recommendedProducts: RecommendedProduct[] = [
@@ -172,12 +141,18 @@ export default function CartPage() {
   const handleAddRecommendedToCart = async (prod: RecommendedProduct) => {
     // Tambah produk ke keranjang database
     await addToCart({
-      productId: "b3a1c2d4-9f7e-4a1b-8c6d-5e9f1a2b3c4d",
+      productId: prod.id,
       quantity: 1,
     });
   };
 
   const handleCheckout = async () => {
+    const authResponse = await fetch("/api/auth/me", { cache: "no-store" });
+    if (!authResponse.ok) {
+      router.push("/login?next=/cart");
+      return;
+    }
+
     if (cartItems.length === 0) {
       setCheckoutError("Keranjang masih kosong.");
       return;
@@ -189,11 +164,38 @@ export default function CartPage() {
       const response = await fetch("/api/checkout/midtrans", { method: "POST" });
       const result = await response.json();
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Gagal membuat pembayaran Midtrans.");
+        throw new Error(result.message || "Gagal membuat pembayaran.");
       }
-      window.location.assign(result.data.redirectUrl);
+      const { snapToken, redirectUrl } = result.data as { snapToken: string; redirectUrl: string };
+
+      if (!window.snap) {
+        // Snap.js not loaded yet — fall back to redirect
+        window.location.assign(redirectUrl);
+        return;
+      }
+
+      // Open Midtrans Snap as an embedded popup (stays on this page)
+      window.snap.pay(snapToken, {
+        onSuccess(snapResult) {
+          console.info("Pembayaran berhasil:", snapResult);
+          router.push("/profile/orders");
+        },
+        onPending(snapResult) {
+          console.info("Menunggu pembayaran:", snapResult);
+          router.push("/profile/orders");
+        },
+        onError(snapResult) {
+          console.error("Pembayaran gagal:", snapResult);
+          setCheckoutError("Pembayaran gagal. Silakan coba lagi.");
+          setIsCheckingOut(false);
+        },
+        onClose() {
+          // User closed the popup without completing payment
+          setIsCheckingOut(false);
+        },
+      });
     } catch (error) {
-      setCheckoutError(error instanceof Error ? error.message : "Gagal membuat pembayaran Midtrans.");
+      setCheckoutError(error instanceof Error ? error.message : "Gagal membuat pembayaran.");
       setIsCheckingOut(false);
     }
   };
@@ -210,15 +212,6 @@ export default function CartPage() {
 
   // 5. Calculations
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-  async function handleCheckout() {
-    const response = await fetch("/api/auth/me", { cache: "no-store" });
-    if (!response.ok) {
-      router.push("/login?next=/cart");
-      return;
-    }
-    alert("Proceeding to checkout mock sequence...");
-  }
   const discountAmount = subtotal * appliedDiscount;
   const shipping = subtotal > 0 ? 0 : 0; // FREE Shipping as per design
   const estimatedTax = (subtotal - discountAmount) * 0.08; // 8% Tax
@@ -487,13 +480,10 @@ export default function CartPage() {
             {/* Proceed to Checkout Button */}
             <button
               onClick={handleCheckout}
-<<<<<<< HEAD
-=======
               disabled={isCheckingOut || cartItems.length === 0}
->>>>>>> cab42f32d22f95f33d9a8312a15661daf7ddf636
               className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg"
             >
-              {isCheckingOut ? "Mengalihkan ke Midtrans..." : "Proceed to Checkout"}
+              {isCheckingOut ? "Memproses pembayaran..." : "Proceed to Checkout"}
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse"
                 fill="none"

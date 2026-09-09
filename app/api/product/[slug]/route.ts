@@ -4,7 +4,7 @@ import { db } from "@/src/db";
 import { categories, productImages, products, productTypes, productVariants, reviews, users } from "@/src/db/schema";
 
 const PALETTE = ["bg-accent-pink", "bg-accent-soft-blue", "bg-accent-mint", "bg-accent-yellow"];
-const PLACEHOLDER_IMAGE = "/images/placeholder-product.jfif";
+const PLACEHOLDER_IMAGE = "/images/placeholder-product.jpg";
 
 /** Public product detail data. Price, stock, images, and reviews are all read from the database. */
 export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) {

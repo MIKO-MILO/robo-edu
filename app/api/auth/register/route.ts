@@ -4,6 +4,9 @@ import crypto from "node:crypto";
 import { db } from "@/src/db";
 import { users } from "@/src/db/schema";
 import { hashPassword } from "@/src/lib/auth/password";
+import { sendEmail } from "@/src/lib/email/send";
+import { welcomeEmailSubject, welcomeEmailHtml } from "@/src/lib/email/templates/welcome";
+import { getAppUrl } from "@/src/lib/email/resend";
 
 export const runtime = "nodejs";
 
@@ -29,6 +32,15 @@ export async function POST(request: Request) {
       email,
       password: await hashPassword(password),
       phone: phone || null,
+    });
+
+    // Send welcome email — fire-and-forget (never blocks the response)
+    void sendEmail({
+      to: email,
+      subject: welcomeEmailSubject(),
+      html: welcomeEmailHtml({ name, appUrl: getAppUrl() }),
+      type: "OTHER",
+      userId: id,
     });
 
     return NextResponse.json({ success: true, data: { id, name, email } }, { status: 201 });
