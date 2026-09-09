@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { href: "/home", label: "Home" },
+  { href: "/", label: "Home" },
   { href: "/product", label: "Product" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -16,7 +16,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="w-full shadow-md mx-auto flex justify-between items-center px-12 py-4"
+      className="sticky top-4 z-20 shadow-md mx-auto flex justify-between items-center px-12 py-4"
       style={{
         maxWidth: "984px",
         width: "100%",
@@ -104,9 +104,10 @@ export default function Navbar() {
         </button>
 
         {/* Profile */}
-        <button
+        <Link
+          href="/profile/my-profile"
           aria-label="Account Profile"
-          className="transition-opacity hover:opacity-80"
+          className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
             src="/assets/svg/icon-user-profile.svg"
@@ -114,7 +115,7 @@ export default function Navbar() {
             width={36}
             height={36}
           />
-        </button>
+        </Link>
       </div>
     </nav>
   );

@@ -1,0 +1,131 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Roboedu Navbar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f9f9fc",
+                        "surface-container": "#eeeef0",
+                        "primary": "#005f9e",
+                        "on-surface": "#1a1c1e",
+                        "outline": "#707882",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#43474d",
+                        "inverse-primary": "#9dcaff",
+                        "secondary-fixed": "#dfe2e9",
+                        "outline-variant": "#c0c7d3",
+                        "on-tertiary-fixed-variant": "#6b3b00",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#e8e8ea",
+                        "tertiary": "#894d00",
+                        "primary-fixed-dim": "#9dcaff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dadadc",
+                        "on-tertiary-fixed": "#2d1600",
+                        "secondary": "#5b5f64",
+                        "primary-fixed": "#d1e4ff",
+                        "secondary-container": "#dce0e7",
+                        "on-primary-container": "#fdfcff",
+                        "on-secondary-fixed": "#181c21",
+                        "on-background": "#1a1c1e",
+                        "background": "#f9f9fc",
+                        "surface-variant": "#e2e2e5",
+                        "primary-container": "#0a78c5",
+                        "on-surface-variant": "#404751",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#00497c",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#0062a2",
+                        "inverse-surface": "#2f3133",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#001d35",
+                        "on-secondary-container": "#5f6369",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#ac6200",
+                        "on-tertiary-container": "#fffbff",
+                        "tertiary-fixed": "#ffdcc0",
+                        "inverse-on-surface": "#f0f0f3",
+                        "surface-container-highest": "#e2e2e5",
+                        "secondary-fixed-dim": "#c3c7cd",
+                        "tertiary-fixed-dim": "#ffb875",
+                        "surface-container-low": "#f3f3f6",
+                        "surface-bright": "#f9f9fc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Outfit"],
+                        "headline-lg-mobile": ["Outfit"],
+                        "logo": ["Outfit"],
+                        "nav-link": ["Outfit"],
+                        "label-sm": ["Outfit"],
+                        "headline-lg": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "logo": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "nav-link": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex items-start justify-center pt-12">
+<!-- TopNavBar Component -->
+<nav class="shadow-md dark:shadow-none mt-base mx-auto flex justify-between items-center px-12 py-4" style="width: 984px; height: 95px; background-color: rgb(36, 131, 208); border-radius: 100px;">
+<!-- Brand/Logo -->
+<a class="flex items-center gap-2 hover:opacity-90 transition-opacity" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[32px] text-on-primary" data-icon="smart_toy">smart_toy</span>
+<span class="text-logo font-logo text-on-primary dark:text-on-primary">Roboedu</span>
+</a>
+<!-- Navigation Links (Desktop) -->
+<div class="hidden md:flex items-center gap-8">
+<a class="text-on-primary font-bold border-b-2 border-on-primary pb-1 font-nav-link hover:text-on-primary hover:opacity-100 transition-opacity duration-200" href="#">Home</a>
+<a class="text-on-primary/80 font-medium text-nav-link font-nav-link hover:text-on-primary hover:opacity-100 transition-opacity duration-200" href="#">Product</a>
+<a class="text-on-primary/80 font-medium text-nav-link font-nav-link hover:text-on-primary hover:opacity-100 transition-opacity duration-200" href="#">About</a>
+<a class="text-on-primary/80 font-medium text-nav-link font-nav-link hover:text-on-primary hover:opacity-100 transition-opacity duration-200" href="#">Contact</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-6">
+<button aria-label="Shopping Basket" class="text-on-primary hover:opacity-80 transition-opacity">
+<img alt="Cart Icon" class="w-[34px] h-[34px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0tRD9t-B2Dl_2YNNJsBdyYf3EGLLM5DD5k7Jf8-ChA3S3w-pJHe2rlYDFIHx2TTWa8pDevRU7WNJeIMTNXmV3B4SZNGLOM-swQD4QcBthHBs-2unLbn1xwtEHldLQPauG6qwtGSk36MLCMpdtwXPCTqtrEsmjd-tfSksItojSTGsAnro6ksYiXNPNdmduRLTfzM7ytM71JLJMrBhXqlCPrulXt33LleuYXMhE2QqcFqKjwa2R2KXHmR9npprJXiXhdg">
+</button>
+<button aria-label="Account Profile" class="text-on-primary hover:opacity-80 transition-opacity">
+<img alt="Profile Icon" class="w-[36px] h-[36px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAD77FbAcntNbBQkLHRowynnOi8TE0fxs5Hu2tLamha17-oabOKEGxiJH8tDn6LDyldJq8EoXAr5FoBRtzHmG8PQTjjysCVbNwWrTwOXSkKTUyZKIScYSqlOQI2gDXS7rbF3nUdY_O8ZcMLnYCnnM7a-LSj-DiP12PWdJsXGAMauSmJvleSIwtAmVWvGVCjGmR1c4yv8C9IV6FGZ9HwT2ankufg3g1f3rL156jnP3qmOw9nJ3gDJf6DBTZ8QtPtsUd6AA">
+</button>
+</div>
+</nav>
+
+
+</body></html>
