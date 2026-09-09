@@ -135,21 +135,63 @@ Reseller tidak langsung aktif setelah melakukan pendaftaran. Customer harus meng
 | Fitur | Kebutuhan |
 | --- | --- |
 | Register / Login | Customer dapat membuat akun, masuk, keluar, dan menggunakan sesi yang aman. |
-| Homepage | Menampilkan kategori, produk unggulan, produk terlaris, promosi, dan informasi RoboEdu. |
+| Homepage | Menampilkan hero section, kategori, produk unggulan, produk terlaris, video demo produk, testimoni orang tua/pendidik, FAQ, carousel logo institusi/mitra, dan informasi RoboEdu. |
 | Katalog Produk | Menampilkan produk aktif berdasarkan kategori dan Product Type. |
 | Search | Mencari produk berdasarkan nama, keyword, SKU, dan data katalog terkait. |
 | Filter & Sorting | Filter berdasarkan kategori, harga, stok, product type, variant, rating; sorting berdasarkan terbaru, harga, popularitas, dan rating. |
-| Detail Produk | Menampilkan foto, nama, harga, harga reseller bila relevan, deskripsi, stok, variant, rating, dan review. |
-| Cart | Menambah produk (dengan variant bila ada), mengubah jumlah, menghapus item, dan menghitung subtotal. Struktur cart terdiri dari satu cart per user dengan banyak cart_item. |
-| Wishlist | Menyimpan produk untuk dibeli kemudian, tanpa pengaturan jumlah/quantity. |
+| Detail Produk | Galeri foto produk multi-angle, component breakdown, highlight keunggulan & keamanan, harga (termasuk harga reseller bila relevan), deskripsi, stok, variant, rating, review, tombol Quick Buy, dan rekomendasi produk terkait. |
+| Cart | Menambah produk (dengan variant bila ada), mengubah jumlah, menghapus item, menghitung subtotal, dan melihat produk rekomendasi cross-selling. Struktur cart terdiri dari satu cart per user dengan banyak cart_item. |
+| Wishlist | Menyimpan produk untuk dibeli kemudian tanpa pengaturan jumlah/quantity, diakses melalui halaman terpisah maupun slide-over drawer dan floating action button. |
 | Alamat | Menambah, mengubah, menghapus, dan menentukan alamat utama. Digunakan juga oleh customer institusi. |
 | Checkout | Memilih alamat, ekspedisi, voucher, melihat ringkasan, dan melakukan pembayaran. |
 | Pembayaran | Melakukan pembayaran menggunakan Midtrans. |
-| Order Tracking | Melihat status pesanan dan informasi tracking jika tersedia. |
-| Review | Customer yang telah membeli produk (tervalidasi melalui order item) dapat memberikan rating dan ulasan. |
+| Order Tracking | Melihat status pesanan, invoice digital, dan pelacakan kurir bertahap jika tersedia. |
+| Review | Customer yang telah membeli produk (tervalidasi melalui order item) dapat memberikan rating dan ulasan, termasuk langsung dari kartu pesanan yang berstatus `COMPLETED`. |
 | Klaim Garansi | Customer dapat mengajukan komplain terhadap produk yang telah dibeli, disertai kronologi dan lampiran foto/video. |
 | Notifikasi Email | Customer menerima email receipt otomatis setelah pembayaran berhasil dikonfirmasi. |
- 
+| Tentang Kami | Halaman profil brand, misi edukasi robotika, dan sertifikasi keamanan anak. |
+| Kontak | Formulir masukan/pesan dan tautan media sosial resmi. |
+
+### 7.1 Rincian Fitur Customer (Pembaruan Implementasi)
+
+Poin-poin berikut merupakan penjabaran fitur customer yang telah diimplementasikan pada codebase dan melengkapi tabel di atas.
+
+**1. Detail Produk (`/product/[slug]`)**
+
+- **Galeri Foto Produk**: Tampilan foto utama interaktif dengan thumbnail strip multi-angle (tampilan dekat, tampak atas, perakitan). Galeri detail produk murni menggunakan foto produk; thumbnail Video Demo tidak digunakan pada galeri ini.
+- **Component Breakdown ("Component Pada Produk")**: Menampilkan visual modul/komponen robot pembentuk kit (misal: mikrokontroler utama, sensor ultrasonik, modul modular) beserta fungsi ringkasnya.
+- **Highlight Keunggulan & Keamanan**: Label edukatif ramah anak (BPA-free, Kid-Safe, rekomendasi pendidik).
+- **Tombol "Beli Sekarang" (Quick Buy)**: Memungkinkan customer melakukan transaksi instan di samping tombol standar "Tambah Ke Keranjang".
+- **Section Rekomendasi ("You Might Also Like")**: Carousel produk terkait di bagian bawah detail produk.
+
+**2. Wishlist Interaktif**
+
+Selain halaman terpisah, wishlist dilengkapi **Slide-over Drawer (Sidebar)** dan **Floating Action Button (FAB)** dengan indikator jumlah item realtime, sehingga pengguna dapat melihat atau menghapus item wishlist tanpa meninggalkan halaman belanja aktif.
+
+**3. Halaman Riwayat Pesanan (`/profile/orders`)**
+
+- **Modal Invoice Digital**: Customer dapat membuka dan mencetak/mengunduh faktur transaksi resmi.
+- **Modal Pelacakan Kurir Interaktif**: Visualisasi timeline multi-step pelacakan paket dan riwayat perjalanan barang dari ekspedisi.
+- **Modal Review Langsung**: Modal pop-up untuk memberikan rating bintang dan ulasan langsung dari kartu order pada status `COMPLETED`.
+- **Filter Periode**: Pilihan rentang waktu histori pesanan (misal: 30 Hari Terakhir, 3 Bulan Terakhir, Tahun Berjalan).
+- **Tab Status Ramah Pengguna**: Pengelompokan tab navigasi ("Semua", "Diproses", "Dikirim", "Selesai", "Dibatalkan") yang memetakan status teknis pesanan.
+
+**4. Halaman Baru: Tentang Kami (`/about`)**
+
+Menampilkan profil RoboEdu, misi edukasi robotika, sertifikasi aman anak (*Kid-Safe*), serta nilai-nilai inovasi STEM.
+
+**5. Halaman Kontak Interaktif (`/contact`)**
+
+Formulir pengiriman pesan/masukan langsung (`name`, `email`, `phone`, `subject`, `message`) serta kartu tautan media sosial interaktif (WhatsApp Support, Email, Instagram, YouTube).
+
+**6. Homepage / Landing Page Interaktif**
+
+Terdiri atas komponen: Video Demo produk bergerak, FAQ Accordion interaktif, Testimoni Orang Tua & Pendidik, serta Carousel Logo Institusi/Mitra. Video Demo hanya tampil sebagai showcase di homepage/landing page, bukan pada galeri detail produk.
+
+**7. Keranjang Belanja (`/cart`)**
+
+Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel keranjang belanja.
+
 ## 8. Fitur Admin
  
 | Modul | Kebutuhan |
@@ -232,16 +274,17 @@ Payment Gateway yang digunakan: Midtrans.
  
 ## 12. Pengiriman
  
-J&T menjadi ekspedisi pada tahap awal. Sistem menggunakan tabel `shipping_provider` terpisah, sehingga penyedia ekspedisi dapat ditambah atau diganti tanpa mengubah struktur inti pesanan.
+J&T menjadi ekspedisi pada tahap awal. Sistem menggunakan tabel `shipping_provider` terpisah, sehingga penyedia ekspedisi dapat ditambah atau diganti tanpa mengubah struktur inti pesanan. Data pengiriman per order dikelola pada tabel `shipment` beserta riwayat perjalanannya pada `shipment_tracking` (lih. Bab 25.4).
  
 | Data | Keterangan |
 | --- | --- |
 | Shipping Provider | Referensi ke tabel `shipping_provider`, mis. J&T. |
-| Shipping Service | Jenis layanan pengiriman yang dipilih. |
-| Shipping Cost | Biaya pengiriman. |
-| Tracking Number | Nomor resi. |
-| Shipped At | Waktu pesanan dikirim. |
-| Delivered At | Waktu pesanan dinyatakan diterima. |
+| Shipping Service | Jenis layanan pengiriman yang dipilih, disimpan pada `shipment.service`. |
+| Shipping Cost | Biaya pengiriman, disimpan pada `order.shipping_cost`. |
+| Tracking Number | Nomor resi, disimpan pada `shipment.tracking_number`. |
+| Status Pengiriman | Status pergerakan paket (`PENDING, PACKED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED`) pada `shipment.status`. |
+| Shipment Tracking | Riwayat titik perjalanan paket (status, deskripsi, lokasi, waktu) pada `shipment_tracking`, ditampilkan sebagai modal pelacakan kurir interaktif di `/profile/orders`. |
+| Shipped At / Delivered At | Waktu pesanan dikirim/diterima, dicatat baik pada `order` (milestone pesanan) maupun `shipment` (milestone pengiriman). |
  
 ## 13. Manajemen Pesanan
  
@@ -264,15 +307,17 @@ Alur alternatif: `PENDING → CANCELLED` dan `PAID → REFUNDED`. Pembayaran gag
 | CANCELLED | Pesanan dibatalkan sesuai aturan bisnis. |
 | REFUNDED | Pesanan yang telah dibayar mendapatkan pengembalian dana. |
  
-### 13.3 Snapshot Harga Transaksi
+### 13.3 Snapshot Harga & Alamat Transaksi
  
 Setiap order item harus menyimpan harga transaksi pada saat pembelian (`price_snapshot`), termasuk nama produk dan nama variant. Hal ini berlaku untuk harga normal maupun harga reseller, dan menjadi dasar validasi kelayakan review serta klaim garansi.
+
+Selain itu, setiap order juga menyimpan snapshot alamat pengiriman lengkap (`recipient_name`, `recipient_phone`, `shipping_address`, `shipping_province`, `shipping_city`, `shipping_district`, `shipping_village`, `shipping_postal_code`) serta `voucher_code_snapshot` langsung pada tabel `order`, agar histori transaksi tidak berubah meskipun customer kemudian mengubah data alamat atau voucher yang bersangkutan sudah tidak berlaku (lih. Bab 25.4). Semua field pada halaman `/orders` dan `/orders/{id}` wajib bersumber dari field snapshot ini, bukan dari query langsung ke tabel produk/alamat.
  
 ## 14. Inventory / Stok
  
 Sebagian besar produk RoboEdu bersifat made-by-order (dibuat sesuai pesanan), sehingga MVP menggunakan sistem stok sederhana yang berfungsi sebagai kuota/kapasitas produksi, bukan sebagai stok gudang fisik dalam arti tradisional.
  
-- Setiap produk/variant yang dapat dijual memiliki jumlah stok (kuota).
+- Setiap produk/variant yang dapat dijual memiliki jumlah stok (kuota), dikelola terpusat pada tingkat variant (lih. Bab 25.2).
 - Admin dapat menambah atau mengurangi stok.
 - Admin dapat melihat produk dengan stok rendah atau habis.
 - Sistem harus mencegah quantity pembelian melebihi stok/kuota tersedia.
@@ -309,21 +354,21 @@ RoboEdu menyediakan mekanisme klaim garansi semi-manual. Customer mengajukan kom
  
 ### 17.1 Alur Klaim Garansi
  
-`Customer memilih order item yang bermasalah → Customer menuliskan kronologi kejadian dan melampirkan foto/video → Sistem menyimpan pengajuan dengan status SUBMITTED → Admin meninjau pengajuan → Admin menghubungi customer secara manual melalui WhatsApp atau email aktif yang telah diisi customer saat pembelian → Admin memperbarui status pengajuan (IN_REVIEW, RESOLVED, atau REJECTED) beserta catatan tindak lanjut.`
+`Customer memilih order item yang bermasalah → Customer menuliskan kronologi kejadian dan melampirkan foto/video → Sistem menyimpan pengajuan dengan status OPEN → Admin meninjau pengajuan → Admin menghubungi customer secara manual melalui WhatsApp atau email aktif yang telah diisi customer saat pembelian → Admin memperbarui status pengajuan (IN_REVIEW, RESOLVED, atau REJECTED) beserta catatan tindak lanjut (`resolution`).`
  
 ### 17.2 Data yang Dibutuhkan
  
 - Order item yang diklaim (untuk validasi kelayakan klaim).
-- Kronologi/deskripsi kejadian dari customer.
+- Subjek dan kronologi/deskripsi kejadian dari customer.
 - Lampiran foto dan/atau video (dapat lebih dari satu berkas per pengajuan).
-- Status pengajuan dan catatan internal admin.
+- Status pengajuan, catatan tindak lanjut (`resolution`), dan waktu penyelesaian (`resolved_at`).
 ## 18. Notifikasi Email
  
 Sistem mengirimkan email receipt secara otomatis kepada customer setelah pembayaran berhasil dikonfirmasi, menggunakan mekanisme antrian (queue) agar proses pengiriman tidak menghambat respons terhadap webhook Midtrans.
  
 - Email dikirim melalui layanan pihak ketiga (Resend atau SendGrid).
 - Pengiriman dijalankan sebagai background job melalui Redis + BullMQ, dengan mekanisme retry otomatis apabila pengiriman gagal.
-- Status setiap pengiriman email dicatat oleh sistem untuk keperluan audit dan troubleshooting.
+- Status setiap pengiriman email (`PENDING/SENT/FAILED`) dicatat oleh sistem pada `email_log`, beserta `subject` email yang dikirim, untuk keperluan audit dan troubleshooting.
 ## 19. Infrastruktur dan Teknologi Pendukung
  
 ### 19.1 Containerization
@@ -376,28 +421,24 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
  
 ### 20.4 Alur Klaim Garansi
  
-`Customer mengajukan komplain (kronologi + foto/video) → Status SUBMITTED → Admin review → Admin hubungi customer manual via WA/email → Status diperbarui (IN_REVIEW/RESOLVED/REJECTED)`
+`Customer mengajukan komplain (subjek + kronologi + foto/video) → Status OPEN → Admin review → Admin hubungi customer manual via WA/email → Status diperbarui (IN_REVIEW/RESOLVED/REJECTED) beserta resolution`
  
 ## 21. Struktur Halaman / Route
  
 ### 21.1 Customer
  
-- `/`
-- `/products`
-- `/products/[slug]`
-- `/categories/[slug]`
-- `/search`
-- `/cart`
-- `/checkout`
-- `/wishlist`
-- `/orders`
-- `/orders/[id]`
-- `/orders/[id]/complaint`
-- `/profile`
-- `/profile/address`
-- `/login`
-- `/register`
-- `/contact`
+- `/` — Homepage / Landing page interaktif
+- `/product` — Katalog produk & filter
+- `/product/[slug]` — Detail produk, rincian komponen, & ulasan
+- `/cart` — Keranjang belanja & rekomendasi produk
+- `/checkout` — Alur checkout & pembayaran
+- `/about` — Profil brand, nilai STEM, & sertifikasi keamanan anak
+- `/contact` — Formulir masukan & kontak media sosial
+- `/login` & `/register` — Halaman autentikasi
+- `/profile/my-profile` — Data akun pribadi & manajemen alamat
+- `/profile/orders` — Riwayat pesanan (dengan modal invoice, tracking, & review)
+- `/profile/orders/[id]` — Detail lengkap pesanan spesifik
+- `/profile/settings` — Pengaturan preferensi akun
 ### 21.2 Admin
  
 - `/admin`
@@ -433,6 +474,11 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | FR-014 | Laporan | Admin dapat melihat laporan penjualan dan performa produk. | WAJIB |
 | FR-015 | Klaim Garansi | Customer dapat mengajukan klaim garansi dan admin dapat menindaklanjutinya. | SEBAIKNYA |
 | FR-016 | Notifikasi Email | Sistem mengirim email receipt otomatis setelah pembayaran berhasil. | WAJIB |
+| FR-017 | Audit Trail | Sistem mencatat setiap tindakan kritis admin ke dalam `audit_log`. | SEBAIKNYA |
+| FR-018 | Formulir Kontak | Sistem menyediakan formulir pesan publik untuk pertanyaan dan saran pelanggan. | SEBAIKNYA |
+| FR-019 | Invoice Digital | Sistem dapat menampilkan ringkasan faktur digital terperinci untuk pesanan yang telah dibayar. | WAJIB |
+| FR-020 | Tracking Pengiriman Multi-Point | Sistem mendukung riwayat catatan perjalanan kurir bertahap (`shipment_tracking`). | SEBAIKNYA |
+| FR-021 | Wishlist Drawer & Quick Action | Sistem menyediakan antarmuka drawer interaktif untuk akses cepat ke item wishlist tanpa navigasi penuh. | SEBAIKNYA |
  
 ## 23. Kebutuhan Non-Fungsional
  
@@ -446,7 +492,7 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | Ketersediaan | Aplikasi berjalan dalam container Docker dengan restart policy otomatis, backup terjadwal, dan monitoring uptime. |
 | Responsif | Website customer dan admin harus nyaman digunakan pada desktop, tablet, dan mobile. |
 | Maintainability | Logika bisnis, akses database, dan tampilan dipisahkan secara terstruktur. |
-| Audit | Aktivitas penting admin dan perubahan status order dapat ditelusuri melalui logging terstruktur. |
+| Audit | Aktivitas penting admin dan perubahan status order dapat ditelusuri melalui logging terstruktur maupun `audit_log`. |
 | Observability | Error di production dapat terdeteksi melalui error tracking (Sentry) dan log terstruktur (Pino). |
  
 ## 24. Persyaratan Keamanan
@@ -463,7 +509,7 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - File `.env` pada production dibatasi aksesnya (permission ketat) dan tidak pernah di-commit ke Git.
 ## 25. ERD Final
  
-Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan migration database, dikelompokkan per modul.
+Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan migration database, dikelompokkan per modul, dan telah diselaraskan dengan skema aktual pada codebase (`0000_roboedu_initial_schema.sql`).
  
 ### 25.1 Modul User & Akses
  
@@ -478,6 +524,9 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | phone | VARCHAR | |
 | role | ENUM | superadmin, admin_sales, admin_laporan, customer |
 | reseller_status | ENUM | NOT_RESELLER, PENDING, APPROVED, REJECTED |
+| reseller_approved_at | TIMESTAMP, NULLABLE | Waktu pengajuan reseller disetujui admin |
+| is_active | BOOLEAN | Menentukan apakah akun dapat digunakan untuk login |
+| last_login_at | TIMESTAMP, NULLABLE | Waktu login terakhir |
 | created_at / updated_at | TIMESTAMP | |
  
 **user_address** *(Digunakan juga untuk pembeli institusi.)*
@@ -533,7 +582,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | status | ENUM | DRAFT, ACTIVE, INACTIVE, OUT_OF_STOCK |
 | created_at / updated_at | TIMESTAMP | |
  
-**product_variant** *(Digunakan untuk variasi produk, mis. warna.)*
+**product_variant** *(Digunakan untuk variasi produk, mis. warna. Harga dan kuota kapasitas dikelola terpusat pada tingkat variant.)*
  
 | Kolom | Tipe | Keterangan |
 | --- | --- | --- |
@@ -541,9 +590,10 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | product_id | FK -> product | |
 | sku | VARCHAR, UNIQUE | |
 | variant_name | VARCHAR | mis. Merah, Biru |
-| price_override | DECIMAL, NULLABLE | |
-| reseller_price_override | DECIMAL, NULLABLE | |
+| price_override | DECIMAL, NULLABLE | Harga normal khusus variant |
+| reseller_price_override | DECIMAL, NULLABLE | Harga reseller khusus variant |
 | stock | INT | kuota/kapasitas produksi |
+| status | ENUM | DRAFT, ACTIVE, INACTIVE, OUT_OF_STOCK |
 | created_at / updated_at | TIMESTAMP | |
  
 **product_image**
@@ -597,28 +647,31 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | --- | --- | --- |
 | id | PK | |
 | name | VARCHAR | mis. J&T |
-| code | VARCHAR | |
 | is_active | BOOLEAN | |
 | created_at / updated_at | TIMESTAMP | |
  
-**order**
+**order** *(Menyimpan snapshot alamat pengiriman & kode voucher secara langsung, agar histori transaksi tidak berubah bila data alamat profil atau voucher berubah/tidak berlaku lagi — lih. Bab 13.3.)*
  
 | Kolom | Tipe | Keterangan |
 | --- | --- | --- |
 | id | PK | |
-| user_id | FK -> user | |
 | order_number | VARCHAR, UNIQUE | |
+| user_id | FK -> user | |
 | address_id | FK -> user_address | |
-| shipping_provider_id | FK -> shipping_provider | |
-| shipping_service | VARCHAR | |
-| shipping_cost | DECIMAL | |
+| voucher_id | FK -> voucher, NULLABLE | |
 | subtotal | DECIMAL | |
 | discount_amount | DECIMAL | |
+| shipping_cost | DECIMAL | |
 | total | DECIMAL | |
-| voucher_id | FK -> voucher, NULLABLE | |
+| voucher_code_snapshot | VARCHAR, NULLABLE | Snapshot kode voucher yang dipakai |
 | status | ENUM | PENDING, PAID, PROCESSING, SHIPPED, DELIVERED, COMPLETED, CANCELLED, REFUNDED |
-| tracking_number | VARCHAR, NULLABLE | |
-| shipped_at / delivered_at | TIMESTAMP, NULLABLE | |
+| recipient_name | VARCHAR | Snapshot nama penerima |
+| recipient_phone | VARCHAR | Snapshot nomor telepon penerima |
+| shipping_address | VARCHAR | Snapshot alamat lengkap |
+| shipping_province / shipping_city / shipping_district | VARCHAR | Snapshot wilayah pengiriman |
+| shipping_village | VARCHAR, NULLABLE | Snapshot kelurahan/desa |
+| shipping_postal_code | VARCHAR, NULLABLE | Snapshot kode pos |
+| paid_at / shipped_at / delivered_at / completed_at / cancelled_at | TIMESTAMP, NULLABLE | Milestone waktu siklus pesanan |
 | created_at / updated_at | TIMESTAMP | |
  
 **order_item** *(Menyimpan snapshot harga & nama produk/variant.)*
@@ -649,6 +702,31 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | paid_at | TIMESTAMP, NULLABLE | |
 | raw_response | JSON | payload webhook Midtrans |
 | created_at / updated_at | TIMESTAMP | |
+ 
+**shipment** *(Tabel mandiri, dipisahkan dari kolom pengiriman di `order`.)*
+ 
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| id | PK | |
+| order_id | FK -> order, UNIQUE | |
+| shipping_provider_id | FK -> shipping_provider | |
+| service | VARCHAR, NULLABLE | Jenis layanan pengiriman yang dipilih |
+| tracking_number | VARCHAR, NULLABLE | Nomor resi |
+| status | ENUM/VARCHAR | PENDING, PACKED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED |
+| shipped_at / delivered_at | TIMESTAMP, NULLABLE | |
+| created_at / updated_at | TIMESTAMP | |
+ 
+**shipment_tracking** *(Riwayat titik perjalanan paket; satu shipment dapat memiliki banyak entri tracking.)*
+ 
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| id | PK | |
+| shipment_id | FK -> shipment | |
+| status | VARCHAR | |
+| description | VARCHAR, NULLABLE | |
+| location | VARCHAR, NULLABLE | |
+| occurred_at | TIMESTAMP | Waktu kejadian tracking |
+| created_at | TIMESTAMP | |
  
 ### 25.5 Modul Voucher
  
@@ -705,10 +783,11 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | id | PK | |
 | order_item_id | FK -> order_item | |
 | user_id | FK -> user | |
+| subject | VARCHAR | Judul singkat klaim |
 | description | TEXT | kronologi dari customer |
-| status | ENUM | SUBMITTED, IN_REVIEW, RESOLVED, REJECTED |
-| contact_method_used | VARCHAR, NULLABLE | |
-| admin_notes | TEXT, NULLABLE | |
+| status | ENUM/VARCHAR | OPEN, IN_REVIEW, RESOLVED, REJECTED |
+| resolution | TEXT, NULLABLE | Catatan tindak lanjut admin |
+| resolved_at | TIMESTAMP, NULLABLE | Waktu klaim diselesaikan |
 | created_at / updated_at | TIMESTAMP | |
  
 **complaint_attachments** *(Satu komplain dapat memiliki banyak foto/video.)*
@@ -731,9 +810,25 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | order_id | FK -> order, NULLABLE | |
 | user_id | FK -> user | |
 | email_type | ENUM | RECEIPT, OTHER |
-| recipient_email | VARCHAR | |
-| status | ENUM | SENT, FAILED |
+| email | VARCHAR | Alamat email penerima |
+| subject | VARCHAR | Subjek email yang dikirim |
+| status | ENUM | PENDING, SENT, FAILED |
 | sent_at | TIMESTAMP, NULLABLE | |
+| created_at | TIMESTAMP | |
+ 
+### 25.9 Modul Admin — Audit Log
+ 
+**audit_log** *(Mencatat aktivitas operasional admin untuk keperluan audit trail — lih. FR-017.)*
+ 
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| id | PK | |
+| actor_id | FK -> user | Admin yang melakukan aksi |
+| action | VARCHAR | Nama aksi yang dilakukan |
+| target_type | VARCHAR | Jenis entitas target (mis. `product`, `order`) |
+| target_id | VARCHAR/UUID | ID entitas target |
+| description | TEXT, NULLABLE | Deskripsi tambahan aksi |
+| metadata | JSON, NULLABLE | Detail tambahan (payload sebelum/sesudah perubahan, dsb.) |
 | created_at | TIMESTAMP | |
  
 ## 26. MVP dan Roadmap
@@ -793,8 +888,8 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 | US-006 | Sebagai admin, saya ingin mengelola stok agar ketersediaan produk akurat. | Stok berkurang setelah pembayaran berhasil dan tidak boleh menjadi negatif. |
 | US-007 | Sebagai customer, saya ingin melihat status pesanan agar dapat mengetahui proses pengiriman. | Detail order menampilkan status dan informasi resi jika tersedia. |
 | US-008 | Sebagai customer, saya ingin memberikan review setelah membeli produk. | Customer hanya dapat me-review produk yang memiliki order_item dengan status pembelian yang sah. |
-| US-009 | Sebagai customer, saya ingin mengajukan klaim garansi atas produk yang bermasalah. | Customer dapat mengisi kronologi dan mengunggah foto/video; pengajuan tersimpan dengan status SUBMITTED. |
-| US-010 | Sebagai admin, saya ingin menindaklanjuti klaim garansi. | Admin dapat mengubah status klaim dan mencatat metode kontak yang digunakan (WA/email). |
+| US-009 | Sebagai customer, saya ingin mengajukan klaim garansi atas produk yang bermasalah. | Customer dapat mengisi kronologi dan mengunggah foto/video; pengajuan tersimpan dengan status OPEN. |
+| US-010 | Sebagai admin, saya ingin menindaklanjuti klaim garansi. | Admin dapat mengubah status klaim dan mencatat catatan tindak lanjut (`resolution`) beserta metode kontak yang digunakan (WA/email). |
  
 ## 29. Metrik Keberhasilan
  
@@ -826,7 +921,30 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 PRD ini digunakan sebagai sumber kebenaran pada level produk. ERD pada Bab 25 telah diselaraskan dengan seluruh requirement yang telah disepakati. Tahap berikutnya adalah menentukan kontrak API, struktur route, aturan validasi, desain UI, dan acceptance test.
  
 *Urutan pengembangan yang disarankan: PRD → User Flow → Business Rules → ERD Final → Setup Infrastruktur → API Specification → UI/UX → Development → Testing → Deployment.*
- 
+
+## 32. Desain Visual & Branding
+
+Spesifikasi berikut mengacu pada `docs/DESIGN.md` dan menjadi acuan konsistensi visual seluruh halaman customer maupun admin.
+
+### 32.1 Gaya Desain
+
+Neo-brutalism ramah anak: kontras tinggi, garis border tebal `2px #3D2900`, dan hard shadow tanpa blur `4px 4px 0px #3D2900` pada komponen interaktif utama (tombol, kartu produk, modal).
+
+### 32.2 Palet Warna
+
+| Peran | Warna |
+| --- | --- |
+| Latar belakang | Krem pastel hangat `#F3EFE4` |
+| Brand utama | Biru `#2483D0` |
+| Aksen pastel | Yellow, Soft Blue, Green, Pink, Orange, Peach |
+
+### 32.3 Tipografi
+
+| Elemen | Font |
+| --- | --- |
+| Judul (heading) | `Unbounded` |
+| Teks tubuh (body) | `Outfit` |
+
 ---
 *RoboEdu — Dokumen Kebutuhan Produk*
  
