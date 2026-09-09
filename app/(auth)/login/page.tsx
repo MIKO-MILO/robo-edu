@@ -41,15 +41,42 @@ export default function LoginPage() {
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  // Per-field errors untuk validasi kosong
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+  // Tandai field mana yang perlu border merah saat salah credentials
+  const [credentialError, setCredentialError] = useState(false);
   const router = useRouter();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    // Hapus error field saat user mengetik
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+    // Hapus credential error saat user mengetik
+    if (credentialError) setCredentialError(false);
+    if (error) setError("");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError("");
+    setCredentialError(false);
+
+    // Validasi kosong sebelum hit API
+    const newFieldErrors = { email: "", password: "" };
+    if (!form.email.trim()) newFieldErrors.email = "Email wajib diisi.";
+    else if (!/^\S+@\S+\.\S+$/.test(form.email)) newFieldErrors.email = "Format email tidak valid.";
+    if (!form.password) newFieldErrors.password = "Password wajib diisi.";
+
+    if (newFieldErrors.email || newFieldErrors.password) {
+      setFieldErrors(newFieldErrors);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch("/api/auth/login", {
@@ -59,7 +86,8 @@ export default function LoginPage() {
       });
       const result = await response.json();
       if (!response.ok) {
-        alert(result.message ?? "Login gagal.");
+        setError(result.message ?? "Email atau password salah.");
+        setCredentialError(true);
         return;
       }
 
@@ -67,7 +95,7 @@ export default function LoginPage() {
       router.replace(next?.startsWith("/") ? next : "/");
       router.refresh();
     } catch {
-      alert("Login gagal. Silakan coba lagi.");
+      setError("Login gagal. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
     }
@@ -165,25 +193,6 @@ export default function LoginPage() {
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
           {/* ── Header ── */}
           <div className="text-center mb-8">
-            {/* Roboedu badge */}
-            {/* <div className="flex justify-center mb-5">
-              <div
-                className="w-14 h-14 rounded-full bg-primary flex items-center justify-center border-2 border-border neo-shadow-icon"
-                aria-hidden="true"
-              >
-                <span
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    color: "#ffffff",
-                    letterSpacing: "-0.04em",
-                  }}
-                >
-                  RE
-                </span>
-              </div>
-            </div> */}
             <h2
               className="uppercase mb-2"
               style={{
@@ -224,18 +233,27 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Masukkan email kamu"
-                className="
+                className={`
                   w-full
                   bg-muted text-foreground
-                  border-2 border-border
+                  border-2
                   rounded-none
                   px-3 py-2.5
                   font-body text-sm
                   placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
+                  focus:outline-none focus:ring-0
                   transition-colors duration-150
-                "
+                  ${fieldErrors.email || credentialError ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"}
+                `}
               />
+              {fieldErrors.email && (
+                <p className="font-body text-xs text-red-500 flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
             {/* Password */}
@@ -246,28 +264,71 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <input
-                id="login-password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Masukkan password kamu"
-                className="
-                  w-full
-                  bg-muted text-foreground
-                  border-2 border-border
-                  rounded-none
-                  px-3 py-2.5
-                  font-body text-sm
-                  placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
-                  transition-colors duration-150
-                "
-              />
+              <div className="relative">
+                <input
+                  id="login-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Masukkan password kamu"
+                  className={`
+                    w-full
+                    bg-muted text-foreground
+                    border-2
+                    rounded-none
+                    px-3 py-2.5 pr-10
+                    font-body text-sm
+                    placeholder:text-muted-foreground
+                    focus:outline-none focus:ring-0
+                    transition-colors duration-150
+                    ${fieldErrors.password || credentialError ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"}
+                  `}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                >
+                  {showPassword ? (
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {fieldErrors.password && (
+                <p className="font-body text-xs text-red-500 flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                  {fieldErrors.password}
+                </p>
+              )}
             </div>
+
+            {/* Error message */}
+            {error && (
+              <p
+                role="alert"
+                className="flex items-center gap-1.5 font-body text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-sm"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+                {error}
+              </p>
+            )}
 
             {/* Remember me + Forgot password */}
             <div className="flex items-center justify-between">

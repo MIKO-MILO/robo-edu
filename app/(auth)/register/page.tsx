@@ -49,7 +49,6 @@ function DotGrid() {
 
 // ── Page Component ────────────────────────────────────────────────────────────
 export default function RegisterPage() {
-  // RegisterRequestBody: { name, email, password, phone? }
   const [form, setForm] = useState<RegisterRequestBody>({
     name: "",
     email: "",
@@ -58,16 +57,29 @@ export default function RegisterPage() {
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  // true = pernah mulai ketik password (baru tampilkan indikator)
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const router = useRouter();
+
+  const passwordValid = form.password.length >= 8;
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === "password" && !passwordTouched) setPasswordTouched(true);
+    if (error) setError("");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!agreedToTerms) return;
+    if (!passwordValid) {
+      setError("Password harus minimal 8 karakter.");
+      return;
+    }
+    setError("");
     setIsLoading(true);
     try {
       const response = await fetch("/api/auth/register", {
@@ -77,14 +89,13 @@ export default function RegisterPage() {
       });
       const result = await response.json();
       if (!response.ok) {
-        alert(result.message ?? "Pendaftaran gagal.");
+        setError(result.message ?? "Pendaftaran gagal.");
         return;
       }
 
-      alert("Pendaftaran berhasil. Silakan masuk dengan akun baru kamu.");
-      router.replace("/login");
+      router.replace("/login?registered=1");
     } catch {
-      alert("Pendaftaran gagal. Silakan coba lagi.");
+      setError("Pendaftaran gagal. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +105,13 @@ export default function RegisterPage() {
     // TODO: wire up to OAuth flow
     console.log("Sign up with Google");
   }
+
+  // Kelas border password — hanya aktif setelah user mulai mengetik
+  const passwordBorderClass = passwordTouched
+    ? passwordValid
+      ? "border-green-500 focus:border-green-500"
+      : "border-red-500 focus:border-red-500"
+    : "border-border focus:border-primary";
 
   return (
     <>
@@ -120,7 +138,7 @@ export default function RegisterPage() {
           {/* Dot grid decorative background */}
           <DotGrid />
 
-          {/* Team photo — mix-blend-multiply agar warna card-pink tetap dominan */}
+          {/* Team photo */}
           <Image
             src="/images/[Sinergi dan Komitmen Bersama Roboedu Team]Rangkaian profil yang telah ditampilkan merupakan sa.webp"
             alt="Tim Roboedu"
@@ -132,14 +150,13 @@ export default function RegisterPage() {
 
           {/* Corner decorative badges */}
           <div className="absolute top-4 left-4 z-20 w-8 h-8 bg-card rounded-full border-2 border-border neo-shadow-icon flex items-center justify-center">
-            {/* Gear icon — using unicode ⚙ since Material Symbols is not loaded in Next.js */}
             <span className="text-foreground text-xs leading-none select-none">⚙</span>
           </div>
           <div className="absolute top-4 right-4 z-20 w-8 h-8 bg-card rounded-full border-2 border-border neo-shadow-icon flex items-center justify-center">
             <span className="text-foreground text-xs leading-none select-none">◈</span>
           </div>
 
-          {/* Tagline overlay — sits above the image */}
+          {/* Tagline overlay */}
           <div className="relative z-20 p-8">
             <p className="font-body text-sm text-foreground/70 uppercase tracking-widest mb-2">
               Platform Robotika Edukasi
@@ -167,36 +184,6 @@ export default function RegisterPage() {
         <section className="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
           {/* ── Header ── */}
           <div className="mb-8 text-center flex flex-col items-center">
-            {/* Brand badge */}
-            {/* <div className="w-16 h-16 bg-primary mb-4 rounded-full border-2 border-border neo-shadow-icon flex items-center justify-center">
-              <span
-                aria-hidden="true"
-                style={{
-                  fontFamily: "var(--font-heading)",
-                  fontSize: "0.625rem",
-                  fontWeight: 800,
-                  color: "#ffffff",
-                  letterSpacing: "-0.04em",
-                }}
-              >
-                RE
-              </span>
-            </div> */}
-            {/* Brand name */}
-            {/* <p
-              className="uppercase"
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontSize: "clamp(0.875rem, 1.5vw, 1rem)",
-                fontWeight: 700,
-                color: "var(--color-foreground)",
-                letterSpacing: "0.05em",
-              }}
-            >
-              RoboEdu
-            </p> */}
-
-            {/* Page title */}
             <h2
               className="uppercase mt-2"
               style={{
@@ -290,27 +277,73 @@ export default function RegisterPage() {
               >
                 Password
               </label>
-              <input
-                id="register-password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={form.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="
-                  w-full
-                  bg-muted text-foreground
-                  border-2 border-border
-                  rounded-none
-                  px-3 py-2.5
-                  font-body text-sm
-                  placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
-                  transition-colors duration-150
-                "
-              />
+              <div className="relative">
+                <input
+                  id="register-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className={`
+                    w-full
+                    bg-muted text-foreground
+                    border-2
+                    rounded-none
+                    px-3 py-2.5 pr-10
+                    font-body text-sm
+                    placeholder:text-muted-foreground
+                    focus:outline-none focus:ring-0
+                    transition-colors duration-150
+                    ${passwordBorderClass}
+                  `}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                >
+                  {showPassword ? (
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {/* Indikator panjang password — muncul setelah user mulai mengetik */}
+              {passwordTouched && (
+                <p
+                  className={`font-body text-xs flex items-center gap-1 ${
+                    passwordValid ? "text-green-600" : "text-red-500"
+                  }`}
+                >
+                  {passwordValid ? (
+                    <>
+                      <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                      </svg>
+                      Password sudah memenuhi syarat
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                      Password minimal 8 karakter ({form.password.length}/8)
+                    </>
+                  )}
+                </p>
+              )}
             </div>
 
             {/* Phone (optional) */}
@@ -325,7 +358,7 @@ export default function RegisterPage() {
               <input
                 id="register-phone"
                 name="phone"
-                type="tel"
+                type="number"
                 autoComplete="tel"
                 value={form.phone ?? ""}
                 onChange={handleChange}
@@ -376,6 +409,19 @@ export default function RegisterPage() {
                 Roboedu.
               </span>
             </label>
+
+            {/* Error message */}
+            {error && (
+              <p
+                role="alert"
+                className="flex items-center gap-1.5 font-body text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-sm"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+                {error}
+              </p>
+            )}
 
             {/* Primary CTA — Sign Up */}
             <Button
