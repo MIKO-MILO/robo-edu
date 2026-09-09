@@ -30,3 +30,4 @@ export * from "./review";
 export * from "./complaint";
 export * from "./admin";
 export * from "./contact";
+export * from "./api-client";
