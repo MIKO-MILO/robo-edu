@@ -459,8 +459,8 @@ export default function CartPage() {
             </form>
 
             {/* Proceed to Checkout Button */}
-            <button
-              onClick={() => alert("Proceeding to checkout mock sequence...")}
+            <Link
+              href="/checkout"
               className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg"
             >
               Proceed to Checkout
@@ -473,7 +473,7 @@ export default function CartPage() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
-            </button>
+            </Link>
 
             {/* Payment Icons */}
             <div className="flex justify-center items-center gap-3 sm:gap-4 py-2 opacity-70 hover:opacity-100 transition-opacity duration-300">
