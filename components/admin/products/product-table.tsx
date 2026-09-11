@@ -35,7 +35,7 @@ export function ProductTable({
   if (isLoading) {
     return (
       <div className="w-full space-y-4">
-        <div className="overflow-hidden rounded-2xl border-2 border-[#3D2900] bg-card p-4 neo-shadow">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card p-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0">
               <Skeleton className="h-12 w-12 rounded-xl" />
@@ -55,9 +55,9 @@ export function ProductTable({
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-[#3D2900] bg-card p-12 text-center neo-shadow">
-        <div className="p-4 rounded-full bg-accent-yellow/30 border-2 border-[#3D2900] mb-4">
-          <PackageIcon className="size-10 text-[#3D2900]" />
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-12 text-center">
+        <div className="p-4 rounded-full bg-accent-yellow/30 border border-border mb-4">
+          <PackageIcon className="size-10 text-foreground" />
         </div>
         <h3 className="font-heading font-bold text-lg text-foreground">Tidak Ada Produk</h3>
         <p className="font-body text-sm text-muted-foreground mt-1 max-w-sm">
@@ -70,10 +70,10 @@ export function ProductTable({
   return (
     <div className="w-full space-y-4">
       {/* Table Container */}
-      <div className="overflow-x-auto rounded-2xl border-2 border-[#3D2900] bg-card neo-shadow">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-left border-collapse font-body">
           <thead>
-            <tr className="border-b-2 border-[#3D2900] bg-accent-soft-blue/40 text-foreground font-heading text-xs uppercase tracking-wider">
+            <tr className="border-b border-border bg-accent-soft-blue/40 text-foreground font-heading text-xs uppercase tracking-wider">
               <th className="py-3.5 px-4 font-bold">Produk</th>
               <th className="py-3.5 px-4 font-bold">Kategori</th>
               <th className="py-3.5 px-4 font-bold">Harga Base</th>
@@ -81,7 +81,7 @@ export function ProductTable({
               <th className="py-3.5 px-4 font-bold text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y border-border/60 text-sm">
+          <tbody className="divide-y divide-border/60 text-sm">
             {data.map((product) => (
               <tr
                 key={product.id}
@@ -90,7 +90,7 @@ export function ProductTable({
                 {/* Thumbnail & Product Info */}
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border-2 border-[#3D2900] bg-muted shadow-[2px_2px_0px_#3D2900]">
+                    <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
                       {product.primary_image_url ? (
                         <Image
                           src={product.primary_image_url}
@@ -99,7 +99,7 @@ export function ProductTable({
                           className="object-cover"
                         />
                       ) : (
-                        <div className="flex size-full items-center justify-center bg-accent-yellow/20 text-[#3D2900]">
+                        <div className="flex size-full items-center justify-center bg-accent-yellow/20 text-foreground">
                           <PackageIcon className="size-6" />
                         </div>
                       )}
@@ -143,7 +143,7 @@ export function ProductTable({
                         type="button"
                         variant="accent-yellow"
                         size="xs"
-                        neo
+                        neo={false}
                         onClick={() => onEdit(product)}
                         title="Edit Produk"
                       >
@@ -156,7 +156,7 @@ export function ProductTable({
                         type="button"
                         variant="danger"
                         size="xs"
-                        neo
+                        neo={false}
                         onClick={() => onDelete(product.id)}
                         title="Hapus Produk"
                       >

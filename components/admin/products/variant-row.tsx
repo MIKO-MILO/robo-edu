@@ -31,7 +31,7 @@ export function VariantRow({
   onDelete,
 }: VariantRowProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border-2 border-[#3D2900] bg-background neo-shadow">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-border bg-background">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <span className="font-heading font-bold text-foreground text-base">
@@ -66,7 +66,7 @@ export function VariantRow({
               type="button"
               variant="accent-yellow"
               size="icon-sm"
-              neo
+              neo={false}
               disabled={disabled}
               onClick={() => onEdit(variant)}
               title="Edit Varian"
@@ -79,7 +79,7 @@ export function VariantRow({
               type="button"
               variant="danger"
               size="icon-sm"
-              neo
+              neo={false}
               disabled={disabled}
               onClick={() => onDelete(variant.id)}
               title="Hapus Varian"

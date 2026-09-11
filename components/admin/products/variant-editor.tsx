@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   variantFormSchema,
@@ -11,11 +11,19 @@ import type {
   UUID,
   CreateVariantRequestBody,
   UpdateVariantRequestBody,
+  ProductStatus,
 } from "@/types";
 import { VariantRow, type VariantItem } from "./variant-row";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { PlusIcon, SaveIcon, XIcon, AlertCircleIcon, LayersIcon } from "lucide-react";
 
 export interface VariantEditorProps {
@@ -47,6 +55,7 @@ export function VariantEditor({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<VariantFormValues>({
     resolver: zodResolver(variantFormSchema),
@@ -118,7 +127,7 @@ export function VariantEditor({
   };
 
   return (
-    <div className="space-y-4 rounded-2xl border-2 border-[#3D2900] bg-card p-6 neo-shadow">
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div>
@@ -136,7 +145,7 @@ export function VariantEditor({
             type="button"
             variant="accent-yellow"
             size="sm"
-            neo
+            neo={false}
             onClick={handleOpenAddForm}
           >
             <PlusIcon className="size-4" />
@@ -147,7 +156,7 @@ export function VariantEditor({
 
       {/* Disabled Notice if product not saved */}
       {disabled && (
-        <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-[#3D2900] bg-accent-yellow/20 text-[#3D2900]">
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-accent-yellow/20 text-[#3D2900]">
           <AlertCircleIcon className="size-5 shrink-0" />
           <p className="font-body text-xs font-semibold">
             Simpan data produk terlebih dahulu di atas sebelum dapat menambahkan varian, harga, dan stok kuota.
@@ -157,7 +166,7 @@ export function VariantEditor({
 
       {/* Warning if no variants exist yet */}
       {!disabled && variants.length === 0 && !isFormOpen && (
-        <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border-2 border-dashed border-border bg-muted/30">
+        <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-dashed border-border bg-muted/30">
           <AlertCircleIcon className="size-8 text-amber-600 mb-2" />
           <h4 className="font-heading font-bold text-sm text-foreground">
             Produk Ini Belum Memiliki Varian!
@@ -169,7 +178,7 @@ export function VariantEditor({
             type="button"
             variant="accent-yellow"
             size="sm"
-            neo
+            neo={false}
             onClick={handleOpenAddForm}
           >
             <PlusIcon className="size-4" />
@@ -197,7 +206,7 @@ export function VariantEditor({
       {isFormOpen && (
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="space-y-4 p-4 rounded-xl border-2 border-[#3D2900] bg-accent-soft-blue/20 neo-shadow"
+          className="space-y-4 p-4 rounded-xl border border-border bg-accent-soft-blue/20"
         >
           <div className="flex items-center justify-between border-b border-border/60 pb-2">
             <h4 className="font-heading font-bold text-sm text-foreground">
@@ -315,15 +324,34 @@ export function VariantEditor({
               <label className="font-heading text-xs font-bold uppercase text-foreground">
                 Status Varian
               </label>
-              <select
-                {...register("status")}
-                className="h-10 w-full rounded-full border border-border bg-background px-4 text-sm font-body outline-none focus-visible:border-ring focus-visible:ring-2 cursor-pointer"
-              >
-                <option value="ACTIVE">Aktif</option>
-                <option value="DRAFT">Draft</option>
-                <option value="INACTIVE">Nonaktif</option>
-                <option value="OUT_OF_STOCK">Stok Habis</option>
-              </select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || "ACTIVE"}
+                    onValueChange={(val) => field.onChange(val as ProductStatus)}
+                  >
+                    <SelectTrigger className="h-10 w-full rounded-2xl border border-border bg-background px-4 text-sm font-body cursor-pointer">
+                      <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl p-1.5 bg-popover border border-border shadow-lg font-body z-50">
+                      <SelectItem value="ACTIVE" className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                        Aktif
+                      </SelectItem>
+                      <SelectItem value="DRAFT" className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                        Draft
+                      </SelectItem>
+                      <SelectItem value="INACTIVE" className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                        Nonaktif
+                      </SelectItem>
+                      <SelectItem value="OUT_OF_STOCK" className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                        Stok Habis
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
 
@@ -332,7 +360,7 @@ export function VariantEditor({
               type="button"
               variant="outline"
               size="sm"
-              neo
+              neo={false}
               onClick={handleCloseForm}
             >
               Batal
@@ -341,7 +369,7 @@ export function VariantEditor({
               type="submit"
               variant="primary"
               size="sm"
-              neo
+              neo={false}
               disabled={isSubmitting}
             >
               {isSubmitting ? (

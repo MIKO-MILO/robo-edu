@@ -25,7 +25,7 @@ const adminInputVariants = cva(
         true: "",
       },
       neo: {
-        true: "neo-shadow focus:translate-x-[1px] focus:translate-y-[1px]",
+        true: "shadow-sm",
         false: "",
       },
     },

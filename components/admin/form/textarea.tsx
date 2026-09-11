@@ -14,7 +14,7 @@ const adminTextareaVariants = cva(
         success: "border-success text-foreground focus:border-success focus:ring-success/20",
       },
       neo: {
-        true: "neo-shadow focus:translate-x-[1px] focus:translate-y-[1px]",
+        true: "shadow-sm",
         false: "",
       },
     },

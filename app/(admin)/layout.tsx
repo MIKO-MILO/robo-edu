@@ -87,19 +87,18 @@ export default async function AdminLayout({
   }
 
   const uppercaseRole = user.role.toUpperCase();
+  const adminUserData = {
+    name: user.name,
+    email: user.email,
+    role: uppercaseRole,
+  };
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-body">
       {/* Visual Admin Shell dengan prop role & data user */}
-      <AdminSidebar userRole={uppercaseRole} />
+      <AdminSidebar userRole={uppercaseRole} user={adminUserData} />
       <div className="flex flex-1 flex-col min-w-0">
-        <AdminTopBar
-          user={{
-            name: user.name,
-            email: user.email,
-            role: uppercaseRole,
-          }}
-        />
+        <AdminTopBar user={adminUserData} />
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
           {children}
         </main>

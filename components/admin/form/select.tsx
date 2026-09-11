@@ -1,36 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
-
-const adminSelectVariants = cva(
-  "w-full appearance-none rounded-2xl border bg-card text-foreground font-body transition-all duration-150 outline-none pr-10 placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "border-border focus:border-primary",
-        error: "border-danger text-danger focus:border-danger focus:ring-danger/20",
-        success: "border-success text-foreground focus:border-success focus:ring-success/20",
-      },
-      selectSize: {
-        sm: "h-9 pl-3 text-xs",
-        md: "h-11 pl-4 text-sm",
-        lg: "h-13 pl-5 text-base",
-      },
-      neo: {
-        true: "neo-shadow focus:translate-x-[1px] focus:translate-y-[1px]",
-        false: "",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      selectSize: "md",
-      neo: false,
-    },
-  }
-);
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 export interface AdminSelectOption {
   value: string;
@@ -38,39 +16,67 @@ export interface AdminSelectOption {
   disabled?: boolean;
 }
 
-export interface AdminSelectProps
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size">,
-    VariantProps<typeof adminSelectVariants> {
+export interface AdminSelectProps {
+  name?: string;
+  value?: string;
+  defaultValue?: string;
+  onChange?: (e: { target: { name?: string; value: string } }) => void;
+  onValueChange?: (value: string) => void;
+  disabled?: boolean;
   label?: string;
   helperText?: string;
   error?: string;
   options: AdminSelectOption[];
   placeholder?: string;
   containerClassName?: string;
+  className?: string;
+  selectSize?: "sm" | "md" | "lg";
+  required?: boolean;
+  id?: string;
 }
 
-export const AdminSelect = React.forwardRef<HTMLSelectElement, AdminSelectProps>(
+export const AdminSelect = React.forwardRef<HTMLButtonElement, AdminSelectProps>(
   (
     {
-      className,
-      containerClassName,
+      name,
+      value,
+      defaultValue,
+      onChange,
+      onValueChange,
+      disabled,
       label,
       helperText,
       error,
-      variant,
-      selectSize,
       options,
       placeholder = "Pilih opsi...",
-      neo,
+      containerClassName,
+      className,
+      selectSize = "md",
+      required,
       id,
-      disabled,
-      ...props
     },
     ref
   ) => {
     const generatedId = React.useId();
     const selectId = id || generatedId;
-    const computedVariant = error ? "error" : variant;
+
+    const handleValueChange = (newVal: string | null) => {
+      const val = newVal ?? "";
+      onValueChange?.(val);
+      if (onChange) {
+        onChange({
+          target: {
+            name,
+            value: val,
+          },
+        });
+      }
+    };
+
+    const selectedOption = React.useMemo(() => {
+      if (value === undefined || value === null) return null;
+      return options.find((opt) => opt.value === value) || null;
+    }, [options, value]);
 
     return (
       <div className={cn("flex w-full flex-col gap-1.5", containerClassName)}>
@@ -80,41 +86,51 @@ export const AdminSelect = React.forwardRef<HTMLSelectElement, AdminSelectProps>
             className="text-xs font-semibold text-foreground font-body flex items-center justify-between"
           >
             <span>{label}</span>
-            {props.required && <span className="text-danger ml-1">*</span>}
+            {required && <span className="text-danger ml-1">*</span>}
           </label>
         )}
 
-        <div className="relative flex items-center w-full">
-          <select
+        <Select
+          value={value ?? ""}
+          defaultValue={defaultValue}
+          onValueChange={handleValueChange}
+          disabled={disabled}
+          name={name}
+        >
+          <SelectTrigger
             id={selectId}
             ref={ref}
-            disabled={disabled}
+            size={selectSize === "sm" ? "sm" : "default"}
             className={cn(
-              adminSelectVariants({
-                variant: computedVariant,
-                selectSize,
-                neo,
-                className,
-              })
+              "w-full rounded-2xl border bg-card text-foreground font-body transition-all duration-150 outline-none flex items-center justify-between cursor-pointer",
+              selectSize === "sm" && "h-10 text-sm px-3.5",
+              selectSize === "md" && "h-11 text-sm px-4",
+              selectSize === "lg" && "h-13 text-base px-5",
+              error
+                ? "border-danger text-danger focus:border-danger focus:ring-danger/20"
+                : "border-border hover:border-primary/60 focus:border-primary",
+              disabled && "opacity-50 cursor-not-allowed",
+              className
             )}
-            {...props}
           >
-            {placeholder && (
-              <option value="" disabled hidden>
-                {placeholder}
-              </option>
-            )}
-            {options.map((opt) => (
-              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            <SelectValue placeholder={placeholder}>
+              {selectedOption ? selectedOption.label : undefined}
+            </SelectValue>
+          </SelectTrigger>
 
-          <div className="absolute right-3.5 pointer-events-none text-muted-foreground">
-            <ChevronDown className="size-4 stroke-[2.5]" />
-          </div>
-        </div>
+          <SelectContent className="w-(--anchor-width) min-w-[160px] rounded-2xl p-1.5 bg-popover border border-border shadow-lg font-body z-50">
+            {options.map((opt) => (
+              <SelectItem
+                key={opt.value}
+                value={opt.value}
+                disabled={opt.disabled}
+                className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+              >
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {error ? (
           <p className="text-xs font-medium text-danger font-body flex items-center gap-1">

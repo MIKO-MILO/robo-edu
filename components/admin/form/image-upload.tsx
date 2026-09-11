@@ -156,7 +156,7 @@ export function AdminImageUpload({
           {imageList.map((url, idx) => (
             <div
               key={`${url}-${idx}`}
-              className="relative group aspect-square rounded-2xl border-2 border-border overflow-hidden bg-card neo-shadow"
+              className="relative group aspect-square rounded-2xl border border-border overflow-hidden bg-card shadow-sm"
             >
               {/* eslint-disable-next-next-img-element */}
               <img
@@ -187,7 +187,7 @@ export function AdminImageUpload({
           onDrop={handleDrop}
           onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
           className={cn(
-            "flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-150 bg-card/60 text-center font-body",
+            "flex flex-col items-center justify-center p-6 border border-dashed rounded-2xl cursor-pointer transition-all duration-150 bg-card/60 text-center font-body",
             isDragging
               ? "border-primary bg-primary/10 ring-2 ring-primary/30"
               : "border-border hover:border-primary/70 hover:bg-card",
@@ -202,7 +202,7 @@ export function AdminImageUpload({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div className="p-3 rounded-full bg-primary-100 text-primary neo-shadow">
+              <div className="p-3 rounded-full bg-primary-100 text-primary">
                 <Upload className="size-6" />
               </div>
               <div className="space-y-0.5">

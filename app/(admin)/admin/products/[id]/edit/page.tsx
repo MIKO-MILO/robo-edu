@@ -228,7 +228,7 @@ export default function EditProductPage({
             type="button"
             variant="outline"
             size="icon-sm"
-            neo
+            neo={false}
             onClick={() => router.push("/admin/products")}
             title="Kembali ke Daftar Produk"
           >

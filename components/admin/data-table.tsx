@@ -14,6 +14,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { AdminInput } from "@/components/admin/form/input";
 import { AdminSelect } from "@/components/admin/form/select";
 
@@ -101,7 +108,7 @@ export function DataTable<TData>({
   return (
     <div className={cn("w-full space-y-4 font-body", className)}>
       {/* Table Toolbar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-4 rounded-3xl bg-card border-2 border-border neo-shadow">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border shadow-sm">
         {/* Left: Search & Filter */}
         <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {searchable && onSearchChange && (
@@ -186,11 +193,11 @@ export function DataTable<TData>({
       )}
 
       {/* Main Table Container */}
-      <div className="w-full overflow-hidden rounded-3xl border-2 border-border bg-card neo-shadow">
+      <div className="w-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b-2 border-border bg-muted/50 text-foreground font-heading text-xs font-bold uppercase tracking-wider">
+              <tr className="border-b border-border bg-muted/50 text-foreground font-heading text-xs font-bold uppercase tracking-wider">
                 {columns.map((col) => {
                   const isSorted = sortColumn === col.key;
                   return (
@@ -242,7 +249,7 @@ export function DataTable<TData>({
                     className="px-4 py-12 text-center text-muted-foreground"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="p-3 rounded-2xl bg-muted/60 text-muted-foreground neo-shadow-icon">
+                      <div className="p-3 rounded-2xl bg-muted/60 text-muted-foreground">
                         <Inbox className="size-8 stroke-[1.5]" />
                       </div>
                       <p className="font-semibold text-foreground text-sm">{emptyMessage}</p>
@@ -274,7 +281,7 @@ export function DataTable<TData>({
         </div>
 
         {/* Table Footer / Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 border-t-2 border-border bg-muted/30">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 border-t border-border bg-muted/30">
           <div className="text-xs text-muted-foreground font-medium flex items-center gap-3">
             <span>
               Menampilkan <strong className="text-foreground">{startItem}</strong> -{" "}
@@ -285,16 +292,20 @@ export function DataTable<TData>({
             {onPageSizeChange && (
               <div className="flex items-center gap-1.5 ml-2">
                 <span>Per halaman:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                  className="rounded-xl border border-border bg-card px-2 py-1 text-xs text-foreground font-bold outline-none cursor-pointer"
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(val) => onPageSizeChange(Number(val))}
                 >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
+                  <SelectTrigger className="h-8 rounded-xl border border-border bg-card px-2.5 text-xs text-foreground font-bold outline-none cursor-pointer">
+                    <SelectValue placeholder={String(pageSize)} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl p-1 bg-popover border border-border shadow-lg font-body min-w-[70px] z-50">
+                    <SelectItem value="10" className="cursor-pointer rounded-lg px-2 py-1 text-xs font-bold">10</SelectItem>
+                    <SelectItem value="25" className="cursor-pointer rounded-lg px-2 py-1 text-xs font-bold">25</SelectItem>
+                    <SelectItem value="50" className="cursor-pointer rounded-lg px-2 py-1 text-xs font-bold">50</SelectItem>
+                    <SelectItem value="100" className="cursor-pointer rounded-lg px-2 py-1 text-xs font-bold">100</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
