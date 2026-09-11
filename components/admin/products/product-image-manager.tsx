@@ -82,7 +82,7 @@ export function ProductImageManager({
   const sortedImages = [...images].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
   return (
-    <div className="space-y-4 rounded-2xl border-2 border-[#3D2900] bg-card p-6 neo-shadow">
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div>
@@ -108,7 +108,7 @@ export function ProductImageManager({
               type="button"
               variant="accent-yellow"
               size="sm"
-              neo
+              neo={false}
               disabled={isUploading}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -130,7 +130,7 @@ export function ProductImageManager({
 
       {/* Disabled Notice */}
       {disabled && (
-        <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-[#3D2900] bg-accent-yellow/20 text-[#3D2900]">
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-accent-yellow/20 text-[#3D2900]">
           <AlertCircleIcon className="size-5 shrink-0" />
           <p className="font-body text-xs font-semibold">
             Simpan data produk terlebih dahulu sebelum dapat mengunggah gambar.
@@ -140,7 +140,7 @@ export function ProductImageManager({
 
       {/* Empty State */}
       {!disabled && sortedImages.length === 0 && (
-        <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border-2 border-dashed border-border bg-muted/20">
+        <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-border bg-muted/20">
           <ImageIcon className="size-10 text-muted-foreground mb-2" />
           <p className="font-body text-xs text-muted-foreground">
             Belum ada foto produk yang diunggah. Klik tombol "Unggah Gambar" di atas untuk menambahkan foto.
@@ -154,7 +154,7 @@ export function ProductImageManager({
           {sortedImages.map((img, idx) => (
             <div
               key={img.id}
-              className="group relative flex flex-col overflow-hidden rounded-xl border-2 border-[#3D2900] bg-background neo-shadow transition-transform duration-150 hover:-translate-y-0.5"
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-background transition-transform duration-150 hover:-translate-y-0.5"
             >
               {/* Image Container */}
               <div className="relative aspect-square w-full bg-muted">
@@ -167,7 +167,7 @@ export function ProductImageManager({
 
                 {/* Primary Badge */}
                 {img.is_primary && (
-                  <span className="absolute top-2 left-2 flex items-center gap-1 rounded-full border-2 border-[#3D2900] bg-accent-yellow px-2 py-0.5 text-[10px] font-bold text-[#3D2900] shadow-[1px_1px_0px_#3D2900]">
+                  <span className="absolute top-2 left-2 flex items-center gap-1 rounded-full border border-border bg-accent-yellow px-2 py-0.5 text-[10px] font-bold text-[#3D2900]">
                     <StarIcon className="size-3 fill-[#3D2900]" />
                     <span>Utama</span>
                   </span>
@@ -175,7 +175,7 @@ export function ProductImageManager({
               </div>
 
               {/* Action Controls */}
-              <div className="p-2 space-y-2 border-t-2 border-[#3D2900] bg-card">
+              <div className="p-2 space-y-2 border-t border-border bg-card">
                 <div className="flex items-center justify-between gap-1">
                   {/* Move Buttons */}
                   <div className="flex items-center gap-1">
@@ -207,7 +207,7 @@ export function ProductImageManager({
                       type="button"
                       variant="danger"
                       size="icon-xs"
-                      neo
+                      neo={false}
                       onClick={() => onDeleteImage(img.id)}
                       title="Hapus Gambar"
                     >

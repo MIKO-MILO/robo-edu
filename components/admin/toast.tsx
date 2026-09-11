@@ -14,11 +14,11 @@ const variantIcons: Record<ToastVariant, React.ReactNode> = {
 };
 
 const variantClasses: Record<ToastVariant, string> = {
-  default: "bg-card border-border text-foreground",
-  success: "bg-success-bg/90 border-success text-success neo-shadow",
-  error: "bg-danger-bg/90 border-danger text-danger neo-shadow",
-  warning: "bg-warning-bg/90 border-warning text-warning neo-shadow",
-  info: "bg-info-bg/90 border-info text-info neo-shadow",
+  default: "bg-card border-border text-foreground shadow-md",
+  success: "bg-success-bg/90 border-success text-success shadow-md",
+  error: "bg-danger-bg/90 border-danger text-danger shadow-md",
+  warning: "bg-warning-bg/90 border-warning text-warning shadow-md",
+  info: "bg-info-bg/90 border-info text-info shadow-md",
 };
 
 export function Toaster() {
@@ -37,7 +37,7 @@ export function Toaster() {
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border-2 transition-all duration-200 animate-in slide-in-from-bottom-5 font-body",
+              "pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border transition-all duration-200 animate-in slide-in-from-bottom-5 font-body",
               variantClasses[variant]
             )}
           >

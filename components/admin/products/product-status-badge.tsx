@@ -48,7 +48,7 @@ export function ProductStatusBadge({ status, className }: ProductStatusBadgeProp
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border-2 shadow-[2px_2px_0px_#3D2900] select-none",
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border select-none",
         statusConfig.bg,
         statusConfig.text,
         statusConfig.border,

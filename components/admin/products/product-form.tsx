@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   productFormSchema,
@@ -12,6 +12,13 @@ import type { Category, ProductType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { SaveIcon, RefreshCwIcon } from "lucide-react";
 
 export interface ProductFormProps {
@@ -36,6 +43,7 @@ export function ProductForm({
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -69,7 +77,7 @@ export function ProductForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-2xl border-2 border-[#3D2900] bg-card p-6 neo-shadow"
+      className="space-y-6 rounded-2xl border border-border bg-card p-6 font-body"
     >
       <div className="border-b border-border/60 pb-3">
         <h3 className="font-heading text-lg font-bold text-foreground">
@@ -147,18 +155,34 @@ export function ProductForm({
           <label className="font-heading text-xs font-bold uppercase text-foreground">
             Kategori <span className="text-danger">*</span>
           </label>
-          <select
-            {...register("category_id")}
-            aria-invalid={Boolean(errors.category_id)}
-            className="h-10 w-full rounded-full border border-border bg-background px-4 text-sm font-body outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 cursor-pointer"
-          >
-            <option value="">-- Pilih Kategori --</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="category_id"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value || ""}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger
+                  className="h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm font-body outline-none focus-visible:border-ring focus-visible:ring-2 cursor-pointer"
+                  aria-invalid={Boolean(errors.category_id)}
+                >
+                  <SelectValue placeholder="-- Pilih Kategori --" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl p-1.5 bg-popover border border-border shadow-lg font-body z-50">
+                  {categories.map((cat) => (
+                    <SelectItem
+                      key={cat.id}
+                      value={cat.id}
+                      className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium"
+                    >
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
           {errors.category_id && (
             <p className="text-xs text-danger font-medium">
               {errors.category_id.message}
@@ -171,17 +195,34 @@ export function ProductForm({
           <label className="font-heading text-xs font-bold uppercase text-foreground">
             Tipe Produk <span className="text-muted-foreground">(Opsional)</span>
           </label>
-          <select
-            {...register("product_type_id")}
-            className="h-10 w-full rounded-full border border-border bg-background px-4 text-sm font-body outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 cursor-pointer"
-          >
-            <option value="">-- Tanpa Tipe Produk --</option>
-            {productTypes.map((pt) => (
-              <option key={pt.id} value={pt.id}>
-                {pt.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="product_type_id"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value || "NONE"}
+                onValueChange={(val) => field.onChange(val === "NONE" ? null : val)}
+              >
+                <SelectTrigger className="h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm font-body outline-none focus-visible:border-ring focus-visible:ring-2 cursor-pointer">
+                  <SelectValue placeholder="-- Tanpa Tipe Produk --" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl p-1.5 bg-popover border border-border shadow-lg font-body z-50">
+                  <SelectItem value="NONE" className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium">
+                    -- Tanpa Tipe Produk --
+                  </SelectItem>
+                  {productTypes.map((pt) => (
+                    <SelectItem
+                      key={pt.id}
+                      value={pt.id}
+                      className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium"
+                    >
+                      {pt.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
 
         {/* Description (Optional) */}
@@ -203,7 +244,7 @@ export function ProductForm({
           type="submit"
           variant="primary"
           size="default"
-          neo
+          neo={false}
           disabled={isSubmitting}
         >
           {isSubmitting ? (

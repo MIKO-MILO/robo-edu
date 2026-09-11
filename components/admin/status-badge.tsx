@@ -46,7 +46,7 @@ const statusBadgeVariants = cva(
         lg: "px-3.5 py-1.5 text-sm",
       },
       neo: {
-        true: "neo-shadow-icon border-border",
+        true: "border-border shadow-xs",
         false: "",
       },
     },

@@ -59,9 +59,9 @@ export function ConfirmDeleteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="neo-shadow border-2 border-border bg-card max-w-md p-6 rounded-3xl">
+      <DialogContent className="border border-border bg-card max-w-md p-6 rounded-2xl shadow-lg">
         <DialogHeader className="flex flex-col items-center sm:items-start gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-danger-bg text-danger neo-shadow-icon">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-danger-bg text-danger">
             <AlertTriangle className="size-6 stroke-[2.5]" />
           </div>
 
@@ -101,6 +101,7 @@ export function ConfirmDeleteDialog({
             type="button"
             variant="outline"
             size="default"
+            neo={false}
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
             className="w-full sm:w-auto"
@@ -112,9 +113,10 @@ export function ConfirmDeleteDialog({
             type="button"
             variant="danger-solid"
             size="default"
+            neo={false}
             onClick={handleConfirm}
             disabled={isConfirmDisabled}
-            className="w-full sm:w-auto font-bold gap-2 neo"
+            className="w-full sm:w-auto font-bold gap-2"
           >
             {isLoading ? (
               <>
