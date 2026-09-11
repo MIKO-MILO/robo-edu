@@ -1,33 +1,33 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-/**
- * Route Guard Middleware for Robo-Edu Admin Panel
- * Checks authentication & role authorization (SUPERADMIN, ADMIN, ADMIN_SALES, ADMIN_LAPORAN)
- */
+// TODO(auth): Fungsi ini mock. Ganti createMockSession dengan response asli dari POST /auth/login, dan getSession dengan validasi token ke backend (lihat api.md §2).
 
-// Route access rules per role
-const ROLE_PERMISSIONS: Record<string, string[]> = {
-  SUPERADMIN: ["*"],
-  ADMIN: ["*"],
-  ADMIN_SALES: [
-    "/admin/dashboard",
-    "/admin/products",
-    "/admin/categories",
-    "/admin/product-types",
-    "/admin/orders",
-    "/admin/customers",
-    "/admin/resellers",
-    "/admin/vouchers",
-    "/admin/reviews",
-    "/admin/complaints",
-  ],
-  ADMIN_LAPORAN: [
-    "/admin/dashboard",
-    "/admin/reports",
-    "/admin/orders",
-  ],
-};
+function parseMockTokenPayload(token: string): { role?: string; exp?: number } | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    let base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) {
+      base64 += "=";
+    }
+    const jsonStr = atob(base64);
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
+  }
+}
+
+function isAdminRole(role?: string): boolean {
+  if (!role) return false;
+  const norm = role.toUpperCase();
+  return (
+    norm === "ADMIN" ||
+    norm === "SUPERADMIN" ||
+    norm === "ADMIN_SALES" ||
+    norm === "ADMIN_LAPORAN"
+  );
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -37,47 +37,52 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get auth token and user role from cookies or headers
-  const token =
+  // Forward current pathname to Server Components (e.g. AdminLayout)
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+
+  // Allow public access to /admin/login
+  if (pathname === "/admin/login") {
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  // Read roboedu_session cookie
+  const sessionToken =
+    request.cookies.get("roboedu_session")?.value ||
     request.cookies.get("auth_token")?.value ||
-    request.cookies.get("token")?.value ||
-    request.headers.get("authorization")?.replace("Bearer ", "");
+    request.cookies.get("token")?.value;
 
-  const roleCookie = request.cookies.get("user_role")?.value?.toUpperCase();
-  const userRole = roleCookie || "ADMIN"; // Default to ADMIN if token exists but role cookie is not explicit
-
-  // 1. Unauthenticated check
-  if (!token && process.env.NODE_ENV === "production") {
-    const loginUrl = new URL("/login", request.url);
+  if (!sessionToken) {
+    const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Reject non-admin roles (e.g. CUSTOMER)
-  if (userRole === "CUSTOMER") {
-    const unauthorizedUrl = new URL("/unauthorized", request.url);
-    return NextResponse.redirect(unauthorizedUrl);
+  const payload = parseMockTokenPayload(sessionToken);
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+
+  if (payload) {
+    if (payload.exp && payload.exp < nowInSeconds) {
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!isAdminRole(payload.role)) {
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  // 3. Granular Role Access Check
-  const allowedRoutes = ROLE_PERMISSIONS[userRole] || ROLE_PERMISSIONS.ADMIN;
-
-  if (allowedRoutes.includes("*")) {
-    return NextResponse.next();
-  }
-
-  const isAllowed = allowedRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
-
-  if (!isAllowed) {
-    // Redirect to dashboard if user has partial admin role but accesses forbidden route
-    const dashboardUrl = new URL("/admin/dashboard", request.url);
-    dashboardUrl.searchParams.set("error", "unauthorized_route");
-    return NextResponse.redirect(dashboardUrl);
-  }
-
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

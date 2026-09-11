@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
         hostname: "lh3.googleusercontent.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+        pathname: "/**",
+      },
+
+      // TODO(images): domain MinIO/CDN final belum diputuskan.
+      // Update pattern ini begitu domain production ditentukan
     ],
   },
 };

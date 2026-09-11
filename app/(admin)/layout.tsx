@@ -1,7 +1,8 @@
 import * as React from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { authService, type UserMeData } from "@/lib/api";
+import { authService } from "@/lib/api";
+import { getSession } from "@/lib/auth/session";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { AdminTopBar } from "@/components/admin/top-bar";
 import { Toaster } from "@/components/admin/toast";
@@ -26,6 +27,14 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Check if current route is /admin/login
+  const headerList = await headers();
+  const currentPath = headerList.get("x-pathname") || "";
+
+  if (currentPath === "/admin/login") {
+    return <>{children}</>;
+  }
+
   // 1. Ambil cookie session di Server Component
   const cookieStore = await cookies();
   const sessionToken =
@@ -33,9 +42,9 @@ export default async function AdminLayout({
     cookieStore.get("auth_token")?.value ||
     cookieStore.get("token")?.value;
 
-  // Jika tidak ada cookie sesi, redirect langsung ke halaman login
+  // Jika tidak ada cookie sesi, redirect langsung ke halaman admin login
   if (!sessionToken) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   // Forward semua cookie dari Server Component ke HTTP client
@@ -44,7 +53,7 @@ export default async function AdminLayout({
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
 
-  let user: UserMeData | null = null;
+  let user: { name: string; email: string; role: string } | null = null;
 
   // 2. Panggil API getMe() untuk mendapatkan data autentikasi user
   try {
@@ -59,13 +68,22 @@ export default async function AdminLayout({
       user = response.data;
     }
   } catch (error) {
-    // 3. Jika fetch getMe() gagal (401 / token invalid / expired), redirect ke /login
-    redirect("/login");
+    // Fallback: Jika backend getMe() belum ready, coba decode mock session
+    const mockSession = await getSession();
+    if (mockSession && isAdminRole(mockSession.role)) {
+      user = {
+        name: mockSession.name || "Admin RoboEdu",
+        email: mockSession.email || "admin@roboedu.id",
+        role: mockSession.role,
+      };
+    } else {
+      redirect("/admin/login");
+    }
   }
 
-  // 4. Cek otorisasi role: jika bukan admin (misal customer), redirect ke homepage "/"
+  // 4. Cek otorisasi role: jika bukan admin (misal customer), redirect ke /admin/login
   if (!user || !isAdminRole(user.role)) {
-    redirect("/");
+    redirect("/admin/login");
   }
 
   const uppercaseRole = user.role.toUpperCase();
