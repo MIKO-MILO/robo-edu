@@ -1,6 +1,7 @@
 import { Unbounded, Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ReactQueryProvider } from "@/components/providers/query-provider";
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="font-body bg-background text-foreground" suppressHydrationWarning>
-        {children}
+        <ReactQueryProvider>{children}</ReactQueryProvider>
       </body>
     </html>
   );

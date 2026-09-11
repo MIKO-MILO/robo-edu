@@ -210,8 +210,9 @@ Error khusus: `401 UNAUTHORIZED` (kredensial salah), `409 CONFLICT` (email sudah
 | Method | Endpoint | Akses | Deskripsi |
 | --- | --- | --- | --- |
 | GET | `/products` | Public | Katalog produk aktif. Filter: `category`, `product_type`, `min_price`, `max_price`, `status` (admin only), `rating_min`; sort: `-created_at`, `price`, `-popularity`, `-rating`; `search` untuk nama/SKU |
-| GET | `/products/{slug}` | Public | Detail produk (termasuk `variants[]`, `images[]`, harga reseller bila token reseller APPROVED) |
+| GET | `/products/{id}` | Public | Detail produk (termasuk `variants[]`, `images[]`, harga reseller bila token reseller APPROVED) |
 | POST | `/admin/products` | Admin | Buat produk (status default `DRAFT`) |
+| GET | `/admin/products/{id}` | Admin | Detail produk lengkap (semua status, semua harga) — untuk kebutuhan halaman edit | 
 | PATCH | `/admin/products/{id}` | Admin | Update produk |
 | DELETE | `/admin/products/{id}` | Admin | Nonaktifkan produk |
 | PATCH | `/admin/products/{id}/status` | Admin | Ubah status (`DRAFT/ACTIVE/INACTIVE/OUT_OF_STOCK`) |
@@ -224,7 +225,7 @@ Error khusus: `401 UNAUTHORIZED` (kredensial salah), `409 CONFLICT` (email sudah
 | DELETE | `/admin/product-images/{id}` | Admin | Hapus gambar |
 | PATCH | `/admin/product-images/{id}/reorder` | Admin | Ubah `sort_order` / `is_primary` |
 
-**Response — `GET /products/{slug}` (`200`, ringkas)**
+**Response — `GET /products/{id}` (`200`, ringkas)**
 ```json
 {
   "data": {
@@ -241,7 +242,7 @@ Error khusus: `401 UNAUTHORIZED` (kredensial salah), `409 CONFLICT` (email sudah
       { "id": "...", "variant_name": "Merah", "sku": "RKC-001-RED", "price": 450000, "reseller_price": 400000, "stock": 12, "status": "ACTIVE" }
     ],
     "images": [
-      { "id": "...", "image_url": "https://cdn.roboedu.id/products/rkc-001-1.jpg", "is_primary": true, "sort_order": 0 }
+      { "id": "...", "image_url": "https://picsum.photos/seed/rkc-001-1.jpg", "is_primary": true, "sort_order": 0 }
     ],
     "rating": { "average": 4.8, "count": 23 },
     "created_at": "2026-06-01T02:00:00Z",
