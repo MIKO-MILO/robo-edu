@@ -1,35 +1,50 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
-import { OrderStatusTabs, OrderTabKey, ORDER_TABS } from "@/components/user/orders/order-status-tabs";
-import { OrderPeriodSelect, OrderPeriod } from "@/components/user/orders/order-period-select";
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from "react";
+import { OrderStatusTabs, type OrderTabKey } from "@/components/user/orders/order-status-tabs";
+import { OrderPeriodSelect, type OrderPeriod } from "@/components/user/orders/order-period-select";
 import { OrderCard } from "@/components/user/orders/order-card";
 import { OrderEmptyState } from "@/components/user/orders/order-empty-state";
 import { OrderTrackingModal } from "@/components/user/orders/order-tracking-modal";
 import { OrderInvoiceModal } from "@/components/user/orders/order-invoice-modal";
 import { OrderReviewModal } from "@/components/user/orders/order-review-modal";
 import { Pagination } from "@/components/ui/pagination";
-import { Search, Sparkles, ShoppingBag, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import type { OrderListItem, OrderStatus } from "@/types";
+import { Search, CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { OrderStatus } from "@/types";
 
-// Extended mock order item type for rich UI display & modal details
-export interface FullOrderData extends OrderListItem {
-  recipient_name: string;
-  recipient_phone: string;
-  shipping_address: string;
+// ── Tipe data dari API /api/orders ────────────────────────────────────────────
+export interface ApiOrder {
+  id: string;
+  order_number: string;
+  status: OrderStatus;
+  total: number;
   subtotal: number;
   shipping_cost: number;
   discount_amount: number;
   voucher_code_snapshot: string | null;
-  courier_name: string;
-  shipping_service: string;
-  tracking_number: string;
-  shipment_summary?: string;
-  delivered_at: string | null;
+  recipient_name: string;
+  recipient_phone: string;
+  shipping_address: string;
+  shipping_city: string;
+  shipping_province: string;
   paid_at: string | null;
   shipped_at: string | null;
-  has_reviewed?: boolean;
-  all_items: Array<{
+  delivered_at: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  item_count: number;
+  first_item: {
+    product_name_snapshot: string;
+    variant_name_snapshot: string | null;
+    image_url: string | null;
+  } | null;
+  // Field detail (dari /api/orders/[id]) — opsional
+  courier_name?: string;
+  tracking_number?: string;
+  shipping_service?: string;
+  shipment_summary?: string;
+  all_items?: Array<{
     name: string;
     variant: string | null;
     price: number;
@@ -38,537 +53,385 @@ export interface FullOrderData extends OrderListItem {
   }>;
 }
 
-// ── Realistic Mock Orders matching PRD, Schema & Stitch Design ──
-const INITIAL_ORDERS: FullOrderData[] = [
-  {
-    id: "ord-001",
-    order_number: "ORD-112-9876543-1234567",
-    status: "DELIVERED",
-    total: 1850000,
-    subtotal: 1800000,
-    shipping_cost: 50000,
-    discount_amount: 0,
-    voucher_code_snapshot: null,
-    created_at: "2023-10-24T10:15:00Z",
-    paid_at: "2023-10-24T10:30:00Z",
-    shipped_at: "2023-10-25T08:00:00Z",
-    delivered_at: "2023-10-27T14:32:00Z",
-    recipient_name: "Alex Student",
-    recipient_phone: "+62 812-9876-5432",
-    shipping_address: "Jl. Margonda Raya No. 120, Beji, Depok, Jawa Barat 16424",
-    courier_name: "J&T Express",
-    shipping_service: "Regular",
-    tracking_number: "JNT98765431234",
-    shipment_summary: "Paket telah diterima langsung oleh yang bersangkutan.",
-    has_reviewed: false,
-    item_count: 3,
-    first_item: {
-      product_name_snapshot: "Advanced Servo Motor Controller Board V2 - Arduino Compatible",
-      variant_name_snapshot: "Arduino Edition / 16 Channel",
-      image_url:
-        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-    },
-    all_items: [
-      {
-        name: "Advanced Servo Motor Controller Board V2 - Arduino Compatible",
-        variant: "Arduino Edition / 16 Channel",
-        price: 850000,
-        quantity: 1,
-        subtotal: 850000,
-      },
-      {
-        name: "Micro Servo SG90 9g Metal Gear (Pack of 4)",
-        variant: "Standard",
-        price: 350000,
-        quantity: 2,
-        subtotal: 700000,
-      },
-      {
-        name: "Jumper Wire Dupont Cables Set (120 pcs)",
-        variant: "Male to Female",
-        price: 250000,
-        quantity: 1,
-        subtotal: 250000,
-      },
-    ],
-  },
-  {
-    id: "ord-002",
-    order_number: "ORD-112-1234567-9876543",
-    status: "COMPLETED",
-    total: 675000,
-    subtotal: 650000,
-    shipping_cost: 25000,
-    discount_amount: 0,
-    voucher_code_snapshot: null,
-    created_at: "2023-09-12T14:20:00Z",
-    paid_at: "2023-09-12T14:45:00Z",
-    shipped_at: "2023-09-13T09:00:00Z",
-    delivered_at: "2023-09-15T11:10:00Z",
-    recipient_name: "Alex Student",
-    recipient_phone: "+62 812-9876-5432",
-    shipping_address: "Jl. Margonda Raya No. 120, Beji, Depok, Jawa Barat 16424",
-    courier_name: "SiCepat",
-    shipping_service: "BEST (Besok Sampai Tujuan)",
-    tracking_number: "002938471928",
-    shipment_summary: "Paket telah diterima langsung oleh yang bersangkutan.",
-    has_reviewed: true,
-    item_count: 1,
-    first_item: {
-      product_name_snapshot: "Ultrasonic Distance Sensor HC-SR04 (Pack of 5)",
-      variant_name_snapshot: "Pack 5 Pcs",
-      image_url:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80",
-    },
-    all_items: [
-      {
-        name: "Ultrasonic Distance Sensor HC-SR04 (Pack of 5)",
-        variant: "Pack 5 Pcs",
-        price: 650000,
-        quantity: 1,
-        subtotal: 650000,
-      },
-    ],
-  },
-  {
-    id: "ord-003",
-    order_number: "ORD-20231102-0045",
-    status: "SHIPPED",
-    total: 1250000,
-    subtotal: 1270000,
-    shipping_cost: 30000,
-    discount_amount: 50000,
-    voucher_code_snapshot: "ROBOPROMO50",
-    created_at: "2023-11-02T08:30:00Z",
-    paid_at: "2023-11-02T09:00:00Z",
-    shipped_at: "2023-11-03T10:00:00Z",
-    delivered_at: null,
-    recipient_name: "Alex Student",
-    recipient_phone: "+62 812-9876-5432",
-    shipping_address: "Jl. Margonda Raya No. 120, Beji, Depok, Jawa Barat 16424",
-    courier_name: "JNE Express",
-    shipping_service: "REG",
-    tracking_number: "JNE8877665544",
-    shipment_summary: "Sedang dalam perjalanan menuju kota tujuan (Hub Jakarta Selatan).",
-    has_reviewed: false,
-    item_count: 2,
-    first_item: {
-      product_name_snapshot: "RoboKit Smart Obstacle Avoidance Car",
-      variant_name_snapshot: "Bluetooth + Sensor Kit",
-      image_url:
-        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80",
-    },
-    all_items: [
-      {
-        name: "RoboKit Smart Obstacle Avoidance Car",
-        variant: "Bluetooth + Sensor Kit",
-        price: 950000,
-        quantity: 1,
-        subtotal: 950000,
-      },
-      {
-        name: "Rechargeable 18650 Battery Pack + Charger",
-        variant: "2 Slot Fast Charger",
-        price: 320000,
-        quantity: 1,
-        subtotal: 320000,
-      },
-    ],
-  },
-  {
-    id: "ord-004",
-    order_number: "ORD-20231105-0089",
-    status: "PROCESSING",
-    total: 450000,
-    subtotal: 425000,
-    shipping_cost: 25000,
-    discount_amount: 0,
-    voucher_code_snapshot: null,
-    created_at: "2023-11-05T13:45:00Z",
-    paid_at: "2023-11-05T14:10:00Z",
-    shipped_at: null,
-    delivered_at: null,
-    recipient_name: "Alex Student",
-    recipient_phone: "+62 812-9876-5432",
-    shipping_address: "Jl. Margonda Raya No. 120, Beji, Depok, Jawa Barat 16424",
-    courier_name: "J&T Express",
-    shipping_service: "Regular",
-    tracking_number: "Menunggu Penjemputan Kurir",
-    shipment_summary: "Pesanan sedang dipacking dengan aman oleh tim gudang RoboEdu.",
-    has_reviewed: false,
-    item_count: 1,
-    first_item: {
-      product_name_snapshot: "ESP32 IoT Starter Experiment Board with OLED",
-      variant_name_snapshot: "Board Only",
-      image_url:
-        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80",
-    },
-    all_items: [
-      {
-        name: "ESP32 IoT Starter Experiment Board with OLED",
-        variant: "Board Only",
-        price: 425000,
-        quantity: 1,
-        subtotal: 425000,
-      },
-    ],
-  },
-  {
-    id: "ord-005",
-    order_number: "ORD-20231106-0112",
-    status: "PENDING",
-    total: 920000,
-    subtotal: 890000,
-    shipping_cost: 30000,
-    discount_amount: 0,
-    voucher_code_snapshot: null,
-    created_at: "2023-11-06T16:00:00Z",
-    paid_at: null,
-    shipped_at: null,
-    delivered_at: null,
-    recipient_name: "Alex Student",
-    recipient_phone: "+62 812-9876-5432",
-    shipping_address: "Jl. Margonda Raya No. 120, Beji, Depok, Jawa Barat 16424",
-    courier_name: "SiCepat",
-    shipping_service: "Regular",
-    tracking_number: "-",
-    shipment_summary: "Menunggu penyelesaian pembayaran sebelum 07 Nov 2023, 16:00 WIB.",
-    has_reviewed: false,
-    item_count: 1,
-    first_item: {
-      product_name_snapshot: "Bionic Robotic Arm Kit 4-DOF with Mechanical Gripper",
-      variant_name_snapshot: "Full Acrylic Assembly",
-      image_url:
-        "https://images.unsplash.com/photo-1563770660941-20978e870e26?w=400&q=80",
-    },
-    all_items: [
-      {
-        name: "Bionic Robotic Arm Kit 4-DOF with Mechanical Gripper",
-        variant: "Full Acrylic Assembly",
-        price: 890000,
-        quantity: 1,
-        subtotal: 890000,
-      },
-    ],
-  },
-  {
-    id: "ord-006",
-    order_number: "ORD-20230810-0019",
-    status: "CANCELLED",
-    total: 350000,
-    subtotal: 330000,
-    shipping_cost: 20000,
-    discount_amount: 0,
-    voucher_code_snapshot: null,
-    created_at: "2023-08-10T09:12:00Z",
-    paid_at: null,
-    shipped_at: null,
-    delivered_at: null,
-    recipient_name: "Alex Student",
-    recipient_phone: "+62 812-9876-5432",
-    shipping_address: "Jl. Margonda Raya No. 120, Beji, Depok, Jawa Barat 16424",
-    courier_name: "J&T Express",
-    shipping_service: "Regular",
-    tracking_number: "-",
-    shipment_summary: "Pesanan dibatalkan otomatis karena melewati batas waktu pembayaran.",
-    has_reviewed: false,
-    item_count: 1,
-    first_item: {
-      product_name_snapshot: "Solar Power Mini Bug Robot Kit",
-      variant_name_snapshot: "Yellow Mini",
-      image_url:
-        "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&q=80",
-    },
-    all_items: [
-      {
-        name: "Solar Power Mini Bug Robot Kit",
-        variant: "Yellow Mini",
-        price: 330000,
-        quantity: 1,
-        subtotal: 330000,
-      },
-    ],
-  },
-];
+interface ApiMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 10;
+
+// Hitung apakah order masuk filter periode
+function matchesPeriod(createdAt: string, period: OrderPeriod): boolean {
+  if (period === "all") return true;
+  const date = new Date(createdAt);
+  const now = new Date();
+  if (period === "3_months") {
+    const cutoff = new Date(now);
+    cutoff.setMonth(cutoff.getMonth() - 3);
+    return date >= cutoff;
+  }
+  if (period === "6_months") {
+    const cutoff = new Date(now);
+    cutoff.setMonth(cutoff.getMonth() - 6);
+    return date >= cutoff;
+  }
+  // Tahun spesifik
+  return date.getFullYear().toString() === period;
+}
 
 function OrdersContent() {
-  const [orders, setOrders] = useState<FullOrderData[]>(INITIAL_ORDERS);
+  const [orders, setOrders] = useState<ApiOrder[]>([]);
+  const [meta, setMeta] = useState<ApiMeta>({ page: 1, limit: ITEMS_PER_PAGE, total: 0, totalPages: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState<OrderTabKey>("all");
   const [period, setPeriod] = useState<OrderPeriod>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Modal States
-  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<FullOrderData | null>(null);
-  const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<FullOrderData | null>(null);
-  const [selectedReviewOrder, setSelectedReviewOrder] = useState<FullOrderData | null>(null);
+  // Modal states
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<ApiOrder | null>(null);
+  const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<ApiOrder | null>(null);
+  const [selectedReviewOrder, setSelectedReviewOrder] = useState<ApiOrder | null>(null);
+  const [loadingDetailId, setLoadingDetailId] = useState<string | null>(null);
 
-  // Toast Feedback State
+  // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
     setToastMessage(message);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
-  };
+    setTimeout(() => setToastMessage(null), 3000);
+  }, []);
 
-  // ── Calculate Counts per Tab ─────────────────────────────
-  const tabCounts = useMemo(() => {
-    const counts: Partial<Record<OrderTabKey, number>> = {
-      all: orders.length,
-      processing: orders.filter((o) =>
-        ["PENDING", "PAID", "PROCESSING"].includes(o.status)
-      ).length,
-      shipped: orders.filter((o) => o.status === "SHIPPED").length,
-      completed: orders.filter((o) =>
-        ["DELIVERED", "COMPLETED"].includes(o.status)
-      ).length,
-      cancelled: orders.filter((o) =>
-        ["CANCELLED", "REFUNDED"].includes(o.status)
-      ).length,
-    };
-    return counts;
-  }, [orders]);
+  // ── Fetch list dari API ───────────────────────────────────────────────
+  const fetchOrders = useCallback(async (tab: OrderTabKey, page: number) => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const params = new URLSearchParams({
+        tab,
+        page: String(page),
+        limit: String(ITEMS_PER_PAGE),
+      });
+      if (searchQuery.trim()) params.set("q", searchQuery.trim());
 
-  // ── Filter Orders ────────────────────────────────────────
-  const filteredOrders = useMemo(() => {
-    let result = [...orders];
+      const res = await fetch(`/api/orders?${params.toString()}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan.");
 
-    // 1. Tab Status Filter (per Point 1.1 Content Requirement)
-    if (activeTab === "processing") {
-      result = result.filter((o) =>
-        ["PENDING", "PAID", "PROCESSING"].includes(o.status)
-      );
-    } else if (activeTab === "shipped") {
-      result = result.filter((o) => o.status === "SHIPPED");
-    } else if (activeTab === "completed") {
-      result = result.filter((o) =>
-        ["DELIVERED", "COMPLETED"].includes(o.status)
-      );
-    } else if (activeTab === "cancelled") {
-      result = result.filter((o) =>
-        ["CANCELLED", "REFUNDED"].includes(o.status)
-      );
+      setOrders(json.data as ApiOrder[]);
+      setMeta(json.meta as ApiMeta);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Gagal memuat pesanan.");
+    } finally {
+      setIsLoading(false);
     }
+  }, [searchQuery]);
 
-    // 2. Search Query Filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (o) =>
-          o.order_number.toLowerCase().includes(q) ||
-          o.first_item.product_name_snapshot.toLowerCase().includes(q) ||
-          o.all_items.some((item) => item.name.toLowerCase().includes(q))
-      );
-    }
+  useEffect(() => {
+    void fetchOrders(activeTab, currentPage);
+  }, [fetchOrders, activeTab, currentPage]);
 
-    // 3. Period Filter
-    if (period === "2023") {
-      result = result.filter((o) => o.created_at.startsWith("2023"));
-    } else if (period === "2024") {
-      result = result.filter((o) => o.created_at.startsWith("2024"));
-    }
+  // ── Filter periode di sisi client (ringan, tidak perlu round-trip) ────
+  const filteredOrders = useMemo(
+    () => orders.filter((o) => matchesPeriod(o.created_at, period)),
+    [orders, period],
+  );
 
-    return result;
-  }, [orders, activeTab, searchQuery, period]);
+  // ── Tab counts dari meta total (hanya "all" yang akurat dari API) ─────
+  const tabCounts = useMemo(
+    () => ({ all: meta.total }),
+    [meta.total],
+  );
 
-  // ── Pagination Calculation ───────────────────────────────
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const paginatedOrders = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredOrders.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredOrders, currentPage]);
-
-  const handleTabChange = (tab: OrderTabKey) => {
+  function handleTabChange(tab: OrderTabKey) {
     setActiveTab(tab);
     setCurrentPage(1);
-  };
+  }
 
-  // ── Handlers for Interactive Actions ─────────────────────
-  const handleViewInvoice = (orderNumber: string) => {
-    const found = orders.find((o) => o.order_number === orderNumber);
-    if (found) setSelectedInvoiceOrder(found);
-  };
+  function handleSearch(q: string) {
+    setSearchQuery(q);
+    setCurrentPage(1);
+  }
 
-  const handleTrackPackage = (orderNumber: string) => {
-    const found = orders.find((o) => o.order_number === orderNumber);
-    if (found) setSelectedTrackingOrder(found);
-  };
+  // Debounce search agar tidak fetch tiap keystroke
+  const [searchDebounce, setSearchDebounce] = useState<ReturnType<typeof setTimeout> | null>(null);
+  function handleSearchChange(value: string) {
+    setSearchQuery(value);
+    if (searchDebounce) clearTimeout(searchDebounce);
+    setSearchDebounce(
+      setTimeout(() => {
+        setCurrentPage(1);
+        void fetchOrders(activeTab, 1);
+      }, 400),
+    );
+  }
 
-  const handleReview = (orderNumber: string) => {
-    const found = orders.find((o) => o.order_number === orderNumber);
-    if (found) setSelectedReviewOrder(found);
-  };
+  // ── Fetch detail order untuk modal (invoice / tracking) ──────────────
+  async function fetchOrderDetail(orderId: string): Promise<ApiOrder | null> {
+    setLoadingDetailId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}`);
+      const json = await res.json();
+      if (!res.ok) return null;
+      const d = json.data;
+      // Shape ke ApiOrder dengan field tambahan
+      return {
+        ...orders.find((o) => o.id === orderId)!,
+        courier_name: d.shipment?.provider_name ?? undefined,
+        tracking_number: d.shipment?.tracking_number ?? undefined,
+        shipping_service: d.shipment?.service ?? undefined,
+        all_items: d.order_items?.map((item: {
+          product_name_snapshot: string;
+          variant_name_snapshot: string | null;
+          price_snapshot: number;
+          quantity: number;
+          subtotal: number;
+        }) => ({
+          name: item.product_name_snapshot,
+          variant: item.variant_name_snapshot,
+          price: item.price_snapshot,
+          quantity: item.quantity,
+          subtotal: item.subtotal,
+        })) ?? [],
+      };
+    } catch {
+      return null;
+    } finally {
+      setLoadingDetailId(null);
+    }
+  }
 
-  const handleBuyAgain = (productName: string) => {
+  async function handleViewInvoice(orderNumber: string) {
+    const order = orders.find((o) => o.order_number === orderNumber);
+    if (!order) return;
+    const detail = await fetchOrderDetail(order.id);
+    setSelectedInvoiceOrder(detail ?? order);
+  }
+
+  async function handleTrackPackage(orderNumber: string) {
+    const order = orders.find((o) => o.order_number === orderNumber);
+    if (!order) return;
+    const detail = await fetchOrderDetail(order.id);
+    setSelectedTrackingOrder(detail ?? order);
+  }
+
+  function handleReview(orderNumber: string) {
+    const order = orders.find((o) => o.order_number === orderNumber);
+    if (order) setSelectedReviewOrder(order);
+  }
+
+  function handleBuyAgain(productName: string) {
     showToast(`"${productName}" berhasil ditambahkan ke keranjang belanja!`);
-  };
+  }
 
-  const handlePayNow = (orderNumber: string) => {
+  function handlePayNow(orderNumber: string) {
     showToast(`Membuka instruksi pembayaran untuk ${orderNumber}...`);
-  };
+  }
 
-  const handleCancelOrder = (orderNumber: string) => {
+  function handleCancelOrder(orderNumber: string) {
+    // Optimistic update
     setOrders((prev) =>
       prev.map((o) =>
-        o.order_number === orderNumber ? { ...o, status: "CANCELLED" as OrderStatus } : o
-      )
+        o.order_number === orderNumber ? { ...o, status: "CANCELLED" as OrderStatus } : o,
+      ),
     );
     showToast(`Pesanan ${orderNumber} berhasil dibatalkan.`);
-  };
+  }
 
-  const handleReviewSuccess = () => {
-    if (selectedReviewOrder) {
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === selectedReviewOrder.id ? { ...o, has_reviewed: true } : o
-        )
-      );
-      showToast("Ulasanmu berhasil dikirim!");
-    }
-  };
+  function handleReviewSuccess() {
+    showToast("Ulasanmu berhasil dikirim!");
+    setSelectedReviewOrder(null);
+  }
 
   return (
     <main className="w-full flex-1 min-w-0">
       <div className="w-full flex flex-col gap-6 sm:gap-8">
-        {/* ── Page Header ─────────────────────────────────── */}
+        {/* ── Header ──────────────────────────────────────────────── */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <h1 className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl text-foreground tracking-tight">
               Riwayat Pesanan
             </h1>
-            <span
-              aria-label={`${orders.length} total pesanan`}
-              className="bg-card text-foreground font-heading font-bold text-sm px-3.5 py-1 rounded-full border-2 border-foreground neo-shadow-icon"
-            >
-              {orders.length}
-            </span>
+            {!isLoading && (
+              <span
+                aria-label={`${meta.total} total pesanan`}
+                className="bg-card text-foreground font-heading font-bold text-sm px-3.5 py-1 rounded-full border-2 border-foreground neo-shadow-icon"
+              >
+                {meta.total}
+              </span>
+            )}
           </div>
 
-          {/* Search Input */}
+          {/* Search */}
           <div className="relative w-full sm:w-72">
             <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Cari pesanan atau produk..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full bg-card border-2 border-foreground pl-10 pr-4 py-2 rounded-xl text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary neo-shadow-icon transition-all"
             />
           </div>
         </header>
 
-        {/* ── Filter Tabs & Controls Row ──────────────────── */}
+        {/* ── Filter Tabs & Period ─────────────────────────────────── */}
         <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-muted/30 p-2 sm:p-3 rounded-2xl border-2 border-foreground neo-shadow">
-          {/* Status Tabs */}
           <OrderStatusTabs
             activeTab={activeTab}
             onTabChange={handleTabChange}
             counts={tabCounts}
           />
-
-          {/* Period Selector */}
           <div className="flex items-center gap-2 self-start lg:self-auto shrink-0">
             <OrderPeriodSelect value={period} onChange={setPeriod} />
           </div>
         </div>
 
-        {/* ── Orders Cards List ───────────────────────────── */}
-        {filteredOrders.length === 0 ? (
+        {/* ── Loading ──────────────────────────────────────────────── */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <span className="font-body text-sm">Memuat pesanan...</span>
+          </div>
+        )}
+
+        {/* ── Error ───────────────────────────────────────────────── */}
+        {!isLoading && loadError && (
+          <div className="flex flex-col items-center gap-4 py-16 text-center">
+            <AlertCircle className="w-10 h-10 text-red-400" />
+            <p className="font-body text-sm text-muted-foreground">{loadError}</p>
+            <Button variant="outline" size="sm" onClick={() => void fetchOrders(activeTab, currentPage)}>
+              Coba Lagi
+            </Button>
+          </div>
+        )}
+
+        {/* ── Empty state ──────────────────────────────────────────── */}
+        {!isLoading && !loadError && filteredOrders.length === 0 && (
           <OrderEmptyState
             activeTab={activeTab}
             onResetFilter={() => {
               setActiveTab("all");
               setSearchQuery("");
               setPeriod("all");
+              setCurrentPage(1);
             }}
           />
-        ) : (
-          <section
-            aria-label="Daftar Riwayat Pesanan"
-            className="flex flex-col gap-6"
-          >
-            {paginatedOrders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onViewInvoice={handleViewInvoice}
-                onTrackPackage={handleTrackPackage}
-                onBuyAgain={handleBuyAgain}
-                onReview={handleReview}
-                onPayNow={handlePayNow}
-                onCancelOrder={handleCancelOrder}
-              />
+        )}
+
+        {/* ── Order cards ──────────────────────────────────────────── */}
+        {!isLoading && !loadError && filteredOrders.length > 0 && (
+          <section aria-label="Daftar Riwayat Pesanan" className="flex flex-col gap-6">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="relative">
+                {loadingDetailId === order.id && (
+                  <div className="absolute inset-0 z-10 bg-card/60 rounded-2xl flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                )}
+                <OrderCard
+                  order={{
+                    id: order.id,
+                    order_number: order.order_number,
+                    status: order.status,
+                    total: order.total,
+                    created_at: order.created_at,
+                    item_count: order.item_count,
+                    first_item: order.first_item ?? {
+                      product_name_snapshot: "Produk RoboEdu",
+                      variant_name_snapshot: null,
+                      image_url: null,
+                    },
+                    recipient_name: order.recipient_name,
+                    shipping_address: `${order.shipping_address}, ${order.shipping_city}, ${order.shipping_province}`,
+                    paid_at: order.paid_at,
+                    shipped_at: order.shipped_at,
+                    delivered_at: order.delivered_at,
+                    courier_name: order.courier_name,
+                    tracking_number: order.tracking_number,
+                    shipment_summary: order.shipment_summary,
+                  }}
+                  onViewInvoice={handleViewInvoice}
+                  onTrackPackage={handleTrackPackage}
+                  onBuyAgain={handleBuyAgain}
+                  onReview={handleReview}
+                  onPayNow={handlePayNow}
+                  onCancelOrder={handleCancelOrder}
+                />
+              </div>
             ))}
           </section>
         )}
 
-        {/* ── Pagination ──────────────────────────────────── */}
-        {totalPages > 1 && (
+        {/* ── Pagination ───────────────────────────────────────────── */}
+        {!isLoading && meta.totalPages > 1 && (
           <div className="flex justify-center pt-4">
             <Pagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={meta.totalPages}
               onPageChange={(p) => setCurrentPage(p)}
             />
           </div>
         )}
       </div>
 
-      {/* ── Modals & Dialogs ──────────────────────────────── */}
+      {/* ── Modals ───────────────────────────────────────────────────── */}
       {selectedTrackingOrder && (
         <OrderTrackingModal
-          isOpen={!!selectedTrackingOrder}
+          isOpen
           onClose={() => setSelectedTrackingOrder(null)}
           orderNumber={selectedTrackingOrder.order_number}
-          courierName={selectedTrackingOrder.courier_name}
-          service={selectedTrackingOrder.shipping_service}
-          trackingNumber={selectedTrackingOrder.tracking_number}
+          courierName={selectedTrackingOrder.courier_name ?? "-"}
+          service={selectedTrackingOrder.shipping_service ?? "-"}
+          trackingNumber={selectedTrackingOrder.tracking_number ?? "-"}
         />
       )}
 
       {selectedInvoiceOrder && (
         <OrderInvoiceModal
-          isOpen={!!selectedInvoiceOrder}
+          isOpen
           onClose={() => setSelectedInvoiceOrder(null)}
           orderNumber={selectedInvoiceOrder.order_number}
           orderDate={new Intl.DateTimeFormat("id-ID", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
+            day: "numeric", month: "short", year: "numeric",
           }).format(new Date(selectedInvoiceOrder.created_at))}
           status={selectedInvoiceOrder.status}
           recipientName={selectedInvoiceOrder.recipient_name}
           recipientPhone={selectedInvoiceOrder.recipient_phone}
-          shippingAddress={selectedInvoiceOrder.shipping_address}
-          items={selectedInvoiceOrder.all_items}
+          shippingAddress={`${selectedInvoiceOrder.shipping_address}, ${selectedInvoiceOrder.shipping_city}, ${selectedInvoiceOrder.shipping_province}`}
+          items={
+            selectedInvoiceOrder.all_items?.map((i) => ({
+              name: i.name,
+              variant: i.variant,
+              price: i.price,
+              quantity: i.quantity,
+              subtotal: i.subtotal,
+            })) ?? []
+          }
           subtotal={selectedInvoiceOrder.subtotal}
           shippingCost={selectedInvoiceOrder.shipping_cost}
           discountAmount={selectedInvoiceOrder.discount_amount}
           voucherCode={selectedInvoiceOrder.voucher_code_snapshot}
           total={selectedInvoiceOrder.total}
+          paymentMethod={selectedInvoiceOrder.courier_name ?? undefined}
         />
       )}
 
       {selectedReviewOrder && (
         <OrderReviewModal
-          isOpen={!!selectedReviewOrder}
+          isOpen
           onClose={() => setSelectedReviewOrder(null)}
           orderNumber={selectedReviewOrder.order_number}
-          productName={
-            selectedReviewOrder.first_item.product_name_snapshot
-          }
+          productName={selectedReviewOrder.first_item?.product_name_snapshot ?? "Produk RoboEdu"}
           onSubmitSuccess={handleReviewSuccess}
         />
       )}
 
-      {/* ── Toast Feedback Notification ───────────────────── */}
+      {/* ── Toast ────────────────────────────────────────────────────── */}
       {toastMessage && (
         <div
           role="status"
@@ -577,9 +440,7 @@ function OrdersContent() {
           <div className="p-1 rounded-full bg-accent-green border border-foreground">
             <CheckCircle className="w-4 h-4 text-foreground" />
           </div>
-          <span className="font-body font-bold text-sm text-foreground">
-            {toastMessage}
-          </span>
+          <span className="font-body font-bold text-sm text-foreground">{toastMessage}</span>
         </div>
       )}
     </main>
