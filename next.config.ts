@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "probiotic-dad-suggest.ngrok-free.dev",
+    "*.ngrok-free.dev",
+    "*.ngrok-free.app",
+    "*.ngrok.io",
+  ],
   images: {
     remotePatterns: [
       {
@@ -11,6 +17,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
         pathname: "/**",
       },
     ],

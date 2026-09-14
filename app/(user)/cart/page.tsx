@@ -166,23 +166,45 @@ export default function CartPage() {
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Gagal membuat pembayaran.");
       }
-      const { snapToken, redirectUrl } = result.data as { snapToken: string; redirectUrl: string };
+      const { orderId, snapToken, redirectUrl } = result.data as {
+        orderId: string;
+        snapToken: string;
+        redirectUrl: string;
+      };
+
+      /** Poll status order sampai bukan PENDING (max ~15 detik) lalu redirect */
+      async function waitAndRedirect() {
+        const maxAttempts = 10;
+        const intervalMs = 1500;
+        for (let i = 0; i < maxAttempts; i++) {
+          await new Promise((r) => setTimeout(r, intervalMs));
+          try {
+            const res = await fetch(`/api/orders/${orderId}/status`, { cache: "no-store" });
+            if (res.ok) {
+              const json = await res.json();
+              if (json.data?.status && json.data.status !== "PENDING") break;
+            }
+          } catch {
+            // abaikan error sementara, tetap lanjut polling
+          }
+        }
+        router.push("/profile/orders");
+        router.refresh();
+      }
 
       if (!window.snap) {
-        // Snap.js not loaded yet — fall back to redirect
         window.location.assign(redirectUrl);
         return;
       }
 
-      // Open Midtrans Snap as an embedded popup (stays on this page)
       window.snap.pay(snapToken, {
         onSuccess(snapResult) {
           console.info("Pembayaran berhasil:", snapResult);
-          router.push("/profile/orders");
+          void waitAndRedirect();
         },
         onPending(snapResult) {
           console.info("Menunggu pembayaran:", snapResult);
-          router.push("/profile/orders");
+          void waitAndRedirect();
         },
         onError(snapResult) {
           console.error("Pembayaran gagal:", snapResult);
@@ -190,7 +212,6 @@ export default function CartPage() {
           setIsCheckingOut(false);
         },
         onClose() {
-          // User closed the popup without completing payment
           setIsCheckingOut(false);
         },
       });

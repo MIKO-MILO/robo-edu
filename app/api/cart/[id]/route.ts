@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { cartItems, carts } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
@@ -80,7 +80,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, message: "Akses ditolak" }, { status: 403 });
     }
 
-    await db.delete(cartItems).where(and(eq(cartItems.id, id), eq(carts.userId, userId)));
+    await db.delete(cartItems).where(eq(cartItems.id, id));
 
     return NextResponse.json({ success: true, message: "Item berhasil dihapus dari keranjang" });
   } catch (error) {

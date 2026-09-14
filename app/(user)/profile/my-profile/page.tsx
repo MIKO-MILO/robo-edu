@@ -5,12 +5,14 @@ import Image from "next/image";
 import { Camera } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { CountrySelect } from "@/components/ui/country-select";
 
 type Profile = {
   id: string; name: string; email: string; phone: string; gender: "male" | "female" | "";
-  taxIdentificationNumber: string; taxIdentificationCountry: string; residentialAddress: string; avatarUrl: string | null;
+  taxIdentificationNumber: string; taxIdentificationCountry: string; avatarUrl: string | null;
 };
-const initialProfile: Profile = { id: "", name: "", email: "", phone: "", gender: "", taxIdentificationNumber: "", taxIdentificationCountry: "", residentialAddress: "", avatarUrl: null };
+const initialProfile: Profile = { id: "", name: "", email: "", phone: "", gender: "", taxIdentificationNumber: "", taxIdentificationCountry: "", avatarUrl: null };
 function splitName(name: string) { const [firstName = "", ...lastName] = name.trim().split(/\s+/); return { firstName, lastName: lastName.join(" ") }; }
 
 export default function MyProfilePage() {
@@ -101,13 +103,10 @@ export default function MyProfilePage() {
       <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">First Name <span className="text-danger">*</span></label><Input placeholder="First name" value={firstName} onChange={(event) => setFirstName(event.target.value)} className="bg-primary-100/30 border-primary-300 focus-visible:ring-primary" /></div>
       <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Last Name</label><Input placeholder="Last name" value={lastName} onChange={(event) => setLastName(event.target.value)} /></div>
       <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Email</label><Input value={profile.email} type="email" readOnly className="bg-muted text-muted-foreground" /></div>
-      <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Mobile Number <span className="text-danger">*</span></label><div className="flex"><div className="flex items-center gap-2 px-3 border border-r-0 border-input bg-muted rounded-l-md text-sm"><span className="w-5 h-3 bg-green-600 inline-block" /><span className="text-xs">▼</span></div><Input value={profile.phone} onChange={(event) => setProfile((current) => ({ ...current, phone: event.target.value }))} placeholder="0806 123 7890" className="rounded-l-none" /></div></div>
+      <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Mobile Number <span className="text-danger">*</span></label><PhoneInput value={profile.phone} onChange={(val) => setProfile((current) => ({ ...current, phone: val }))} defaultCountryCode="ID" placeholder="08xx xxxx xxxx" /></div>
       <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Gender</label><div className="flex gap-4"><label className="flex flex-1 items-center gap-2 border border-input rounded-md px-4 py-2 cursor-pointer hover:bg-muted transition-colors"><input type="radio" name="gender" value="male" checked={profile.gender === "male"} onChange={() => setProfile((current) => ({ ...current, gender: "male" }))} className="accent-primary" /><span className="text-sm">Male</span></label><label className="flex flex-1 items-center gap-2 border border-input rounded-md px-4 py-2 cursor-pointer hover:bg-muted transition-colors"><input type="radio" name="gender" value="female" checked={profile.gender === "female"} onChange={() => setProfile((current) => ({ ...current, gender: "female" }))} className="accent-primary" /><span className="text-sm">Female</span></label></div></div>
       <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">ID</label><Input value={profile.id} className="bg-muted text-muted-foreground" readOnly /></div>
-      <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Tax Identification Number</label><Input value={profile.taxIdentificationNumber} onChange={(event) => setProfile((current) => ({ ...current, taxIdentificationNumber: event.target.value }))} placeholder="Tax ID" /></div>
-      <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-foreground">Tax Identification Country</label><div className="relative"><select value={profile.taxIdentificationCountry} onChange={(event) => setProfile((current) => ({ ...current, taxIdentificationCountry: event.target.value }))} className="w-full h-10 px-3 border border-input rounded-md bg-transparent appearance-none text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"><option value="">Pilih negara</option><option>Nigeria</option><option>Indonesia</option></select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">▼</div><div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none w-5 h-3 bg-green-600" /></div></div>
-      <div className="flex flex-col gap-2 md:col-span-2"><label className="text-sm font-semibold text-foreground">Residential Address</label><textarea value={profile.residentialAddress} onChange={(event) => setProfile((current) => ({ ...current, residentialAddress: event.target.value }))} className="w-full min-h-[100px] p-3 border border-input rounded-md text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ib street orogun ibadan" /></div>
-      <div className="md:col-span-2 mt-4"><Button type="submit" disabled={isSaving} variant="default" className="bg-primary hover:bg-primary-600 text-white w-full md:w-auto px-8 rounded-md">{isSaving ? "Saving..." : "Save Changes"}</Button></div>
+      <div className="flex flex-col gap-2 md:col-span-2 mt-4"><Button type="submit" disabled={isSaving} variant="default" className="bg-primary hover:bg-primary-600 text-white w-full md:w-auto px-8 rounded-md">{isSaving ? "Saving..." : "Save Changes"}</Button></div>
     </form>
   </div>;
 }
