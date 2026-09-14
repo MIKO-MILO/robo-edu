@@ -14,22 +14,6 @@ Sebagian besar produk bersifat *made-by-order*, sehingga sistem stok pada platfo
 
 ---
 
-## Daftar Isi
-
-- [Fitur Utama](#fitur-utama)
-- [Tech Stack](#tech-stack)
-- [Prasyarat](#prasyarat)
-- [Instalasi](#instalasi)
-- [Konfigurasi Environment](#konfigurasi-environment)
-- [Menjalankan Project](#menjalankan-project)
-- [Struktur Folder](#struktur-folder)
-- [Penggunaan / Contoh API](#penggunaan--contoh-api)
-- [Status Pengembangan](#status-pengembangan)
-- [Panduan Kontribusi](#panduan-kontribusi)
-- [Lisensi](#lisensi)
-
----
-
 ## Fitur Utama
 
 **Customer**
@@ -92,69 +76,6 @@ Pastikan perangkat berikut sudah terpasang sebelum menjalankan project secara lo
 
 ---
 
-## Instalasi
-
-```bash
-# 1. Clone repository
-git clone <url-repository-roboedu>
-cd roboedu
-
-# 2. Install dependencies
-npm install
-
-# 3. Salin file environment contoh, lalu isi sesuai kredensial lokal
-cp .env.example .env
-
-# 4. Jalankan infrastruktur pendukung (MySQL, Redis, MinIO, nginx) via Docker Compose
-docker compose up -d
-
-# 5. Jalankan migration database menggunakan Drizzle ORM
-npm run db:migrate
-
-# 6. (Opsional) Seed data dummy — admin user, kategori, contoh produk
-npm run db:seed
-```
-
-> Urutan setup di atas mengikuti checklist di `RoboEdu_PRD.md` bab 27 (Tahap 0–4): repository & environment → infrastruktur Docker → database foundation → autentikasi → integrasi eksternal, sebelum development frontend dimulai (Tahap 5).
-
----
-
-## Konfigurasi Environment
-
-Variabel environment disimpan di `.env` (development) dan **tidak pernah** di-commit ke Git. Gunakan `.env.example` sebagai template. Contoh variabel yang dibutuhkan:
-
-```env
-# Database
-DATABASE_URL=mysql://user:password@localhost:3306/roboedu
-
-# Auth
-JWT_SECRET=
-
-# MinIO
-MINIO_ENDPOINT=
-MINIO_ACCESS_KEY=
-MINIO_SECRET_KEY=
-MINIO_BUCKET=
-
-# Redis / BullMQ
-REDIS_URL=redis://localhost:6379
-
-# Midtrans
-MIDTRANS_SERVER_KEY=
-MIDTRANS_CLIENT_KEY=
-MIDTRANS_IS_PRODUCTION=false
-
-# Email (Resend)
-RESEND_API_KEY=
-EMAIL_FROM=
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-Kredensial MinIO bersifat self-defined (bukan diperoleh dari pihak ketiga) saat dijalankan secara self-hosted.
-
----
 
 ## Menjalankan Project
 
