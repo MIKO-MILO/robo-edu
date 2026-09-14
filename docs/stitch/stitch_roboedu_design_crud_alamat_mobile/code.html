@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RoboEdu - Checkout &amp; Daftar Alamat Pengiriman</title>
+<!-- Google Fonts: Unbounded & Outfit -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Unbounded:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with forms plugin -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            unbounded: ['Unbounded', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              cream: '#F3EFE4',
+              surface: '#FDFBF7',
+              dark: '#3D2900',
+              yellow: '#FFF37E',
+              blue: '#2483D0',
+              softBlue: '#8ED8FF',
+              lightBlue: '#C9E9F6',
+              softGreen: '#A9E8AE',
+              softPink: '#FFC0DD',
+              softOrange: '#FFD9A0',
+              muted: '#8F8267',
+            }
+          },
+          boxShadow: {
+            'neo-sm': '2px 2px 0px #3D2900',
+            'neo-md': '3px 3px 0px #3D2900',
+            'neo-lg': '4px 4px 0px #3D2900',
+            'neo-xl': '6px 6px 0px 0px #3D2900',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-typography">
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #F3EFE4;
+      color: #3D2900;
+    }
+    .font-unbounded {
+      font-family: 'Unbounded', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden">
+<!-- BEGIN: BlurredBackgroundCheckout -->
+<!-- Underlying desktop checkout page with intentional blur to emulate popup overlay state -->
+<div aria-hidden="true" class="filter blur-[5px] select-none pointer-events-none opacity-80 max-w-md mx-auto px-4 py-4"><header class="bg-[#2483D0] rounded-xl border-2 border-[#3D2900] shadow-[3px_3px_0px_#3D2900] px-4 py-3 flex items-center justify-between mb-4 text-white"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-[#FFF37E] rounded-lg border-2 border-[#3D2900] flex items-center justify-center font-unbounded text-[#3D2900] font-black text-sm">R</div><span class="font-unbounded font-bold text-lg tracking-tight">RoboEdu</span></div><div class="w-8 h-8 rounded-full bg-white/20 border-2 border-white/60"></div></header><div class="bg-white border-2 border-[#3D2900] rounded-xl p-4 shadow-[3px_3px_0px_#3D2900] mb-4 flex justify-between items-center"><div><h1 class="font-unbounded font-black text-xl text-[#3D2900]">Checkout</h1><p class="text-xs text-gray-500 font-medium">Pesanan perangkat edukasi</p></div><div class="px-3 py-1 rounded-lg bg-gray-200 border border-gray-400 font-bold text-xs text-gray-600">#RBO-88329</div></div><div class="space-y-4"><div class="bg-white border-2 border-[#3D2900] rounded-xl p-4 shadow-[3px_3px_0px_#3D2900]"><h2 class="font-unbounded font-bold text-sm text-[#3D2900] mb-2 flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-[#FFF37E] border border-[#3D2900] flex items-center justify-center text-[10px]">1</span> Alamat Pengiriman</h2><div class="p-3 bg-[#FAF1CA] border border-[#3D2900] rounded-lg text-xs"><p class="font-bold">Fatih Al-Ghifari</p><p class="text-gray-700 mt-0.5">SMP Sains Edukasi Mandiri, Jakarta Selatan</p></div></div><div class="bg-white border-2 border-[#3D2900] rounded-xl p-4 shadow-[3px_3px_0px_#3D2900] space-y-3"><h2 class="font-unbounded font-bold text-sm text-[#3D2900] flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-[#FFF37E] border border-[#3D2900] flex items-center justify-center text-[10px]">2</span> Item Pesanan</h2><div class="p-3 border border-gray-300 rounded-lg flex items-center justify-between text-xs"><div class="flex gap-2 items-center"><div class="w-10 h-10 bg-pink-100 rounded border border-gray-400"></div><div><p class="font-bold">Robo-Kit Pro</p><p class="text-gray-500">1x Rp 450.000</p></div></div><span class="font-unbounded font-bold">Rp 450.000</span></div></div></div></div>
+<!-- END: BlurredBackgroundCheckout -->
+<!-- BEGIN: ModalOverlay -->
+<!-- Dimmed & backdrop-blurred modal backdrop -->
+<div class="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex items-end justify-center sm:items-center overflow-hidden" data-purpose="modal-overlay">
+<!-- BEGIN: NeoBrutalistAddressModal -->
+<div class="relative w-full max-w-md bg-[#FDFBF7] border-t-2 sm:border-2 border-[#3D2900] rounded-t-3xl sm:rounded-3xl shadow-[0px_-4px_0px_#3D2900] sm:shadow-[6px_6px_0px_#3D2900] flex flex-col max-h-[92vh] transition-all animate-in fade-in duration-200" data-purpose="address-selector-modal"><div class="pt-3 pb-1 flex justify-center shrink-0"><div class="w-12 h-1.5 bg-[#3D2900]/30 rounded-full"></div></div><div class="px-4 pt-2 pb-3 border-b-2 border-[#3D2900]/15 flex items-start justify-between gap-3 shrink-0"><div class="flex items-start gap-2.5"><div class="w-9 h-9 rounded-full bg-[#FFF37E] border-2 border-[#3D2900] flex items-center justify-center shrink-0 shadow-[1.5px_1.5px_0px_#3D2900] mt-0.5"><svg aria-hidden="true" class="w-4 h-4 text-[#3D2900]" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div><h2 class="font-unbounded font-bold text-base sm:text-lg text-[#3D2900] leading-tight">Daftar Alamat Pengiriman</h2><p class="text-[11px] text-[#8F8267] font-medium mt-0.5">Pilih alamat pengiriman pesanan Anda</p></div></div><button aria-label="Tutup jendela modal" class="w-8 h-8 rounded-full border-2 border-[#3D2900] bg-white hover:bg-red-100 transition shadow-[1.5px_1.5px_0px_#3D2900] flex items-center justify-center text-[#3D2900] shrink-0 active:translate-x-0.5 active:translate-y-0.5" type="button"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div><div class="px-4 pt-3 pb-2.5 bg-[#FBF8F1] border-b border-[#3D2900]/10 shrink-0"><div class="relative mb-2.5"><span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#3D2900]"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><input class="w-full pl-9 pr-3.5 py-2 bg-white text-xs text-[#3D2900] placeholder-[#8F8267] border-2 border-[#3D2900] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2483D0] focus:border-[#3D2900] font-medium shadow-[1.5px_1.5px_0px_#3D2900]" placeholder="Cari nama penerima atau alamat..." type="text"/></div><div class="flex items-center gap-1.5 overflow-x-auto pb-1"><button class="bg-[#3D2900] text-white font-bold rounded-full px-3 py-1 text-[11px] border-2 border-[#3D2900] shadow-[1.5px_1.5px_0px_#3D2900] whitespace-nowrap">Semua (3)</button><button class="bg-[#C9E9F6] text-[#3D2900] font-semibold rounded-full px-2.5 py-1 text-[11px] border-2 border-[#3D2900] hover:-translate-y-0.5 transition shadow-[1.5px_1.5px_0px_#3D2900] whitespace-nowrap">Sekolah &amp; Lab (2)</button><button class="bg-[#FFD9A0] text-[#3D2900] font-semibold rounded-full px-2.5 py-1 text-[11px] border-2 border-[#3D2900] hover:-translate-y-0.5 transition shadow-[1.5px_1.5px_0px_#3D2900] whitespace-nowrap">Rumah (1)</button></div></div><div class="p-4 overflow-y-auto space-y-3.5 flex-1"><article class="border-2 border-[#3D2900] rounded-2xl p-3.5 bg-[#FAF1CA] shadow-[2px_2px_0px_#3D2900] relative"><div class="flex flex-wrap items-center justify-between gap-1.5 mb-2"><div class="flex items-center gap-1.5"><span class="bg-[#A9E8AE] border border-[#3D2900] rounded-full px-2 py-0.5 text-[11px] font-bold text-[#3D2900]">✓ Alamat Utama</span><span class="bg-[#8ED8FF] border border-[#3D2900] rounded-full px-2 py-0.5 text-[11px] font-bold text-[#3D2900]">Lab Robotika</span></div><span class="inline-flex items-center gap-1 text-[10px] font-bold text-[#1a5b23] bg-white/90 border border-[#3D2900] px-1.5 py-0.5 rounded-md"><svg class="w-3 h-3 text-green-600" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path></svg> Terpilih</span></div><div class="flex items-baseline gap-1.5 flex-wrap mb-1"><h3 class="font-unbounded font-bold text-sm text-[#3D2900]">Fatih Al-Ghifari</h3><span class="text-[11px] font-semibold text-[#3D2900]/80">(+62 812-9842-1109)</span></div><p class="text-xs text-[#3D2900] leading-relaxed font-normal mb-2">Laboratorium Robotika &amp; STEM, SMP Sains Edukasi Mandiri. Jl. Cendrawasih Raya No. 42, RT 04 / RW 08, Cilandak, Jakarta Selatan 12140</p><div class="flex items-center gap-1.5 text-[11px] font-bold text-[#14532d] mb-3 bg-[#FAF1CA]"><span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Pinpoint Maps Terverifikasi (Kurir Akurat)</div><div class="flex items-center justify-between pt-2 border-t border-[#3D2900]/20"><button class="inline-flex items-center gap-1 text-xs font-bold text-[#3D2900] px-2.5 py-1 rounded-lg border border-[#3D2900] bg-white shadow-[1.5px_1.5px_0px_#3D2900]"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round"></path></svg> Ubah Alamat</button><div class="bg-[#2483D0] text-white border-2 border-[#3D2900] font-bold text-xs px-3 py-1.5 rounded-xl shadow-[2px_2px_0px_#3D2900] flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path></svg> Digunakan</div></div></article><article class="border-2 border-[#3D2900] border-dashed rounded-2xl p-3.5 bg-white relative"><div class="flex items-center justify-between gap-1.5 mb-2"><span class="bg-[#FFC0DD] border border-[#3D2900] rounded-full px-2 py-0.5 text-[11px] font-bold text-[#3D2900]">Rumah Pribadi</span></div><div class="flex items-baseline gap-1.5 flex-wrap mb-1"><h3 class="font-unbounded font-bold text-sm text-[#3D2900]">Fatih Al-Ghifari (Rumah)</h3><span class="text-[11px] font-semibold text-[#8F8267]">(+62 812-9842-1109)</span></div><p class="text-xs text-[#3D2900]/90 leading-relaxed font-normal mb-3">Kompleks Duta Indah Blok C3 No. 12, Pondok Pinang, Kebayoran Lama, Jakarta Selatan 12310</p><div class="flex items-center justify-between pt-2 border-t border-[#3D2900]/10"><button class="inline-flex items-center gap-1 text-xs font-bold text-[#3D2900] px-2.5 py-1 rounded-lg border border-[#3D2900] bg-white shadow-[1.5px_1.5px_0px_#3D2900]"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round"></path></svg> Ubah</button><button class="bg-[#FFF37E] border-2 border-[#3D2900] shadow-[2px_2px_0px_#3D2900] px-3 py-1.5 rounded-xl font-bold text-xs text-[#3D2900] hover:translate-x-0.5 active:translate-x-0 transition flex items-center gap-1">Pilih Alamat Ini →</button></div></article></div><footer class="bg-[#F3EFE4] border-t-2 border-[#3D2900] p-4 flex items-center gap-2.5 shrink-0"><button class="flex-1 bg-[#2483D0] hover:bg-[#1F6FB1] text-white border-2 border-[#3D2900] shadow-[2.5px_2.5px_0px_#3D2900] py-3 px-3 rounded-xl font-unbounded font-bold text-xs flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 transition" type="button"><svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path></svg> + Tambah Alamat Baru</button><button class="bg-white hover:bg-[#ECEAE6] text-[#3D2900] border-2 border-[#3D2900] shadow-[2px_2px_0px_#3D2900] py-3 px-4 rounded-xl font-bold text-xs active:translate-x-0.5 active:translate-y-0.5 transition shrink-0" type="button">Tutup</button></footer></div>
+<!-- END: NeoBrutalistAddressModal -->
+</div>
+<!-- END: ModalOverlay -->
+</body></html>

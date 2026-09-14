@@ -385,6 +385,10 @@ export default function CheckoutPage() {
           setIsAddressModalOpen(false);
           alert("TODO: Buka form tambah alamat baru");
         }}
+        onEdit={(addr) => {
+          setIsAddressModalOpen(false);
+          alert(`TODO: Buka form edit alamat: ${addr.id}`);
+        }}
       />
     </div>
   );
