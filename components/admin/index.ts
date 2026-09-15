@@ -36,3 +36,7 @@ export type { AdminSidebarProps, NavItem } from "./sidebar";
 
 export { AdminTopBar } from "./top-bar";
 export type { AdminTopBarProps, AdminUserProps } from "./top-bar";
+
+// Dashboard Components
+export * from "./dashboard";
+
