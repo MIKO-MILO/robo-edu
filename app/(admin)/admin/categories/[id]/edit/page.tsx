@@ -109,7 +109,7 @@ export default function EditCategoryPage({
               Edit Kategori: {categoryDetail.name}
             </h1>
             <p className="font-body text-xs text-muted-foreground mt-0.5">
-              Ubah detail informasi kategori di bawah ini.
+              Perubahan berlaku setelah disimpan.
             </p>
           </div>
         </div>

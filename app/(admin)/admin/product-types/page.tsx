@@ -78,7 +78,7 @@ function AdminProductTypesContent() {
             Manajemen Tipe Produk
           </h1>
           <p className="mt-0.5 font-body text-xs text-muted-foreground md:text-sm">
-            Kelola tipe produk RoboEdu — tambah, edit, atau hapus tipe produk.
+            Atur tipe produk yang digunakan sebagai klasifikasi.
           </p>
         </div>
 

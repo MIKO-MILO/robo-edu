@@ -78,7 +78,7 @@ function AdminCategoriesContent() {
             Manajemen Kategori
           </h1>
           <p className="font-body text-xs md:text-sm text-muted-foreground mt-0.5">
-            Kelola kategori produk RoboEdu — tambah, edit, atau hapus kategori.
+            Atur kategori produk yang tersedia di toko.
           </p>
         </div>
 

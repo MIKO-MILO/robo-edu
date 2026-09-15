@@ -117,7 +117,7 @@ export default function EditProductTypePage({
               Edit Tipe Produk: {productTypeDetail.name}
             </h1>
             <p className="mt-0.5 font-body text-xs text-muted-foreground">
-              Ubah detail informasi tipe produk di bawah ini.
+              Perubahan berlaku setelah disimpan.
             </p>
           </div>
         </div>

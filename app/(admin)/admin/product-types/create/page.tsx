@@ -44,7 +44,7 @@ export default function CreateProductTypePage() {
             Tambah Tipe Produk Baru
           </h1>
           <p className="mt-0.5 font-body text-xs text-muted-foreground">
-            Isi detail informasi tipe produk di bawah ini.
+            Slug akan digunakan sebagai URL publik tipe produk.
           </p>
         </div>
       </div>

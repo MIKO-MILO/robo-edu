@@ -44,7 +44,7 @@ export default function CreateCategoryPage() {
             Tambah Kategori Baru
           </h1>
           <p className="font-body text-xs text-muted-foreground mt-0.5">
-            Isi detail informasi kategori produk di bawah ini.
+            Slug akan digunakan sebagai URL publik kategori.
           </p>
         </div>
       </div>

@@ -192,8 +192,8 @@ export default function CreateProductPage() {
             </h1>
             <p className="font-body text-xs text-muted-foreground mt-0.5">
               {createdProduct
-                ? `Langkah 2 dari 2: Tambahkan varian & foto untuk "${createdProduct.name}"`
-                : "Langkah 1 dari 2: Isi detail informasi dasar produk"}
+                ? `Langkah 2 dari 2: Varian & foto untuk "${createdProduct.name}"`
+                : "Langkah 1 dari 2: Informasi dasar produk"}
             </p>
           </div>
         </div>

@@ -239,7 +239,7 @@ export default function EditProductPage({
               Edit Produk: {productDetail.name}
             </h1>
             <p className="font-body text-xs text-muted-foreground mt-0.5">
-              Ubah detail produk, atur varian harga & stok kuota, atau kelola foto produk.
+              Ubah informasi produk, varian, dan foto.
             </p>
           </div>
         </div>

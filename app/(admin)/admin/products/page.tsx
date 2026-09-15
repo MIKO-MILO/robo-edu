@@ -78,7 +78,7 @@ function AdminProductsContent() {
             Katalog Produk
           </h1>
           <p className="font-body text-xs md:text-sm text-muted-foreground mt-0.5">
-            Kelola data produk, kuota stok, varian, dan foto produk RoboEdu.
+            Atur produk beserta varian, stok, dan fotonya.
           </p>
         </div>
 

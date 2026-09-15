@@ -130,7 +130,7 @@ function AdminInventoryContent() {
             Monitoring Stok
           </h1>
           <p className="mt-0.5 font-body text-xs text-muted-foreground md:text-sm">
-            Pantau dan sesuaikan kuota/kapasitas produksi per varian produk.
+            Pantau stok dan sesuaikan kapasitas per varian.
           </p>
         </div>
 

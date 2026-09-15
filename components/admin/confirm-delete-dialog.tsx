@@ -32,7 +32,7 @@ export function ConfirmDeleteDialog({
   open,
   onOpenChange,
   title = "Konfirmasi Hapus Data",
-  description = "Tindakan ini tidak dapat dibatalkan. Data yang telah dihapus akan hilang secara permanen dari sistem.",
+  description = "Data ini akan dihapus permanen dan tidak bisa dikembalikan.",
   itemName,
   onConfirm,
   isLoading = false,
@@ -91,7 +91,7 @@ export function ConfirmDeleteDialog({
             <AdminInput
               value={inputWord}
               onChange={(e) => setInputWord(e.target.value)}
-              placeholder={`Tulis "${confirmationWord}" di sini`}
+              placeholder={confirmationWord}
               inputSize="sm"
             />
           </div>
