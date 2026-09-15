@@ -59,13 +59,14 @@ export function ConfirmDeleteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border border-border bg-card max-w-md p-6 rounded-2xl shadow-lg">
-        <DialogHeader className="flex flex-col items-center sm:items-start gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-danger-bg text-danger">
+      {/* [&>button]:hidden menyembunyikan tombol X bawaan DialogContent */}
+      <DialogContent className="border border-border bg-card max-w-md p-6 rounded-2xl shadow-lg [&>button]:hidden">
+        <DialogHeader className="flex flex-col items-center justify-center gap-3 text-center">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-danger-bg text-danger mx-auto">
             <AlertTriangle className="size-6 stroke-[2.5]" />
           </div>
 
-          <div className="space-y-1 text-center sm:text-left">
+          <div className="space-y-1 text-center">
             <DialogTitle className="text-lg font-bold font-heading text-foreground">
               {title}
             </DialogTitle>
@@ -76,7 +77,7 @@ export function ConfirmDeleteDialog({
         </DialogHeader>
 
         {itemName && (
-          <div className="my-2 p-3 rounded-2xl bg-muted/60 border border-border/60 text-xs font-body">
+          <div className="my-2 p-3 rounded-2xl bg-muted/60 border border-border/60 text-xs font-body text-center">
             <span className="text-muted-foreground">Item yang akan dihapus: </span>
             <span className="font-bold text-foreground font-mono">{itemName}</span>
           </div>
@@ -84,7 +85,7 @@ export function ConfirmDeleteDialog({
 
         {requireConfirmationWord && (
           <div className="space-y-1.5 my-2">
-            <label className="text-xs font-medium text-foreground">
+            <label className="text-xs font-medium text-foreground block text-left">
               Ketik <span className="font-bold text-danger font-mono">{confirmationWord}</span> untuk mengonfirmasi:
             </label>
             <AdminInput

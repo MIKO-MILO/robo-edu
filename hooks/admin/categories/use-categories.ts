@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/lib/api/endpoints/categories";
+import type { GetCategoriesParams } from "@/lib/api/endpoints/categories";
 
-export function useCategories() {
+export function useCategories(params?: GetCategoriesParams) {
   return useQuery({
-    queryKey: ["categories"],
-    queryFn: () => getCategories(),
-    staleTime: 1000 * 60 * 30, // 30 menit (cache lama untuk data kategorial yang jarang berubah)
+    queryKey: ["admin", "categories", params],
+    queryFn: () => getCategories(params),
+    staleTime: 1000 * 60 * 5, // 5 menit
   });
 }

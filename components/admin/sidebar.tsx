@@ -8,6 +8,7 @@ import {
   Package,
   Layers,
   Tag,
+  Warehouse,
   ShoppingCart,
   Users,
   Award,
@@ -69,6 +70,12 @@ const adminNavItems: NavItem[] = [
     title: "Product Types",
     href: "/admin/product-types",
     icon: <Tag className="size-5" />,
+    roles: ["SUPERADMIN", "ADMIN", "ADMIN_SALES"],
+  },
+  {
+    title: "Inventory",
+    href: "/admin/inventory",
+    icon: <Warehouse className="size-5" />,
     roles: ["SUPERADMIN", "ADMIN", "ADMIN_SALES"],
   },
   {
