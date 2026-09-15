@@ -148,3 +148,26 @@ export type CreateVariantRequestBody = Omit<
 >;
 
 export type UpdateVariantRequestBody = Partial<CreateVariantRequestBody>;
+
+/* ------------------------------------------------------------------
+ * Inventory — flat row untuk halaman monitoring stok admin.
+ * Menggabungkan info produk + variant dalam satu baris tabel.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Baris flat untuk tabel inventory admin.
+ * Response dari GET /admin/inventory — data sudah di-join sisi backend.
+ */
+export interface InventoryVariantRow {
+  variant_id: UUID;
+  variant_name: string;
+  variant_sku: string;
+  stock: number;
+  status: ProductStatus;
+  product_id: UUID;
+  product_name: string;
+  product_sku: string;
+  category_name: string;
+  price: Money;
+  updated_at: ISODateString;
+}
