@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
         hostname: "flagcdn.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "coresg-normal.trae.ai",
+        pathname: "/**",
+      },
     ],
   },
 };

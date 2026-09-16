@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Home, Search, Cpu } from "lucide-react";
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "404 – Halaman Tidak Ditemukan | Roboedu",
@@ -129,9 +128,6 @@ export default function NotFound() {
             Lihat Produk
           </Link>
         </div>
-
-        {/* Back link */}
-        <Button />
       </div>
     </main>
   );
