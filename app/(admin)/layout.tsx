@@ -94,12 +94,12 @@ export default async function AdminLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-body">
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground font-body">
       {/* Visual Admin Shell dengan prop role & data user */}
       <AdminSidebar userRole={uppercaseRole} user={adminUserData} />
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden">
         <AdminTopBar user={adminUserData} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto h-full min-h-0">
           {children}
         </main>
       </div>
