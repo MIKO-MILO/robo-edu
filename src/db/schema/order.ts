@@ -12,6 +12,7 @@ export const orders = mysqlTable("orders", {
   voucherId: varchar("voucher_id", { length: 36 }).references(() => vouchers.id, { onDelete: "set null", onUpdate: "cascade" }),
   subtotal: decimal("subtotal", { precision: 15, scale: 2 }).notNull(),
   discountAmount: decimal("discount_amount", { precision: 15, scale: 2 }).notNull().default("0"),
+  taxAmount: decimal("tax_amount", { precision: 15, scale: 2 }).notNull().default("0"),
   shippingCost: decimal("shipping_cost", { precision: 15, scale: 2 }).notNull().default("0"),
   total: decimal("total", { precision: 15, scale: 2 }).notNull(),
   voucherCodeSnapshot: varchar("voucher_code_snapshot", { length: 100 }),

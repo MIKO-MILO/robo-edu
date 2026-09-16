@@ -51,7 +51,7 @@ services:
       context: .
       target: runner
     restart: unless-stopped
-    command: sh -c "npm run db:push && npm run dev -- --webpack"
+    command: sh -c "npm run db:push && npm run db:seed && npm run dev -- --webpack"
     env_file:
       - .env
     environment:

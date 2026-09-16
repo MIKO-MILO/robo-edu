@@ -235,8 +235,7 @@ export default function CartPage() {
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const discountAmount = subtotal * appliedDiscount;
   const shipping = subtotal > 0 ? 0 : 0; // FREE Shipping as per design
-  const estimatedTax = (subtotal - discountAmount) * 0.08; // 8% Tax
-  const total = subtotal - discountAmount + shipping + estimatedTax;
+  const total = subtotal - discountAmount + shipping;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
@@ -441,12 +440,6 @@ export default function CartPage() {
                 <span className="font-bold text-success uppercase text-xs sm:text-sm bg-success-bg/20 px-2 py-0.5 rounded">
                   Gratis
                 </span>
-              </div>
-
-              {/* Estimated Tax */}
-              <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
-                <span>Estimasi Pajak</span>
-                <span className="font-bold">{formatPrice(estimatedTax)}</span>
               </div>
 
               {/* Divider */}

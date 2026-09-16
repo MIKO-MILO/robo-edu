@@ -144,7 +144,10 @@ export async function createPaymentTransaction(
       discountAmount = calculateDiscount(subtotal, voucher);
     }
 
-    const total = subtotal - discountAmount + shippingCost;
+    const taxableAmount = subtotal - discountAmount;
+    // Pajak 8% dibulatkan ke bawah agar tidak ada selisih desimal
+    const taxAmount = Math.floor(taxableAmount * 0.08);
+    const total = taxableAmount + shippingCost + taxAmount;
     const id = crypto.randomUUID();
     const number = orderNumber();
     const recipient = address[0]!;
@@ -158,6 +161,7 @@ export async function createPaymentTransaction(
       voucherCodeSnapshot: voucher?.code ?? null,
       subtotal: String(subtotal),
       discountAmount: String(discountAmount),
+      taxAmount: String(taxAmount),
       shippingCost: String(shippingCost),
       total: String(total),
       status: "PENDING",
@@ -216,22 +220,35 @@ export async function createPaymentTransaction(
 
   const snap = getSnapClient();
   try {
+    // item_details harus sum persis = gross_amount.
+    // Midtrans tidak mendukung harga negatif secara konsisten,
+    // jadi diskon dimasukkan sebagai pengurangan di item terakhir
+    // atau kita pakai satu item "Total Pembayaran" jika ada diskon.
+    const itemDetails = result.discountAmount > 0
+      ? [
+          // Satu item agregat agar gross_amount selalu match
+          {
+            id: "ORDER",
+            name: "Pembayaran RoboEdu",
+            price: result.total,
+            quantity: 1,
+          },
+        ]
+      : [
+          ...result.items.map((item) => ({
+            id: item.sku,
+            name: `${item.productName} - ${item.variantName}`.slice(0, 50),
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          ...(result.shippingCost > 0
+            ? [{ id: "SHIPPING", name: "Biaya pengiriman", price: result.shippingCost, quantity: 1 }]
+            : []),
+        ];
+
     const transaction = await snap.createTransaction({
       transaction_details: { order_id: result.number, gross_amount: result.total },
-      item_details: [
-        ...result.items.map((item) => ({
-          id: item.sku,
-          name: `${item.productName} - ${item.variantName}`.slice(0, 50),
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        ...(result.shippingCost > 0
-          ? [{ id: "SHIPPING", name: "Biaya pengiriman", price: result.shippingCost, quantity: 1 }]
-          : []),
-        ...(result.discountAmount > 0
-          ? [{ id: "VOUCHER", name: "Diskon voucher", price: -result.discountAmount, quantity: 1 }]
-          : []),
-      ],
+      item_details: itemDetails,
     });
 
     return {
