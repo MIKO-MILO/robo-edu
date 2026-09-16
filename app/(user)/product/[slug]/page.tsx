@@ -191,6 +191,15 @@ type ProductComponent = (typeof DUMMY_PRODUCT.components)[number];
 type ProductReview = (typeof DUMMY_PRODUCT.reviews)[number];
 type RelatedProduct = (typeof DUMMY_PRODUCT.relatedProducts)[number];
 
+// Type untuk produk dari API
+interface ApiProduct {
+  id: string;
+  name: string;
+  slug: string;
+  price: { min: number | null; max: number | null };
+  image: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Star Rating Helper
 // ---------------------------------------------------------------------------
@@ -536,11 +545,20 @@ function UserReviewsSection({ product }: { product: typeof DUMMY_PRODUCT }) {
 // Section 4 — You Might Also Like
 // ---------------------------------------------------------------------------
 
+const BG_COLORS = [
+  "bg-accent-pink",
+  "bg-accent-soft-blue",
+  "bg-accent-mint",
+  "bg-accent-yellow",
+  "bg-accent-peach",
+  "bg-accent-purple",
+];
+
 /** Full-bleed yellow carousel section with related products. */
 function RelatedProductsSection({
   products,
 }: {
-  products: RelatedProduct[];
+  products: ApiProduct[];
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -551,6 +569,8 @@ function RelatedProductsSection({
       behavior: "smooth",
     });
   };
+
+  if (products.length === 0) return null;
 
   return (
     <section
@@ -572,51 +592,43 @@ function RelatedProductsSection({
           className="flex gap-6 overflow-x-auto pb-2 snap-x snap-mandatory"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {products.map((item) => (
+          {products.map((item, idx) => (
             <div
               key={item.id}
               className="flex-none w-[260px] md:w-[300px] snap-start"
             >
               <ProductCard
-                slug={item.id}
+                slug={item.slug}
                 name={item.name}
-                price={item.price}
-                rating={item.rating}
-                reviewCount={item.reviewCount}
-                imageUrl={item.imageUrl}
-                bgColorClass={item.bgColorClass}
+                price={
+                  item.price.min
+                    ? `Rp ${new Intl.NumberFormat("id-ID").format(item.price.min)}`
+                    : "Hubungi kami"
+                }
+                rating={0}
+                reviewCount="0 ulasan"
+                imageUrl={item.image ?? "/images/placeholder-product.jpg"}
+                bgColorClass={BG_COLORS[idx % BG_COLORS.length]}
               />
             </div>
           ))}
         </div>
 
-        {/* Footer: decorative line + nav buttons */}
+        {/* Footer: nav buttons */}
         <div className="mt-10 flex justify-between items-center border-t-2 border-foreground pt-4">
           <div className="hidden md:block h-px bg-foreground flex-1 mr-6" />
           <div className="flex gap-3 ml-auto">
             <button
               onClick={() => scroll("left")}
               aria-label="Scroll kiri"
-              className="
-                w-12 h-12 rounded-full
-                border-2 border-foreground
-                flex items-center justify-center
-                hover:bg-foreground hover:text-accent-yellow
-                transition-colors
-              "
+              className="w-12 h-12 rounded-full border-2 border-foreground flex items-center justify-center hover:bg-foreground hover:text-accent-yellow transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={() => scroll("right")}
               aria-label="Scroll kanan"
-              className="
-                w-12 h-12 rounded-full
-                border-2 border-foreground
-                flex items-center justify-center
-                hover:bg-foreground hover:text-accent-yellow
-                transition-colors
-              "
+              className="w-12 h-12 rounded-full border-2 border-foreground flex items-center justify-center hover:bg-foreground hover:text-accent-yellow transition-colors"
             >
               <ChevronRight size={20} />
             </button>
@@ -638,6 +650,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState<ApiProduct[]>([]);
 
   const { isWishlisted: checkWishlist, toggleItem } = useWishlist();
   const { addToCart } = useCart();
@@ -658,6 +671,16 @@ export default function ProductDetailPage() {
       })
       .catch(() => active && setProduct(null))
       .finally(() => active && setIsLoadingProduct(false));
+
+    // Fetch related products — ambil 8 produk, exclude current slug client-side
+    fetch(`/api/product?limit=9&sort=newest`)
+      .then((res) => res.ok ? res.json() : null)
+      .then((json) => {
+        if (!active || !json?.data) return;
+        const filtered = (json.data as ApiProduct[]).filter((p) => p.slug !== slug);
+        setRelatedProducts(filtered.slice(0, 8));
+      })
+      .catch(() => {/* non-fatal */});
 
     return () => {
       active = false;
@@ -929,7 +952,7 @@ export default function ProductDetailPage() {
       <UserReviewsSection product={product} />
     </main>
     {/* ── Section 4: You Might Also Like (full-bleed) ── */}
-    <RelatedProductsSection products={product.relatedProducts} />
+    <RelatedProductsSection products={relatedProducts} />
 
     </>
   );
