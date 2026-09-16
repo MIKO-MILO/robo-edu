@@ -31,6 +31,7 @@ export interface Order {
   subtotal: Money;
   discount_amount: Money;
   shipping_cost: Money;
+  tax_amount: Money;
   total: Money;
   voucher_code_snapshot: string | null;
   status: OrderStatus;
@@ -125,11 +126,19 @@ export interface ShipmentTracking {
 /** Response data — GET /orders/{id} (order_items + payment + shipment sekaligus) */
 export interface OrderDetail extends Order {
   order_items: OrderItem[];
-  payment: Pick<Payment, "status" | "payment_type" | "amount" | "transaction_time"> | null;
-  shipment: (Pick<Shipment, "tracking_number" | "status" | "shipped_at" | "delivered_at"> & {
-    provider_name: string;
-    trackings: ShipmentTracking[];
-  }) | null;
+  payment: Pick<
+    Payment,
+    "status" | "payment_type" | "amount" | "transaction_time"
+  > | null;
+  shipment:
+    | (Pick<
+        Shipment,
+        "tracking_number" | "status" | "shipped_at" | "delivered_at"
+      > & {
+        provider_name: string;
+        trackings: ShipmentTracking[];
+      })
+    | null;
 }
 
 /**
@@ -138,8 +147,10 @@ export interface OrderDetail extends Order {
  * bukan `OrderDetail` yang load payment + shipment + semua items.
  * Kalau backend menambah/mengubah field preview, cukup ubah di sini.
  */
-export interface OrderListItem
-  extends Pick<Order, "id" | "order_number" | "status" | "total" | "created_at"> {
+export interface OrderListItem extends Pick<
+  Order,
+  "id" | "order_number" | "status" | "total" | "created_at"
+> {
   /** Preview produk pertama — untuk thumbnail & nama di kartu order */
   first_item: {
     product_name_snapshot: string;
@@ -164,6 +175,7 @@ export interface CheckoutSummary {
   subtotal: Money;
   shipping_cost: Money;
   discount_amount: Money;
+  tax_amount: Money;
   total: Money;
   items: Array<{
     product_id: UUID;
@@ -182,6 +194,7 @@ export interface CreateOrderResponseData {
   subtotal: Money;
   discount_amount: Money;
   shipping_cost: Money;
+  tax_amount: Money;
   total: Money;
   order_items: Array<
     Pick<
@@ -232,6 +245,11 @@ export type AddShipmentTrackingRequestBody = Pick<
 export interface UpdateOrderStatusRequestBody {
   status: Extract<
     OrderStatus,
-    "PROCESSING" | "SHIPPED" | "DELIVERED" | "COMPLETED" | "CANCELLED" | "REFUNDED"
+    | "PROCESSING"
+    | "SHIPPED"
+    | "DELIVERED"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "REFUNDED"
   >;
 }
