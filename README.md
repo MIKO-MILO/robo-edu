@@ -54,6 +54,7 @@ Jika kamu ingin run Next.js di luar Docker (misal untuk debug native dengan VS C
 - [Menjalankan Project](#menjalankan-project)
   - [Menjalankan DENGAN Docker (Rekomendasi Tim)](#menjalankan-dengan-docker-rekomendasi-tim)
   - [Menjalankan Tanpa Docker](#menjalankan-tanpa-docker)
+- [Setup ngrok untuk Webhook Midtrans (Development)](#setup-ngrok-untuk-webhook-midtrans-development)
 - [Cheat Sheet — Perintah Docker yang Sering Dipakai](#cheat-sheet--perintah-docker-yang-sering-dipakai)
 - [Migrasi Database (Drizzle ORM)](#migrasi-database-drizzle-orm)
 - [Struktur Folder](#struktur-folder)
@@ -232,7 +233,11 @@ MINIO_BUCKET=roboedu-public
 # ================================================================
 MIDTRANS_SERVER_KEY=
 MIDTRANS_CLIENT_KEY=
+NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=
 MIDTRANS_IS_PRODUCTION=false
+# URL webhook Midtrans — harus bisa diakses publik saat development.
+# Gunakan ngrok (lihat seksi "Setup ngrok untuk Webhook Midtrans" di bawah).
+MIDTRANS_WEBHOOK_URL=https://<your-subdomain>.ngrok-free.app/api/payments/midtrans/webhook
 
 # ================================================================
 # Email Service
@@ -321,6 +326,88 @@ npm run dev
 npm run build
 npm run start
 ```
+
+---
+
+## Setup ngrok untuk Webhook Midtrans (Development)
+
+Midtrans mengirim notifikasi pembayaran (webhook) ke URL publik. Di environment development, app kamu berjalan di localhost dan tidak bisa diakses dari internet — gunakan **ngrok** sebagai tunnel sementara.
+
+### Instalasi ngrok
+
+```bash
+# Windows (via winget)
+winget install ngrok.ngrok
+
+# Mac
+brew install ngrok/ngrok/ngrok
+
+# Atau download langsung dari https://ngrok.com/download
+```
+
+Buat akun gratis di [ngrok.com](https://ngrok.com) lalu autentikasi sekali:
+
+```bash
+ngrok config add-authtoken <TOKEN_DARI_DASHBOARD_NGROK>
+```
+
+### Menjalankan ngrok
+
+App berjalan di port **3001** (via Docker) atau **3000** (native). Sesuaikan dengan setup kamu:
+
+```bash
+# Jika pakai Docker (default port 3001)
+ngrok http 3001
+
+# Jika pakai native Next.js (default port 3000)
+ngrok http 3000
+```
+
+ngrok akan menampilkan output seperti:
+
+```
+Forwarding  https://probiotic-dad-suggest.ngrok-free.app -> http://localhost:3001
+```
+
+### Update `.env`
+
+Salin URL forwarding dari ngrok, lalu update dua variabel berikut di `.env`:
+
+```env
+NEXT_PUBLIC_APP_URL=https://probiotic-dad-suggest.ngrok-free.app
+MIDTRANS_WEBHOOK_URL=https://probiotic-dad-suggest.ngrok-free.app/api/payments/midtrans/webhook
+```
+
+Restart app agar env terbaca:
+
+```bash
+# Docker
+docker compose restart app
+
+# Native
+# Cukup Ctrl+C lalu jalankan ulang npm run dev
+```
+
+### Update Midtrans Dashboard
+
+Masuk ke [Midtrans Sandbox Dashboard](https://dashboard.sandbox.midtrans.com/) → **Settings → Configuration**, lalu set:
+
+| Field                          | Value                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| **Payment Notification URL**   | `https://probiotic-dad-suggest.ngrok-free.app/api/payments/midtrans/webhook`            |
+| **Finish Redirect URL**        | `https://probiotic-dad-suggest.ngrok-free.app/profile/orders` *(opsional)*              |
+| **Unfinish Redirect URL**      | `https://probiotic-dad-suggest.ngrok-free.app/cart` *(opsional)*                        |
+| **Error Redirect URL**         | `https://probiotic-dad-suggest.ngrok-free.app/cart` *(opsional)*                        |
+
+Klik **Update** untuk menyimpan.
+
+> ⚠️ **URL ngrok gratis berubah setiap kali ngrok di-restart.** Setiap sesi baru kamu perlu mengulang langkah Update `.env` dan Update Midtrans Dashboard di atas.
+>
+> 💡 **Tip — URL statis:** Akun ngrok berbayar (atau ngrok free dengan domain tetap) mendukung subdomain permanen. Daftarkan subdomain di [ngrok.com/domains](https://dashboard.ngrok.com/domains) dan gunakan flag `--domain`:
+> ```bash
+> ngrok http --domain=namamu.ngrok-free.app 3001
+> ```
+> Dengan domain tetap kamu hanya perlu set `.env` dan Midtrans Dashboard **sekali**.
 
 ---
 
