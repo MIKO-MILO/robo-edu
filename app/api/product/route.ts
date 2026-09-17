@@ -184,10 +184,7 @@ export async function GET(request: NextRequest) {
       )
       .leftJoin(
         productImages,
-        and(
-          eq(products.id, productImages.productId),
-          eq(productImages.variantId, sql`${productImages.variantId}`)
-        )
+        eq(products.id, productImages.productId)
       )
       .where(and(...filters))
       .groupBy(

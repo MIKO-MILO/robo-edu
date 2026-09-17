@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import Image, { ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
-export interface ProductImageProps
-  extends Omit<ImageProps, "src" | "alt"> {
+export interface ProductImageProps extends Omit<ImageProps, "src" | "alt"> {
   src?: string | null;
   alt: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "full";
@@ -31,8 +30,7 @@ const ASPECT_MAP = {
   auto: "",
 };
 
-const DEFAULT_FALLBACK =
-  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80";
+const DEFAULT_FALLBACK = "/images/placeholder-product.jpg";
 
 export function ProductImage({
   src,
@@ -46,15 +44,20 @@ export function ProductImage({
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   ...props
 }: ProductImageProps) {
-  const [prevSrc, setPrevSrc] = useState<string | null | undefined>(src);
-  const [imgSrc, setImgSrc] = useState<string>(src || fallbackSrc);
-  const [hasError, setHasError] = useState<boolean>(!src);
+  const [lastSrc, setLastSrc] = useState<string | null | undefined>(src);
+  const [lastErrorSrc, setLastErrorSrc] = useState<string | null>(null);
+  const [fallbackFailed, setFallbackFailed] = useState(false);
 
-  if (prevSrc !== src) {
-    setPrevSrc(src);
-    setImgSrc(src || fallbackSrc);
-    setHasError(!src);
+  if (lastSrc !== src) {
+    setLastSrc(src);
+    setLastErrorSrc(null);
+    setFallbackFailed(false);
   }
+
+  const baseSrc = src ?? fallbackSrc;
+  const tryFallback = Boolean(baseSrc) && lastErrorSrc === baseSrc;
+  const imgSrc = tryFallback ? fallbackSrc : baseSrc;
+  const hasError = !imgSrc || (tryFallback && fallbackFailed);
 
   const containerSizeClass = size !== "full" ? SIZE_MAP[size] : "";
   const aspectClass = aspectRatio !== "auto" ? ASPECT_MAP[aspectRatio] : "";
@@ -65,10 +68,10 @@ export function ProductImage({
         "bg-card rounded-2xl overflow-hidden border border-foreground relative flex items-center justify-center shrink-0 select-none",
         containerSizeClass,
         aspectClass,
-        className
+        className,
       )}
     >
-      {hasError || !imgSrc ? (
+      {hasError ? (
         <div className="w-full h-full flex flex-col items-center justify-center bg-accent-soft-blue text-foreground/70 p-2 text-center">
           <span className="text-2xl mb-1">🤖</span>
           <span className="font-body text-xs font-semibold line-clamp-1">
@@ -77,21 +80,22 @@ export function ProductImage({
         </div>
       ) : (
         <Image
+          key={imgSrc}
           src={imgSrc}
           alt={alt}
           fill
           priority={priority}
           sizes={sizes}
           onError={() => {
-            if (imgSrc !== fallbackSrc) {
-              setImgSrc(fallbackSrc);
-            } else {
-              setHasError(true);
+            if (!tryFallback) {
+              setLastErrorSrc(baseSrc);
+            } else if (!fallbackFailed) {
+              setFallbackFailed(true);
             }
           }}
           className={cn(
             "object-cover w-full h-full transition-opacity duration-200",
-            imageClassName
+            imageClassName,
           )}
           {...props}
         />
