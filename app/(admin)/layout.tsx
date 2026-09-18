@@ -101,7 +101,7 @@ export default async function AdminLayout({
       </div>
       <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden">
         <AdminTopBar user={adminUserData} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto h-full min-h-0">
           {children}
         </main>
       </div>

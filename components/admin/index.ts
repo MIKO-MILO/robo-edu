@@ -106,6 +106,8 @@ export type {
   CustomerComplaintsTabProps,
   CustomerReviewsTabProps,
 } from "./customers";
+// Dashboard Components
+export * from "./dashboard";
 
 // Reviews Components
 export {
@@ -121,3 +123,5 @@ export type {
 } from "./reviews";
 
 
+// Reports Components
+export * from "./reports";
