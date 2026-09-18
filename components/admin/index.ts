@@ -107,3 +107,34 @@ export type {
   CustomerReviewsTabProps,
 } from "./customers";
 
+// Complaints Components
+export {
+  ComplaintStatsGrid,
+  ComplaintFilters,
+  ComplaintTable,
+  ComplaintDetailHeader,
+  ComplaintOrderInfoCard,
+  ComplaintCustomerCard,
+  ComplaintDescriptionCard,
+  ComplaintAttachmentGallery,
+  ComplaintActionPanel,
+  COMPLAINT_STATUS_TABS,
+  MOCK_ADMIN_COMPLAINTS,
+  getMockComplaintDetail,
+  getComplaintStats,
+  deriveMediaType,
+} from "./complaints";
+export type {
+  AdminComplaintRow,
+  AdminComplaintDetail,
+  AdminComplaintAttachment,
+  ComplaintStats,
+  ComplaintStatsGridProps,
+  ComplaintFiltersProps,
+  ComplaintTableProps,
+  ComplaintDetailHeaderProps,
+  ComplaintOrderInfoCardProps,
+  ComplaintCustomerCardProps,
+  ComplaintAttachmentGalleryProps,
+  ComplaintActionPanelProps,
+} from "./complaints";
