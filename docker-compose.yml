@@ -90,6 +90,7 @@ services:
       - ./app:/app/app
       - ./components:/app/components
       - ./contexts:/app/contexts
+      - ./hooks:/app/hooks
       - ./lib:/app/lib
       - ./public:/app/public
       - ./src:/app/src

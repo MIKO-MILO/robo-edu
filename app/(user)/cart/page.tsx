@@ -149,7 +149,7 @@ export default function CartPage() {
   const handleCheckout = async () => {
     const authResponse = await fetch("/api/auth/me", { cache: "no-store" });
     if (!authResponse.ok) {
-      router.push("/login?next=/cart");
+      router.push("/login?next=/checkout");
       return;
     }
 
@@ -158,67 +158,8 @@ export default function CartPage() {
       return;
     }
 
-    setCheckoutError("");
-    setIsCheckingOut(true);
-    try {
-      const response = await fetch("/api/checkout/midtrans", { method: "POST" });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Gagal membuat pembayaran.");
-      }
-      const { orderId, snapToken, redirectUrl } = result.data as {
-        orderId: string;
-        snapToken: string;
-        redirectUrl: string;
-      };
-
-      /** Poll status order sampai bukan PENDING (max ~15 detik) lalu redirect */
-      async function waitAndRedirect() {
-        const maxAttempts = 10;
-        const intervalMs = 1500;
-        for (let i = 0; i < maxAttempts; i++) {
-          await new Promise((r) => setTimeout(r, intervalMs));
-          try {
-            const res = await fetch(`/api/orders/${orderId}/status`, { cache: "no-store" });
-            if (res.ok) {
-              const json = await res.json();
-              if (json.data?.status && json.data.status !== "PENDING") break;
-            }
-          } catch {
-            // abaikan error sementara, tetap lanjut polling
-          }
-        }
-        router.push("/profile/orders");
-        router.refresh();
-      }
-
-      if (!window.snap) {
-        window.location.assign(redirectUrl);
-        return;
-      }
-
-      window.snap.pay(snapToken, {
-        onSuccess(snapResult) {
-          console.info("Pembayaran berhasil:", snapResult);
-          void waitAndRedirect();
-        },
-        onPending(snapResult) {
-          console.info("Menunggu pembayaran:", snapResult);
-          void waitAndRedirect();
-        },
-        onError(snapResult) {
-          console.error("Pembayaran gagal:", snapResult);
-          setCheckoutError("Pembayaran gagal. Silakan coba lagi.");
-          setIsCheckingOut(false);
-        },
-        onClose() {
-          setIsCheckingOut(false);
-        },
-      });
-    } catch (error) {
-      setCheckoutError(error instanceof Error ? error.message : "Gagal membuat pembayaran.");
-      setIsCheckingOut(false);
-    }
+    // Arahkan ke halaman checkout untuk memilih alamat, kurir, dan voucher
+    router.push("/checkout");
   };
 
   const handleScrollSlider = (direction: "left" | "right") => {
@@ -494,10 +435,10 @@ export default function CartPage() {
             {/* Proceed to Checkout Button */}
             <button
               onClick={handleCheckout}
-              disabled={isCheckingOut || cartItems.length === 0}
+              disabled={cartItems.length === 0}
               className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg"
             >
-              {isCheckingOut ? "Memproses pembayaran..." : "Proceed to Checkout"}
+              Proceed to Checkout
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse"
                 fill="none"

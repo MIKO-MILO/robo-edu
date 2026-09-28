@@ -47,9 +47,10 @@ export default function Sidebar() {
         })}
         
         <button
-          onClick={() => {
-            // Logic logout
-            router.push("/home");
+          onClick={async () => {
+            await fetch("/api/auth/logout", { method: "POST" });
+            router.push("/login");
+            router.refresh();
           }}
           className={clsx(
             "flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors border-r-[4px] text-left w-full",

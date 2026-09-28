@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { orders, orderItems, productImages } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
@@ -18,11 +18,10 @@ const TAB_STATUS_MAP: Record<string, OrderStatus[]> = {
 /**
  * GET /api/orders
  * Query params:
- *   tab    = all | processing | shipped | completed | cancelled
- *   status = PENDING|PAID|... (override tab, opsional)
- *   page   = 1-based, default 1
- *   limit  = default 10
- *   q      = search by order_number atau product_name_snapshot
+ *   tab   = all | processing | shipped | completed | cancelled
+ *   page  = 1-based, default 1
+ *   limit = default 10, max 50
+ *   q     = search by order_number atau product_name_snapshot
  */
 export async function GET(request: NextRequest) {
   const userId = await getSessionUserId();
@@ -34,27 +33,74 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = request.nextUrl;
-  const tab = searchParams.get("tab") ?? "all";
-  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
+  const tab   = searchParams.get("tab") ?? "all";
+  const page  = Math.max(1, Number(searchParams.get("page")  ?? "1"));
   const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") ?? "10")));
-  const q = searchParams.get("q")?.trim() ?? "";
+  const q     = searchParams.get("q")?.trim() ?? "";
   const offset = (page - 1) * limit;
 
-  // ── Build filters ─────────────────────────────────────────────────────
-  const filters = [eq(orders.userId, userId)];
+  // ── Build base filters ─────────────────────────────────────────────────
+  const baseFilters = [eq(orders.userId, userId)];
 
   const tabStatuses = TAB_STATUS_MAP[tab];
   if (tabStatuses) {
-    filters.push(inArray(orders.status, tabStatuses));
+    baseFilters.push(inArray(orders.status, tabStatuses));
   }
 
-  // ── Count total (untuk pagination) ───────────────────────────────────
+  // ── Search: find matching orderIds first (DB-side, not post-fetch) ────
+  // This ensures meta.total reflects the search result count accurately.
+  let searchOrderIds: string[] | null = null;
+  if (q) {
+    const ql = `%${q}%`;
+
+    // Orders whose order_number matches
+    const byNumber = await db
+      .select({ id: orders.id })
+      .from(orders)
+      .where(and(eq(orders.userId, userId), like(orders.orderNumber, ql)));
+
+    // Orders that have an item whose product_name_snapshot matches
+    const byProduct = await db
+      .select({ orderId: orderItems.orderId })
+      .from(orderItems)
+      .innerJoin(orders, eq(orderItems.orderId, orders.id))
+      .where(and(eq(orders.userId, userId), like(orderItems.productNameSnapshot, ql)));
+
+    const matchSet = new Set<string>([
+      ...byNumber.map((r) => r.id),
+      ...byProduct.map((r) => r.orderId),
+    ]);
+    searchOrderIds = [...matchSet];
+
+    // No matches at all — return early
+    if (searchOrderIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        meta: { page, limit, total: 0, totalPages: 0 },
+      });
+    }
+
+    baseFilters.push(inArray(orders.id, searchOrderIds));
+  }
+
+  // ── Count total (accurate — search already folded into filters) ───────
   const [{ total }] = await db
     .select({ total: sql<number>`count(*)` })
     .from(orders)
-    .where(and(...filters));
+    .where(and(...baseFilters));
 
-  // ── Fetch orders ─────────────────────────────────────────────────────
+  const totalCount = Number(total);
+
+  if (totalCount === 0) {
+    return NextResponse.json({
+      success: true,
+      data: [],
+      meta: { page, limit, total: 0, totalPages: 0 },
+    });
+  }
+
+  // ── Fetch paginated orders ─────────────────────────────────────────────
   const rows = await db
     .select({
       id: orders.id,
@@ -77,7 +123,7 @@ export async function GET(request: NextRequest) {
       createdAt: orders.createdAt,
     })
     .from(orders)
-    .where(and(...filters))
+    .where(and(...baseFilters))
     .orderBy(desc(orders.createdAt))
     .limit(limit)
     .offset(offset);
@@ -86,17 +132,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: [],
-      meta: { page, limit, total: Number(total), totalPages: 0 },
+      meta: { page, limit, total: totalCount, totalPages: Math.ceil(totalCount / limit) },
     });
   }
 
   const orderIds = rows.map((r) => r.id);
 
-  // ── Fetch first item per order (untuk card preview) ──────────────────
-  // Ambil semua items dari order-order di halaman ini, lalu grouping di JS
+  // ── Fetch all items for this page's orders ────────────────────────────
   const items = await db
     .select({
       orderId: orderItems.orderId,
+      productId: orderItems.productId,
       productNameSnapshot: orderItems.productNameSnapshot,
       variantNameSnapshot: orderItems.variantNameSnapshot,
       createdAt: orderItems.createdAt,
@@ -105,7 +151,7 @@ export async function GET(request: NextRequest) {
     .where(inArray(orderItems.orderId, orderIds))
     .orderBy(orderItems.createdAt);
 
-  // ── Fetch item counts per order ───────────────────────────────────────
+  // ── Item counts per order ─────────────────────────────────────────────
   const countRows = await db
     .select({
       orderId: orderItems.orderId,
@@ -119,7 +165,7 @@ export async function GET(request: NextRequest) {
     countRows.map((r) => [r.orderId, Number(r.itemCount)]),
   );
 
-  // Group items per order, ambil yang pertama (earliest createdAt)
+  // Group items per order — first item (earliest createdAt) is the preview
   const firstItemMap: Record<string, typeof items[number]> = {};
   for (const item of items) {
     if (!firstItemMap[item.orderId]) {
@@ -127,52 +173,65 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // ── Search filter (post-fetch — order_number / product name) ─────────
-  let result = rows;
-  if (q) {
-    const ql = q.toLowerCase();
-    // Kumpulkan orderIds yang punya produk cocok
-    const matchingOrderIds = new Set(
-      items
-        .filter((i) => i.productNameSnapshot.toLowerCase().includes(ql))
-        .map((i) => i.orderId),
-    );
-    result = rows.filter(
-      (r) =>
-        r.orderNumber.toLowerCase().includes(ql) ||
-        matchingOrderIds.has(r.id),
-    );
+  // ── Fetch primary images for first-item products ──────────────────────
+  const firstProductIds = [
+    ...new Set(Object.values(firstItemMap).map((i) => i.productId)),
+  ];
+
+  const imageMap: Record<string, string> = {};
+  if (firstProductIds.length > 0) {
+    const imageRows = await db
+      .select({
+        productId: productImages.productId,
+        imageUrl: productImages.imageUrl,
+        isPrimary: productImages.isPrimary,
+        sortOrder: productImages.sortOrder,
+      })
+      .from(productImages)
+      .where(inArray(productImages.productId, firstProductIds))
+      .orderBy(productImages.isPrimary, productImages.sortOrder);
+
+    // For each product keep the primary image, or fallback to first row
+    for (const img of imageRows) {
+      // overwrite with primary if not already set, or if this one is primary
+      if (!imageMap[img.productId] || img.isPrimary) {
+        imageMap[img.productId] = img.imageUrl;
+      }
+    }
   }
 
   // ── Shape response ────────────────────────────────────────────────────
-  const data = result.map((order) => ({
-    id: order.id,
-    order_number: order.orderNumber,
-    status: order.status as OrderStatus,
-    total: Number(order.total),
-    subtotal: Number(order.subtotal),
-    shipping_cost: Number(order.shippingCost),
-    discount_amount: Number(order.discountAmount),
-    voucher_code_snapshot: order.voucherCodeSnapshot ?? null,
-    recipient_name: order.recipientName,
-    recipient_phone: order.recipientPhone,
-    shipping_address: order.shippingAddress,
-    shipping_city: order.shippingCity,
-    shipping_province: order.shippingProvince,
-    paid_at: order.paidAt?.toISOString() ?? null,
-    shipped_at: order.shippedAt?.toISOString() ?? null,
-    delivered_at: order.deliveredAt?.toISOString() ?? null,
-    cancelled_at: order.cancelledAt?.toISOString() ?? null,
-    created_at: order.createdAt.toISOString(),
-    item_count: countMap[order.id] ?? 0,
-    first_item: firstItemMap[order.id]
-      ? {
-          product_name_snapshot: firstItemMap[order.id].productNameSnapshot,
-          variant_name_snapshot: firstItemMap[order.id].variantNameSnapshot ?? null,
-          image_url: null, // TODO: join ke product_images jika diperlukan
-        }
-      : null,
-  }));
+  const data = rows.map((order) => {
+    const fi = firstItemMap[order.id];
+    return {
+      id: order.id,
+      order_number: order.orderNumber,
+      status: order.status as OrderStatus,
+      total: Number(order.total),
+      subtotal: Number(order.subtotal),
+      shipping_cost: Number(order.shippingCost),
+      discount_amount: Number(order.discountAmount),
+      voucher_code_snapshot: order.voucherCodeSnapshot ?? null,
+      recipient_name: order.recipientName,
+      recipient_phone: order.recipientPhone,
+      shipping_address: order.shippingAddress,
+      shipping_city: order.shippingCity,
+      shipping_province: order.shippingProvince,
+      paid_at: order.paidAt?.toISOString() ?? null,
+      shipped_at: order.shippedAt?.toISOString() ?? null,
+      delivered_at: order.deliveredAt?.toISOString() ?? null,
+      cancelled_at: order.cancelledAt?.toISOString() ?? null,
+      created_at: order.createdAt.toISOString(),
+      item_count: countMap[order.id] ?? 0,
+      first_item: fi
+        ? {
+            product_name_snapshot: fi.productNameSnapshot,
+            variant_name_snapshot: fi.variantNameSnapshot ?? null,
+            image_url: imageMap[fi.productId] ?? null,
+          }
+        : null,
+    };
+  });
 
   return NextResponse.json({
     success: true,
@@ -180,8 +239,8 @@ export async function GET(request: NextRequest) {
     meta: {
       page,
       limit,
-      total: Number(total),
-      totalPages: Math.ceil(Number(total) / limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
     },
   });
 }

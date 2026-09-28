@@ -255,6 +255,9 @@ export function AddressForm({
             <label className="text-sm font-semibold text-foreground">
               Kode Pos <span className="text-danger">*</span>
             </label>
+            <p className="text-xs text-muted-foreground -mt-0.5">
+              Isikan kode pos, nanti akan terisi otomatis.
+            </p>
             <div className="flex items-center gap-2 max-w-[200px]">
               <div className="relative flex-1">
                 <Input

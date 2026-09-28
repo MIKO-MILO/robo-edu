@@ -54,6 +54,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/app ./app
 
 COPY --from=builder --chown=nextjs:nodejs /app/components ./components
 
+COPY --from=builder --chown=nextjs:nodejs /app/hooks ./hooks
+
 COPY --from=builder --chown=nextjs:nodejs /app/contexts ./contexts
 
 COPY --from=builder --chown=nextjs:nodejs /app/lib ./lib

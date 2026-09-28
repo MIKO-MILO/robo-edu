@@ -1,12 +1,17 @@
-import { NextResponse } from "next/server";
-import { and, desc, eq } from "drizzle-orm";
-import { db } from "@/src/db";
-import { userAddresses } from "@/src/db/schema";
+import { NextRequest, NextResponse } from "next/server";
 import { createPaymentTransaction } from "@/src/lib/services/transaction-service";
 import { getSessionUserId } from "@/src/lib/auth/session";
 
-/** Creates a Snap transaction and returns a Midtrans-hosted checkout URL. */
-export async function POST() {
+export const runtime = "nodejs";
+
+/**
+ * POST /api/checkout/midtrans
+ * Body: { addressId: string; shippingCost: number; voucherCode?: string }
+ *
+ * Creates a Snap transaction, inserts order + payment rows, and returns
+ * the Midtrans-hosted checkout URL for client-side redirect.
+ */
+export async function POST(request: NextRequest) {
   try {
     const userId = await getSessionUserId();
     if (!userId) {
@@ -16,31 +21,40 @@ export async function POST() {
       );
     }
 
-    const [address] = await db
-      .select({ id: userAddresses.id })
-      .from(userAddresses)
-      .where(and(eq(userAddresses.userId, userId), eq(userAddresses.isPrimary, true)))
-      .orderBy(desc(userAddresses.updatedAt))
-      .limit(1);
+    const body = await request.json();
+    const addressId   = typeof body.addressId   === "string" ? body.addressId.trim()   : "";
+    const shippingCost = typeof body.shippingCost === "number" ? Math.round(body.shippingCost) : 0;
+    const voucherCode  = typeof body.voucherCode  === "string" ? body.voucherCode.trim() : undefined;
 
-    if (!address) {
+    if (!addressId) {
       return NextResponse.json(
-        { success: false, message: "Tambahkan dan pilih alamat utama sebelum melanjutkan pembayaran." },
-        { status: 422 },
+        { success: false, message: "Alamat pengiriman wajib dipilih." },
+        { status: 400 },
+      );
+    }
+
+    if (shippingCost < 0) {
+      return NextResponse.json(
+        { success: false, message: "Biaya pengiriman tidak valid." },
+        { status: 400 },
       );
     }
 
     const transaction = await createPaymentTransaction({
       userId,
-      addressId: address.id,
-      shippingCost: 0,
+      addressId,
+      shippingCost,
+      voucherCode: voucherCode || undefined,
     });
 
     return NextResponse.json({ success: true, data: transaction });
   } catch (error) {
     console.error("POST /api/checkout/midtrans error:", error);
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Gagal membuat pembayaran Midtrans." },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Gagal membuat pembayaran.",
+      },
       { status: 400 },
     );
   }

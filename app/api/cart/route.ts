@@ -7,6 +7,7 @@ import {
   products,
   productVariants,
   productImages,
+  users,
 } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import crypto from "node:crypto";
@@ -15,10 +16,18 @@ export const runtime = "nodejs";
 
 /**
  * Ensures the authenticated user has exactly one cart row.
- * Uses INSERT ... ON DUPLICATE KEY UPDATE to avoid a race condition
- * between two concurrent requests both trying to create the first cart.
+ * Returns null if the userId does not exist in the users table.
  */
 async function getOrCreateCart(userId: string) {
+  // Verify the user exists before attempting any FK-constrained insert.
+  const [existingUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!existingUser) return null;
+
   const cartId = crypto.randomUUID();
 
   // Atomically insert or do nothing on duplicate userId.
@@ -36,7 +45,7 @@ async function getOrCreateCart(userId: string) {
     .where(eq(carts.userId, userId))
     .limit(1);
 
-  return existing!;
+  return existing ?? null;
 }
 
 /**
@@ -51,6 +60,9 @@ export async function GET() {
     }
 
     const userCart = await getOrCreateCart(userId);
+    if (!userCart) {
+      return NextResponse.json({ success: false, message: "Sesi tidak valid. Silakan login ulang." }, { status: 401 });
+    }
 
     const items = await db
       .select({
@@ -154,6 +166,9 @@ export async function POST(request: NextRequest) {
     }
 
     const userCart = await getOrCreateCart(userId);
+    if (!userCart) {
+      return NextResponse.json({ success: false, message: "Sesi tidak valid. Silakan login ulang." }, { status: 401 });
+    }
 
     const existingItem = await db
       .select()

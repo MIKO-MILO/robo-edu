@@ -12,7 +12,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed/products.ts",
-    "db:seed:products": "tsx src/db/seed/products.ts"
+    "db:seed:products": "tsx src/db/seed/products.ts",
+    "db:seed:admin": "tsx src/db/seed/admin.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -38,6 +39,7 @@
     "next": "^16.3.5",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.87.0",
+    "react-easy-crop": "^5.4.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.6.2"
   },
