@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, ChevronRight, Package, ShieldAlert } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { StatusBadge } from "@/components/admin/status-badge";
 import type { UUID } from "@/types";
 
 export interface LowStockItemProps {
@@ -33,6 +34,7 @@ export function LowStockCard({
         className || ""
       }`}
     >
+      {/* Header */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b-2 border-border/15">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-accent-peach text-danger border border-border neo-shadow-icon shrink-0">
@@ -57,6 +59,7 @@ export function LowStockCard({
         </Link>
       </div>
 
+      {/* List Content */}
       <div className="py-4 space-y-3 flex-1">
         {isLoading ? (
           <div className="space-y-3">
@@ -109,6 +112,7 @@ export function LowStockCard({
                   </div>
                 </div>
 
+                {/* Stock count badge */}
                 <div className="flex items-center gap-2 shrink-0">
                   <div
                     className={`px-3 py-1 rounded-full border text-xs font-bold neo-shadow-icon ${
@@ -137,6 +141,7 @@ export function LowStockCard({
         )}
       </div>
 
+      {/* Footer Alert */}
       <div className="pt-3 border-t border-border/15 flex items-center justify-between text-xs text-muted-foreground">
         <span className="font-semibold text-danger flex items-center gap-1">
           ● {items.length} item perlu perhatian

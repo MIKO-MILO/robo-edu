@@ -121,6 +121,7 @@ export function StatCard({
         className
       )}
     >
+      {/* Header Stat Card */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1 min-w-0">
           <p className="font-body text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider truncate">
@@ -131,6 +132,7 @@ export function StatCard({
           </div>
         </div>
 
+        {/* Icon Container with Neo shadow */}
         <div
           className={cn(
             "flex size-12 items-center justify-center rounded-2xl border-2 border-border neo-shadow-icon shrink-0 transition-transform group-hover:scale-105",
@@ -141,6 +143,7 @@ export function StatCard({
         </div>
       </div>
 
+      {/* Subtitle / Trend / Badge Footer */}
       {(subtitle || trend || badgeText) && (
         <div className="mt-4 pt-3 border-t border-border/15 flex items-center justify-between gap-2 flex-wrap">
           {renderTrend()}

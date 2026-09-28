@@ -44,8 +44,22 @@ export interface AdminDashboardSummary {
   total_orders: number;
   pending_orders: number;
   total_customers?: number;
-  top_products: Array<{ product_id: UUID; name: string; total_sold: number }>;
-  low_stock_products: Array<{ product_id: UUID; variant_id: UUID; name: string; stock: number }>;
+  revenue_trend_percentage?: number;
+  top_products: Array<{
+    product_id: UUID;
+    name: string;
+    total_sold: number;
+    price?: Money;
+    category?: string;
+  }>;
+  low_stock_products: Array<{
+    product_id: UUID;
+    variant_id?: UUID;
+    name: string;
+    variant_name?: string;
+    stock: number;
+    threshold?: number;
+  }>;
 }
 
 /** Response item — GET /admin/inventory/low-stock */

@@ -94,13 +94,17 @@ export default async function AdminLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-body">
-      {/* Visual Admin Shell dengan prop role & data user - Fixed/Sticky sidebar */}
-      <div className="sticky top-0 h-screen shrink-0 z-40">
-        <AdminSidebar userRole={uppercaseRole} user={adminUserData} />
-      </div>
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground font-body">
+      {/* Visual Admin Shell dengan prop role & data user (Sidebar locked/fixed) */}
+      <AdminSidebar userRole={uppercaseRole} />
       <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden">
-        <AdminTopBar user={adminUserData} />
+        <AdminTopBar
+          user={{
+            name: user.name,
+            email: user.email,
+            role: uppercaseRole,
+          }}
+        />
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto h-full min-h-0">
           {children}
         </main>
