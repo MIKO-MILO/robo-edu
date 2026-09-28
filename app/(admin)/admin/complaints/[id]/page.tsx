@@ -58,7 +58,7 @@ export default function AdminComplaintDetailPage({
   };
 
   return (
-    <div className="space-y-6 max-h-[calc(100vh-140px)] overflow-y-auto no-scrollbar">
+    <div className="space-y-6 pt-1 pb-20 md:pb-24 max-h-[calc(100vh-6rem)] md:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-8rem)] overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {/* Header */}
       <ComplaintDetailHeader
         subject={complaint.subject}

@@ -69,7 +69,7 @@ function AdminComplaintsContent() {
   const stats = useMemo(() => getComplaintStats(), []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-1 pb-20 md:pb-24 max-h-[calc(100vh-6rem)] md:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-8rem)] overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -96,11 +96,6 @@ function AdminComplaintsContent() {
 
       {/* Main Table */}
       <ComplaintTable data={filteredComplaints} />
-
-      {/* Result count */}
-      <p className="text-xs text-muted-foreground text-right font-body">
-        Menampilkan {filteredComplaints.length} dari {MOCK_ADMIN_COMPLAINTS.length} klaim
-      </p>
     </div>
   );
 }

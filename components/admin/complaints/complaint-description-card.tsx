@@ -20,7 +20,7 @@ export function ComplaintDescriptionCard({ description }: ComplaintDescriptionCa
       </div>
 
       {/* Scrollable long-text area — comfortable reading width */}
-      <div className="bg-muted/30 rounded-xl border border-border p-4 max-h-72 overflow-y-auto custom-scrollbar">
+      <div className="bg-muted/30 rounded-xl border border-border p-4 max-h-72 overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <p className="font-body text-sm text-foreground leading-relaxed whitespace-pre-wrap">
           {description}
         </p>

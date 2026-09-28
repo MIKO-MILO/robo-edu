@@ -82,12 +82,6 @@ export function ComplaintCustomerCard({
           </div>
         )}
       </div>
-
-      {/* Helper note */}
-      <p className="text-[11px] text-muted-foreground bg-muted/60 rounded-xl p-2.5 leading-relaxed">
-        ℹ️ Hubungi customer secara manual melalui WhatsApp atau email di atas. 
-        Pesan tidak dikirim otomatis oleh sistem.
-      </p>
     </div>
   );
 }

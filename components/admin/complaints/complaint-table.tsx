@@ -34,7 +34,7 @@ export function ComplaintTable({ data, isLoading = false }: ComplaintTableProps)
 
   return (
     <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-xs">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <table className="w-full text-left border-collapse font-body text-sm">
           <thead>
             <tr className="border-b-2 border-border bg-muted/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
