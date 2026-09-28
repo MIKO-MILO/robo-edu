@@ -19,6 +19,8 @@
     "@sendgrid/mail": "^8.1.6",
     "@sentry/nextjs": "^10.73.0",
     "bullmq": "^6.3.4",
+    "@hookform/resolvers": "^5.9.1",
+    "@tanstack/react-query": "^5.102.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
@@ -28,15 +30,16 @@
     "midtrans-client": "^1.4.3",
     "minio": "^8.0.7",
     "mysql2": "^3.24.3",
-    "next": "16.3.0",
     "pino": "^10.3.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8",
     "resend": "^6.26.0",
     "server-only": "^0.0.1",
     "shadcn": "^4.18.0",
+    "next": "^16.3.5",
+    "react-dom": "19.2.8",
+    "react-hook-form": "^7.87.0",
     "tailwind-merge": "^3.6.0",
-    "zod": "^4.5.4"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

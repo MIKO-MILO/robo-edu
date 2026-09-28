@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html lang="id" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RoboEdu Checkout Page - Flat Neo (No Shadow)</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Unbounded:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#F3EFE4',
+              border: '#3D2900',
+              text: '#3D2900',
+              primary: '#2483D0',
+              'primary-hover': '#1F6FB1',
+              'primary-active': '#195C92',
+              'primary-text': '#DEECF8',
+              muted: '#8F8267',
+              'muted-bg': '#ECEAE6'
+            },
+            accent: {
+              yellow: '#FFF37E',
+              purple: '#A3B1FF',
+              'soft-blue': '#C9E9F6',
+              blue: '#8ED8FF',
+              green: '#A9E8AE',
+              pink: '#FFC0DD',
+              orange: '#FFD9A0',
+              peach: '#FFAFA3',
+              butter: '#FAF1CA'
+            }
+          },
+          fontFamily: {
+            heading: ['Unbounded', 'sans-serif'],
+            body: ['Outfit', 'sans-serif']
+          },
+          boxShadow: {
+            'neo': '4px 4px 0px 0px #3D2900',
+            'neo-sm': '2px 2px 0px 0px #3D2900',
+            'neo-lg': '6px 6px 0px 0px #3D2900',
+            'neo-hover': '2px 2px 0px 0px #3D2900'
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #F3EFE4;
+      color: #3D2900;
+      font-family: 'Outfit', sans-serif;
+    }
+    .neo-box {
+      border: 2px solid #3D2900;
+      box-shadow: 4px 4px 0px 0px #3D2900;
+      transition: all 0.15s ease-in-out;
+    }
+    .neo-box-sm {
+      border: 2px solid #3D2900;
+      box-shadow: 2px 2px 0px 0px #3D2900;
+    }
+    .neo-btn {
+      border: 2px solid #3D2900;
+      box-shadow: 4px 4px 0px 0px #3D2900;
+      transition: all 0.1s ease;
+    }
+    .neo-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px #3D2900;
+    }
+    .neo-btn:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0px 0px 0px 0px #3D2900;
+    }
+    .stepper-active {
+      background-color: #2483D0;
+      color: #DEECF8;
+      box-shadow: 2px 2px 0px 0px #3D2900;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #ECEAE6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3D2900;
+      border-radius: 4px;
+    }
+  </style>
+<style>*, .neo-box, .neo-box-sm, .neo-btn, .stepper-active, button, input, textarea { box-shadow: none !important; filter: none !important; } .neo-btn:hover, .neo-btn:active { transform: none !important; box-shadow: none !important; }</style></head>
+<body class="min-h-screen antialiased flex flex-col justify-between selection:bg-accent-yellow selection:text-brand-text">
+<!-- TOP HEADER / NAV -->
+<header class="w-full bg-[#F3EFE4] border-b-2 border-brand-border sticky top-0 z-40 bg-opacity-95 backdrop-blur">
+</header>
+<!-- STEPPER BAR -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 w-full">
+<div class="bg-white rounded-2xl p-4 sm:p-5 neo-box flex flex-wrap items-center justify-between gap-4">
+<!-- Title -->
+<div>
+<h1 class="font-heading font-black text-2xl sm:text-3xl text-brand-text tracking-tight">Checkout</h1>
+<p class="text-xs text-brand-muted mt-0.5">Konfirmasi detail pengiriman &amp; pesanan kit edukasi Anda</p>
+</div>
+<!-- Stepper Pills -->
+</div>
+</section>
+<!-- MAIN 2-COLUMN CHECKOUT CONTENT -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full flex-grow">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- ================= LEFT COLUMN (7 / 12) ================= -->
+<div class="lg:col-span-7 space-y-6">
+<!-- 1. ALAMAT PENGIRIMAN -->
+<section class="bg-white rounded-2xl p-6 neo-box">
+<div class="flex items-center justify-between pb-4 border-b-2 border-brand-border/15 mb-4">
+<div class="flex items-center gap-3">
+<span class="w-8 h-8 rounded-xl bg-accent-yellow neo-box-sm flex items-center justify-center text-sm font-black">
+                📍
+              </span>
+<div>
+<h2 class="font-heading font-extrabold text-lg text-brand-text">1. Alamat Pengiriman</h2>
+<p class="text-xs text-brand-muted">Pastikan rincian alamat dan kontak penerima sudah tepat</p>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-[#DEECF8] text-brand-primary font-bold text-xs border-2 border-brand-border neo-btn" onclick="document.getElementById('modal-address').classList.remove('hidden')">
+              + Ganti Alamat
+            </button>
+</div>
+<!-- Active Address Card (Neo-brutalist) -->
+<div class="relative bg-accent-butter/60 border-2 border-brand-border rounded-xl neo-box-sm p-5"><div class="flex items-center justify-between gap-3 mb-4 flex-wrap"><div class="flex items-center gap-2 flex-wrap"><span class="px-2.5 py-1 rounded-full bg-accent-green text-brand-text text-xs font-extrabold border border-brand-border neo-box-sm">✓ Alamat Utama</span><span class="px-2.5 py-1 rounded-full bg-white text-brand-text text-xs font-bold border border-brand-border">Lab Robotika &amp; Sekolah</span></div><div class="flex items-center gap-1.5 text-xs font-bold text-brand-primary cursor-pointer hover:underline" onclick="document.getElementById('modal-address').classList.remove('hidden')"><span class="">Kelola</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div><div class="mb-3"><div class="font-heading font-bold text-base sm:text-lg text-brand-text flex items-center gap-2.5 flex-wrap"><span class="">Fatih Al-Ghifari</span><span class="text-xs font-body font-normal text-brand-muted bg-white/80 px-2.5 py-1 rounded-md border border-brand-border/40">+62 812-9842-1109</span></div><p class="text-sm text-brand-text mt-2 leading-relaxed font-medium">Laboratorium Robotika &amp; STEM, Lantai 2 Gedung B, SMP Sains Edukasi Mandiri.<br/>Jl. Cendrawasih Raya No. 42, RT 04 / RW 08, Kel. Gandaria Utara, Kec. Cilandak, Kota Jakarta Selatan, DKI Jakarta 12140</p></div><div class="mt-4 pt-4 border-t border-brand-border/20 flex items-center justify-between flex-wrap gap-3 text-xs"><span class="text-brand-muted font-medium flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>Titik Pinpoint Maps Terkonfirmasi</span><div class="flex items-center gap-2"><button class="px-3 py-1.5 rounded-lg bg-white border border-brand-border font-semibold text-xs hover:bg-gray-50" onclick="alert('Membuka form edit alamat')">Ubah Alamat</button><button class="px-3 py-1.5 rounded-lg bg-white border border-brand-border font-semibold text-xs hover:bg-gray-50" onclick="document.getElementById('modal-address').classList.remove('hidden')">Pilih Alamat Lain</button></div></div></div>
+</section>
+<!-- 2. DAFTAR ITEM PESANAN -->
+<section class="bg-white rounded-2xl p-6 neo-box">
+<div class="flex items-center justify-between pb-3 border-b-2 border-brand-border/15 mb-4">
+<div class="flex items-center gap-3">
+<span class="w-8 h-8 rounded-xl bg-accent-soft-blue neo-box-sm flex items-center justify-center text-sm font-black">
+                🤖
+              </span>
+<div>
+<h2 class="font-heading font-extrabold text-lg text-brand-text">2. Item Pesanan (2 Produk)</h2>
+<p class="text-xs text-brand-muted">Diambil langsung dari kuota produksi RoboEdu</p>
+</div>
+</div>
+<span class="text-xs font-bold bg-accent-yellow px-2.5 py-1 rounded-full border border-brand-border neo-box-sm">
+              Made-By-Order Quota
+            </span>
+</div>
+<!-- Product Item 1 -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 rounded-xl border-2 border-brand-border bg-white hover:bg-brand-muted-bg/20 transition-all mb-3">
+<div class="flex items-center gap-3.5">
+<!-- Thumbnail 1:1 with neo frame -->
+<div class="w-20 h-20 sm:w-22 sm:h-22 rounded-xl bg-accent-pink/40 border-2 border-brand-border p-2 flex items-center justify-center shrink-0 neo-box-sm overflow-hidden">
+<svg class="w-12 h-12 text-brand-text" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 64 64">
+<rect fill="#FFF37E" height="24" rx="6" width="44" x="10" y="24"></rect>
+<circle cx="20" cy="50" fill="#3D2900" r="7"></circle>
+<circle cx="44" cy="50" fill="#3D2900" r="7"></circle>
+<rect fill="#A3B1FF" height="10" rx="3" width="20" x="22" y="14"></rect>
+<circle cx="32" cy="19" fill="#3D2900" r="2.5"></circle>
+<path d="M16 28h8v6h-8zM40 28h8v6h-8z" fill="#DEECF8"></path>
+</svg>
+</div>
+<!-- Details -->
+<div>
+<span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-accent-purple text-brand-text border border-brand-border">
+                  Kit Robotika
+                </span>
+<h3 class="font-heading font-extrabold text-sm sm:text-base text-brand-text mt-1">
+                  Robo Kit Car Pro (Advanced Assembly)
+                </h3>
+<div class="flex items-center gap-2 mt-1 flex-wrap">
+<span class="text-xs font-medium bg-gray-100 text-brand-text px-2 py-0.5 rounded border border-brand-border/40">
+                    Varian: <strong>Arduino Compatible</strong>
+</span>
+<span class="text-xs font-medium bg-gray-100 text-brand-text px-2 py-0.5 rounded border border-brand-border/40">
+                    Warna: <strong>Cobalt Blue</strong>
+</span>
+<span class="text-xs font-bold text-brand-text">Qty: 1</span>
+</div>
+<div class="mt-1 text-xs text-brand-muted">
+                  Estimasi perakitan: <span class="text-emerald-700 font-bold">Siap kirim 1 hari</span>
+</div>
+</div>
+</div>
+<!-- Price & Subtotal -->
+<div class="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-brand-border/20">
+<span class="px-2 py-0.5 text-[10px] font-black rounded bg-accent-green/60 text-emerald-900 border border-brand-border inline-block mb-1">
+                Harga Resmi
+              </span>
+<div class="font-heading font-bold text-base sm:text-lg text-brand-text">
+                Rp 350.000
+              </div>
+<div class="text-[11px] text-brand-muted">1 x Rp 350.000</div>
+</div>
+</div>
+<!-- Product Item 2 -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 rounded-xl border-2 border-brand-border bg-white hover:bg-brand-muted-bg/20 transition-all">
+<div class="flex items-center gap-3.5">
+<!-- Thumbnail 1:1 with neo frame -->
+<div class="w-20 h-20 sm:w-22 sm:h-22 rounded-xl bg-accent-yellow/40 border-2 border-brand-border p-2 flex items-center justify-center shrink-0 neo-box-sm overflow-hidden">
+<svg class="w-12 h-12 text-brand-text" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 64 64">
+<circle cx="32" cy="32" fill="#FFC0DD" r="18"></circle>
+<path d="M32 14V6M32 58V50M14 32H6M58 32H50" stroke-linecap="round"></path>
+<rect fill="#FFF37E" height="16" rx="3" width="12" x="26" y="24"></rect>
+<circle cx="32" cy="32" fill="#3D2900" r="3"></circle>
+</svg>
+</div>
+<!-- Details -->
+<div>
+<span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-accent-soft-blue text-brand-text border border-brand-border">
+                  Sparepart &amp; Sensor
+                </span>
+<h3 class="font-heading font-extrabold text-sm sm:text-base text-brand-text mt-1">
+                  High-Torque DC Dinamo Motor 12V
+                </h3>
+<div class="flex items-center gap-2 mt-1 flex-wrap">
+<span class="text-xs font-medium bg-gray-100 text-brand-text px-2 py-0.5 rounded border border-brand-border/40">
+                    Varian: <strong>Dual Shaft Metal Gear</strong>
+</span>
+<span class="text-xs font-bold text-brand-text">Qty: 2</span>
+</div>
+<div class="mt-1 text-xs text-brand-muted">
+                  Stok kuota: <span class="text-brand-text font-bold">Tersedia 48 pcs</span>
+</div>
+</div>
+</div>
+<!-- Price & Subtotal -->
+<div class="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-brand-border/20">
+<div class="font-heading font-bold text-base sm:text-lg text-brand-text">
+                Rp 100.000
+              </div>
+<div class="text-[11px] text-brand-muted">2 x Rp 50.000</div>
+</div>
+</div>
+<!-- Note on Made by Order -->
+<div class="mt-4 p-3 rounded-xl bg-accent-soft-blue/30 border border-brand-border flex items-center gap-2.5 text-xs text-brand-text font-medium">
+<svg class="w-4 h-4 text-brand-primary shrink-0" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
+</svg>
+<span class="">Semua pesanan dicek QC oleh teknisi RoboEdu dan dikemas aman dengan bubble wrap berlapis tebal.</span>
+</div>
+</section>
+<!-- 3. LAYANAN EKSPEDISI PENGIRIMAN -->
+<section class="bg-white rounded-2xl p-6 neo-box">
+<div class="flex items-center justify-between pb-3 border-b-2 border-brand-border/15 mb-4">
+<div class="flex items-center gap-3">
+<span class="w-8 h-8 rounded-xl bg-accent-green neo-box-sm flex items-center justify-center text-sm font-black">
+                🚚
+              </span>
+<div>
+<h2 class="font-heading font-extrabold text-lg text-brand-text">3. Pilihan Layanan Kurir</h2>
+<p class="text-xs text-brand-muted">Pengiriman resmi terintegrasi dengan tracking otomatis</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 border-2 border-brand-border text-xs font-black text-red-600">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              J&amp;T EXPRESS
+            </div>
+</div>
+<!-- Radio Options for Shipping -->
+<div class="space-y-3">
+<!-- Option 1: J&T Regular (Selected) -->
+<label class="relative flex items-center justify-between p-4 rounded-xl border-2 border-brand-border bg-accent-soft-blue/20 cursor-pointer neo-box-sm transition-all hover:bg-accent-soft-blue/30 block">
+<div class="flex items-center gap-3.5">
+<input checked="" class="w-5 h-5 text-brand-primary border-2 border-brand-border focus:ring-brand-primary" name="shipping" type="radio" value="regular"/>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-heading font-bold text-sm text-brand-text">J&amp;T Reguler (EZ)</span>
+<span class="px-2 py-0.2 text-[10px] font-black rounded-full bg-accent-green border border-brand-border">Paling Populer</span>
+</div>
+<p class="text-xs text-brand-muted mt-0.5">Estimasi tiba: <strong>2 - 3 Hari Kerja</strong> (Langsung antar ke alamat)</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-heading font-extrabold text-base text-brand-text">Rp 20.000</span>
+<span class="block text-[10px] text-brand-muted font-bold">Asuransi Included</span>
+</div>
+</label>
+<!-- Option 2: J&T Next Day -->
+<label class="relative flex items-center justify-between p-4 rounded-xl border-2 border-brand-border bg-white cursor-pointer hover:bg-brand-muted-bg/40 transition-all block">
+<div class="flex items-center gap-3.5">
+<input class="w-5 h-5 text-brand-primary border-2 border-brand-border focus:ring-brand-primary" name="shipping" type="radio" value="fast"/>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-heading font-bold text-sm text-brand-text">J&amp;T Fast / Next Day Super</span>
+<span class="px-2 py-0.2 text-[10px] font-black rounded-full bg-accent-yellow border border-brand-border">Prioritas Lab</span>
+</div>
+<p class="text-xs text-brand-muted mt-0.5">Estimasi tiba: <strong>1 - 2 Hari Kerja</strong> (Garansi tepat waktu)</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-heading font-extrabold text-base text-brand-text">Rp 35.000</span>
+<span class="block text-[10px] text-brand-muted font-bold">+Rp 15.000</span>
+</div>
+</label>
+</div>
+</section>
+<!-- 4. CATATAN UNTUK PENJUAL / KURIR -->
+<section class="bg-white rounded-2xl p-6 neo-box">
+<div class="flex items-center gap-3 pb-3 border-b-2 border-brand-border/15 mb-3">
+<span class="w-8 h-8 rounded-xl bg-accent-orange neo-box-sm flex items-center justify-center text-sm font-black">
+              📝
+            </span>
+<div>
+<h2 class="font-heading font-extrabold text-lg text-brand-text">4. Catatan Pengiriman <span class="text-xs font-normal text-brand-muted">(Opsional)</span></h2>
+<p class="text-xs text-brand-muted">Instruksi khusus kepada teknisi pengepakan atau petugas kurir</p>
+</div>
+</div>
+<div>
+<textarea class="w-full rounded-xl border-2 border-brand-border p-3 text-sm text-brand-text placeholder-brand-muted/70 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-accent-butter/20 font-medium" placeholder="Contoh: Paket harap dititipkan di Pos Security depan Lab Robotika bila tidak ada di tempat. Hubungi WA sebelum mengantar." rows="2"></textarea>
+</div>
+</section>
+</div>
+<!-- ================= RIGHT COLUMN (5 / 12) ================= -->
+<!-- Sticky Order Summary & Payment Action -->
+<div class="lg:col-span-5 sticky top-24 space-y-6">
+<!-- 1. VOUCHER DISKON WIDGET -->
+<div class="bg-white rounded-2xl p-6 neo-box">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded-lg bg-accent-yellow neo-box-sm flex items-center justify-center text-xs font-black">🎟️</span>
+<h3 class="font-heading font-extrabold text-base text-brand-text">Voucher &amp; Promo</h3>
+</div>
+<span class="text-xs font-bold text-brand-primary hover:underline cursor-pointer">Lihat Promo</span>
+</div>
+<!-- Active Applied Voucher Chip -->
+<div class="mb-3 p-3 rounded-xl bg-accent-green/40 border-2 border-brand-border flex items-center justify-between neo-box-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-accent-green text-brand-text border border-brand-border flex items-center justify-center text-xs font-bold">✓</span>
+<div>
+<div class="font-heading font-bold text-xs text-brand-text flex items-center gap-1.5">
+                  ROBOEDU10
+                  <span class="text-[10px] font-black bg-emerald-800 text-white px-1.5 py-0.2 rounded">Hemat 10%</span>
+</div>
+<p class="text-[11px] text-emerald-950 font-medium">Potongan diskon Rp 45.000 berhasil diterapkan</p>
+</div>
+</div>
+<button class="w-6 h-6 rounded-full bg-white border border-brand-border text-brand-text hover:bg-red-100 flex items-center justify-center text-xs font-black" title="Hapus Voucher">
+              ✕
+            </button>
+</div>
+<!-- Input Voucher Baru -->
+<div class="flex gap-2">
+<div class="relative flex-grow">
+<input class="w-full uppercase tracking-wider font-bold text-xs px-3.5 py-2.5 rounded-xl border-2 border-brand-border focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white" placeholder="Masukkan kode promo lain" type="text" value=""/>
+</div>
+<button class="px-4 py-2.5 rounded-xl bg-accent-yellow text-brand-text font-heading font-extrabold text-xs border-2 border-brand-border neo-btn shrink-0">
+              Terapkan
+            </button>
+</div>
+</div>
+<!-- 2. RINGKASAN PEMBAYARAN -->
+<div class="bg-white rounded-2xl p-6 neo-box">
+<h3 class="font-heading font-black text-lg text-brand-text mb-4 pb-2 border-b-2 border-brand-border/15">
+            Ringkasan Pembayaran
+          </h3>
+<div class="space-y-3 text-sm">
+<div class="flex justify-between items-center">
+<span class="text-brand-muted font-medium">Subtotal Produk (2 Item)</span>
+<span class="font-bold text-brand-text">Rp 450.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-brand-muted font-medium">Biaya Pengiriman (J&amp;T Regular)</span>
+<span class="font-bold text-brand-text">Rp 20.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-brand-muted font-medium">Biaya Layanan &amp; Asuransi</span>
+<span class="font-bold text-emerald-700 bg-accent-green/30 px-2 py-0.5 rounded text-xs">GRATIS</span>
+</div>
+<div class="flex justify-between items-center text-emerald-800">
+<span class="font-semibold flex items-center gap-1">
+                Diskon Promo (ROBOEDU10)
+              </span>
+<span class="font-heading font-bold text-emerald-800">-Rp 45.000</span>
+</div>
+<!-- Total Divider -->
+<div class="pt-4 mt-2 border-t-2 border-dashed border-brand-border">
+<div class="flex justify-between items-baseline">
+<div>
+<span class="text-xs font-bold uppercase text-brand-muted block">Total Pembayaran</span>
+<span class="text-[11px] text-brand-muted">Termasuk PPN &amp; Jaminan QC</span>
+</div>
+<div class="text-right">
+<span class="font-heading font-black text-2xl sm:text-3xl text-brand-text tracking-tight text-[#2483D0]">
+                    Rp 425.000
+                  </span>
+</div>
+</div>
+</div>
+</div>
+<!-- PRIMARY CTA BUTTON (Bayar Sekarang - Midtrans) -->
+<div class="mt-6">
+<button class="w-full py-4 px-6 rounded-full bg-brand-primary hover:bg-brand-primary-hover active:bg-brand-primary-active text-brand-primary-text font-heading font-black text-base border-2 border-brand-border neo-btn flex items-center justify-center gap-3" onclick="alert('Mengalihkan ke Midtrans Payment Gateway Snapshot...')" onmousedown="this.style.setProperty('transform', 'translate(4px, 4px)', 'important'); this.style.setProperty('box-shadow', 'none', 'important');" onmouseenter="this.style.setProperty('transform', 'translate(2px, 2px)', 'important'); this.style.setProperty('box-shadow', '2px 2px 0px 0px #3D2900', 'important');" onmouseleave="this.style.setProperty('transform', 'none', 'important'); this.style.setProperty('box-shadow', '4px 4px 0px 0px #3D2900', 'important');" onmouseup="this.style.setProperty('transform', 'translate(2px, 2px)', 'important'); this.style.setProperty('box-shadow', '2px 2px 0px 0px #3D2900', 'important');" style="box-shadow: 4px 4px 0px 0px #3D2900 !important; transition: all 0.1s ease; cursor: pointer;">
+<span class="">Bayar Sekarang</span>
+<span class="text-lg">→</span>
+</button>
+<p class="text-center text-[11px] text-brand-muted font-medium mt-2">
+              Dengan menekan tombol, Anda menyetujui Ketentuan Belanja RoboEdu
+            </p>
+</div>
+<!-- METODE PEMBAYARAN LOGOS -->
+<div class="mt-6 pt-5 border-t-2 border-brand-border/15">
+<span class="text-[11px] font-bold uppercase text-brand-muted tracking-wider block mb-3 text-center">
+              Didukung Pembayaran Instan &amp; Otomatis:
+            </span>
+<div class="grid grid-cols-4 gap-2 items-center justify-center">
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-blue-800">
+                BCA
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-orange-600">
+                BNI
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-blue-600">
+                BRI
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-yellow-600">
+                Mandiri
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-blue-500">
+                QRIS
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-emerald-600">
+                GoPay
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-orange-500">
+                ShopeePay
+              </div>
+<div class="h-9 rounded-lg border border-brand-border/40 bg-white flex items-center justify-center p-1 text-[11px] font-black text-blue-700">
+                DANA
+              </div>
+</div>
+</div>
+<!-- TRUST BADGES -->
+<div class="mt-5 space-y-2.5 pt-4 border-t border-brand-border/20 text-xs">
+<div class="flex items-start gap-2.5 text-brand-text">
+<span class="text-base leading-none">🛡️</span>
+<span class="font-medium">100% Pembayaran Aman via Midtrans Payment Gateway</span>
+</div>
+<div class="flex items-start gap-2.5 text-brand-text">
+<span class="text-base leading-none">📦</span>
+<span class="font-medium">Garansi Resmi &amp; Penggantian Komponen Kit Cacat Pabrik</span>
+</div>
+<div class="flex items-start gap-2.5 text-brand-text">
+<span class="text-base leading-none">✉️</span>
+<span class="font-medium">Invoice otomatis &amp; nomor resi dikirimkan ke Email &amp; WhatsApp</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- MODAL: PILIH / TAMBAH ALAMAT PENGIRIMAN (Neo-brutalism Dialog) -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden" id="modal-address">
+<div class="bg-[#F3EFE4] border-4 border-brand-border rounded-2xl w-full max-w-xl p-6 neo-box relative max-h-[90vh] overflow-y-auto">
+<!-- Close Button -->
+<button class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white border-2 border-brand-border flex items-center justify-center font-bold text-brand-text hover:bg-accent-pink neo-btn" onclick="document.getElementById('modal-address').classList.add('hidden')">
+        ✕
+      </button>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xl">📍</span>
+<h3 class="font-heading font-black text-xl text-brand-text">Daftar Alamat Pengiriman</h3>
+</div>
+<p class="text-xs text-brand-muted mb-4">Pilih alamat tujuan paket atau daftarkan alamat baru</p>
+<!-- List of Addresses -->
+<div class="space-y-3 mb-5">
+<!-- Address 1 (Active) -->
+<div class="p-4 rounded-xl border-2 border-brand-border bg-accent-butter/60 neo-box-sm cursor-pointer relative p-5"><div class="flex items-center justify-between gap-3 mb-4 flex-wrap"><div class="flex items-center gap-2 flex-wrap"><span class="px-2.5 py-1 rounded-full bg-accent-green text-brand-text text-xs font-extrabold border border-brand-border neo-box-sm">✓ Alamat Utama</span><span class="px-2.5 py-1 rounded-full bg-white text-brand-text text-xs font-bold border border-brand-border">Lab Robotika &amp; Sekolah</span></div><div class="flex items-center gap-1.5 text-xs font-bold text-brand-primary cursor-pointer hover:underline" onclick="document.getElementById('modal-address').classList.remove('hidden')"><span class="">Kelola</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div><div class="mb-3"><div class="font-heading font-bold text-base sm:text-lg text-brand-text flex items-center gap-2.5 flex-wrap"><span class="">Fatih Al-Ghifari</span><span class="text-xs font-body font-normal text-brand-muted bg-white/80 px-2.5 py-1 rounded-md border border-brand-border/40">+62 812-9842-1109</span></div><p class="text-sm text-brand-text mt-2 leading-relaxed font-medium">Laboratorium Robotika &amp; STEM, Lantai 2 Gedung B, SMP Sains Edukasi Mandiri.<br/>Jl. Cendrawasih Raya No. 42, RT 04 / RW 08, Kel. Gandaria Utara, Kec. Cilandak, Kota Jakarta Selatan, DKI Jakarta 12140</p></div><div class="mt-4 pt-4 border-t border-brand-border/20 flex items-center justify-between flex-wrap gap-3 text-xs"><span class="text-brand-muted font-medium flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>Titik Pinpoint Maps Terkonfirmasi</span><div class="flex items-center gap-2"><button class="px-3 py-1.5 rounded-lg bg-white border border-brand-border font-semibold text-xs hover:bg-gray-50" onclick="alert('Membuka form edit alamat')">Ubah Alamat</button><button class="px-3 py-1.5 rounded-lg bg-white border border-brand-border font-semibold text-xs hover:bg-gray-50" onclick="document.getElementById('modal-address').classList.remove('hidden')">Pilih Alamat Lain</button></div></div></div>
+<!-- Address 2 (Alternative) -->
+<div class="p-4 rounded-xl border-2 border-brand-border bg-white hover:bg-accent-soft-blue/20 neo-box-sm cursor-pointer transition-all" onclick="document.getElementById('modal-address').classList.add('hidden')">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs font-bold text-brand-text bg-gray-100 px-2 py-0.5 rounded border border-brand-border/40">Rumah Pribadi</span>
+<span class="text-xs font-bold text-brand-primary">Pilih Alamat Ini →</span>
+</div>
+<div class="font-heading font-bold text-sm text-brand-text">Fatih Al-Ghifari (Rumah) (+62 812-9842-1109)</div>
+<p class="text-xs text-brand-text mt-1 leading-relaxed">
+            Kompleks Duta Indah Blok C3 No. 12, Kel. Pondok Pinang, Kec. Kebayoran Lama, Jakarta Selatan 12310
+          </p>
+</div>
+</div>
+<!-- Add New Address Button -->
+<div class="pt-3 border-t-2 border-brand-border/20 flex gap-3">
+<button class="flex-1 py-2.5 px-4 rounded-xl bg-accent-yellow border-2 border-brand-border font-heading font-extrabold text-xs text-brand-text neo-btn flex items-center justify-center gap-2" onclick="alert('Formulir tambah alamat baru akan dimuat')">
+<span class="">+ Tambah Alamat Baru</span>
+</button>
+<button class="py-2.5 px-4 rounded-xl bg-white border-2 border-brand-border font-bold text-xs text-brand-text neo-btn" onclick="document.getElementById('modal-address').classList.add('hidden')">
+          Tutup
+        </button>
+</div>
+</div>
+</div>
+<!-- MINIMAL FOOTER -->
+</body></html>

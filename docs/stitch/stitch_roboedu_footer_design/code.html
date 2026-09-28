@@ -1,0 +1,202 @@
+<!DOCTYPE html><html lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Roboedu Footer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&amp;family=Unbounded:wght@500;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#e9e3c9",
+                        "tertiary": "#855000",
+                        "tertiary-fixed-dim": "#ffb869",
+                        "primary-fixed-dim": "#9acbff",
+                        "primary-fixed": "#d0e4ff",
+                        "inverse-surface": "#313030",
+                        "surface-tint": "#00629f",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#404751",
+                        "secondary-fixed": "#e9e3c9",
+                        "surface-bright": "#fcf9f8",
+                        "primary": "#00609b",
+                        "on-tertiary-container": "#fffbff",
+                        "on-primary-fixed-variant": "#004a79",
+                        "secondary-fixed-dim": "#ccc7ae",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-secondary-fixed-variant": "#4a4735",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#9acbff",
+                        "surface-dim": "#dcd9d9",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e5e2e1",
+                        "error": "#ba1a1a",
+                        "secondary": "#625f4b",
+                        "outline-variant": "#c0c7d2",
+                        "surface-container": "#f0eded",
+                        "on-background": "#1c1b1b",
+                        "on-secondary-container": "#686550",
+                        "surface": "#fcf9f8",
+                        "on-secondary-fixed": "#1e1c0c",
+                        "on-tertiary-fixed-variant": "#673d00",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdcbb",
+                        "on-tertiary-fixed": "#2c1700",
+                        "tertiary-container": "#a76500",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#0a79c1",
+                        "outline": "#707882",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#001d34",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "on-primary-container": "#fdfcff",
+                        "surface-container-high": "#eae7e7",
+                        "background": "#fcf9f8",
+                        "surface-container-low": "#f6f3f2"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "sm": "12px",
+                        "xl": "80px",
+                        "lg": "48px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "md": "24px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "margin-mobile": "16px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Outfit"],
+                        "headline-lg": ["Unbounded"],
+                        "headline-md": ["Unbounded"],
+                        "display-hero": ["Unbounded"],
+                        "headline-lg-mobile": ["Unbounded"],
+                        "body-lg": ["Outfit"],
+                        "body-md": ["Outfit"],
+                        "label-sm": ["Outfit"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { lineHeight: "140%", letterSpacing: "0.02em", fontWeight: "600" }],
+                        "headline-lg": ["48px", { lineHeight: "120%", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "130%", fontWeight: "600" }],
+                        "display-hero": ["120px", { lineHeight: "110%", letterSpacing: "-0.04em", fontWeight: "900" }],
+                        "headline-lg-mobile": ["32px", { lineHeight: "120%", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "160%", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "160%", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "140%", fontWeight: "500" }]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-surface-container-lowest min-h-screen flex flex-col justify-end">
+<!-- Top Navigation (Mocked for context, matching shared component) -->
+<nav class="bg-primary dark:bg-primary flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 sticky top-0 z-50"></nav>
+<!-- Main Content Area Placeholder to push footer down -->
+<main class="flex-grow flex items-center justify-center bg-secondary-container">
+<!-- Ticker Tape Section -->
+<div class="w-full overflow-hidden bg-secondary-container py-4 border-t border-b border-primary/10">
+<div class="flex whitespace-nowrap animate-[marquee_20s_linear_infinite]">
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+<div class="text-primary font-headline-md text-headline-md font-bold px-4 flex items-center gap-2">
+                    roboedu <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+</div>
+</div>
+<style>
+            @keyframes marquee {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+            }
+        </style>
+</main>
+<!-- Footer -->
+<footer class="text-on-primary w-full flex flex-col pt-xl px-margin-mobile md:px-margin-desktop overflow-hidden relative" style="background-color: rgb(36, 131, 208);">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-xl w-full max-w-[1440px] mx-auto z-10">
+<!-- Column 1: Jelajahi Roboedu -->
+<div class="md:col-span-3 flex flex-col gap-sm">
+<h3 class="font-headline-md text-headline-md text-on-primary tracking-[-0.06em] mb-4">Jelajahi Roboedu</h3>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Fitur 1</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Fitur 2</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Fitur 3</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Fitur 4</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Fitur 5</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Fitur 6</a>
+</div>
+<!-- Column 2: Layanan -->
+<div class="md:col-span-3 flex flex-col gap-sm">
+<h3 class="font-headline-md text-headline-md text-on-primary tracking-[-0.06em] mb-4">Layanan</h3>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Layanan 1</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Layanan 2</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Layanan 3</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Layanan 4</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Layanan 5</a>
+<a class="font-body-md text-body-md text-on-primary hover:text-secondary-container transition-colors duration-200" href="#">Layanan 6</a>
+</div>
+<!-- Column 3: Metode Pembayaran -->
+<div class="md:col-span-4 flex flex-col gap-sm">
+<h3 class="font-headline-md text-headline-md text-on-primary tracking-[-0.06em] mb-4">Metode Pembayaran</h3>
+<div class="grid grid-cols-3 gap-4 items-center">
+<img alt="BNI" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnUNd1KNNBHjg4zN8gLn0_SYq4PW1l21Gxhh5Z_v0gzKJoFR1__uv2LUo4W4-HcVzED5pt4wtZIotJYRjuFPqQ58pmVxh7-Xkyw-MGdvqnNgvVig6FQ7yryht1udNdjNqGdBEA18QYY7r8gDGiejvSi-qO4VxPmiF5cHlGQPVdKah5ZKxJ1Rsey7NH6FZ9TdfB5f_1DtafA1GGa8ZKNRahBRvOuu7VBjjIWl3BPZQ7zKrmpe_l9tVuIz505vGxx2c0SQ">
+<img alt="BRI" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpkAPdZQL6IHnhOpd7Uf78szAutjh1g42k5y7tyxtR7P09Mk00efmjZ1gEV7i84O2zFiwFDgvB27d2hwBfc8NgLm1UIdU95SMzO95FCe0UBRqFObrba4OGGMsebNZlZR8FA5qG5D3_Xp-k1M3JL4QwFtyYPxXKlEfXwaO7yRbYN4eFZJwvYd2HWcrvd8QCYwlPNXAPp6dM4tYSJqHUl79eeHPIG8lPcxgvfF-hTbl7z6sLNaTPCSG9dlUCkdIzlKD_zw">
+<div></div> <!-- Empty spacer -->
+<img alt="DANA" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOi8GA8MyKdllWLOilFcSyjOSWKWE-g2Uj57-y1CK4UkdIFY7E98qPxKLOB1GgjYOAxT97HM95dZlcbqCdcN_hzGv7SHdNXQkix5Le_Uz6mmBFibATm3h4qYU1MisGi9C3LL_MAY1bFS3hRRBldInqtB-sJ---QxGYqgJQaqGqOThsyqPOs1gnytL2AOIghQ1YSCfGsZkyf3g_fNw-DFfppi3zdS_lMPUyf8O9V9V9uhnVuAEF1aY8UakUHoWo6vG18g">
+<img alt="ShopeePay" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6LtZTaQ7OFun7RthwT4r2wpLrucbbQSQ434pb-OA0FF40YSBQhh1MpiUFR6hthhrTJDdN9_vtFRHo9wWfa-26mbOZE2tesBZ2L4X8ofbrFt-kt4Np9pd76wsYqmPk_xNcw2wrNMQAX7tdrhoBFDqJwug_X3RDesHF3iHqNsRVof2-Vuvo_-XMXVpsxAeq6N-ONpewBpIEZm6UaSwe48oY5enQbiN0uWoHK1gEJwEgSAsXYg4_FTqihR-vwnmCVvFjqw">
+<img alt="Google Pay" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZtvsVcd9v7wdQe4TvsPM5QjEAAL5h8KuySh67UGiWUozH91z5iMHp-KYybI5xP_IJEYEp4PuDVWTzGVYhuabkVJHh8jYFQLuWh1lGXy8hJR-_mWzhZ-Ef-MwiO889WQPdcKArQAP_P1eL7qRKThE4AKUaSjJ6J6DrTV5s-McCasIjD10-Luxc_T3qQDoFPZLIQ3FvF2pk1Z3_jHJg1ZdArCdftA74vQA-siff6Y2ztqNXCPTJtzrROyrcb_4c7M9BCw">
+<img alt="QRIS" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAKlFao1cn6yiQ8ozAT0e9Hxgjv71rlIWPOx_DFv8F_6V5EBkRrK-KKsLjkhjiZgZKKmIg2LN6LE66cj0NRqvPzhkOpJriW-ga5V8gmSh_23dyiaqaqtjlFxhXZZTr55xdh1Xruz55gzvTJljib3RVBR4TpJBmjpGdbjvhzddNeHO2FbU-S2IJ5Ka6exNltHCTAqrNcBlnc2fdAkoFddsS7lx1gXwxd0UxAqEeq2h3N2It9Bu_bRSlAAdufUzQktvw5A">
+</div>
+</div>
+<!-- Column 4: Ikuti Kami -->
+<div class="md:col-span-2 flex flex-col gap-sm">
+<h3 class="font-headline-md text-headline-md text-on-primary tracking-[-0.06em] mb-4">Ikuti Kami</h3>
+<!-- Social links could go here -->
+</div>
+</div>
+<!-- Huge Brand Name -->
+<div class="w-full flex justify-center items-end mt-auto -mb-[5%] z-0">
+<span class="font-display-hero text-[120px] md:text-[256px] font-black text-secondary-container tracking-[-0.03em] leading-[1.1] md:leading-[317px]">roboedu</span>
+</div>
+<!-- Copyright / Legal (Hidden in visual reference but good practice, keeping it subtle) -->
+<div class="w-full text-center py-4 text-on-primary/50 font-body-md text-sm mt-8 z-10">
+            © 2024 roboedu. All rights reserved.
+        </div>
+</footer>
+</body></html>

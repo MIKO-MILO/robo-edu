@@ -279,8 +279,9 @@ function OrdersContent() {
           </div>
         </header>
 
-        {/* ── Filter Tabs & Period ─────────────────────────────────── */}
-        <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-muted/30 p-2 sm:p-3 rounded-2xl border-2 border-foreground neo-shadow">
+        {/* ── Filter Tabs & Controls Row ──────────────────── */}
+        <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-muted/30 p-2 sm:p-3 rounded-2xl border-2 border-foreground">
+          {/* Status Tabs */}
           <OrderStatusTabs
             activeTab={activeTab}
             onTabChange={handleTabChange}

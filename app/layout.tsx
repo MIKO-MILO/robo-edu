@@ -2,6 +2,7 @@ import { Unbounded, Outfit } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ReactQueryProvider } from "@/components/providers/query-provider";
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -30,13 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="font-body bg-background text-foreground" suppressHydrationWarning>
-        {children}
-        {/* Midtrans Snap.js — loaded once, available as window.snap globally */}
-        <Script
-          src={MIDTRANS_SNAP_URL}
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-          strategy="lazyOnload"
-        />
+        <ReactQueryProvider>{children}</ReactQueryProvider>
       </body>
     </html>
   );

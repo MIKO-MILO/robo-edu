@@ -94,7 +94,7 @@ export default function Navbar() {
         <Link
           href="/cart"
           aria-label="Shopping Basket"
-          className="transition-opacity hover:opacity-80"
+          className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
             src="/assets/svg/icon-cart.svg"
