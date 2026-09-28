@@ -4,47 +4,58 @@ import Image from "next/image";
 
 export default function HeroRobot() {
   return (
-    <div className="relative w-full max-w-[170px] min-[400px]:max-w-[190px] sm:max-w-[230px] md:max-w-[260px] lg:max-w-[290px] aspect-[269/449] mx-auto flex items-center justify-center">
-      {/* Decorative background glow behind robot */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] rounded-full blur-2xl opacity-50 pointer-events-none -z-10 bg-accent-yellow/40"
-      />
-
-      {/* Robot Wrapper */}
+    /* Ukuran max-w & posisi robot tetap sama, hanya aspek tinggi dipotong dikit saja (449 -> 410) */
+    <div className="relative w-full max-w-[220px] min-[400px]:max-w-[250px] sm:max-w-[300px] md:max-w-[350px] lg:max-w-[390px] aspect-[269/410] mx-auto flex items-center justify-center p-0 m-0">
+      {/* Robot Container */}
       <div className="relative w-full h-full">
-        {/* Waving Hand Container */}
+        {/* Left Hand (hand1.webp) */}
         <div
-          className="absolute z-0 pointer-events-none"
+          className="absolute z-20 pointer-events-none"
           style={{
-            width: "52%",
-            height: "40%",
-            left: "63%", 
-            top: "24%",
-            transform: "translateX(27%)",
+            width: "33%",
+            height: "33%",
+            left: "-15%",
+            top: "25%",
           }}
         >
-          {/* Waving Hand */}
-          <div
-            className="relative w-full h-full animate-waving-hand"
-            style={{
-              transformOrigin: "20% 82%",
-            }}
-          >
+          <div className="relative w-full h-full animate-waving-hand-left">
             <Image
-              src="/images/hand.png"
-              alt="RoboEdu Robot Waving Hand"
+              src="/images/hand1.webp"
+              alt="Robot Left Hand"
               fill
-              sizes="(max-width: 768px) 100vw, 300px"
-              className="object-contain object-right"
+              sizes="(max-width: 768px) 100vw, 200px"
+              className="object-contain"
               priority
             />
           </div>
         </div>
 
-        {/* Robot Body */}
-        <div className="relative z-10 w-full h-full pointer-events-none">
+        {/* Right Hand (hand2.webp) */}
+        <div
+          className="absolute z-20 pointer-events-none"
+          style={{
+            width: "40%",
+            height: "40%",
+            right: "-21%",
+            top: "36%",
+          }}
+        >
+          <div className="relative w-full h-full animate-waving-hand-right">
+            <Image
+              src="/images/hand2.webp"
+              alt="Robot Right Hand"
+              fill
+              sizes="(max-width: 768px) 100vw, 200px"
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Robot Body (body.webp) */}
+        <div className="relative z-10 w-full h-full pointer-events-none translate-y-3">
           <Image
-            src="/images/body.png"
+            src="/images/body.webp"
             alt="RoboEdu Robot Body"
             fill
             sizes="(max-width: 768px) 100vw, 400px"
@@ -53,6 +64,33 @@ export default function HeroRobot() {
           />
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes wave-hand-left {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-8px) rotate(-10deg);
+          }
+        }
+        @keyframes wave-hand-right {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-8px) rotate(10deg);
+          }
+        }
+        .animate-waving-hand-left {
+          animation: wave-hand-left 2.5s ease-in-out infinite;
+          transform-origin: 90% 75%;
+        }
+        .animate-waving-hand-right {
+          animation: wave-hand-right 2.5s ease-in-out infinite;
+          transform-origin: 10% 75%;
+        }
+      `}</style>
     </div>
   );
 }

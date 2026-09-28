@@ -31,19 +31,6 @@ const defaultFeatures: FeaturePoint[] = [
   { id: 4, label: "Mudah Dirakit (DIY)" },
 ];
 
-function FeatureItem({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-2.5 sm:gap-3 group">
-      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#F3EFE4] border-2 border-[#2483D0] text-[#2483D0] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-110">
-        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
-      </div>
-      <span className="font-heading font-extrabold text-xs sm:text-sm text-[#3D2900] tracking-tight">
-        {label}
-      </span>
-    </div>
-  );
-}
-
 export default function ICardsInfo({
   badgeCategory = "Tentang Kami",
   titleMain = "Aman, Seru & Edukatif —",
@@ -52,93 +39,102 @@ export default function ICardsInfo({
   statNumber = "Usia 6+",
   statLabel = "Mainan IoT Edukatif",
   features = defaultFeatures,
-  ctaText = "Jelajahi Produk",
-  ctaHref = "/product",
-  imageSrc = "/images/11.png",
+  imageSrc = "/images/robot.webp",
 }: CardsInfoProps) {
   return (
-    <section className="relative bg-[#F3EFE4] py-10 sm:py-16 lg:py-26 overflow-hidden">
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="relative bg-[#2781CD] pt-20 sm:pt-24 pb-10 sm:pb-16 lg:pb-18">
+      {/* SVG Dekorasi Jalur di Kiri (Digeser lebih ke kiri) */}
+      <div className="absolute -left-2 sm:-left-4 -top-[70px] sm:-top-[100px] pointer-events-none z-40 opacity-100 overflow-visible max-w-full">
+        <svg
+          width="431"
+          height="402"
+          viewBox="0 0 431 402"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-auto h-[360px] sm:h-[450px]"
+        >
+          <path
+            d="M404.742 4.47607C404.742 4.47607 427.039 101.332 380.571 134.809C293.828 197.301 98.869 53.1084 64.2422 156.976C32.605 251.876 256.203 228.354 221.242 321.976C199.727 379.591 0.242188 381.976 0.242188 381.976"
+            stroke="#F2F5FC"
+            strokeOpacity="0.2"
+            strokeWidth="40"
+          />
+        </svg>
+      </div>
+
+      {/* SVG Dekorasi Jalur di Kanan */}
+      <div className="absolute right-0 -top-[80px] sm:-top-[130px] pointer-events-none z-40 opacity-40 overflow-visible max-w-full">
+        <svg
+          width="276"
+          height="511"
+          viewBox="0 0 276 511"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-auto h-[380px] sm:h-[480px]"
+        >
+          <path
+            d="M77.5012 9.67627C77.5012 9.67627 -32.6856 208.765 52.0012 236.176C100.332 251.82 152.599 170.739 194 200.176C237.126 230.84 203.5 304.676 177.001 335.676C144.186 374.066 98.3794 396.303 109.001 445.676C122.786 509.754 272.001 485.676 272.001 485.676"
+            stroke="white"
+            strokeOpacity="0.4"
+            strokeWidth="40"
+          />
+        </svg>
+      </div>
+
+      {/* Cloud Bumps Divider */}
+      <div className="absolute -top-[135px] sm:-top-[175px] lg:-top-[215px] left-0 right-0 w-full overflow-hidden leading-none z-30 pointer-events-none">
+        <svg
+          viewBox="0 0 1440 280"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-[140px] sm:h-[180px] lg:h-[220px] block"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M 0 280
+               L 0 150
+               C 15 20, 185 20, 215 160
+               C 235 90, 345 90, 365 165
+               C 380 135, 410 135, 425 170
+               C 455 100, 560 100, 580 168
+               C 620 5, 930 5, 960 160
+               C 995 15, 1260 15, 1285 170
+               C 1315 80, 1420 70, 1440 140
+               L 1440 280
+               Z"
+            fill="#2781CD"
+          />
+        </svg>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mt-2 sm:mt-4 lg:mt-6">
+        {/* Grid Konten Kiri & Kanan */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          
-          {/* LEFT COLUMN: SVG Blob Design + Image 11.png + Badge */}
-          <div className="lg:col-span-6 flex justify-center items-center relative">
-            <div className="relative w-full max-w-[480px] sm:max-w-[550px] lg:max-w-[620px] aspect-[773/583] flex items-center justify-center">
-              
-              {/* Custom SVG Background (Latar Belakang Blob - Tidak Diubah) */}
-              <svg
-                viewBox="0 0 773 583"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="absolute inset-0 w-full h-full object-contain z-0 scale-[0.82] sm:scale-85 translate-y-8 sm:translate-y-10"
-              >
-                <path
-                  d="M162.184 14.5394C250.968 -36.2552 315.938 62.4553 416.871 61.1634C511.214 59.9558 572.583 -35.1339 654.415 14.5394C740.069 66.5323 715.959 166.333 730.332 269.676C743.554 364.75 798.896 403.813 756.045 488.55C681.55 635.864 481.904 571.514 325.036 552.011C203.808 536.938 56.5773 577.714 9.12435 458.763C-22.1885 380.27 35.4192 334.954 56.8804 252.84C82.7581 153.828 76.7585 63.4122 162.184 14.5394Z"
-                  fill="#F2E583"
-                />
-              </svg>
 
-            {/* Container Gambar + Bayangan di Bawah */}
-<div className="absolute w-[calc(100%-3px)] h-[calc(100%-3px)] z-10 bottom-8 sm:bottom-14 flex flex-col items-center justify-end">
-  {/* Gambar 11.png */}
-  <div className="relative w-full h-full">
-    <Image
-      src={imageSrc}
-      alt="Feature Visual"
-      fill
-      className="object-contain drop-shadow-lg"
-      priority
-    />
-  </div>
-
-</div>
-
-              {/* SVG Badge Biru (Diperkecil) */}
-              <div className="absolute bottom-4 right-1 sm:bottom-8 sm:right-4 z-20 w-[105px] sm:w-[130px] aspect-[304/324]">
-                <div className="relative w-full h-full flex items-center justify-center text-center">
-                  
-                  {/* Custom Blue Badge SVG */}
-                  <svg
-                    viewBox="0 0 304 324"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="absolute inset-0 w-full h-full object-contain drop-shadow-md"
-                  >
-                    <path
-                      d="M144.498 25.078C178.558 -0.909245 223.969 54.9436 250.605 88.0787C282.574 127.848 312.2 156.947 300.725 206.952C277.998 305.999 172.498 323.999 154.498 323.999C53.3287 323.999 14.0315 267.765 13.9981 179.295C13.9825 137.983 68.6883 82.9203 144.498 25.078Z"
-                      fill="#558FBD"
-                    />
-                    <path
-                      d="M26.3056 97.5803C83.66 20.037 144.571 -12.6343 166.998 10.0781C189.425 32.7905 274.065 110.873 285.535 164.046C302.215 241.367 171.922 323.649 114.586 312.571C24.7118 295.207 -31.0487 175.124 26.3056 97.5803Z"
-                      stroke="#FFFFFF"
-                      strokeWidth="6"
-                    />
-                  </svg>
-
-                  {/* Teks Usia 6+ Warna Putih */}
-                  <div className="relative z-10 flex items-center justify-center px-2">
-                    <span className="font-heading text-base sm:text-lg font-semibold text-white leading-tight">
-                      Usia 6+
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-
+          {/* LEFT COLUMN: Cloud Image */}
+          <div className="lg:col-span-6 flex justify-center items-center relative overflow-visible">
+            <div className="relative w-full aspect-square sm:aspect-[4/3] flex items-center justify-center scale-100 sm:scale-110 lg:scale-120">
+              <Image
+                src={imageSrc}
+                alt="Cloud Visual"
+                fill
+                className="object-contain drop-shadow-lg"
+                priority
+              />
             </div>
           </div>
 
           {/* RIGHT COLUMN: Text & Details */}
           <div className="lg:col-span-6 flex flex-col items-start space-y-5 sm:space-y-6 text-left">
-            
-           <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#FAEE7C] text-[#3D2900] text-xs sm:text-sm font-extrabold tracking-wide uppercase shadow-sm">
-  {badgeCategory}
-</span>
+            <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#FAEE7C] text-[#3D2900] text-xs sm:text-sm font-extrabold tracking-wide uppercase shadow-sm">
+              {badgeCategory}
+            </span>
+
             {/* Heading Section */}
             <div className="relative w-full pb-6 sm:pb-8">
-              <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#3D2900] tracking-tight leading-snug relative z-10">
+              <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-white tracking-tight leading-snug relative z-10">
                 {titleMain}{" "}
-                <span className="block sm:inline text-[#3D2900]">
+                <span className="block sm:inline text-white">
                   {titleHighlight}
                 </span>
               </h2>
@@ -166,29 +162,22 @@ export default function ICardsInfo({
               </div>
             </div>
 
-            <p className="font-body text-sm sm:text-base text-[#5C4A27] leading-relaxed max-w-xl font-normal pt-1">
+            <p className="font-body text-sm sm:text-base text-white/90 leading-relaxed max-w-xl font-normal pt-1">
               {description}
             </p>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full pt-1">
               {features.map((feature) => (
-                <FeatureItem key={feature.id} label={feature.label} />
+                <div key={feature.id} className="flex items-center gap-2.5 sm:gap-3 group">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/20 border-2 border-white text-white flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                  </div>
+                  <span className="font-heading font-extrabold text-xs sm:text-sm text-white tracking-tight">
+                    {feature.label}
+                  </span>
+                </div>
               ))}
             </div>
-
-            <div className="pt-3 w-full sm:w-auto">
-              <Link
-                href={ctaHref}
-                className={cn(
-                  buttonVariants({ variant: "accent-orange", size: "lg", neo: true }),
-                  "w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-extrabold text-white bg-[#558FBD] hover:bg-[#257CC4] rounded-full transition-all duration-200 inline-flex items-center justify-center gap-2"
-                )}
-              >
-                <span>{ctaText}</span>
-                <ArrowRight className="w-4 h-4 stroke-[3]" />
-              </Link>
-            </div>
-
           </div>
 
         </div>

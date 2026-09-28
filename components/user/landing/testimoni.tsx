@@ -106,7 +106,7 @@ function TestimonialCard({ item }: { item: Testimonial }) {
         <div className="relative z-10 flex flex-col justify-between h-full pt-1 sm:pt-2">
           {/* Header Card */}
           <div className="flex items-center gap-2.5 xs:gap-3 pt-1 mb-2 sm:mb-3">
-            <div className="relative w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full bg-[#FFF37E] overflow-hidden shrink-0 flex items-center justify-center border border-[#3D2900]/10">
+            <div className="relative w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full bg-[#2781CD] overflow-hidden shrink-0 flex items-center justify-center border border-[#3D2900]/10">
               <Image
                 src={item.avatar}
                 alt={`Avatar ${item.name}`}
@@ -188,7 +188,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
   ];
 
   return (
-    <section className="relative bg-[#558FBD] text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
+    <section className="relative bg-[#2781CD] text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
       {/* Lengkungan Atas */}
       <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none" aria-hidden="true">
         <svg
@@ -290,22 +290,22 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
         </div>
       </div>
 
-      {/* Bagian Bawah: Bayangan Medium Gelap */}
+      {/* Bagian Bawah: Bayangan Gelap Harmonis */}
       <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
-        {/* Gradasi Linear untuk Bayangan Kedua (#305C85) */}
+        {/* Gradasi Linear untuk Bayangan Kedua */}
         <svg width="0" height="0" className="absolute block">
           <defs>
             <linearGradient id="shadowRightFade" x1="20%" y1="0%" x2="90%" y2="0%">
-              <stop offset="0%" stopColor="#305C85" stopOpacity="0" />
-              <stop offset="45%" stopColor="#305C85" stopOpacity="0.35" />
-              <stop offset="95%" stopColor="#305C85" stopOpacity="0.70" />
+              <stop offset="0%" stopColor="#1B5D96" stopOpacity="0" />
+              <stop offset="45%" stopColor="#1B5D96" stopOpacity="0.35" />
+              <stop offset="95%" stopColor="#1B5D96" stopOpacity="0.70" />
             </linearGradient>
           </defs>
         </svg>
 
-        {/* Lapisan Bayangan Pertama (#376996) */}
+        {/* Lapisan Bayangan Pertama */}
         <svg
-          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 text-[#376996] -translate-y-5 sm:-translate-y-7 lg:-translate-y-9 z-10 overflow-visible"
+          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 text-[#1E68A8] -translate-y-5 sm:-translate-y-7 lg:-translate-y-9 z-10 overflow-visible"
           viewBox="0 0 1440 120"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"

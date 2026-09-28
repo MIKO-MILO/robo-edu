@@ -3,6 +3,7 @@
 import { useState, useId } from "react";
 import Image from "next/image";
 import { ChevronDown, HelpCircle, type LucideIcon } from "lucide-react";
+import HeroRobot from "./robot";
 
 // ==========================================
 // 1. TYPE DEFINITIONS & CONFIGS (Backend-Ready)
@@ -201,75 +202,61 @@ function PromoThumbnail({
 
 // Organism: Promo Banner
 function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) {
-  const leftThumbnails = data.thumbnails.slice(0, 2);
-  const rightThumbnails = data.thumbnails.slice(2, 4);
+  const leftTop = data.thumbnails[0];
+  const leftBottom = data.thumbnails[1];
+  const rightThumb = data.thumbnails[2];
 
   return (
-    <div className="relative w-full h-[400px] md:h-[540px] lg:h-[600px] xl:h-[640px] 2xl:h-[700px] bg-background">
+    <div className="relative w-full h-[400px] md:h-[540px] lg:h-[600px] xl:h-[640px] 2xl:h-[700px] bg-background overflow-hidden">
       <div className="max-w-6xl mx-auto h-full px-6 lg:px-8 relative flex items-center justify-between">
         
-        {/* Header Text */}
-        <div className="absolute top-6 md:top-16 lg:top-24 xl:top-20 2xl:top-24 left-1/2 -translate-x-1/2 text-center z-20 w-full max-w-5xl px-4 pointer-events-none">
-          <h1 className="font-heading text-base md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-[#18598D] tracking-tight whitespace-normal md:whitespace-nowrap leading-snug md:leading-normal mb-2 sm:mb-3 px-2 sm:px-0">
+        {/* Header Text - Centered with smaller font */}
+        <div className="absolute top-4 md:top-8 lg:top-12 xl:top-10 left-1/2 -translate-x-1/2 text-center z-20 w-full max-w-3xl px-4 pointer-events-none">
+          <h1 className="font-heading text-sm md:text-xl lg:text-2xl xl:text-3xl font-bold text-[#18598D] tracking-tight leading-snug mb-1.5 md:mb-2 text-center">
             {data.title}
           </h1>
-          <p className="font-body text-[11px] md:text-sm lg:text-base 2xl:text-lg font-medium text-secondary leading-relaxed whitespace-normal md:whitespace-nowrap text-center max-w-xs md:max-w-none mx-auto">
+          <p className="font-body text-[10px] md:text-xs lg:text-sm font-medium text-secondary leading-relaxed text-center max-w-lg mx-auto">
             {data.description}
           </p>
         </div>
 
-        {/* Thumbnail Left Container */}
-        <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-8 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 translate-x-1 md:translate-x-4 lg:translate-x-12 xl:translate-x-10 2xl:translate-x-16">
-          {leftThumbnails.map((thumb) => (
+        {/* Left Thumbnails: Top Left & Bottom Left (slightly to the right) */}
+        <div className="flex flex-col justify-between h-[180px] md:h-[280px] lg:h-[340px] xl:h-[380px] z-10 translate-y-12 md:translate-y-20 lg:translate-y-24">
+          {leftTop && (
             <PromoThumbnail
-              key={thumb.id}
-              src={thumb.src}
-              alt={thumb.alt}
-              customClass={thumb.className}
+              key={leftTop.id}
+              src={leftTop.src}
+              alt={leftTop.alt}
+              customClass={leftTop.className}
             />
-          ))}
+          )}
+          {leftBottom && (
+            <PromoThumbnail
+              key={leftBottom.id}
+              src={leftBottom.src}
+              alt={leftBottom.alt}
+              customClass={`${leftBottom.className} translate-x-4 md:translate-x-8 lg:translate-x-12`}
+            />
+          )}
         </div>
 
-        {/* Hero Center Illustration & Ground Shadows (Bayangan Lebih Gelap Dikit) */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-10 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 z-30 flex items-end justify-center -space-x-12 md:-space-x-20 lg:-space-x-28 xl:-space-x-34 2xl:-space-x-40 px-4 w-full max-w-6xl pointer-events-none">
-            
-            {/* Karakter Anak Perempuan + Bayangan */}
-            <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square translate-x-3 md:translate-x-4 lg:translate-x-6 xl:translate-x-8 z-10 flex flex-col items-center">
-              <div className="absolute bottom-1 w-[45%] h-4 bg-black/35 rounded-full blur-sm z-0" />
-              <Image
-                src="/images/girl.png"
-                alt="Anak Perempuan"
-                width={450}
-                height={450}
-                priority
-                className="object-contain w-full h-full relative z-10"
-              />
-            </div>
-
-            {/* Karakter Anak Laki-laki + Bayangan */}
-            <div className="relative w-48 md:w-72 lg:w-80 xl:w-[400px] 2xl:w-[480px] h-auto aspect-square scale-110 md:scale-115 lg:scale-120 xl:scale-125 2xl:scale-130 scale-y-110 origin-bottom z-10 flex flex-col items-center">
-              <div className="absolute bottom-1 w-[45%] h-4 bg-black/35 rounded-full blur-sm z-0" />
-              <Image
-                src="/images/boy.png"
-                alt="Anak Laki-laki"
-                width={500}
-                height={550}
-                priority
-                className="object-contain w-full h-full relative z-10"
-              />
-            </div>
+        {/* Hero Center Illustration - HeroRobot centered */}
+        <div className="absolute bottom-2 md:bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-end justify-center pointer-events-none w-full max-w-xs md:max-w-md lg:max-w-lg">
+          <div className="w-48 sm:w-64 md:w-80 lg:w-[350px] xl:w-[380px]">
+            <HeroRobot />
           </div>
+        </div>
 
-        {/* Thumbnail Right Container */}
-        <div className="flex flex-col gap-3 md:gap-5 lg:gap-6 2xl:gap-8 z-10 translate-y-8 md:translate-y-16 lg:translate-y-24 xl:translate-y-28 2xl:translate-y-32 -translate-x-1 md:-translate-x-4 lg:-translate-x-12 xl:-translate-x-10 2xl:-translate-x-16">
-          {rightThumbnails.map((thumb) => (
+        {/* Right Thumbnail: 3rd image in right side (slightly to the left) */}
+        <div className="flex flex-col justify-center h-[180px] md:h-[280px] lg:h-[340px] xl:h-[380px] z-10 translate-y-12 md:translate-y-20 lg:translate-y-24">
+          {rightThumb && (
             <PromoThumbnail
-              key={thumb.id}
-              src={thumb.src}
-              alt={thumb.alt}
-              customClass={thumb.className}
+              key={rightThumb.id}
+              src={rightThumb.src}
+              alt={rightThumb.alt}
+              customClass={`${rightThumb.className} -translate-x-4 md:-translate-x-8 lg:-translate-x-12`}
             />
-          ))}
+          )}
         </div>
 
       </div>
@@ -293,7 +280,7 @@ export default function FAQ({
   };
 
   return (
-    <section className="relative z-20 bg-[#558FBD] text-card pb-24 sm:pb-23 overflow-hidden">
+    <section className="relative z-20 bg-[#2781CD] text-card pb-24 sm:pb-23 overflow-hidden">
       <PromoBanner data={promoData} />
 
       {/* SVG Shape Divider */}

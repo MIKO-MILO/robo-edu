@@ -4,7 +4,7 @@ export default function Awan() {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-2 pointer-events-none leading-none overflow-hidden">
       <Image
-        src="/images/awann.png"
+        src="/images/cloud.webp"
         alt="Ilustrasi Awan"
         width={1927}
         height={155}
