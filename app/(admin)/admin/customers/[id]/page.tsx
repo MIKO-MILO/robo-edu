@@ -1,9 +1,8 @@
 "use client";
 
 import React, { use, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft, ShoppingBag, MessageSquareWarning, Star, UserX } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShoppingBag, MessageSquareWarning, Star, UserX } from "lucide-react";
+import { BackButton } from "@/components/ui/button";
 import {
   CustomerDetailHeader,
   CustomerMetricCards,
@@ -44,12 +43,7 @@ export default function AdminCustomerDetailPage({
             Data pelanggan dengan ID &ldquo;{id}&rdquo; tidak dapat ditemukan di sistem.
           </p>
         </div>
-        <Button asChild variant="default" size="sm" className="rounded-xl">
-          <Link href="/admin/customers">
-            <ChevronLeft className="size-4 mr-1.5" />
-            Kembali ke Daftar Pelanggan
-          </Link>
-        </Button>
+        <BackButton href="/admin/customers" label="Kembali ke Daftar Pelanggan" />
       </div>
     );
   }

@@ -16,6 +16,7 @@ import {
 } from "@/components/admin/inventory";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { AlertTriangleIcon } from "lucide-react";
 import type { InventoryVariantRow, UUID } from "@/types";
 import type { ProductStatus } from "@/types/enums";
@@ -189,6 +190,13 @@ function AdminInventoryContent() {
             ? (adjustStock.variables?.variantId as UUID)
             : null
         }
+      />
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={meta?.current_page ?? 1}
+        totalPages={meta?.total_pages ?? 1}
+        onPageChange={handlePageChange}
       />
 
       {/* Adjust Stock Dialog */}

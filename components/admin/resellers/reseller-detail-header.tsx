@@ -5,22 +5,26 @@ import {
   Mail,
   Phone,
   MessageCircle,
-  ShieldCheck,
-  Ban,
   CheckCircle2,
+  XCircle,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import { Button, BackButton } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { ResellerStatus } from "@/types/enums";
 
-export interface CustomerDetailHeaderProps {
+export interface ResellerDetailHeaderProps {
   id: string;
   name: string;
   email: string;
   phone: string | null;
   resellerStatus: ResellerStatus;
+  resellerAppliedAt: string | null;
+  resellerApprovedAt: string | null;
   isActive: boolean;
-  createdAt: string;
+  onApprove?: () => void;
+  onReject?: () => void;
 }
 
 function getInitials(name: string): string {
@@ -33,18 +37,33 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
+function formatDateTime(isoString: string): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(isoString));
+}
+
 /**
- * Molecule — Header detail pelanggan dengan navigasi kembali,
- * profil ringkas, status badges, dan tombol aksi (WhatsApp, setujui reseller).
+ * Molecule — Header detail pengajuan reseller.
+ * Menampilkan breadcrumb, info pemohon, status, dan tombol aksi approve/reject.
+ * Tombol aksi hanya muncul jika status PENDING.
  */
-export function CustomerDetailHeader({
+export function ResellerDetailHeader({
   id,
   name,
   email,
   phone,
   resellerStatus,
+  resellerAppliedAt,
+  resellerApprovedAt,
   isActive,
-}: CustomerDetailHeaderProps) {
+  onApprove,
+  onReject,
+}: ResellerDetailHeaderProps) {
   const cleanPhone = phone ? phone.replace(/[^0-9]/g, "") : null;
   const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : null;
 
@@ -52,7 +71,7 @@ export function CustomerDetailHeader({
     <div className="space-y-4">
       {/* Back link */}
       <div>
-        <BackButton href="/admin/customers" label="Kembali ke Daftar Pelanggan" />
+        <BackButton href="/admin/resellers" label="Kembali ke Daftar Reseller" />
       </div>
 
       {/* Main Header Container */}
@@ -73,13 +92,11 @@ export function CustomerDetailHeader({
                 size="sm"
                 neo
                 customLabel={
-                  resellerStatus === "NOT_RESELLER"
-                    ? "Pelanggan Reguler"
+                  resellerStatus === "PENDING"
+                    ? "Menunggu Review"
                     : resellerStatus === "APPROVED"
                     ? "Reseller Aktif"
-                    : resellerStatus === "PENDING"
-                    ? "Pengajuan Reseller"
-                    : "Reseller Ditolak"
+                    : "Pengajuan Ditolak"
                 }
               />
               <StatusBadge
@@ -104,6 +121,22 @@ export function CustomerDetailHeader({
                 ID: {id}
               </span>
             </div>
+
+            {/* Timeline info */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+              {resellerAppliedAt && (
+                <div className="flex items-center gap-1">
+                  <Clock className="size-3" />
+                  <span>Diajukan: {formatDateTime(resellerAppliedAt)}</span>
+                </div>
+              )}
+              {resellerApprovedAt && (
+                <div className="flex items-center gap-1 text-success">
+                  <Calendar className="size-3" />
+                  <span>Disetujui: {formatDateTime(resellerApprovedAt)}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -124,37 +157,26 @@ export function CustomerDetailHeader({
           )}
 
           {resellerStatus === "PENDING" && (
-            <Button
-              variant="default"
-              size="sm"
-              className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
-              onClick={() => alert(`Pengajuan reseller ${name} disetujui`)}
-            >
-              <CheckCircle2 className="size-4" />
-              <span>Setujui Reseller</span>
-            </Button>
-          )}
-
-          {isActive ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 rounded-xl text-destructive hover:text-destructive border-2 border-border font-heading font-bold text-xs"
-              onClick={() => alert(`Akun ${name} dinonaktifkan`)}
-            >
-              <Ban className="size-4" />
-              <span>Suspend</span>
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 rounded-xl text-success hover:text-success border-2 border-border font-heading font-bold text-xs"
-              onClick={() => alert(`Akun ${name} diaktifkan kembali`)}
-            >
-              <ShieldCheck className="size-4" />
-              <span>Aktifkan</span>
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 rounded-xl text-danger hover:text-danger border-2 border-border font-heading font-bold text-xs"
+                onClick={onReject}
+              >
+                <XCircle className="size-4" />
+                <span>Tolak</span>
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
+                onClick={onApprove}
+              >
+                <CheckCircle2 className="size-4" />
+                <span>Setujui Reseller</span>
+              </Button>
+            </>
           )}
         </div>
       </div>

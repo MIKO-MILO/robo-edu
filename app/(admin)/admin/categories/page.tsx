@@ -10,6 +10,7 @@ import { CategoryTable } from "@/components/admin/categories";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { PlusIcon, AlertTriangleIcon, SearchIcon } from "lucide-react";
 import type { Category, UUID } from "@/types";
 import type { GetCategoriesParams } from "@/lib/api/endpoints/categories";
@@ -129,6 +130,13 @@ function AdminCategoriesContent() {
         onEdit={handleEditCategory}
         onDelete={handleDeleteCategory}
         isDeletingId={deleteCategory.isPending ? (deleteCategory.variables as UUID) : null}
+      />
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={meta?.current_page ?? 1}
+        totalPages={meta?.total_pages ?? 1}
+        onPageChange={handlePageChange}
       />
     </div>
   );

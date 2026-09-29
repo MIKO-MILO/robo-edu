@@ -11,6 +11,7 @@ import { useProductTypes } from "@/hooks/admin/product-types/use-product-types";
 import { ProductFilters, ProductTable } from "@/components/admin/products";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
 import { PlusIcon, AlertTriangleIcon } from "lucide-react";
 import type { GetProductsParams } from "@/lib/api/endpoints/products";
 import type { ProductListItem, UUID } from "@/types";
@@ -123,6 +124,13 @@ function AdminProductsContent() {
         onPageChange={handlePageChange}
         onEdit={handleEditProduct}
         onDelete={handleDeleteProduct}
+      />
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={meta?.current_page ?? 1}
+        totalPages={meta?.total_pages ?? 1}
+        onPageChange={handlePageChange}
       />
     </div>
   );

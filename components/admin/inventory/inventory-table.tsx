@@ -26,13 +26,10 @@ function StockBadge({ stock }: { stock: number }) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-xs font-bold tabular-nums",
-        isCritical &&
-          "border-danger/30 bg-danger-bg text-danger",
+        isCritical && "border-danger/30 bg-danger-bg text-danger",
         isLow &&
           "border-amber-400/30 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
-        !isCritical &&
-          !isLow &&
-          "border-success/20 bg-success-bg text-success"
+        !isCritical && !isLow && "border-success/20 bg-success-bg text-success",
       )}
     >
       {stock}

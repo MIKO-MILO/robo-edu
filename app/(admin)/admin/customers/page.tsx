@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useMemo, Suspense, useTransition } from "react";
+import React, { useMemo, useState, Suspense, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import {
   CustomerStatsGrid,
   CustomerFilters,
@@ -26,6 +27,8 @@ function AdminCustomersContent() {
   const searchQuery = searchParams.get("search") || "";
   const resellerFilter = searchParams.get("reseller") || "ALL";
   const statusFilter = searchParams.get("status") || "ALL";
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -71,7 +74,8 @@ function AdminCustomersContent() {
         const query = searchQuery.toLowerCase();
         const matchesName = customer.name.toLowerCase().includes(query);
         const matchesEmail = customer.email.toLowerCase().includes(query);
-        const matchesPhone = customer.phone?.toLowerCase().includes(query) ?? false;
+        const matchesPhone =
+          customer.phone?.toLowerCase().includes(query) ?? false;
         if (!matchesName && !matchesEmail && !matchesPhone) return false;
       }
 
@@ -92,6 +96,17 @@ function AdminCustomersContent() {
     });
   }, [searchQuery, resellerFilter, statusFilter]);
 
+  // Reset ke halaman 1 saat filter berubah
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, resellerFilter, statusFilter]);
+
+  const totalPages = Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE);
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   // Hitung statistik keseluruhan dari master data
   const stats = useMemo(() => getCustomerStats(MOCK_ADMIN_CUSTOMERS), []);
 
@@ -105,15 +120,16 @@ function AdminCustomersContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+            {/* <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <Users className="size-5" />
-            </div>
+            </div> */}
             <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground">
               Manajemen Pelanggan
             </h1>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Pantau seluruh data pelanggan terdaftar, status kemitraan reseller, dan akumulasi nilai belanja (LTV).
+            Pantau seluruh data pelanggan terdaftar, status kemitraan reseller,
+            dan akumulasi nilai belanja (LTV).
           </p>
         </div>
 
@@ -159,7 +175,14 @@ function AdminCustomersContent() {
           </span>
         </div>
 
-        <CustomerTable data={filteredCustomers} />
+        <CustomerTable data={paginatedCustomers} />
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

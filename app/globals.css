@@ -7,39 +7,53 @@
   /* ===== BRAND — Primary (aksi utama, link, tombol utama) ===== */
   --color-primary-100: #DEECF8;
   --color-primary-300: #A7CDEC;
-  --color-primary: #2483D0;      /* base/500 */
-  --color-primary-600: #1F6FB1;  /* hover */
-  --color-primary-700: #195C92;  /* active/pressed */
-  --color-primary-900: #103B5E;  /* teks di atas primary-100, dsb */
+  --color-primary: #2483D0;
+  /* base/500 */
+  --color-primary-600: #1F6FB1;
+  /* hover */
+  --color-primary-700: #195C92;
+  /* active/pressed */
+  --color-primary-900: #103B5E;
+  /* teks di atas primary-100, dsb */
 
   /* ===== BRAND — Secondary (teks utama, heading, kontras tinggi) ===== */
   --color-secondary-100: #ECEAE6;
   --color-secondary-300: #C5BFB2;
-  --color-secondary: #3D2900;    /* base/500 */
+  --color-secondary: #3D2900;
+  /* base/500 */
   --color-secondary-700: #312100;
 
   /* ===== NEUTRAL / SURFACE ===== */
   --color-background: #F3EFE4;
-  --color-foreground: #3D2900;       /* = secondary, kontras 12:1 di atas background */
+  --color-foreground: #3D2900;
+  /* = secondary, kontras 12:1 di atas background */
   --color-card: #FFFFFF;
   --color-card-foreground: #3D2900;
-  --color-muted: #ECEAE6;            /* = secondary-100, background kartu/section pasif */
-  --color-muted-foreground: #8F8267; /* teks sekunder/caption, kontras 3.3:1 (cukup utk teks besar/label) */
-  
+  --color-muted: #ECEAE6;
+  /* = secondary-100, background kartu/section pasif */
+  --color-muted-foreground: #8F8267;
+  /* teks sekunder/caption, kontras 3.3:1 (cukup utk teks besar/label) */
+
   /* BORDER DIUBAH KE COKLAT TUA AGAR COCOK DENGAN NEO-BRUTALISM SHADOW */
-  --color-border: #3D2900;           
+  --color-border: #3D2900;
   --color-border-strong: #C7C4BB;
-  --color-ring: #2483D0;             /* = primary, buat focus ring */
+  --color-ring: #2483D0;
+  /* = primary, buat focus ring */
 
   /* ===== SEMANTIC / STATE (fungsional, bukan dekoratif) ===== */
-  --color-success: #4C684E;          /* teks/icon di atas accent-green */
-  --color-success-bg: #A9E8AE;       /* = pastel green */
+  --color-success: #4C684E;
+  /* teks/icon di atas accent-green */
+  --color-success-bg: #A9E8AE;
+  /* = pastel green */
   --color-warning: #736D39;
-  --color-warning-bg: #FFF37E;       /* = pastel yellow */
+  --color-warning-bg: #FFF37E;
+  /* = pastel yellow */
   --color-danger: #7A2E22;
-  --color-danger-bg: #FFAFA3;        /* = pastel peach, dipakai buat error ringan/soft */
+  --color-danger-bg: #FFAFA3;
+  /* = pastel peach, dipakai buat error ringan/soft */
   --color-info: #406173;
-  --color-info-bg: #8ED8FF;          /* = pastel blue */
+  --color-info-bg: #8ED8FF;
+  /* = pastel blue */
 
   /* ===== ACCENT — Pastel (khusus aksen komponen: badge, tag, ilustrasi, chip kategori) ===== */
   --color-accent-yellow: #FFF37E;
@@ -123,10 +137,11 @@
   --accent: #FFF37E;
   --accent-foreground: #3D2900;
   --destructive: #7A2E22;
-  --border: #3D2900; /* Border utama sekarang menggunakan warna coklat tua */
+  --border: #3D2900;
+  /* Border utama sekarang menggunakan warna coklat tua */
   --input: #DBD7CD;
   --ring: #2483D0;
-  
+
   /* Sisanya (chart/sidebar) dibiarkan default sementara jika belum dikustomisasi */
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
@@ -182,14 +197,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   html {
     overflow-y: auto;
-    overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
+    overflow-x: clip;
+    /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
   }
+
   /* font-body = Outfit (dari --font-outfit CSS var yang di-inject layout.tsx) */
   body {
     @apply bg-background text-foreground font-body;
-    overflow-x: clip; /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
+    overflow-x: clip;
+    /* clip ≠ hidden: does NOT create a scroll container, so position:sticky still works */
   }
 }
 
@@ -219,15 +238,19 @@
   0% {
     transform: rotate(0deg) translateY(0px);
   }
+
   25% {
     transform: rotate(-14deg) translateY(-2px);
   }
+
   50% {
     transform: rotate(2deg) translateY(1px);
   }
+
   75% {
     transform: rotate(-10deg) translateY(-1px);
   }
+
   100% {
     transform: rotate(0deg) translateY(0px);
   }
@@ -237,4 +260,3 @@
   animation: wave-hand 2.4s ease-in-out infinite;
   transform-origin: 15% 85%;
 }
-

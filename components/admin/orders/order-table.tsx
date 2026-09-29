@@ -76,7 +76,10 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
             {/* Empty state */}
             {!isLoading && data.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                <td
+                  colSpan={7}
+                  className="py-12 text-center text-muted-foreground"
+                >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <XCircle className="size-8 text-muted-foreground" />
                     <p className="font-heading font-bold text-sm">

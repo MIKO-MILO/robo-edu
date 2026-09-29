@@ -37,7 +37,10 @@ export function ProductTable({
       <div className="w-full space-y-4">
         <div className="overflow-hidden rounded-2xl border border-border bg-card p-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0">
+            <div
+              key={i}
+              className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0"
+            >
               <Skeleton className="h-12 w-12 rounded-xl" />
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-4 w-1/3" />
@@ -59,9 +62,12 @@ export function ProductTable({
         <div className="p-4 rounded-full bg-accent-yellow/30 border border-border mb-4">
           <PackageIcon className="size-10 text-foreground" />
         </div>
-        <h3 className="font-heading font-bold text-lg text-foreground">Tidak Ada Produk</h3>
+        <h3 className="font-heading font-bold text-lg text-foreground">
+          Tidak Ada Produk
+        </h3>
         <p className="font-body text-sm text-muted-foreground mt-1 max-w-sm">
-          Belum ada produk yang tersedia atau tidak ada produk yang cocok dengan filter pencarian.
+          Belum ada produk yang tersedia atau tidak ada produk yang cocok dengan
+          filter pencarian.
         </p>
       </div>
     );

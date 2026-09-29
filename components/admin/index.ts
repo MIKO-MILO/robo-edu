@@ -107,3 +107,33 @@ export type {
   CustomerReviewsTabProps,
 } from "./customers";
 
+// Resellers Components
+export {
+  ResellerKpiCard,
+  ResellerStatsGrid,
+  ResellerFilters,
+  ResellerTable,
+  ResellerDetailHeader,
+  ResellerInfoCard,
+  ResellerApprovalCard,
+  ResellerOrdersTab,
+  RESELLER_STATUS_TABS,
+  MOCK_ADMIN_RESELLERS,
+  getResellerStats,
+  getMockResellerDetail,
+} from "./resellers";
+export type {
+  AdminResellerRow,
+  ResellerStats,
+  AdminResellerDetailData,
+  ResellerOrderSummary,
+  ResellerStatusTabKey,
+  ResellerKpiCardProps,
+  ResellerStatsProps,
+  ResellerFiltersProps,
+  ResellerTableProps,
+  ResellerDetailHeaderProps,
+  ResellerInfoCardProps,
+  ResellerApprovalCardProps,
+  ResellerOrdersTabProps,
+} from "./resellers";

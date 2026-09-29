@@ -1,5 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
@@ -43,6 +45,10 @@ const buttonVariants = cva(
         outline: "bg-transparent text-foreground",
         ghost: "bg-transparent text-foreground hover:bg-muted/60",
         link: "bg-transparent text-primary underline-offset-4 hover:underline p-0 h-auto",
+
+        // Navigation variant — tombol kembali/breadcrumb
+        // Menggunakan bg-muted (#ECEAE6) + text-foreground (#3D2900) dari globals.css
+        back: "bg-muted text-foreground hover:bg-muted/70",
       },
       size: {
         default: "h-10 px-5 py-2 text-sm",
@@ -87,3 +93,53 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
+
+// ---------------------------------------------------------------------------
+// BackButton — tombol navigasi kembali yang siap pakai.
+// Mendukung dua mode:
+//   - href prop  → render sebagai <Link> (navigasi client-side)
+//   - onClick    → render sebagai <button> biasa
+// ---------------------------------------------------------------------------
+export interface BackButtonProps {
+  /** Label teks; default: "Kembali" */
+  label?: string;
+  /** Jika diberikan, render sebagai Next.js Link */
+  href?: string;
+  /** Callback opsional; digunakan jika href tidak diberikan */
+  onClick?: () => void;
+  className?: string;
+}
+
+export function BackButton({
+  label = "Kembali",
+  href,
+  onClick,
+  className,
+}: BackButtonProps) {
+  const inner = (
+    <>
+      <ArrowLeft className="size-4 shrink-0" />
+      <span>{label}</span>
+    </>
+  );
+
+  const cls = cn(
+    buttonVariants({ variant: "back", size: "sm", neo: true }),
+    "rounded-xl gap-1.5 font-heading font-bold",
+    className
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={cls}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" className={cls} onClick={onClick}>
+      {inner}
+    </button>
+  );
+}
