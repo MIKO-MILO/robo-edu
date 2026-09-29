@@ -1,0 +1,503 @@
+<!DOCTYPE html><html class="h-full bg-[#F3F4F6]" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RoboEdu Admin Navigation Sidebar UI</title>
+<!-- Tailwind CSS CDN with forms and container plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#EEF6FC',
+              100: '#D6EAF8',
+              500: '#2483D0',
+              600: '#1D68A6',
+              700: '#164F7E',
+            },
+            surface: '#FFFFFF',
+            canvas: '#F4F5F7'
+          },
+          boxShadow: {
+            'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02)',
+            'sidebar': '0 4px 20px -2px rgba(15, 23, 42, 0.05)',
+            'popover': '0 10px 25px -5px rgba(15, 23, 42, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Custom delicate scrollbar for high-density sidebars */
+    .no-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .no-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar-thumb {
+      background: #E2E8F0;
+      border-radius: 9999px;
+    }
+    .no-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #CBD5E1;
+    }
+  </style>
+<meta content="web_dashboard" name="shell-type"></head>
+<body class="min-h-full font-['Outfit',sans-serif] antialiased text-[#3D2900] bg-[#F3EFE4] flex flex-col justify-center items-center py-10 px-4 sm:px-8 selection:bg-[#2483D0] selection:text-white">
+<!-- BEGIN: ShowcaseHeader -->
+<!-- END: ShowcaseHeader -->
+<!-- BEGIN: MainShowcaseStage -->
+<main class="w-full max-w-7xl flex flex-col lg:flex-row items-start justify-center gap-8 lg:gap-12" data-purpose="sidebar-comparison-stage"><div class="flex flex-col w-full">
+<!-- Link Fonts: Outfit & Unbounded -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Unbounded:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+    .font-unbounded { font-family: 'Unbounded', sans-serif; }
+    .font-outfit { font-family: 'Outfit', sans-serif; }
+    .neo-border { border: 2px solid #3D2900; }
+    .neo-shadow { box-shadow: 4px 4px 0px 0px #3D2900; }
+    .neo-shadow-sm { box-shadow: 2px 2px 0px 0px #3D2900; }
+    .neo-shadow-lg { box-shadow: 6px 6px 0px 0px #3D2900; }
+    .neo-btn {
+      transition: all 0.15s ease-in-out;
+    }
+    .neo-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px #3D2900;
+    }
+    .neo-btn-sm:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px 0px #3D2900;
+    }
+    .neo-btn:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0px 0px 0px 0px #3D2900;
+    }
+  </style>
+<div class="w-full max-w-7xl mx-auto space-y-6 font-outfit text-[#3D2900]">
+<!-- Top Action Bar & Breadcrumbs -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+<div class="flex flex-wrap items-center gap-3">
+<a class="neo-btn neo-border neo-shadow-sm px-3.5 py-2 bg-white text-xs md:text-sm font-unbounded font-bold inline-flex items-center gap-2 hover:bg-[#F3EFE4]" href="#daftar-reseller">
+<span class="material-symbols-outlined text-base">arrow_back</span>
+          KEMBALI KE DAFTAR RESELLER
+        </a>
+<div class="hidden sm:flex items-center gap-2 text-xs font-bold text-[#8F8267]">
+<span class="">Admin</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="">Reseller</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-[#3D2900] bg-[#FFF37E] px-2 py-0.5 neo-border">Verifikasi Pengajuan (USR-R001)</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<span class="neo-border bg-[#FFF37E] neo-shadow-sm px-3 py-1 font-unbounded text-xs font-bold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#894d00] animate-ping"></span>
+          STATUS: PENDING REVIEW
+        </span>
+<span class="neo-border bg-[#C9E9F6] neo-shadow-sm px-2.5 py-1 text-xs font-mono font-bold">
+          ID: USR-R001
+        </span>
+<span class="neo-border bg-[#ECEAE6] px-2.5 py-1 text-xs font-medium flex items-center gap-1 text-[#404751]">
+<span class="material-symbols-outlined text-sm">shield</span>
+          superadmin / admin_sales
+        </span>
+</div>
+</header>
+<!-- Bento Profile Overview -->
+<section class="neo-border neo-shadow bg-white p-5 md:p-7 relative overflow-hidden">
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+<div class="w-20 h-20 rounded-full bg-[#C9E9F6] neo-border neo-shadow-sm flex items-center justify-center font-unbounded font-extrabold text-2xl text-[#005f9e] shrink-0">
+            BS
+          </div>
+<div class="space-y-1.5">
+<div class="flex flex-wrap items-center gap-2">
+<h1 class="font-unbounded text-2xl md:text-3xl font-bold tracking-tight text-[#3D2900]">
+                Budi Santoso
+              </h1>
+<span class="neo-border bg-[#A9E8AE] neo-shadow-sm px-2.5 py-0.5 text-xs font-bold font-unbounded uppercase">
+                Customer Aktif
+              </span>
+<span class="neo-border bg-[#FFF37E] px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
+                Reseller Applicant
+              </span>
+</div>
+<p class="text-sm font-semibold flex items-center gap-2 text-[#745a2b]">
+<span class="material-symbols-outlined text-lg">corporate_fare</span>
+              Komunitas Robotika Nusantara &amp; SMP Bina Bangsa Jakarta
+            </p>
+<div class="flex flex-wrap gap-y-1 gap-x-4 pt-1 text-xs font-medium text-[#404751]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-[#005f9e]">mail</span>
+                budi.santoso@email.com
+              </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-[#005f9e]">phone</span>
+                +62 812-9842-1109
+              </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-[#005f9e]">calendar_month</span>
+                Diajukan: 10 Sep 2026, 15:30 WIB
+              </span>
+</div>
+</div>
+</div>
+<!-- Quick Decision CTA buttons -->
+<div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full lg:w-auto">
+<a class="neo-btn neo-border neo-shadow-sm bg-white hover:bg-[#F3EFE4] text-xs font-unbounded font-bold px-3 py-2.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial" href="https://wa.me/6281298421109" target="_blank">
+<span class="material-symbols-outlined text-base text-green-700">chat</span>
+            WHATSAPP
+          </a>
+<button class="neo-btn neo-border neo-shadow bg-[#FFAFA3] hover:bg-[#FFC0DD] text-xs font-unbounded font-bold px-4 py-2.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial" onclick="document.getElementById('rejectModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-base">close</span>
+            TOLAK
+          </button>
+<button class="neo-btn neo-border neo-shadow bg-[#2483D0] hover:bg-[#1D68A6] text-white text-xs font-unbounded font-bold px-5 py-2.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial shadow-md" onclick="approveDirectly()">
+<span class="material-symbols-outlined text-base">verified</span>
+            SETUJUI RESELLER
+          </button>
+</div>
+</div>
+</section>
+<!-- Horizontal Stepper Bar (PRD Section 6 & 20.2) -->
+<div class="neo-border neo-shadow bg-white p-4 overflow-x-auto">
+<div class="min-w-[680px] grid grid-cols-4 gap-2 relative">
+<!-- Step 1 -->
+<div class="p-3 neo-border bg-[#A9E8AE] flex items-center gap-2.5">
+<div class="w-7 h-7 bg-white neo-border flex items-center justify-center shrink-0 font-unbounded text-xs font-bold">
+            ✓
+          </div>
+<div>
+<div class="text-[10px] uppercase tracking-wider font-bold">Langkah 1</div>
+<div class="text-xs font-unbounded font-bold">Akun Terdaftar</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="p-3 neo-border bg-[#A9E8AE] flex items-center gap-2.5">
+<div class="w-7 h-7 bg-white neo-border flex items-center justify-center shrink-0 font-unbounded text-xs font-bold">
+            ✓
+          </div>
+<div>
+<div class="text-[10px] uppercase tracking-wider font-bold">Langkah 2</div>
+<div class="text-xs font-unbounded font-bold">KTP &amp; NPWP Diunggah</div>
+</div>
+</div>
+<!-- Step 3 (Current) -->
+<div class="p-3 neo-border bg-[#FFF37E] neo-shadow-sm flex items-center gap-2.5 relative">
+<div class="w-7 h-7 bg-[#3D2900] text-white neo-border flex items-center justify-center shrink-0 font-unbounded text-xs font-bold">
+            3
+          </div>
+<div>
+<div class="text-[10px] uppercase tracking-wider font-bold text-tertiary">Tahap Saat Ini</div>
+<div class="text-xs font-unbounded font-bold">Review &amp; Verifikasi</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="p-3 neo-border bg-[#ECEAE6] opacity-80 flex items-center gap-2.5">
+<div class="w-7 h-7 bg-white neo-border flex items-center justify-center shrink-0 font-unbounded text-xs font-bold text-[#8F8267]">
+            4
+          </div>
+<div>
+<div class="text-[10px] uppercase tracking-wider font-bold text-[#8F8267]">Keluaran PRD</div>
+<div class="text-xs font-unbounded font-bold text-[#8F8267]">Hak reseller_price</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 2-Column Bento Content Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN (~60% width = 7/12 cols) -->
+<div class="lg:col-span-7 space-y-6">
+<!-- Bento 1: Legalitas & Identitas Pemohon -->
+<div class="neo-border neo-shadow bg-white">
+<div class="p-4 border-b-2 border-[#3D2900] bg-[#C9E9F6] flex items-center justify-between">
+<h2 class="font-unbounded text-sm md:text-base font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">badge</span>
+              Data Legalitas &amp; Alamat Pemohon
+            </h2>
+<span class="neo-border bg-white text-[10px] font-mono px-2 py-0.5 font-bold">user_address</span>
+</div>
+<div class="p-5 space-y-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="p-3 bg-[#ECEAE6] neo-border">
+<span class="text-[11px] font-bold text-[#745a2b] uppercase block">Nama Lengkap</span>
+<span class="text-sm font-semibold">Budi Santoso, S.Pd., M.T.</span>
+</div>
+<div class="p-3 bg-[#ECEAE6] neo-border">
+<span class="text-[11px] font-bold text-[#745a2b] uppercase block">Instansi Afiliasi</span>
+<span class="text-sm font-semibold">SMP Bina Bangsa Jakarta</span>
+</div>
+<div class="p-3 bg-[#ECEAE6] neo-border">
+<span class="text-[11px] font-bold text-[#745a2b] uppercase block">Nomor WhatsApp</span>
+<span class="text-sm font-semibold font-mono">+62 812-9842-1109</span>
+</div>
+<div class="p-3 bg-[#ECEAE6] neo-border">
+<span class="text-[11px] font-bold text-[#745a2b] uppercase block">Alamat Email</span>
+<span class="text-sm font-semibold">budi.santoso@email.com</span>
+</div>
+</div>
+<!-- Primary Address Box -->
+<div class="p-3.5 neo-border bg-[#F3EFE4] space-y-1">
+<div class="flex items-center justify-between">
+<span class="text-xs font-unbounded font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-[#005f9e]">pin_drop</span>
+                  Alamat Pengiriman Utama
+                </span>
+<span class="neo-border bg-[#A9E8AE] text-[10px] font-mono px-1.5 py-0.5 font-bold">is_primary: true</span>
+</div>
+<p class="text-xs md:text-sm text-[#404751] font-medium leading-relaxed">
+                Laboratorium Robotika &amp; STEM, SMP Bina Bangsa, Jl. Cendrawasih Raya No. 42, Kel. Gandaria Selatan, Kec. Cilandak, Kota Jakarta Selatan, DKI Jakarta 12140
+              </p>
+</div>
+<!-- Document Attachments -->
+<div>
+<span class="text-xs font-unbounded font-bold block mb-2">Berkas Verifikasi Terlampir</span>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<!-- KTP Card -->
+<div class="p-3 neo-border neo-shadow-sm bg-white flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-2xl text-[#005f9e]">id_card</span>
+<div>
+<div class="text-xs font-bold font-unbounded">Kartu Tanda Penduduk</div>
+<div class="text-[11px] font-mono text-[#8F8267]">NIK: 3174**********01</div>
+</div>
+</div>
+<button class="neo-btn neo-border neo-shadow-sm bg-[#FFF37E] hover:bg-yellow-200 text-[11px] font-unbounded font-bold px-2.5 py-1.5" onclick="openDocPreview('KTP: Budi Santoso', 'placeholder', 'Dokumen KTP valid Indonesia dengan foto, NIK, dan alamat terverifikasi jelas.')">
+                    PREVIEW
+                  </button>
+</div>
+<!-- NPWP Card -->
+<div class="p-3 neo-border neo-shadow-sm bg-white flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-2xl text-[#894d00]">receipt_long</span>
+<div>
+<div class="text-xs font-bold font-unbounded">NPWP Pribadi</div>
+<div class="text-[11px] font-mono text-[#8F8267]">NPWP: 84.921.***.*-012</div>
+</div>
+</div>
+<button class="neo-btn neo-border neo-shadow-sm bg-[#FFF37E] hover:bg-yellow-200 text-[11px] font-unbounded font-bold px-2.5 py-1.5" onclick="openDocPreview('NPWP: Budi Santoso', 'placeholder', 'Dokumen kartu NPWP Pajak RI berstatus valid dengan Nomor Pokok Wajib Pajak sesuai data KTP.')">
+                    PREVIEW
+                  </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento 2: Metrik Belanja & Loyalitas (LTV Customer) -->
+
+<!-- Bento 3: Riwayat Pesanan Terakhir (order_item snapshot) -->
+
+</div>
+<!-- RIGHT COLUMN (~40% width = 5/12 cols) -->
+<div class="lg:col-span-5 space-y-6">
+<!-- Bento Aksi: Formulir Keputusan Admin & Audit Trail (FR-010 / FR-017) -->
+<div class="neo-border neo-shadow-lg bg-white relative">
+<div class="p-4 border-b-2 border-[#3D2900] bg-[#2483D0] text-white flex items-center justify-between">
+<h2 class="font-unbounded text-sm md:text-base font-bold flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-lg">gavel</span>
+              Keputusan Verifikasi
+            </h2>
+<span class="neo-border bg-white text-[#3D2900] text-[10px] font-mono px-2 py-0.5 font-bold">FR-010 / FR-017</span>
+</div>
+<div class="p-5 space-y-4">
+<!-- Alert Callout -->
+<div class="p-3.5 neo-border bg-[#FFF37E] flex items-start gap-2.5">
+<span class="material-symbols-outlined text-xl text-[#894d00] shrink-0">info</span>
+<p class="text-xs font-medium leading-tight text-[#3D2900]">
+                Persetujuan akan mengaktifkan hak harga <strong class="font-mono">reseller_price</strong> di seluruh katalog RoboEdu dan secara otomatis menulis event ke tabel <strong class="font-mono">audit_log</strong>.
+              </p>
+</div>
+<!-- Notes Input -->
+<div class="space-y-1.5">
+<label class="block font-unbounded text-xs font-bold text-[#3D2900]" for="adminNotes">
+                Catatan Verifikator / Alasan Keputusan:
+              </label>
+<textarea class="w-full neo-border bg-[#ECEAE6] p-3 text-xs md:text-sm focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_0px_#2483D0] font-outfit" id="adminNotes" placeholder="Contoh: Dokumen legalitas SMP Bina Bangsa valid, total omzet melebihi standar minimum institusi." rows="3"></textarea>
+</div>
+<!-- Action Buttons Stack -->
+<div class="grid grid-cols-1 gap-3 pt-1">
+<button class="neo-btn neo-border neo-shadow bg-[#2483D0] hover:bg-[#1D68A6] text-white py-3 px-4 font-unbounded text-xs md:text-sm font-bold flex items-center justify-center gap-2" onclick="approveDirectly()">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+                SETUJUI RESELLER (APPROVED)
+              </button>
+<button class="neo-btn neo-border neo-shadow bg-[#FFAFA3] hover:bg-[#FFC0DD] py-2.5 px-4 font-unbounded text-xs font-bold flex items-center justify-center gap-2" onclick="document.getElementById('rejectModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-lg">cancel</span>
+                TOLAK PENGAJUAN (REJECTED)
+              </button>
+</div>
+<!-- Audit Trail Live Preview Card -->
+
+</div>
+</div>
+<!-- Bento Timeline & Milestone Akun -->
+<div class="neo-border neo-shadow bg-white">
+<div class="p-4 border-b-2 border-[#3D2900] bg-[#ECEAE6] flex items-center justify-between">
+<h2 class="font-unbounded text-sm md:text-base font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">timeline</span>
+              Milestone &amp; Riwayat Akun
+            </h2>
+<span class="text-xs font-mono font-bold text-[#745a2b]">4 Peristiwa</span>
+</div>
+<div class="p-5">
+<ol class="relative border-l-2 border-[#3D2900] ml-3 space-y-6">
+<!-- Timeline 1 -->
+<li class="relative pl-6">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full neo-border bg-[#A9E8AE]"></div>
+<div class="text-[10px] font-mono font-bold text-[#8F8267]">15 FEB 2026</div>
+<h3 class="font-unbounded text-xs font-bold text-[#3D2900]">Registrasi Akun Pelanggan</h3>
+<p class="text-xs text-[#404751] mt-0.5">Membuat akun reguler dengan email institusi sekolah.</p>
+</li>
+<!-- Timeline 2 -->
+<li class="relative pl-6">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full neo-border bg-[#A9E8AE]"></div>
+<div class="text-[10px] font-mono font-bold text-[#8F8267]">01 AGU 2026</div>
+<h3 class="font-unbounded text-xs font-bold text-[#3D2900]">Pesanan Pertama Terverifikasi</h3>
+<p class="text-xs text-[#404751] mt-0.5">Pemesanan Starter STEM Kit untuk laboratorium SMP Bina Bangsa.</p>
+</li>
+<!-- Timeline 3 -->
+<li class="relative pl-6">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full neo-border bg-[#FFF37E]"></div>
+<div class="text-[10px] font-mono font-bold text-[#894d00]">10 SEP 2026 (15:30 WIB)</div>
+<h3 class="font-unbounded text-xs font-bold text-[#3D2900]">Pengajuan Formulir Reseller Masuk</h3>
+<p class="text-xs text-[#404751] mt-0.5">Mengunggah KTP, NPWP, serta referensi komunitas robotika.</p>
+</li>
+<!-- Timeline 4 (Current) -->
+<li class="relative pl-6">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full neo-border bg-[#2483D0] animate-pulse"></div>
+<div class="text-[10px] font-mono font-bold text-[#005f9e]">HARI INI (REALTIME)</div>
+<h3 class="font-unbounded text-xs font-bold text-[#005f9e]">Menunggu Keputusan Verifikasi Admin</h3>
+<p class="text-xs text-[#404751] mt-0.5">Sesi peninjauan oleh superadmin aktif di dasbor.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<!-- Security & PRD Compliance Footer Banner -->
+
+</div>
+<!-- Modal Preview Dokumen Legalitas (Neo-Brutalist) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs" id="docModal">
+<div class="bg-white neo-border neo-shadow-lg max-w-lg w-full p-6 space-y-4 relative">
+<div class="flex items-center justify-between pb-3 border-b-2 border-[#3D2900]">
+<h3 class="font-unbounded text-base font-bold text-[#3D2900]" id="docTitle">Preview Berkas</h3>
+<button class="neo-btn neo-border p-1 bg-[#ECEAE6] hover:bg-[#FFAFA3]" onclick="document.getElementById('docModal').classList.add('hidden')">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<div class="neo-border bg-[#ECEAE6] p-4 text-center">
+<!-- Visual Rich Document Mockup -->
+<div class="w-full h-44 neo-border bg-[#F3EFE4] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-transparent via-[#2483D0]/10 to-transparent"></div>
+<span class="material-symbols-outlined text-5xl text-[#005f9e] mb-2">verified_user</span>
+<span class="text-xs font-mono font-bold text-[#3D2900]" id="docSubtitle">DOKUMEN RESMI REPUBLIK INDONESIA</span>
+<span class="text-[11px] text-[#745a2b] mt-1 text-center max-w-xs">Watermark: RoboEdu System Verification Encrypted Document Storage</span>
+</div>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-[#8F8267] font-mono">Format: PDF/JPG • Verified File Hash</span>
+<button class="neo-btn neo-border neo-shadow-sm bg-[#FFF37E] font-unbounded text-xs font-bold px-4 py-2" onclick="document.getElementById('docModal').classList.add('hidden')">
+          TUTUP PREVIEW
+        </button>
+</div>
+</div>
+</div>
+<!-- Modal Reject Confirmation (Neo-Brutalist) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs" id="rejectModal">
+<div class="bg-white neo-border neo-shadow-lg max-w-md w-full p-6 space-y-4">
+<div class="flex items-center gap-2 pb-2 border-b-2 border-[#3D2900]">
+<span class="material-symbols-outlined text-2xl text-[#ba1a1a]">warning</span>
+<h3 class="font-unbounded text-base font-bold text-[#3D2900]">Konfirmasi Penolakan</h3>
+</div>
+<p class="text-xs md:text-sm text-[#404751]">
+        Apakah Anda yakin ingin menolak pengajuan reseller untuk <strong>Budi Santoso (USR-R001)</strong>? Penolakan akan memberitahukan pemohon via email resmi.
+      </p>
+<div class="space-y-1">
+<label class="block text-xs font-unbounded font-bold">Alasan Penolakan Wajib:</label>
+<select class="w-full neo-border bg-[#ECEAE6] p-2 text-xs font-outfit" id="rejectReason">
+<option value="omzet">Dokumen Legalitas Tidak Terbaca / Kadaluarsa</option>
+<option value="legal">Data Alamat Belum Memenuhi Kriteria Institusi</option>
+<option value="kuota">Kuota Kemitraan Reseller Wilayah Jakarta Penuh</option>
+<option value="lainnya">Alasan Lainnya (Lihat Catatan)</option>
+</select>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="neo-btn neo-border bg-white px-3 py-2 text-xs font-unbounded font-bold" onclick="document.getElementById('rejectModal').classList.add('hidden')">
+          BATAL
+        </button>
+<button class="neo-btn neo-border neo-shadow bg-[#FFAFA3] hover:bg-[#FFC0DD] px-4 py-2 text-xs font-unbounded font-bold text-[#3D2900]" onclick="confirmReject()">
+          KONFIRMASI TOLAK
+        </button>
+</div>
+</div>
+</div>
+<!-- Toast Notification Feedback Container -->
+<div class="fixed bottom-6 right-6 hidden z-50 neo-border neo-shadow bg-[#A9E8AE] p-4 text-xs font-unbounded font-bold flex items-center gap-2" id="toastAlert">
+<span class="material-symbols-outlined text-base text-green-900">task_alt</span>
+<span id="toastMsg" class="">Status Reseller Berhasil Diperbarui!</span>
+</div>
+<!-- Inline Script for Interactive Functions -->
+<script>
+    function updateTimestamp() {
+      const now = new Date();
+      const tsElem = document.getElementById('auditTimestamp');
+      if (tsElem) {
+        tsElem.textContent = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+      }
+    }
+    updateTimestamp();
+
+    function openDocPreview(title, placeholder, desc) {
+      document.getElementById('docTitle').textContent = title;
+      document.getElementById('docSubtitle').textContent = desc;
+      document.getElementById('docModal').classList.remove('hidden');
+    }
+
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('toastAlert');
+      const msg = document.getElementById('toastMsg');
+      msg.textContent = message;
+      if (isSuccess) {
+        toast.className = 'fixed bottom-6 right-6 z-50 neo-border neo-shadow bg-[#A9E8AE] p-4 text-xs font-unbounded font-bold flex items-center gap-2';
+      } else {
+        toast.className = 'fixed bottom-6 right-6 z-50 neo-border neo-shadow bg-[#FFAFA3] p-4 text-xs font-unbounded font-bold flex items-center gap-2';
+      }
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+
+    function approveDirectly() {
+      const notes = document.getElementById('adminNotes').value || 'Data legalitas dan LTV telah diverifikasi secara manual.';
+      showToast('PENGESAHAN BERHASIL: Hak reseller_price untuk USR-R001 telah aktif!', true);
+    }
+
+    function confirmReject() {
+      document.getElementById('rejectModal').classList.add('hidden');
+      const reason = document.getElementById('rejectReason').value;
+      showToast('Pengajuan reseller USR-R001 telah DITOLAK. Notifikasi terkirim.', false);
+    }
+  </script>
+</div></main>
+<!-- END: MainShowcaseStage -->
+<!-- BEGIN: FooterSpecifications -->
+<!-- END: FooterSpecifications -->
+
+
+
+
+</body></html>

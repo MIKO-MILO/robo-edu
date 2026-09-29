@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Barrel exports — components/admin/resellers
  *
  * Import individual components dari sini:
@@ -25,6 +25,12 @@ export {
 // Atoms
 export { ResellerKpiCard } from "./reseller-kpi-card";
 export type { ResellerKpiCardProps } from "./reseller-kpi-card";
+
+export { ResellerStepper } from "./reseller-stepper";
+export type { ResellerStepperProps } from "./reseller-stepper";
+
+export { ResellerRejectModal } from "./reseller-reject-modal";
+export type { ResellerRejectModalProps, RejectReason } from "./reseller-reject-modal";
 
 // Molecules
 export { ResellerStatsGrid } from "./reseller-stats";

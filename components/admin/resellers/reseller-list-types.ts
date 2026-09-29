@@ -49,12 +49,23 @@ export interface ResellerStats {
 /**
  * DTO lengkap untuk halaman Detail Reseller (/admin/resellers/[id]).
  * Extends data row dengan informasi tambahan untuk konteks review.
+ *
+ * Field legalitas (affiliation_name, ktp_nik, npwp_number, primary_address)
+ * akan diisi dari API backend Phase 2. Saat ini disimulasikan via mock.
  */
 export interface AdminResellerDetailData extends AdminResellerRow {
   /** Riwayat pesanan singkat untuk referensi admin saat review */
   recent_orders: ResellerOrderSummary[];
   /** Catatan admin (untuk keperluan internal) */
   admin_note?: string | null;
+  /** Nama instansi/komunitas afiliasi pemohon (dari formulir pengajuan) */
+  affiliation_name?: string | null;
+  /** NIK KTP pemohon — disensor sebagian untuk tampilan (mis. 3174**********01) */
+  ktp_nik?: string | null;
+  /** Nomor NPWP pemohon — disensor sebagian */
+  npwp_number?: string | null;
+  /** Alamat pengiriman utama pemohon (dari user_address WHERE is_primary = true) */
+  primary_address?: string | null;
 }
 
 /**

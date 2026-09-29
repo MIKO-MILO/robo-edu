@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
-import { CheckCircle2, XCircle, ShieldAlert, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Gavel, CheckCircle2, XCircle, Info, Clock, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ResellerStatus } from "@/types/enums";
 
 export interface ResellerApprovalCardProps {
@@ -13,11 +13,14 @@ export interface ResellerApprovalCardProps {
 }
 
 /**
- * Molecule — Kartu aksi approve/reject pengajuan reseller.
- * Menampilkan state berbeda berdasarkan resellerStatus:
- *   - PENDING: tombol Setujui & Tolak
- *   - APPROVED: status sudah disetujui (read-only)
- *   - REJECTED: status sudah ditolak (read-only)
+ * Molecule — Kartu Keputusan Verifikasi pengajuan reseller (Neo-Brutalist).
+ * State-based rendering:
+ *   - PENDING: form catatan verifikator + tombol approve/reject
+ *   - APPROVED: read-only card status berhasil
+ *   - REJECTED: read-only card status ditolak
+ *
+ * FR-010 / FR-017 (PRD): Persetujuan mengaktifkan hak reseller_price.
+ * Aksi dicatat di audit_log — handled by backend on Phase 2.
  */
 export function ResellerApprovalCard({
   resellerStatus,
@@ -25,99 +28,154 @@ export function ResellerApprovalCard({
   onApprove,
   onReject,
 }: ResellerApprovalCardProps) {
+  const [notes, setNotes] = React.useState("");
+
+  // ── APPROVED state ──
   if (resellerStatus === "APPROVED") {
     return (
-      <div className="bg-card p-5 rounded-2xl border-2 border-border shadow-xs space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-success/10 text-success">
-            <CheckCircle2 className="size-4" />
-          </div>
-          <div>
-            <div className="font-heading font-bold text-sm text-foreground">
-              Pengajuan Disetujui
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {applicantName} telah mendapatkan akses harga reseller.
-            </div>
-          </div>
+      <div className="border-2 border-border neo-shadow bg-card">
+        <div className="p-4 border-b-2 border-border bg-success-bg flex items-center justify-between">
+          <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-success">
+            <ShieldCheck className="size-[18px]" />
+            Status Reseller
+          </h2>
+          <span className="border border-border bg-card text-[10px] font-mono px-2 py-0.5 font-bold text-foreground">
+            APPROVED
+          </span>
         </div>
-        <div className="p-3 rounded-xl bg-success/10 border border-success/20 text-xs text-success font-body">
-          Reseller aktif dapat menikmati harga khusus pada seluruh produk RoboEdu.
+        <div className="p-5 space-y-3">
+          <div className="p-3.5 border-2 border-border bg-success-bg flex items-start gap-2.5">
+            <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
+            <p className="text-xs font-body text-foreground leading-relaxed">
+              <strong className="font-heading">{applicantName}</strong> telah mendapatkan akses harga{" "}
+              <code className="font-mono bg-muted px-1 py-0.5 border border-border">reseller_price</code>{" "}
+              di seluruh katalog RoboEdu.
+            </p>
+          </div>
+          <div className="p-3 border border-border bg-muted text-xs text-muted-foreground font-body">
+            Event telah ditulis ke tabel{" "}
+            <code className="font-mono text-foreground">audit_log</code> secara otomatis.
+          </div>
         </div>
       </div>
     );
   }
 
+  // ── REJECTED state ──
   if (resellerStatus === "REJECTED") {
     return (
-      <div className="bg-card p-5 rounded-2xl border-2 border-border shadow-xs space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-danger/10 text-danger">
-            <XCircle className="size-4" />
-          </div>
-          <div>
-            <div className="font-heading font-bold text-sm text-foreground">
-              Pengajuan Ditolak
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Pengajuan dari {applicantName} telah ditolak.
-            </div>
-          </div>
+      <div className="border-2 border-border neo-shadow bg-card">
+        <div className="p-4 border-b-2 border-border bg-danger-bg flex items-center justify-between">
+          <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-danger">
+            <XCircle className="size-[18px]" />
+            Status Verifikasi
+          </h2>
+          <span className="border border-border bg-card text-[10px] font-mono px-2 py-0.5 font-bold text-foreground">
+            REJECTED
+          </span>
         </div>
-        <div className="p-3 rounded-xl bg-danger-bg border border-danger/20 text-xs text-danger font-body">
-          Customer tetap berstatus pelanggan reguler dan menggunakan harga normal.
+        <div className="p-5 space-y-3">
+          <div className="p-3.5 border-2 border-border bg-danger-bg flex items-start gap-2.5">
+            <XCircle className="size-5 text-danger shrink-0 mt-0.5" />
+            <p className="text-xs font-body text-foreground leading-relaxed">
+              Pengajuan dari <strong className="font-heading">{applicantName}</strong> telah ditolak.
+              Customer tetap berstatus pelanggan reguler dengan harga normal.
+            </p>
+          </div>
+          <div className="p-3 border border-border bg-muted text-xs text-muted-foreground font-body">
+            Notifikasi email penolakan telah terkirim ke pemohon.
+          </div>
         </div>
       </div>
     );
   }
 
-  // PENDING state — tampilkan action buttons
+  // ── PENDING state — action form ──
   return (
-    <div className="bg-card p-5 rounded-2xl border-2 border-border shadow-xs space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <div className="p-2 rounded-xl bg-warning/10 text-warning">
-          <Clock className="size-4" />
-        </div>
-        <div>
-          <div className="font-heading font-bold text-sm text-foreground">
-            Tindak Lanjut Pengajuan
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Review pengajuan reseller dari {applicantName}
-          </div>
-        </div>
-      </div>
-
-      {/* Warning notice */}
-      <div className="p-3 rounded-xl bg-warning-bg border border-warning/30 flex items-start gap-2 text-xs text-warning font-body">
-        <ShieldAlert className="size-3.5 shrink-0 mt-0.5" />
-        <span>
-          Setelah menyetujui, {applicantName} akan langsung mendapatkan akses ke
-          harga reseller untuk semua produk. Pastikan data pemohon sudah terverifikasi.
+    <div className="border-2 border-border neo-shadow bg-card relative">
+      {/* Blue header */}
+      <div className="p-4 border-b-2 border-border bg-primary flex items-center justify-between">
+        <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-white">
+          <Gavel className="size-[18px]" />
+          Keputusan Verifikasi
+        </h2>
+        <span className="border border-white/50 bg-white/10 text-white text-[10px] font-mono px-2 py-0.5 font-bold">
+          FR-010 / FR-017
         </span>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <Button
-          type="button"
-          variant="default"
-          className="flex-1 gap-2 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-sm text-primary-foreground"
-          onClick={onApprove}
-        >
-          <CheckCircle2 className="size-4" />
-          Setujui Pengajuan
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1 gap-2 rounded-xl border-2 border-border text-danger hover:text-danger font-heading font-bold text-sm"
-          onClick={onReject}
-        >
-          <XCircle className="size-4" />
-          Tolak Pengajuan
-        </Button>
+      <div className="p-5 space-y-4">
+        {/* Info callout */}
+        <div className="p-3.5 border-2 border-border bg-warning-bg flex items-start gap-2.5">
+          <Info className="size-5 text-warning shrink-0 mt-0.5" />
+          <p className="text-xs font-body text-foreground leading-tight">
+            Persetujuan akan mengaktifkan hak harga{" "}
+            <strong className="font-mono">reseller_price</strong> di seluruh katalog RoboEdu dan
+            secara otomatis menulis event ke tabel{" "}
+            <strong className="font-mono">audit_log</strong>.
+          </p>
+        </div>
+
+        {/* Notes textarea */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="adminNotes"
+            className="block font-heading text-xs font-bold text-foreground"
+          >
+            Catatan Verifikator / Alasan Keputusan:
+          </label>
+          <textarea
+            id="adminNotes"
+            rows={3}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Contoh: Dokumen legalitas valid, total omzet melebihi standar minimum institusi."
+            className={cn(
+              "w-full border-2 border-border bg-muted p-3 text-xs md:text-sm font-body",
+              "focus:outline-none focus:bg-card focus:shadow-[2px_2px_0px_0px_#2483D0]",
+              "transition-shadow duration-100 resize-none"
+            )}
+          />
+        </div>
+
+        {/* Action buttons stack */}
+        <div className="grid grid-cols-1 gap-3 pt-1">
+          <button
+            type="button"
+            onClick={onApprove}
+            className={cn(
+              "border-2 border-border neo-shadow bg-primary hover:bg-primary-600 text-white",
+              "py-3 px-4 font-heading text-xs md:text-sm font-bold",
+              "flex items-center justify-center gap-2",
+              "neo-shadow-hover transition-all duration-100"
+            )}
+          >
+            <CheckCircle2 className="size-5" />
+            SETUJUI RESELLER (APPROVED)
+          </button>
+          <button
+            type="button"
+            onClick={onReject}
+            className={cn(
+              "border-2 border-border neo-shadow bg-danger-bg hover:bg-accent-pink text-danger",
+              "py-2.5 px-4 font-heading text-xs font-bold",
+              "flex items-center justify-center gap-2",
+              "neo-shadow-hover transition-all duration-100"
+            )}
+          >
+            <XCircle className="size-5" />
+            TOLAK PENGAJUAN (REJECTED)
+          </button>
+        </div>
+
+        {/* Audit trail live preview placeholder */}
+        <div className="p-3 border border-border bg-muted flex items-start gap-2 text-xs font-body text-muted-foreground">
+          <Clock className="size-4 shrink-0 mt-0.5" />
+          <span>
+            Tindakan akan dicatat di <code className="font-mono text-foreground">audit_log</code>{" "}
+            dengan timestamp dan ID admin secara otomatis.
+          </span>
+        </div>
       </div>
     </div>
   );

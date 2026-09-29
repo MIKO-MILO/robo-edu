@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import {
@@ -7,11 +7,13 @@ import {
   MessageCircle,
   CheckCircle2,
   XCircle,
-  Clock,
   Calendar,
+  ChevronRight,
+  ArrowLeft,
+  Shield,
 } from "lucide-react";
-import { Button, BackButton } from "@/components/ui/button";
-import { StatusBadge } from "@/components/admin/status-badge";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 import type { ResellerStatus } from "@/types/enums";
 
 export interface ResellerDetailHeaderProps {
@@ -47,10 +49,40 @@ function formatDateTime(isoString: string): string {
   }).format(new Date(isoString));
 }
 
+const STATUS_CONFIG: Record<
+  ResellerStatus,
+  { label: string; bgColor: string; dotColor: string; textColor: string }
+> = {
+  PENDING: {
+    label: "PENDING REVIEW",
+    bgColor: "bg-warning-bg",
+    dotColor: "bg-warning animate-ping",
+    textColor: "text-foreground",
+  },
+  APPROVED: {
+    label: "APPROVED",
+    bgColor: "bg-success-bg",
+    dotColor: "bg-success",
+    textColor: "text-success",
+  },
+  REJECTED: {
+    label: "REJECTED",
+    bgColor: "bg-danger-bg",
+    dotColor: "bg-danger",
+    textColor: "text-danger",
+  },
+  NOT_RESELLER: {
+    label: "BUKAN RESELLER",
+    bgColor: "bg-muted",
+    dotColor: "bg-muted-foreground",
+    textColor: "text-muted-foreground",
+  },
+};
+
 /**
- * Molecule — Header detail pengajuan reseller.
- * Menampilkan breadcrumb, info pemohon, status, dan tombol aksi approve/reject.
- * Tombol aksi hanya muncul jika status PENDING.
+ * Molecule — Header detail pengajuan reseller (Neo-Brutalist).
+ * Menampilkan breadcrumb, status badge, profil pemohon, dan tombol aksi CTA.
+ * Layout: top action bar → profile bento card.
  */
 export function ResellerDetailHeader({
   id,
@@ -66,120 +98,174 @@ export function ResellerDetailHeader({
 }: ResellerDetailHeaderProps) {
   const cleanPhone = phone ? phone.replace(/[^0-9]/g, "") : null;
   const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : null;
+  const statusCfg = STATUS_CONFIG[resellerStatus] ?? STATUS_CONFIG.PENDING;
 
   return (
     <div className="space-y-4">
-      {/* Back link */}
-      <div>
-        <BackButton href="/admin/resellers" label="Kembali ke Daftar Reseller" />
-      </div>
+      {/* ── Top Action Bar & Breadcrumbs ── */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Back button — Neo style */}
+          <Link
+            href="/admin/resellers"
+            className={cn(
+              "border-2 border-border neo-shadow-icon bg-card hover:bg-muted",
+              "px-3.5 py-2 text-xs font-heading font-bold",
+              "inline-flex items-center gap-2",
+              "neo-shadow-hover transition-all duration-100"
+            )}
+          >
+            <ArrowLeft className="size-4 shrink-0" />
+            KEMBALI KE DAFTAR RESELLER
+          </Link>
 
-      {/* Main Header Container */}
-      <div className="bg-card p-6 rounded-2xl border-2 border-border shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        {/* Left: Avatar + Info */}
-        <div className="flex items-center gap-4">
-          <div className="size-16 rounded-2xl bg-primary/10 border-2 border-primary/30 text-primary font-heading font-bold text-xl flex items-center justify-center shrink-0">
-            {getInitials(name)}
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-heading font-bold text-foreground">
-                {name}
-              </h1>
-              <StatusBadge
-                status={resellerStatus}
-                size="sm"
-                neo
-                customLabel={
-                  resellerStatus === "PENDING"
-                    ? "Menunggu Review"
-                    : resellerStatus === "APPROVED"
-                    ? "Reseller Aktif"
-                    : "Pengajuan Ditolak"
-                }
-              />
-              <StatusBadge
-                status={isActive ? "ACTIVE" : "INACTIVE"}
-                size="sm"
-                customLabel={isActive ? "Akun Aktif" : "Nonaktif"}
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Mail className="size-3.5" />
-                <span>{email}</span>
-              </div>
-              {phone && (
-                <div className="flex items-center gap-1.5">
-                  <Phone className="size-3.5" />
-                  <span>{phone}</span>
-                </div>
-              )}
-              <span className="text-[11px] bg-muted px-2 py-0.5 rounded-md font-mono text-muted-foreground">
-                ID: {id}
-              </span>
-            </div>
-
-            {/* Timeline info */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-              {resellerAppliedAt && (
-                <div className="flex items-center gap-1">
-                  <Clock className="size-3" />
-                  <span>Diajukan: {formatDateTime(resellerAppliedAt)}</span>
-                </div>
-              )}
-              {resellerApprovedAt && (
-                <div className="flex items-center gap-1 text-success">
-                  <Calendar className="size-3" />
-                  <span>Disetujui: {formatDateTime(resellerApprovedAt)}</span>
-                </div>
-              )}
-            </div>
+          {/* Breadcrumb trail */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+            <span>Admin</span>
+            <ChevronRight className="size-3" />
+            <span>Reseller</span>
+            <ChevronRight className="size-3" />
+            <span className="text-foreground bg-warning-bg px-2 py-0.5 border border-border">
+              Verifikasi ({id.toUpperCase()})
+            </span>
           </div>
         </div>
 
-        {/* Right: Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto justify-end">
-          {waUrl && (
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-1.5 rounded-xl border-2 border-border font-heading font-bold text-xs"
+        {/* Status + ID chips */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={cn(
+              "border-2 border-border neo-shadow-icon px-3 py-1",
+              "font-heading text-xs font-bold flex items-center gap-1.5",
+              statusCfg.bgColor,
+              statusCfg.textColor
+            )}
+          >
+            <span className={cn("size-2 rounded-full shrink-0", statusCfg.dotColor)} />
+            STATUS: {statusCfg.label}
+          </span>
+          <span className="border-2 border-border bg-accent-soft-blue px-2.5 py-1 text-xs font-mono font-bold">
+            ID: {id.toUpperCase()}
+          </span>
+          <span className="border border-border bg-muted px-2.5 py-1 text-xs font-body font-medium flex items-center gap-1 text-muted-foreground">
+            <Shield className="size-3.5" />
+            superadmin / admin_sales
+          </span>
+        </div>
+      </header>
+
+      {/* ── Bento Profile Overview ── */}
+      <section className="border-2 border-border neo-shadow bg-card p-5 md:p-7 relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          {/* Left: Avatar + Info */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            {/* Avatar initials */}
+            <div
+              className={cn(
+                "size-20 rounded-full bg-accent-soft-blue border-2 border-border neo-shadow-icon",
+                "flex items-center justify-center shrink-0",
+                "font-heading font-extrabold text-2xl text-primary"
+              )}
             >
-              <a href={waUrl} target="_blank" rel="noreferrer">
-                <MessageCircle className="size-4 text-emerald-600" />
-                <span>WhatsApp</span>
-              </a>
-            </Button>
-          )}
+              {getInitials(name)}
+            </div>
 
-          {resellerStatus === "PENDING" && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 rounded-xl text-danger hover:text-danger border-2 border-border font-heading font-bold text-xs"
-                onClick={onReject}
+            {/* Info block */}
+            <div className="space-y-1.5">
+              {/* Name + badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-heading text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+                  {name}
+                </h1>
+                {isActive && (
+                  <span className="border-2 border-border bg-success-bg neo-shadow-icon px-2.5 py-0.5 text-xs font-bold font-heading uppercase text-success">
+                    Customer Aktif
+                  </span>
+                )}
+                <span className="border-2 border-border bg-warning-bg px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-foreground">
+                  Reseller Applicant
+                </span>
+              </div>
+
+              {/* Contact meta row */}
+              <div className="flex flex-wrap gap-y-1 gap-x-4 pt-1 text-xs font-body font-medium text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Mail className="size-3.5 text-primary" />
+                  {email}
+                </span>
+                {phone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone className="size-3.5 text-primary" />
+                    {phone}
+                  </span>
+                )}
+                {resellerAppliedAt && (
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="size-3.5 text-primary" />
+                    Diajukan: {formatDateTime(resellerAppliedAt)}
+                  </span>
+                )}
+                {resellerApprovedAt && (
+                  <span className="flex items-center gap-1.5 text-success">
+                    <Calendar className="size-3.5" />
+                    Disetujui: {formatDateTime(resellerApprovedAt)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Quick Decision CTAs */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full lg:w-auto">
+            {waUrl && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "border-2 border-border neo-shadow-icon bg-card hover:bg-muted",
+                  "text-xs font-heading font-bold px-3 py-2.5",
+                  "flex items-center justify-center gap-1.5 flex-1 sm:flex-initial",
+                  "neo-shadow-hover transition-all duration-100"
+                )}
               >
-                <XCircle className="size-4" />
-                <span>Tolak</span>
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
-                onClick={onApprove}
-              >
-                <CheckCircle2 className="size-4" />
-                <span>Setujui Reseller</span>
-              </Button>
-            </>
-          )}
+                <MessageCircle className="size-4 text-green-700" />
+                WHATSAPP
+              </a>
+            )}
+            {resellerStatus === "PENDING" && (
+              <>
+                <button
+                  type="button"
+                  onClick={onReject}
+                  className={cn(
+                    "border-2 border-border neo-shadow bg-danger-bg hover:bg-accent-pink text-danger",
+                    "text-xs font-heading font-bold px-4 py-2.5",
+                    "flex items-center justify-center gap-1.5 flex-1 sm:flex-initial",
+                    "neo-shadow-hover transition-all duration-100"
+                  )}
+                >
+                  <XCircle className="size-4" />
+                  TOLAK
+                </button>
+                <button
+                  type="button"
+                  onClick={onApprove}
+                  className={cn(
+                    "border-2 border-border neo-shadow bg-primary hover:bg-primary-600 text-white",
+                    "text-xs font-heading font-bold px-5 py-2.5",
+                    "flex items-center justify-center gap-1.5 flex-1 sm:flex-initial",
+                    "neo-shadow-hover transition-all duration-100"
+                  )}
+                >
+                  <CheckCircle2 className="size-4" />
+                  SETUJUI RESELLER
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

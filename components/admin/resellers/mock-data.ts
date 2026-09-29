@@ -166,6 +166,12 @@ export function getMockResellerDetail(id: string): AdminResellerDetailData | nul
 
   return {
     ...base,
+    // TODO: Phase 2 — ambil dari user_address WHERE is_primary = true
+    affiliation_name: "Komunitas Robotika Nusantara & SMP Bina Bangsa Jakarta",
+    ktp_nik: "3174**********01",
+    npwp_number: "84.921.***.*-012",
+    primary_address:
+      "Laboratorium Robotika & STEM, SMP Bina Bangsa, Jl. Cendrawasih Raya No. 42, Kel. Gandaria Selatan, Kec. Cilandak, Kota Jakarta Selatan, DKI Jakarta 12140",
     recent_orders: [
       {
         id: "ord-001",
