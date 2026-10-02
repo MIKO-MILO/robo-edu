@@ -33,7 +33,7 @@ function CloudAccent({
   height: number;
 }) {
   return (
-    <div className={`absolute opacity-60 pointer-events-none z-0 ${className}`}>
+    <div className={`absolute opacity-100 pointer-events-none z-0 ${className}`}>
       <Image
         src={src}
         alt={alt}
@@ -123,16 +123,16 @@ export default function VideoDemo({
 
   return (
     <section className="relative bg-[#F3EFE4] pt-24 sm:pt-45 pb-10 sm:pb-10 text-[#3D2900] overflow-hidden">
-      {/* Decorative Clouds - Awan kiri diturunkan khusus pada ukuran tablet */}
+      {/* Decorative Clouds - Posisi awan kiri digeser ke kanan (-left-8 sm:-left-8) */}
       <CloudAccent
-        src="/images/awan3.png"
+        src="/images/awan3.webp"
         alt="Awan Accent Kiri"
-        className="top-12 sm:top-20 md:top-20 lg:top-11 -left-16 sm:-left-16 max-w-[180px] sm:max-w-[320px] scale-x-[-1]"
+        className="top-12 sm:top-20 md:top-20 lg:top-11 -left-10 sm:-left-10 max-w-[180px] sm:max-w-[320px] scale-x-[-1]"
         width={360}
         height={360}
       />
       <CloudAccent
-        src="/images/awan3.png"
+        src="/images/awan3.webp"
         alt="Awan Accent Kanan"
         className="top-1 sm:top-3 -right-12 sm:-right-12 max-w-[200px] sm:max-w-[380px]"
         width={360}
@@ -141,7 +141,6 @@ export default function VideoDemo({
 
       {/* Container utama konten */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Menggunakan padding kiri (lg:pl-16 xl:pl-24) khusus pada ukuran laptop/lg ke atas agar seluruh isi grid bergeser ke kanan */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center lg:pl-20">
           {/* Left Column - Video Preview Container */}
           <div className="lg:col-span-6 flex justify-center lg:justify-end relative">

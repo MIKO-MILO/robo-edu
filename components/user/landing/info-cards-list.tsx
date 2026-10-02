@@ -53,7 +53,7 @@ export interface InfoCardsListProps {
 
 export default function InfoCardsList({ cards = defaultCards }: InfoCardsListProps) {
   return (
-    <section className="bg-[#2781CD] py-12 sm:py-16 overflow-hidden">
+    <section className="bg-[#2781CD] py-11 sm:py-15 overflow-hidden">
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-5 items-stretch pt-4 pb-8">
           {cards.map((card) => (

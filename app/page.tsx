@@ -17,6 +17,7 @@ export default function HomePage() {
       <InfoCardsList />
       <CarouselLogo />
       <CardProduct />
+      <DiskonPromo />
       <VideoDemo />
       <Testimoni />
       <FAQ />

@@ -42,9 +42,9 @@ export default function ICardsInfo({
   imageSrc = "/images/robot.webp",
 }: CardsInfoProps) {
   return (
-    <section className="relative bg-[#2781CD] pt-20 sm:pt-24 pb-10 sm:pb-16 lg:pb-18">
-      {/* SVG Dekorasi Jalur di Kiri (Digeser lebih ke kiri) */}
-      <div className="absolute -left-2 sm:-left-4 -top-[70px] sm:-top-[100px] pointer-events-none z-40 opacity-100 overflow-visible max-w-full">
+    <section className="relative bg-[#2781CD] pt-14 sm:pt-18 pb-10 sm:pb-16 lg:pb-18">
+      {/* SVG Dekorasi Jalur di Kiri (Digeser sedikit ke kanan: left-0 sm:-left-2) */}
+      <div className="absolute left-0 sm:-left-2 -top-[65px] sm:-top-[95px] pointer-events-none z-40 opacity-100 overflow-visible max-w-full">
         <svg
           width="431"
           height="402"
@@ -62,8 +62,8 @@ export default function ICardsInfo({
         </svg>
       </div>
 
-      {/* SVG Dekorasi Jalur di Kanan */}
-      <div className="absolute right-0 -top-[80px] sm:-top-[130px] pointer-events-none z-40 opacity-40 overflow-visible max-w-full">
+      {/* SVG Dekorasi Jalur di Kanan (Digeser sedikit ke kiri: right-2) */}
+      <div className="absolute right-2 -top-[75px] sm:-top-[125px] pointer-events-none z-40 opacity-40 overflow-visible max-w-full">
         <svg
           width="276"
           height="511"

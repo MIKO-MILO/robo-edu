@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/ui/product-card";
 
 // ==========================================
@@ -147,6 +148,29 @@ function NavButton({
   );
 }
 
+// Helper: Teks Warna-warni per Karakter
+function ColorfulText({ text }: { text: string }) {
+  const colors = [
+    "text-pink-500",
+    "text-amber-500",
+    "text-cyan-500",
+    "text-purple-500",
+    "text-emerald-500",
+    "text-orange-500",
+    "text-blue-500",
+  ];
+
+  return (
+    <span>
+      {text.split("").map((char, index) => (
+        <span key={index} className={colors[index % colors.length]}>
+          {char}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 // ==========================================
 // 3. MAIN ORGANISM COMPONENT
 // ==========================================
@@ -175,10 +199,32 @@ export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: Product
   };
 
   return (
-    <section className="relative bg-background py-6 px-4 sm:px-6 overflow-hidden">
+    <section className="relative bg-background py-16 px-4 sm:px-10 overflow-hidden">
       <GearDecoration />
 
       <div className="max-w-6xl mx-auto relative z-10">
+        
+        {/* HEADER SECTION (Judul, Teks Warna-warni & Tombol Lihat Selengkapnya) */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 px-2 sm:px-4">
+          <div className="max-w-2xl">
+            <h2 className="font-heading text-2xl pt-7 sm:text-3xl lg:text-4xl font-extrabold text-[#103B5E] tracking-tight leading-tight">
+              Koleksi Mainan & Robot IoT <ColorfulText text="Canggih" />
+            </h2>
+            <p className="font-body mt-2 mb-6 text-sm sm:text-base text-muted-foreground">
+              Jelajahi robotik edukatif pintar yang memicu kreativitas dan belajar teknologi secara interaktif.
+            </p>
+          </div>
+
+          <Link
+            href="/products"
+            className="font-heading inline-flex mb-6 items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#103B5E] text-white font-medium text-sm transition-all duration-200 hover:bg-[#103B5E]/90 hover:gap-3 shadow-md w-fit self-start md:self-auto shrink-0"
+          >
+            Lihat Selengkapnya
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* CAROUSEL SECTION */}
         <div className="relative px-0 sm:px-14">
           {/* Navigation Left */}
           <NavButton
@@ -260,7 +306,7 @@ export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: Product
             ))}
           </div>
 
-          {/* Mobile & Tablet Navigation Controls */}
+          {/* Mobile Navigation Controls */}
           <div className="flex md:hidden justify-center items-center gap-4 mt-6">
             <NavButton
               direction="left"

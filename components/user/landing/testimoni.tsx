@@ -238,7 +238,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
       <div className="max-w-7xl mx-auto px-2 xs:px-4 sm:px-6 relative z-10 pt-12 sm:pt-12 lg:pt-16 pb-8">
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-14 lg:mb-16">
-          <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight pt-7">
             TESTIMONI
           </h2>
 
