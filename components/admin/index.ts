@@ -37,57 +37,26 @@ export type { AdminSidebarProps, NavItem } from "./sidebar";
 export { AdminTopBar } from "./top-bar";
 export type { AdminTopBarProps, AdminUserProps } from "./top-bar";
 
-// Orders Components
-export {
-  OrderKpiCard,
-  OrderInfoCard,
-  OrderStatsGrid,
-  OrderFilters,
-  OrderDetailHeader,
-  OrderCustomerCard,
-  OrderShippingCard,
-  OrderPaymentCard,
-  OrderTable,
-  OrderItemsCard,
-  ORDER_STATUS_TABS,
-} from "./orders";
-export type {
-  AdminOrderRow,
-  OrderStats,
-  OrderKpiCardProps,
-  OrderInfoCardProps,
-  OrderStatsProps,
-  OrderFiltersProps,
-  OrderDetailHeaderProps,
-  OrderCustomerCardProps,
-  OrderCustomerInfo,
-  OrderShippingCardProps,
-  OrderShippingInfo,
-  OrderPaymentCardProps,
-  OrderPaymentInfo,
-  OrderTableProps,
-  OrderItemsCardProps,
-  OrderLineItem,
-  OrderPricingSummary,
-} from "./orders";
+// Dashboard Components
+export * from "./dashboard";
 
-// Customers Components
+// Complaints Components
 export {
-  CustomerKpiCard,
-  CustomerStatsGrid,
-  CustomerFilters,
-  CustomerTable,
-  CustomerDetailHeader,
-  CustomerMetricCards,
-  CustomerProfileCard,
-  CustomerOrdersTab,
-  CustomerComplaintsTab,
-  CustomerReviewsTab,
-  CUSTOMER_RESELLER_TABS,
-  MOCK_ADMIN_CUSTOMERS,
-  getCustomerStats,
-  getMockCustomerDetail,
-} from "./customers";
+  ComplaintStatsGrid,
+  ComplaintFilters,
+  ComplaintTable,
+  ComplaintDetailHeader,
+  ComplaintOrderInfoCard,
+  ComplaintCustomerCard,
+  ComplaintDescriptionCard,
+  ComplaintAttachmentGallery,
+  ComplaintActionPanel,
+  COMPLAINT_STATUS_TABS,
+  MOCK_ADMIN_COMPLAINTS,
+  getMockComplaintDetail,
+  getComplaintStats,
+  deriveMediaType,
+} from "./complaints";
 export type {
   AdminCustomerRow,
   CustomerStats,
@@ -137,3 +106,18 @@ export type {
   ResellerApprovalCardProps,
   ResellerOrdersTabProps,
 } from "./resellers";
+export type {
+  AdminComplaintRow,
+  AdminComplaintDetail,
+  AdminComplaintAttachment,
+  ComplaintStats,
+  ComplaintStatsGridProps,
+  ComplaintFiltersProps,
+  ComplaintTableProps,
+  ComplaintDetailHeaderProps,
+  ComplaintOrderInfoCardProps,
+  ComplaintCustomerCardProps,
+  ComplaintAttachmentGalleryProps,
+  ComplaintActionPanelProps,
+} from "./complaints";
+

@@ -231,6 +231,15 @@
   box-shadow: 2px 2px 0px 0px #3D2900;
 }
 
+/* Hide scrollbar utility (keeps scrolling functionality active) */
+@utility no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
+
 /* ==========================================
    Waving Robot Hand Animation
    ========================================== */
