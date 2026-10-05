@@ -1,327 +1,110 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
-import { ProductCard } from "@/components/ui/product-card";
+import ProductCarousel from "@/components/user/landing/product-carousel";
 
 // ==========================================
-// 1. TYPES & INTERFACES (Backend-Ready)
-// ==========================================
-export interface ProductItem {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  image: string;
-  age: string;
-  size: string;
-  duration: string;
-  price: string;
-  rating?: number;
-  reviewCount?: string;
-  bgColorClass?: string;
-}
-
-export interface ProductShowcaseProps {
-  products?: ProductItem[];
-}
-
-const DEFAULT_PRODUCTS: ProductItem[] = [
-  {
-    id: 1,
-    name: "IoT Smart Walking Dog",
-    category: "IoT Robotics",
-    description: "Robot anjing pintar yang bisa berjalan dan berekspresi menggunakan kontrol jarak jauh berbasis Wi-Fi.",
-    image: "/images/foto.jpg",
-    age: "8-12 Years",
-    size: "24 Series",
-    duration: "45 Mins",
-    price: "Rp 450.000",
-    rating: 4.8,
-    reviewCount: "1.2k ulasan",
-    bgColorClass: "bg-accent-pink",
-  },
-  {
-    id: 2,
-    name: "Smart Servo Mechanical Cat",
-    category: "IoT Animals",
-    description: "Merakit robot kucing interaktif dengan kendali sensor gerak dan servo motor via aplikasi smartphone.",
-    image: "/images/foto.jpg",
-    age: "9-14 Years",
-    size: "28 Series",
-    duration: "60 Mins",
-    price: "Rp 520.000",
-    rating: 4.9,
-    reviewCount: "980 ulasan",
-    bgColorClass: "bg-accent-yellow",
-  },
-  {
-    id: 3,
-    name: "IoT Obstacle Avoiding Dino",
-    category: "Smart Automation",
-    description: "Dinosaurus robot pintar yang dapat mendeteksi rintangan dan bergerak otomatis dengan sensor ultrasonik.",
-    image: "/images/foto.jpg",
-    age: "10-15 Years",
-    size: "32 Series",
-    duration: "75 Mins",
-    price: "Rp 610.000",
-    rating: 4.7,
-    reviewCount: "760 ulasan",
-    bgColorClass: "bg-accent-blue",
-  },
-  {
-    id: 4,
-    name: "Bluetooth Racing Mech Bug",
-    category: "IoT & Display",
-    description: "Buggy robot serangga nirkabel yang gesit bergerak menggunakan kontrol Bluetooth dari ponsel.",
-    image: "/images/foto.jpg",
-    age: "7-12 Years",
-    size: "20 Series",
-    duration: "40 Mins",
-    price: "Rp 380.000",
-    rating: 4.6,
-    reviewCount: "540 ulasan",
-    bgColorClass: "bg-accent-pink",
-  },
-  {
-    id: 5,
-    name: "Smart IoT Climbing Monkey",
-    category: "IoT Robotics",
-    description: "Robot monyet cerdas yang dirancang khusus untuk memanjat tali dengan mekanisme servo berkecepatan tinggi.",
-    image: "/images/foto.jpg",
-    age: "11-15 Years",
-    size: "35 Series",
-    duration: "90 Mins",
-    price: "Rp 690.000",
-    rating: 5.0,
-    reviewCount: "1.5k ulasan",
-    bgColorClass: "bg-accent-yellow",
-  },
-];
-
-// ==========================================
-// 2. SUB-COMPONENTS (Atomic Elements)
+// SUB-COMPONENTS
 // ==========================================
 
-// Atom: Background Gear Decoration
-function GearDecoration() {
+// Custom Arrow SVG yang disesuaikan
+function CurvedArrowSVG({ className = "" }: { className?: string }) {
   return (
-    <div className="absolute top-2 left-0 sm:top-4 sm:left-2 w-36 h-36 sm:w-48 sm:h-48 pointer-events-none select-none z-0 opacity-75 rotate-12 scale-x-[-1] -translate-x-6 sm:-translate-x-10">
-      <Image
-        src="/images/gear2.png"
-        alt="Gear Decoration"
-        fill
-        className="object-contain"
-        priority
+    <svg
+      width="477"
+      height="205"
+      viewBox="0 0 477 205"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M26.9974 0C26.9974 13.5283 10.6085 88.3099 2.41406 124.01L90.9141 140.92"
+        stroke="currentColor"
+        strokeWidth="20"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
+      <path
+        d="M2.41406 124.008C2.41406 124.008 98.8292 34.4932 169.581 45.0975C264.431 59.3137 260.819 206.898 356.414 202.929C418.68 200.343 474.414 124.012 474.414 124.012"
+        stroke="currentColor"
+        strokeWidth="20"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// Atom: Section Label
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
+      {/* Panah Kiri */}
+      <CurvedArrowSVG className="w-6 sm:w-10 h-auto text-[#C0392B]" />
+
+      <span className="font-body text-xs sm:text-sm font-bold text-[#C0392B] tracking-wide uppercase">
+        {text}
+      </span>
+
+      {/* Panah Kanan */}
+      <CurvedArrowSVG className="w-6 sm:w-10 h-auto text-[#C0392B] scale-x-[-1]" />
     </div>
   );
 }
 
-// Atom: Navigation Button
-function NavButton({
-  direction,
-  onClick,
-  ariaLabel,
-  className = "",
-}: {
-  direction: "left" | "right";
-  onClick: () => void;
-  ariaLabel: string;
-  className?: string;
-}) {
+// Atom: Side Toy Decorations (Kiri & Kanan)
+function SideToyDecorations() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className={`w-12 h-12 sm:w-14 sm:h-14 bg-card text-[#103B5E] rounded-full flex items-center justify-center shadow-lg transition-transform duration-200 hover:scale-105 cursor-pointer border-0 ${className}`}
-    >
-      {direction === "left" ? (
-        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
-      ) : (
-        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
-      )}
-    </button>
-  );
-}
+    <>
+      {/* Gambar Mainan Kiri (images/toy2.webp) - Lebih ke bawah & condong ke kiri (-rotate-12) */}
+      <div className="absolute top-20 left-4 sm:top-28 sm:left-12 md:left-20 lg:left-28 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 pointer-events-none select-none z-0 -rotate-12 transition-transform">
+        <Image
+          src="/images/toy2.webp"
+          alt="Toy Decoration Left"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
 
-// Helper: Teks Warna-warni per Karakter
-function ColorfulText({ text }: { text: string }) {
-  const colors = [
-    "text-pink-500",
-    "text-amber-500",
-    "text-cyan-500",
-    "text-purple-500",
-    "text-emerald-500",
-    "text-orange-500",
-    "text-blue-500",
-  ];
-
-  return (
-    <span>
-      {text.split("").map((char, index) => (
-        <span key={index} className={colors[index % colors.length]}>
-          {char}
-        </span>
-      ))}
-    </span>
+      {/* Gambar Mainan Kanan (images/toy.webp) */}
+      <div className="absolute top-1 right-1 sm:top-2 sm:right-8 md:right-16 lg:right-24 w-36 h-36 sm:w-52 sm:h-52 md:w-72 md:h-72 pointer-events-none select-none z-0">
+        <Image
+          src="/images/toy.webp"
+          alt="Toy Decoration Right"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
+    </>
   );
 }
 
 // ==========================================
-// 3. MAIN ORGANISM COMPONENT
+// MAIN ORGANISM COMPONENT
 // ==========================================
-export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: ProductShowcaseProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
-  };
-
-  const getVisibleProducts = (breakpoint: 'mobile' | 'tablet' | 'desktop') => {
-    if (breakpoint === 'mobile') {
-      return [products[currentIndex]];
-    }
-    const count = breakpoint === 'tablet' ? 2 : 3;
-    const visible = [];
-    for (let i = 0; i < count; i++) {
-      const index = (currentIndex + i) % products.length;
-      visible.push(products[index]);
-    }
-    return visible;
-  };
-
+export default function ProductShowcase() {
   return (
-    <section className="relative bg-background py-16 px-4 sm:px-10 overflow-hidden">
-      <GearDecoration />
+    <section className="relative bg-background py-12 px-4 sm:px-10 overflow-hidden">
+      {/* Hiasan Mainan Kiri & Kanan */}
+      <SideToyDecorations />
 
       <div className="max-w-6xl mx-auto relative z-10">
+
+        {/* HEADER SECTION */}
+        <div className="text-center pt-8 sm:pt-12 mb-8 sm:mb-10">
+          <SectionLabel text="Produk Terbaru" />
+          <h2 className="font-heading text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#3D2900] tracking-tight leading-snug">
+            Koleksi Mainan &amp; Robot IoT <span className="text-[#3D2900]">Pilihan Terbaik</span>
+          </h2>
+        </div>
+
+        {/* CAROUSEL PRODUK */}
         
-        {/* HEADER SECTION (Judul, Teks Warna-warni & Tombol Lihat Selengkapnya) */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 px-2 sm:px-4">
-          <div className="max-w-2xl">
-            <h2 className="font-heading text-2xl pt-7 sm:text-3xl lg:text-4xl font-extrabold text-[#103B5E] tracking-tight leading-tight">
-              Koleksi Mainan & Robot IoT <ColorfulText text="Canggih" />
-            </h2>
-            <p className="font-body mt-2 mb-6 text-sm sm:text-base text-muted-foreground">
-              Jelajahi robotik edukatif pintar yang memicu kreativitas dan belajar teknologi secara interaktif.
-            </p>
-          </div>
 
-          <Link
-            href="/products"
-            className="font-heading inline-flex mb-6 items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#103B5E] text-white font-medium text-sm transition-all duration-200 hover:bg-[#103B5E]/90 hover:gap-3 shadow-md w-fit self-start md:self-auto shrink-0"
-          >
-            Lihat Selengkapnya
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+<ProductCarousel />
 
-        {/* CAROUSEL SECTION */}
-        <div className="relative px-0 sm:px-14">
-          {/* Navigation Left */}
-          <NavButton
-            direction="left"
-            onClick={handlePrev}
-            ariaLabel="Previous slide"
-            className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 hover:bg-card/90"
-          />
-
-          {/* Navigation Right */}
-          <NavButton
-            direction="right"
-            onClick={handleNext}
-            ariaLabel="Next slide"
-            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 hover:bg-card/90"
-          />
-
-          {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Mobile View: 1 produk */}
-            <div className="block md:hidden flex justify-center">
-              <div className="w-full max-w-xs">
-                <ProductCard
-                  name={products[currentIndex].name}
-                  price={products[currentIndex].price}
-                  rating={products[currentIndex].rating}
-                  reviewCount={products[currentIndex].reviewCount}
-                  imageUrl={products[currentIndex].image}
-                  bgColorClass={products[currentIndex].bgColorClass}
-                />
-              </div>
-            </div>
-
-            {/* Tablet View: 2 produk */}
-            <div className="hidden md:contents lg:hidden">
-              {getVisibleProducts('tablet').map((product) => (
-                <ProductCard
-                  key={product.id}
-                  name={product.name}
-                  price={product.price}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                  imageUrl={product.image}
-                  bgColorClass={product.bgColorClass}
-                />
-              ))}
-            </div>
-
-            {/* Desktop View: 3 produk */}
-            <div className="hidden lg:contents">
-              {getVisibleProducts('desktop').map((product) => (
-                <ProductCard
-                  key={product.id}
-                  name={product.name}
-                  price={product.price}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                  imageUrl={product.image}
-                  bgColorClass={product.bgColorClass}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Horizontal Indicator Lines */}
-          <div className="flex justify-center items-center gap-2 mt-8">
-            {products.map((_, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => setCurrentIndex(index)}
-                aria-label={`Go to slide ${index + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 cursor-pointer border-0 ${
-                  currentIndex === index
-                    ? "w-10 bg-[#103B5E]"
-                    : "w-4 bg-[#103B5E]/20 hover:bg-[#103B5E]/40"
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Mobile Navigation Controls */}
-          <div className="flex md:hidden justify-center items-center gap-4 mt-6">
-            <NavButton
-              direction="left"
-              onClick={handlePrev}
-              ariaLabel="Previous slide"
-              className="w-12 h-12 shadow-md"
-            />
-            <NavButton
-              direction="right"
-              onClick={handleNext}
-              ariaLabel="Next slide"
-              className="w-12 h-12 shadow-md"
-            />
-          </div>
-        </div>
       </div>
     </section>
   );

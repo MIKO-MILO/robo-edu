@@ -86,7 +86,7 @@ function TestimonialCard({ item }: { item: Testimonial }) {
   return (
     <article className="relative flex flex-col group w-full">
       <div
-        className={`relative rounded-[24px] sm:rounded-[32px] p-3.5 xs:p-4 sm:p-6 ${item.accentBg} transition-transform duration-200 group-hover:-translate-y-1 flex flex-col justify-between h-full min-h-[200px] xs:min-h-[220px] sm:min-h-[260px] lg:min-h-[280px] shadow-sm`}
+        className={`relative rounded-[24px] sm:rounded-[32px] p-3.5 xs:p-4 sm:p-6 ${item.accentBg} transition-all duration-200 group-hover:-translate-y-1 flex flex-col justify-between h-full min-h-[200px] xs:min-h-[220px] sm:min-h-[260px] lg:min-h-[280px] shadow-2xl border border-white/50 backdrop-blur-sm`}
       >
         {/* Garis Dalam (Inner Border Utama) */}
         <div
@@ -96,7 +96,7 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 
         {/* Ikon Quote Buka */}
         <div
-          className={`absolute -top-3 left-4 xs:left-6 ${item.accentBg} ${item.quoteColor} p-1 rounded-full z-10 flex items-center justify-center`}
+          className={`absolute -top-3 left-4 xs:left-6 ${item.accentBg} ${item.quoteColor} p-1 rounded-full z-10 flex items-center justify-center shadow-md`}
           aria-hidden="true"
         >
           <Quote className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 fill-current rotate-180" />
@@ -142,7 +142,7 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 
         {/* Ikon Quote Tutup */}
         <div
-          className={`absolute -bottom-3 right-4 xs:right-6 ${item.accentBg} ${item.quoteColor} p-1 rounded-full z-10 flex items-center justify-center`}
+          className={`absolute -bottom-3 right-4 xs:right-6 ${item.accentBg} ${item.quoteColor} p-1 rounded-full z-10 flex items-center justify-center shadow-md`}
           aria-hidden="true"
         >
           <Quote className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 fill-current" />
@@ -188,7 +188,17 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
   ];
 
   return (
-    <section className="relative bg-[#2781CD] text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
+    <section className="relative text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
+      
+      {/* Background Sticky Parallax / Fixed hanya di section ini */}
+      <div 
+        className="absolute inset-0 z-0 bg-fixed bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/foto3.jpg')" }}
+      >
+        {/* Layer overlay #2781CD dengan transparansi */}
+        <div className="absolute inset-0 bg-[#2781CD]/78" />
+      </div>
+
       {/* Lengkungan Atas */}
       <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none" aria-hidden="true">
         <svg
@@ -238,11 +248,11 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
       <div className="max-w-7xl mx-auto px-2 xs:px-4 sm:px-6 relative z-10 pt-12 sm:pt-12 lg:pt-16 pb-8">
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-14 lg:mb-16">
-          <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight pt-7">
+          <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight pt-7 drop-shadow-md">
             TESTIMONI
           </h2>
 
-          <p className="font-body text-xs xs:text-sm sm:text-base lg:text-lg text-white font-medium mt-2 sm:mt-4 px-1 xs:px-2">
+          <p className="font-body text-xs xs:text-sm sm:text-base lg:text-lg text-white font-medium mt-2 sm:mt-4 px-1 xs:px-2 drop-shadow-sm">
             Lebih dari <strong>10.000+ anak Indonesia</strong> sudah membuktikan asyiknya belajar koding dan logika sejak dini. Yuk, dengar cerita mereka! 
           </p>
         </div>
@@ -252,7 +262,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
           <button
             onClick={handlePrev}
             aria-label="Testimoni sebelumnya"
-            className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#FFF37E] text-[#3D2900] flex items-center justify-center transition-all duration-200 hover:bg-[#FFE838] hover:scale-110 active:scale-95 shadow-md z-30 cursor-pointer"
+            className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#FFF37E] text-[#3D2900] flex items-center justify-center transition-all duration-200 hover:bg-[#FFE838] hover:scale-110 active:scale-95 shadow-xl z-30 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 stroke-[3]" aria-hidden="true" />
           </button>
@@ -283,7 +293,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
           <button
             onClick={handleNext}
             aria-label="Testimoni selanjutnya"
-            className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#FFF37E] text-[#3D2900] flex items-center justify-center transition-all duration-200 hover:bg-[#FFE838] hover:scale-110 active:scale-95 shadow-md z-30 cursor-pointer"
+            className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#FFF37E] text-[#3D2900] flex items-center justify-center transition-all duration-200 hover:bg-[#FFE838] hover:scale-110 active:scale-95 shadow-xl z-30 cursor-pointer"
           >
             <ChevronRight className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 stroke-[3]" aria-hidden="true" />
           </button>
@@ -291,57 +301,66 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
       </div>
 
       {/* Bagian Bawah: Bayangan Gelap Harmonis */}
-      <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
-        {/* Gradasi Linear untuk Bayangan Kedua */}
-        <svg width="0" height="0" className="absolute block">
-          <defs>
-            <linearGradient id="shadowRightFade" x1="20%" y1="0%" x2="90%" y2="0%">
-              <stop offset="0%" stopColor="#1B5D96" stopOpacity="0" />
-              <stop offset="45%" stopColor="#1B5D96" stopOpacity="0.35" />
-              <stop offset="95%" stopColor="#1B5D96" stopOpacity="0.70" />
-            </linearGradient>
-          </defs>
-        </svg>
+    <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
+  {/* Definisikan Gradasi yang Lebih Luas/Lebar */}
+  <svg width="0" height="0" className="absolute block">
+    <defs>
+      {/* Gradasi layer tengah: Penyebaran transisi dibuat luas dari ujung ke ujung */}
+      <linearGradient id="largeShadowFade" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#2563EB" stopOpacity="0.05" />
+        <stop offset="30%" stopColor="#1D4ED8" stopOpacity="0.3" />
+        <stop offset="70%" stopColor="#1E3A8A" stopOpacity="0.65" />
+        <stop offset="100%" stopColor="#172554" stopOpacity="0.85" />
+      </linearGradient>
 
-        {/* Lapisan Bayangan Pertama */}
-        <svg
-          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 text-[#1E68A8] -translate-y-5 sm:-translate-y-7 lg:-translate-y-9 z-10 overflow-visible"
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="currentColor"
-            d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
-          />
-        </svg>
+      {/* Gradasi penyebar untuk layer paling belakang agar area bayangan lebih tinggi */}
+      <linearGradient id="largeBaseGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1" />
+        <stop offset="50%" stopColor="#2563EB" stopOpacity="0.3" />
+        <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.5" />
+      </linearGradient>
+    </defs>
+  </svg>
 
-        {/* Lapisan Bayangan Kedua dengan Gradient */}
-        <svg
-          className="absolute bottom-0 left-0 right-0 block w-full h-16 sm:h-24 lg:h-36 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16 z-15 overflow-visible"
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="url(#shadowRightFade)"
-            d="M0,32 C320,96 420,96 720,64 C1020,32 1220,20 1440,45 L1440,120 L0,120 Z"
-          />
-        </svg>
+  {/* LAYER 1: Bayangan Paling Belakang (Dinaikkan Lebih Tinggi Agar Bayangan Tampak Lebih Besar) */}
+  <svg
+    className="absolute bottom-0 left-0 right-0 block w-full h-20 sm:h-32 lg:h-44 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16 z-10 overflow-visible"
+    viewBox="0 0 1440 120"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fill="url(#largeBaseGlow)"
+      d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
+    />
+  </svg>
 
-        {/* Lapisan Utama Lengkungan Bawah (#F3EFE4) */}
-        <svg
-          className="relative block w-full h-16 sm:h-24 lg:h-36 text-[#F3EFE4] z-20 overflow-visible"
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="currentColor"
-            d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
-          />
-        </svg>
-      </div>
+  {/* LAYER 2: Bayangan Tengah dengan Area Gradasi Lebih Luas */}
+  <svg
+    className="absolute bottom-0 left-0 right-0 block w-full h-18 sm:h-28 lg:h-40 -translate-y-4 sm:-translate-y-7 lg:-translate-y-10 z-15 overflow-visible"
+    viewBox="0 0 1440 120"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fill="url(#largeShadowFade)"
+      d="M0,32 C320,96 420,96 720,64 C1020,32 1220,20 1440,45 L1440,120 L0,120 Z"
+    />
+  </svg>
+
+  {/* LAYER 3: Lengkungan Utama Paling Depan (#F3EFE4) */}
+  <svg
+    className="relative block w-full h-16 sm:h-24 lg:h-36 text-[#F3EFE4] z-20 overflow-visible"
+    viewBox="0 0 1440 120"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fill="currentColor"
+      d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
+    />
+  </svg>
+</div>
     </section>
   );
-}
+} 

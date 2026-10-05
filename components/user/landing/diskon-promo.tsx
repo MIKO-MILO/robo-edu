@@ -1,79 +1,138 @@
 "use client";
 
-import { Tag, Clock, Gift, ArrowRight, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Copy, Check, ArrowRight } from "lucide-react";
+
+const PROMOS = [
+  {
+    id: 1,
+    kode: "MERDEKA24",
+    nama: "Diskon Kemerdekaan",
+    tipeDiskon: "PROMO TERBATAS",
+    nilaiDiskon: "Diskon 20%",
+    minPembelian: "Min. Rp 150rb",
+    maxDiskon: "Maks. Rp 50rb",
+    tanggalBerakhir: "31 Agt 2026",
+    bgColor: "bg-[#8B5CF6]", // Ungu Soft
+    imgUrl: "images/product.webp",
+  },
+  {
+    id: 2,
+    nama: "Spesial Robotik Anak",
+    kode: "AUTO_APPLIED",
+    tipeDiskon: "DISKON OTOMATIS",
+    nilaiDiskon: "Potongan Rp 75rb",
+    minPembelian: "Min. Rp 300rb",
+    maxDiskon: null,
+    tanggalBerakhir: "15 Jul 2026",
+    bgColor: "bg-[#06B6D4]", // Cyan / Biru Muda Modern
+    imgUrl: "images/product2.webp",
+  },
+];
 
 export default function DiskonPromo() {
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const handleCopy = (kode: string) => {
+    navigator.clipboard.writeText(kode);
+    setCopiedCode(kode);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
   return (
-    <section className="relative bg-[#F1ECE0] py-12 sm:py-16 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-        <div className="bg-gradient-to-r from-[#FF7E5F] via-[#FEB47B] to-[#F5C045] rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
-          {/* Background Decorative Element */}
-          <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+    <section className="bg-[#F3EFE4] py-10 px-4 font-sans flex flex-col items-center mb-5 mt-5">
+      {/* SVG ClipPath Gelombang Scallop */}
+      <svg className="absolute w-0 h-0" aria-hidden="true">
+        <defs>
+          <clipPath id="scalloped-card" clipPathUnits="objectBoundingBox">
+            <path d="
+              M 0.08, 0 
+              Q 0.12, 0.03 0.16, 0 Q 0.20, -0.03 0.24, 0 Q 0.28, 0.03 0.32, 0 Q 0.36, -0.03 0.40, 0 
+              Q 0.44, 0.03 0.48, 0 Q 0.52, -0.03 0.56, 0 Q 0.60, 0.03 0.64, 0 Q 0.68, -0.03 0.72, 0 
+              Q 0.76, 0.03 0.80, 0 Q 0.84, -0.03 0.88, 0 Q 0.92, 0.03 0.96, 0 Q 1, 0 1, 0.08
+              Q 0.97, 0.12 1, 0.16 Q 1.03, 0.20 1, 0.24 Q 0.97, 0.28 1, 0.32 Q 1.03, 0.36 1, 0.40
+              Q 0.97, 0.44 1, 0.48 Q 1.03, 0.52 1, 0.56 Q 0.97, 0.60 1, 0.64 Q 1.03, 0.68 1, 0.72
+              Q 0.97, 0.76 1, 0.80 Q 1.03, 0.84 1, 0.88 Q 0.97, 0.92 1, 0.96 Q 1, 1 0.92, 1
+              Q 0.88, 0.97 0.84, 1 Q 0.80, 1.03 0.76, 1 Q 0.72, 0.97 0.68, 1 Q 0.64, 1.03 0.60, 1
+              Q 0.56, 0.97 0.52, 1 Q 0.48, 1.03 0.44, 1 Q 0.40, 0.97 0.36, 1 Q 0.32, 1.03 0.28, 1
+              Q 0.24, 0.97 0.20, 1 Q 0.16, 1.03 0.12, 1 Q 0.08, 0.97 0.04, 1 Q 0, 1 0, 0.92
+              Q 0.03, 0.88 0, 0.84 Q -0.03, 0.80 0, 0.76 Q 0.03, 0.72 0, 0.68 Q -0.03, 0.64 0, 0.60
+              Q 0.03, 0.56 0, 0.52 Q -0.03, 0.48 0, 0.44 Q 0.03, 0.40 0, 0.36 Q -0.03, 0.32 0, 0.28
+              Q 0.03, 0.24 0, 0.20 Q -0.03, 0.16 0, 0.12 Q 0.03, 0.08 0, 0.04 Q 0, 0 0.08, 0 Z
+            " />
+          </clipPath>
+        </defs>
+      </svg>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            {/* Promo Info */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs sm:text-sm font-extrabold backdrop-blur-md uppercase tracking-wider">
-                <Tag className="w-4 h-4 text-[#FFF6A0]" />
-                <span>Promo Spesial Liburan Sekolah</span>
-              </div>
-
-              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
-                Diskon Hingga <span className="text-[#FFF6A0] underline underline-offset-4">35% OFF</span> + Gratis Ongkir!
-              </h2>
-
-              <p className="font-body text-sm sm:text-base text-white/90 max-w-xl">
-                Dapatkan bonus eksklusif Buku Panduan Proyek Robotik 50 Halaman & Sticker Maskot lucu setiap pembelian Kit RoboEdu hari ini.
-              </p>
-
-              {/* Promo Benefits */}
-              <div className="flex flex-wrap gap-4 pt-2">
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-sm">
-                  <Gift className="w-4 h-4 text-[#FFF6A0]" />
-                  <span>Free Bonus E-Book Proyek</span>
+      <div className="max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {PROMOS.map((promo) => (
+            <div
+              key={promo.id}
+              className="relative transition-transform duration-300 hover:scale-[1.01]"
+            >
+              <div
+                className={`${promo.bgColor} text-white p-6 sm:p-8 flex items-center justify-between gap-4 min-h-[260px] shadow-xl relative group overflow-hidden`}
+                style={{ clipPath: "url(#scalloped-card)" }}
+              >
+                {/* GAMBAR PRODUK (KIRI) TANPA BACKGROUND */}
+                <div className="w-5/12 h-36 sm:h-44 relative flex items-center justify-center shrink-0">
+                  <img
+                    src={promo.imgUrl}
+                    alt={promo.nama}
+                    className="w-full h-full object-contain filter drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-sm">
-                  <Sparkles className="w-4 h-4 text-[#FFF6A0]" />
-                  <span>Garansi Tukar Baru 30 Hari</span>
+
+                {/* ISI TEKS & INFORMASI KANAN */}
+                <div className="w-7/12 flex flex-col justify-between items-start text-left z-10 pl-2 sm:pl-4">
+                  <div>
+                    <span className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-wider block mb-1">
+                      {promo.tipeDiskon}
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black leading-tight tracking-tight">
+                      {promo.nama}
+                    </h3>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-amber-200 mt-1">
+                      {promo.nilaiDiskon}
+                    </p>
+
+                    <p className="text-[11px] sm:text-xs text-white/90 font-medium mt-1.5 leading-snug">
+                      {promo.minPembelian} {promo.maxDiskon ? `• ${promo.maxDiskon}` : ""}<br />
+                      <span className="text-white/80">• s/d {promo.tanggalBerakhir}</span>
+                    </p>
+                  </div>
+
+                  {/* TOMBOL AKSI */}
+                  <div className="mt-4 w-full">
+                    {promo.kode !== "AUTO_APPLIED" ? (
+                      <button
+                        onClick={() => handleCopy(promo.kode)}
+                        className="w-full sm:w-auto border-2 border-white/90 text-white hover:bg-white hover:text-stone-900 px-5 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 shadow-md"
+                      >
+                        {copiedCode === promo.kode ? (
+                          <>
+                            <Check className="w-4 h-4 text-emerald-300 group-hover:text-emerald-600" />
+                            <span>TERSALIN!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            <span>KODE: {promo.kode}</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button className="w-full sm:w-auto border-2 border-white/90 text-white hover:bg-white hover:text-stone-900 px-5 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 shadow-md">
+                        <span>GUNAKAN DISKON</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Countdown & Action Box */}
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
-              <div className="bg-white/95 text-[#3D2900] p-6 rounded-2xl shadow-lg w-full max-w-sm text-center border border-white/40">
-                <div className="flex items-center justify-center gap-2 text-xs font-bold text-gray-500 mb-3">
-                  <Clock className="w-4 h-4 text-[#FF7E5F]" />
-                  <span>BERAKHIR DALAM</span>
-                </div>
-
-                {/* Timer Display */}
-                <div className="grid grid-cols-3 gap-2 mb-5">
-                  <div className="bg-[#F7F5F0] p-2 rounded-xl text-center">
-                    <span className="font-mono text-2xl font-black text-[#18598D]">02</span>
-                    <span className="block text-[10px] text-gray-500 font-semibold uppercase">Hari</span>
-                  </div>
-                  <div className="bg-[#F7F5F0] p-2 rounded-xl text-center">
-                    <span className="font-mono text-2xl font-black text-[#18598D]">14</span>
-                    <span className="block text-[10px] text-gray-500 font-semibold uppercase">Jam</span>
-                  </div>
-                  <div className="bg-[#F7F5F0] p-2 rounded-xl text-center">
-                    <span className="font-mono text-2xl font-black text-[#18598D]">45</span>
-                    <span className="block text-[10px] text-gray-500 font-semibold uppercase">Menit</span>
-                  </div>
-                </div>
-
-                {/* Claim Voucher Button */}
-                <button
-                  type="button"
-                  className="w-full inline-flex items-center justify-center gap-2 bg-[#18598D] hover:bg-[#134670] text-white font-extrabold py-3 px-4 rounded-xl shadow-md hover:scale-[1.02] transition-all cursor-pointer text-sm"
-                >
-                  <span>Klaim Kode Promo Now</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

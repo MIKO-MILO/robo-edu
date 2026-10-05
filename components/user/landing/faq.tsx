@@ -6,7 +6,7 @@ import { ChevronDown, HelpCircle, type LucideIcon } from "lucide-react";
 import HeroRobot from "./robot";
 
 // ==========================================
-// 1. TYPE DEFINITIONS & CONFIGS (Backend-Ready)
+// 1. TYPE DEFINITIONS & CONFIGS
 // ==========================================
 export interface FAQItemData {
   id: string;
@@ -15,7 +15,8 @@ export interface FAQItemData {
 }
 
 export interface PromoBannerData {
-  title: string;
+  titlePrefix: string;
+  highlightText: string;
   description: string;
   thumbnails: Array<{
     id: string;
@@ -35,27 +36,27 @@ export interface FAQProps {
 const DEFAULT_FAQS: FAQItemData[] = [
   {
     id: "faq-1",
-    question: "Apakah anak yang belum pernah belajar coding bisa memainkannya?",
+    question: "Apakah mainan IoT RoboEdu aman untuk anak-anak?",
     answer:
-      "Tentu saja! RoboEdu dirancang khusus untuk pemula tanpa latar belakang coding sama sekali. Kami menggunakan sistem block-coding visual serta buku panduan bergambar yang sangat ramah anak.",
+      "Sangat aman! Semua komponen kit RoboEdu menggunakan bahan nonsilikon berkualitas tinggi tanpa sudut tajam, serta tidak memerlukan proses solder.",
   },
   {
     id: "faq-2",
-    question: "Berapa usia minimal anak untuk merakit Kit RoboEdu?",
+    question: "Berapa usia minimal anak untuk memainkan Kit RoboEdu?",
     answer:
-      "Kit RoboEdu ditujukan untuk anak usia 6 tahun ke atas. Komponen dirancang besar, tanpa sudut tajam, dan tidak memerlukan solder atau perekat yang berbahaya.",
+      "Kit mainan IoT ini dirancang untuk anak usia 6 tahun ke atas dengan modul rakitan interaktif yang ramah anak.",
   },
   {
     id: "faq-3",
-    question: "Apakah kit robotik ini membutuhkan smartphone atau tablet?",
+    question: "Apakah kit ini memerlukan aplikasi smartphone?",
     answer:
-      "Sebagian besar modul utama dapat beroperasi secara langsung setelah dirakit. Namun untuk fitur coding interaktif dan remote control, Anda dapat mengunduh aplikasi gratis RoboEdu di Android atau iOS.",
+      "Sebagian besar modul langsung beroperasi saat dinyalakan. Namun untuk fitur kontrol pintar IoT, Anda dapat mengunduh aplikasi gratis RoboEdu di Android dan iOS.",
   },
   {
     id: "faq-4",
     question: "Bagaimana jika ada komponen robot yang hilang atau rusak?",
     answer:
-      "Kami memiliki garansi penggantian suku cadang selama 30 hari. Anda juga dapat memesan komponen tambahan eceran secara terpisah di toko resmi kami.",
+      "Kami menyediakan garansi penggantian suku cadang selama 30 hari serta menjual komponen cadangan terpisah.",
   },
   {
     id: "faq-5",
@@ -65,42 +66,37 @@ const DEFAULT_FAQS: FAQItemData[] = [
   },
   {
     id: "faq-6",
-    question: "Berapa lama estimasi pengiriman paket RoboEdu?",
+    question: "Apakah ada buku panduan dan panduan video perakitan?",
     answer:
-      "Pengiriman diproses dalam 1x24 jam. Estimasi pengiriman untuk pulau Jawa adalah 1-3 hari kerja, sedangkan luar pulau Jawa 3-5 hari kerja.",
+      "Ya, setiap pembelian paket RoboEdu dilengkapi buku panduan cetak berwarna dan akses ke pustaka video panduan perakitan langkah demi langkah.",
   },
 ];
 
 const DEFAULT_PROMO_DATA: PromoBannerData = {
-  title: "Yuk, Beli Kit Mainan Edukasi RoboEdu Sekarang!",
+  titlePrefix: "Dapatkan Mainan IoT Edukatif RoboEdu",
+  highlightText: "Sekarang!",
   description:
-    "Dapatkan promo spesial hari ini dan bantu si kecil belajar koding serta merakit robot dengan cara yang seru!",
+    "Miliki kit robotik pintar sekarang dan hadirkan pengalaman belajar teknologi interaktif untuk si kecil!",
   thumbnails: [
     {
       id: "thumb-1",
       src: "/images/foto.jpg",
       alt: "Anak bermain robot",
-      className:
-        "ml-2 md:ml-6 lg:ml-0 xl:ml-5 translate-x-4 md:translate-x-2 lg:translate-x-16 xl:translate-x-4 2xl:translate-x-6 z-10",
     },
     {
       id: "thumb-2",
       src: "/images/foto2.jpg",
       alt: "Merakit robot",
-      className: "",
     },
     {
       id: "thumb-3",
       src: "/images/foto3.jpg",
       alt: "Belajar koding",
-      className:
-        "-ml-2 md:-ml-6 lg:-ml-0 xl:-ml-5 -translate-x-4 md:-translate-x-2 lg:-translate-x-16 xl:-translate-x-1 2xl:-translate-x-2 z-10",
     },
     {
       id: "thumb-4",
       src: "/images/foto4.jpg",
       alt: "Robot edukasi",
-      className: "xl:translate-x-4 2xl:translate-x-6 z-10",
     },
   ],
 };
@@ -173,86 +169,24 @@ function AccordionItem({
   );
 }
 
-// Molecule: Promo Thumbnail Item
 function PromoThumbnail({
   src,
   alt,
   customClass = "",
-  indexStr,
 }: {
   src: string;
   alt: string;
   customClass?: string;
-  indexStr: string;
 }) {
   return (
     <div className={`relative ${customClass}`}>
-      {/* Container SVG Bunga + Angka Kuning Terang */}
-      <div className="absolute -top-12 -left-8 sm:-top-16 sm:-left-10 md:-top-20 md:-left-12 lg:-top-[90px] lg:-left-16 w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 z-20 flex items-center justify-center pointer-events-none select-none">
-        
-        {/* SVG Bunga Warna Biru Tua (#0F2C59) */}
-        <svg
-          viewBox="0 0 218 209"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute inset-0 w-full h-full drop-shadow-md"
-        >
-          <ellipse cx="110.762" cy="102.571" rx="77" ry="78" fill="#0F2C59" />
-          <path
-            d="M83.2605 13.0735C85.2616 7.07172 91.2592 1.07565 107.26 0.0734714C123.262 -0.928711 129.76 8.57172 132.26 13.0735C134.76 17.5752 133.76 31.5735 133.76 31.5735H83.2605C83.2605 31.5735 81.2594 19.0752 83.2605 13.0735Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M36.6251 45.457C34.4372 39.5207 35.3732 31.0917 47.2399 20.3109C59.1065 9.53004 70.1167 12.8867 74.8815 14.8393C79.6463 16.7919 87.6124 28.3458 87.6124 28.3458L48.1848 59.9007C48.1848 59.9007 38.8129 51.3932 36.6251 45.457Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M17.7121 99.901C12.2947 96.6334 7.75853 89.4677 10.2869 73.6357C12.8154 57.8037 19.1381 54.8302 28.4491 52.0919C37.7601 49.3535 50.2614 57.5711 50.2614 57.5711L35.7625 103.955C35.7625 103.955 23.1295 103.169 17.7121 99.901Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M37.8003 152.91C31.6094 154.213 21.8015 151.576 14.7527 141.074C7.70385 130.571 8.11386 118.967 13.0581 110.615C18.0023 102.264 32.7502 99.7518 32.7502 99.7518L53.7686 143.568C53.7686 143.568 43.9912 151.607 37.8003 152.91Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M79.6116 185.397C75.1467 189.879 65.4971 193.047 53.8462 188.123C42.1953 183.2 36.1801 173.267 35.7403 163.572C35.3005 153.877 46.2613 143.695 46.2613 143.695L87.8515 168.833C87.8515 168.833 84.0764 180.914 79.6116 185.397Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M133.389 188.665C132.11 194.86 125.773 202.797 113.329 205.062C100.885 207.327 90.4113 202.314 84.7313 194.445C79.0513 186.575 82.6417 172.052 82.6417 172.052L131.207 170.294C131.207 170.294 134.668 182.469 133.389 188.665Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M179.355 157.462C181.639 163.362 180.616 173.467 171.386 182.115C162.156 190.764 150.637 192.229 141.598 188.694C132.56 185.16 127.705 171.009 127.705 171.009L167.563 143.207C167.563 143.207 177.071 151.562 179.355 157.462Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M201.069 106.326C206.186 110.046 210.804 119.092 207.735 131.363C204.667 143.633 195.781 151.108 186.269 153.037C176.758 154.967 165.008 145.707 165.008 145.707L183.433 100.738C183.433 100.738 195.952 102.605 201.069 106.326Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M176.68 51.3288C182.742 49.5208 192.734 51.3425 200.622 61.2297C208.511 71.1168 209.057 82.7157 204.816 91.4455C200.575 100.175 186.084 103.892 186.084 103.892L161.534 61.9516C161.534 61.9516 170.617 53.1367 176.68 51.3288Z"
-            fill="#0F2C59"
-          />
-          <path
-            d="M135.345 20.0048C139.292 15.06 148.536 10.8535 160.656 14.47C172.777 18.0865 179.844 27.2994 181.344 36.8881C182.845 46.4768 173.066 57.799 173.066 57.799L128.971 37.3719C128.971 37.3719 131.398 24.9495 135.345 20.0048Z"
-            fill="#0F2C59"
-          />
-        </svg>
-
-        {/* Angka Kuning Terang (var(--color-accent-yellow)) */}
-        <span className="relative z-10 font-heading font-extrabold text-[var(--color-accent-yellow,#FFF37E)] text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight leading-none drop-shadow-sm">
-          {indexStr}
-        </span>
-      </div>
-
-      {/* Kontainer Gambar */}
-      <div className="relative z-10 w-24 md:w-36 lg:w-48 xl:w-56 2xl:w-64 h-24 md:h-36 lg:h-48 xl:h-56 2xl:h-64 overflow-hidden rounded-2xl md:rounded-3xl shadow-md sm:shadow-lg border-4 border-white/20">
+      {/* Ukuran diperbesar sedikit (+3 unit Tailwind untuk lebar & tinggi) */}
+      <div className="relative w-23 md:w-31 lg:w-43 xl:w-51 2xl:w-55 h-23 md:h-31 lg:h-43 xl:h-51 2xl:h-55 overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl shadow-md sm:shadow-lg border-2 md:border-4 border-white/20">
         <Image
           src={src}
           alt={alt}
           fill
-          sizes="(max-width: 768px) 96px, (max-width: 1024px) 144px, 256px"
+          sizes="(max-width: 768px) 92px, (max-width: 1024px) 124px, 220px"
           className="object-cover"
         />
       </div>
@@ -264,31 +198,60 @@ function PromoThumbnail({
 function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) {
   const leftTop = data.thumbnails[0];
   const leftBottom = data.thumbnails[1];
-  const rightThumb = data.thumbnails[2];
+  const rightTop = data.thumbnails[2];
+  const rightBottom = data.thumbnails[3];
 
   return (
     <div className="relative w-full h-[400px] md:h-[540px] lg:h-[600px] xl:h-[640px] 2xl:h-[700px] bg-background overflow-visible z-10">
       <div className="max-w-6xl mx-auto h-full px-6 lg:px-8 relative flex items-center justify-between">
         
         {/* Header Text */}
-        <div className="absolute top-8 sm:top-10 md:top-12 lg:top-16 left-1/2 -translate-x-1/2 text-center z-20 w-full max-w-7xl px-4 pointer-events-none">
-          <h1 className="font-heading text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-extrabold text-[#18598D] tracking-tight leading-tight mb-2 md:mb-3 text-center whitespace-nowrap">
-            {data.title}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-4 sm:mb-6 text-center z-20 w-full max-w-5xl px-4 pointer-events-none flex flex-col items-center justify-center">
+          
+          <h1 className="font-heading text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-[#3D2900] tracking-tight leading-none mb-4 flex flex-row items-center justify-center gap-6 sm:gap-8 whitespace-nowrap">
+            <span className="mr-2 sm:mr-4 font-bold">{data.titlePrefix}</span>
+            
+            <span className="relative inline-flex items-center justify-center px-4 sm:px-6 py-1.5 sm:py-2 mx-1">
+              <svg
+                width="811"
+                height="390"
+                viewBox="0 0 811 390"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                preserveAspectRatio="none"
+                className="absolute inset-0 w-[125%] h-[160%] -left-[12.5%] -top-[30%] -z-10 pointer-events-none"
+              >
+                <path
+                  d="M380.856 2.50367C155.783 3.14428 2.50407 80.3174 2.5 168.316C2.49593 256.315 147.105 373.728 380.856 374.496C616.612 375.27 763.54 266.132 752.965 168.316C744.159 86.8624 608.01 1.85712 380.856 2.50367Z"
+                  stroke="#F59E0B"
+                  strokeWidth="6"
+                />
+                <path
+                  d="M435.856 15.5037C210.783 16.1443 57.5041 93.3174 57.5 181.316C57.4959 269.315 202.105 386.728 435.856 387.496C671.612 388.27 818.54 279.132 807.965 181.316C799.159 99.8624 663.01 14.8571 435.856 15.5037Z"
+                  stroke="#F59E0B"
+                  strokeWidth="6"
+                />
+              </svg>
+              
+              <span className="text-[#D97706] font-normal drop-shadow-sm">
+                {data.highlightText}
+              </span>
+            </span>
           </h1>
-          <p className="font-body text-[11px] sm:text-xs md:text-sm lg:text-base font-medium text-[#3D2900] text-center max-w-none mx-auto drop-shadow-sm whitespace-nowrap">
+
+          <p className="font-body text-sm sm:text-base md:text-lg font-normal text-[#3D2900] text-center max-w-3xl mx-auto drop-shadow-sm">
             {data.description}
           </p>
         </div>
 
-        {/* Left Thumbnails */}
-        <div className="flex flex-col gap-10 md:gap-16 lg:gap-24 z-50 translate-y-24 md:translate-y-36 lg:translate-y-48">
+        {/* Left Thumbnails Container (Digeser lebih ke kanan/tengah) */}
+        <div className="flex flex-col gap-5 md:gap-8 lg:gap-10 z-10 translate-y-20 md:translate-y-32 lg:translate-y-40">
           {leftTop && (
             <PromoThumbnail
               key={leftTop.id}
               src={leftTop.src}
               alt={leftTop.alt}
-              customClass={leftTop.className}
-              indexStr="01"
+              customClass="translate-x-12 md:translate-x-20 lg:translate-x-28"
             />
           )}
           {leftBottom && (
@@ -296,32 +259,40 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
               key={leftBottom.id}
               src={leftBottom.src}
               alt={leftBottom.alt}
-              /* Posisi paling depan dengan z-[60] */
-              customClass={`${leftBottom.className} relative z-[60] translate-x-24 md:translate-x-40 lg:translate-x-52 translate-y-4 md:translate-y-6 lg:translate-y-8`}
-              indexStr="02"
+              customClass="translate-x-4 md:translate-x-6 lg:translate-x-8 -translate-y-2 md:-translate-y-3 lg:-translate-y-4"
             />
           )}
         </div>
 
         {/* Hero Center Illustration */}
-        <div className="absolute -bottom-8 md:-bottom-16 lg:-bottom-24 left-1/2 -translate-x-1/2 z-40 flex items-end justify-center w-full max-w-xs md:max-w-md lg:max-w-lg pointer-events-none">
-          <div className="w-56 sm:w-72 md:w-[22rem] lg:w-[450px] xl:w-[500px]">
+        <div className="absolute -bottom-16 sm:-bottom-20 md:-bottom-28 lg:-bottom-36 left-1/2 -translate-x-1/2 z-[70] flex flex-col items-center justify-end w-full max-w-xs md:max-w-md lg:max-w-xl pointer-events-none">
+          <div className="w-64 sm:w-80 md:w-[26rem] lg:w-[500px] xl:w-[550px] relative z-10">
             <HeroRobot />
           </div>
+
+          <div className="w-[70%] sm:w-[60%] h-8 sm:h-10 md:h-12 bg-black/25 rounded-[100%] blur-md -mt-6 sm:-mt-8 md:-mt-10 z-0"></div>
         </div>
 
-        {/* Right Thumbnail */}
-        <div className="flex flex-col justify-center z-10 translate-y-16 md:translate-y-24 lg:translate-y-32">
-          {rightThumb && (
+        {/* Right Thumbnails Container (Digeser lebih ke kiri/tengah) */}
+        <div className="flex flex-col gap-5 md:gap-8 lg:gap-10 z-10 translate-y-20 md:translate-y-32 lg:translate-y-40">
+          {rightTop && (
             <PromoThumbnail
-              key={rightThumb.id}
-              src={rightThumb.src}
-              alt={rightThumb.alt}
-              customClass={`${rightThumb.className} -translate-x-4 md:-translate-x-8 lg:-translate-x-12`}
-              indexStr="03"
+              key={rightTop.id}
+              src={rightTop.src}
+              alt={rightTop.alt}
+              customClass="-translate-x-12 md:-translate-x-20 lg:-translate-x-28"
+            />
+          )}
+          {rightBottom && (
+            <PromoThumbnail
+              key={rightBottom.id}
+              src={rightBottom.src}
+              alt={rightBottom.alt}
+              customClass="-translate-x-4 md:-translate-x-6 lg:-translate-x-8 -translate-y-2 md:-translate-y-3 lg:-translate-y-4"
             />
           )}
         </div>
+
       </div>
     </div>
   );
@@ -333,7 +304,7 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
 export default function FAQ({
   items = DEFAULT_FAQS,
   title = "Pertanyaan yang Sering Diajukan",
-  description = "Punya pertanyaan mengenai RoboEdu? Temukan jawaban lengkap mengenai produk, usia pengguna, hingga pengiriman di sini.",
+  description = "Punya pertanyaan mengenai mainan IoT RoboEdu? Temukan jawaban lengkap mengenai produk, usia pengguna, hingga pengiriman di sini.",
   promoData = DEFAULT_PROMO_DATA,
 }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -343,7 +314,7 @@ export default function FAQ({
   };
 
   return (
-    <section className="relative z-20 bg-[#2781CD] text-card pb-24 sm:pb-23 overflow-hidden">
+    <section className="relative z-20 bg-[#2483D0] text-card pb-24 sm:pb-23 overflow-hidden">
       <PromoBanner data={promoData} />
 
       {/* SVG Shape Divider */}
@@ -363,7 +334,7 @@ export default function FAQ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Header Column */}
-          <div className="lg:col-span-5 text-left lg:pt-12">
+          <div className="lg:col-span-5 text-left lg:pt-4">
             <Badge icon={HelpCircle} label="Pusat Bantuan" />
             <h2 className="font-heading text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-semibold text-card tracking-tight leading-tight">
               {title}

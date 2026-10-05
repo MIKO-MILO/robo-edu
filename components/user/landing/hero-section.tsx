@@ -1,159 +1,138 @@
 "use client";
 
 import Navbar from "@/components/user/navbar";
-import HeroRobot from "@/components/user/landing/robot";
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Play } from "lucide-react";
-import { useState, useEffect } from "react";
-
-const dynamicItems = [
-  {
-    text: "Usia 6+ Tahun!",
-    bg: "bg-[#F8EDDE]", // Cream Soft / Warm Sand
-    textColor: "text-primary-900", // Biru Pekat
-  },
-  {
-    text: "Mudah Dipahami!",
-    bg: "bg-[#DEF8EE]", // Soft Mint / Cyan-Green
-    textColor: "text-[#103B5E]", // Biru Pekat
-  },
-  {
-    text: "Kreatif & Interaktif!",
-    bg: "bg-accent-soft-blue", // #C9E9F6 (Opsi favoritmu)
-    textColor: "text-primary-900", // Biru Pekat
-  },
-];
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export default function HeroSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayedText, setDisplayedText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentItem = dynamicItems[currentIndex];
-    const fullText = currentItem.text;
-
-    const typingSpeed = isDeleting ? 40 : 80;
-
-    const timer = setTimeout(() => {
-      if (!isDeleting) {
-        setDisplayedText(fullText.substring(0, displayedText.length + 1));
-
-        if (displayedText === fullText) {
-          setTimeout(() => setIsDeleting(true), 1800);
-        }
-      } else {
-        setDisplayedText(fullText.substring(0, displayedText.length - 1));
-
-        if (displayedText === "") {
-          setIsDeleting(false);
-          setCurrentIndex((prevIndex) => (prevIndex + 1) % dynamicItems.length);
-        }
-      }
-    }, typingSpeed);
-
-    return () => clearTimeout(timer);
-  }, [displayedText, isDeleting, currentIndex]);
-
-  const currentStyle = dynamicItems[currentIndex];
-
   return (
-    <section className="relative bg-[#77BCF3] pt-4 pb-20 sm:pb-32 lg:pb-48 overflow-hidden">
-      {/* Gambar Awan Kiri Atas */}
-      <div className="absolute top-4 sm:top-6 lg:top-12 left-0 z-0 w-48 sm:w-72 md:w-96 aspect-square pointer-events-none">
-        <Image
-          src="/images/awan2.png"
-          alt="Dekorasi Awan Kiri Atas"
-          fill
-          className="object-contain object-top-left opacity-90"
-          priority
-        />
-      </div>
-
-      {/* Gambar Awan Kanan */}
-      <div className="absolute top-12 sm:top-18 lg:top-33 right-0 z-0 w-48 sm:w-72 md:w-96 aspect-square pointer-events-none">
-        <Image
-          src="/images/awan11.png"
-          alt="Dekorasi Awan Kanan"
-          fill
-          className="object-contain object-top-right opacity-90"
-          priority
-        />
-      </div>
-
+    <section className="relative bg-[#F3EFE4] min-h-screen pt-4 pb-20 overflow-hidden flex flex-col justify-between">
       {/* Navigation Bar */}
-      <header className="relative z-20 px-4 mb-6 md:mb-10 w-full flex justify-center [&>nav]:!h-[64px] md:[&>nav]:!h-[95px] [&>nav]:!px-4 sm:[&>nav]:!px-8 md:[&>nav]:!px-12 [&>nav]:!mt-2 md:[&>nav]:!mt-4 [&_span]:!text-[22px] [&_span]:sm:!text-2xl [&_span]:md:!text-[32px] [&_span]:!leading-normal [&_img]:!w-7 [&_img]:!h-7 md:[&_img]:!w-auto md:[&_img]:!h-auto">
+      <header className="relative z-20 px-4 mb-8 md:mb-12 w-full flex justify-center">
         <Navbar />
       </header>
 
-      {/* Hero Main Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pl-8 sm:pl-12 lg:pl-14 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-2 items-center pt-2">
-        {/* Left Column: Text & Action */}
-        <div className="lg:col-span-7 flex flex-col items-start space-y-4.5 text-left lg:pl-6">
-          {/* Judul Utama dengan Gap & Padding Bawah Lebih Ekstra */}
-          <h1 className="relative font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.2] text-white/90 tracking-tight flex flex-col items-start gap-5 sm:gap-8">
-            {/* Bagian Teks Judul */}
-            <div className="pb-2 sm:pb-3">
-              Rakit & Mainkan{" "}
-              <span className="inline-block relative w-16 h-16 sm:w-20 sm:h-20 align-middle -mt-10 sm:-mt-16 -ml-2 sm:-ml-4">
-                <Image
-                  src="/images/2.png"
-                  alt="Aksen Judul"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </span>{" "}
-              Robot Impian Anak
+      {/* Hero Main Content - Centered Layout */}
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center flex-1 flex flex-col items-center justify-center py-6">
+        
+        {/* Decorative Element Left */}
+        <div className="hidden lg:block absolute left-4 xl:-left-12 top-10 pointer-events-none">
+          <div className="relative w-28 h-28">
+            <div className="absolute inset-0 bg-[#D9C4EC] rounded-full transform -rotate-6" />
+            <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white shadow-sm">
+              <Image
+                src="/images/kid-robot.png"
+                alt="Anak bermain robot"
+                fill
+                className="object-cover"
+              />
             </div>
-
-            {/* Bagian Badge Dinamis */}
-            <div>
-              <span
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl rotate-[-2deg] text-[0.85em] font-extrabold transition-colors duration-500 ease-in-out ${currentStyle.bg} ${currentStyle.textColor}`}
-              >
-                {/* Lingkaran Kecil */}
-                <span className="w-2.5 h-2.5 rounded-full bg-current shrink-0" />
-
-                <span>
-                  {displayedText}
-                  <span className="animate-pulse ml-0.5 opacity-80">|</span>
-                </span>
-              </span>
-            </div>
-          </h1>
-
-          <p className="font-body text-sm sm:text-base text-white/90 leading-relaxed max-w-lg font-normal pt-2">
-            Bantu si kecil belajar coding dan logika teknologi sejak dini melalui kit robotik interaktif yang seru, aman, dan mudah dimainkan.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="relative flex flex-col sm:flex-row items-center gap-3 pt-3 w-full sm:w-auto">
-            <Link
-              href="/product"
-              className={`inline-flex items-center justify-center gap-2.5 font-extrabold text-sm px-6 py-3.5 rounded-full shadow-lg hover:scale-105 transition-all duration-500 ease-in-out w-full sm:w-auto z-10 ${currentStyle.bg} ${currentStyle.textColor}`}
+            <svg
+              className="absolute -bottom-8 -left-4 w-12 h-12 text-[#8B5CF6] opacity-80"
+              viewBox="0 0 50 50"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
             >
-              <span>Jelajahi Mainan Robot</span>
-              <ArrowRight className="w-4 h-4 text-current" />
-            </Link>
-
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm px-6 py-3.5 rounded-full border border-white/40 backdrop-blur-sm transition-all w-full sm:w-auto cursor-pointer z-10"
-            >
-              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                <Play className="w-3 h-3 text-white fill-white ml-0.5" />
-              </div>
-              <span>Tonton Demo</span>
-            </button>
+              <path d="M 10 10 Q 25 35 40 40" strokeDasharray="3 3" />
+              <path d="M 35 32 L 40 40 L 32 42" />
+            </svg>
           </div>
         </div>
 
-        {/* Right Column: Waving Robot Visual */}
-        <div className="lg:col-span-5 flex justify-center items-center relative lg:-ml-6">
-          <HeroRobot />
+        {/* Decorative Element Right Top */}
+        <div className="hidden lg:block absolute right-6 xl:-right-10 top-12 pointer-events-none">
+          <div className="relative w-24 h-24 flex items-center justify-center">
+            <div className="w-full h-full rounded-full border border-dashed border-[#222222]/30 flex items-center justify-center bg-[#FFE599]/30 animate-spin-slow">
+              <span className="text-[10px] font-bold text-[#222222] tracking-widest uppercase text-center px-2">
+                IoT Kit • Kids Robot •
+              </span>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xl">🤖</span>
+            </div>
+          </div>
         </div>
+
+        {/* Main Headline */}
+        <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-extrabold text-[#111111] leading-[1.15] tracking-tight max-w-4xl mx-auto">
+          Tempat Terbaik <br />
+          <span className="relative inline-block italic font-serif text-[#6C5CE7] mr-3">
+            Belajar
+            <svg
+              className="absolute -bottom-2 left-0 w-full h-3 text-[#D9C4EC]"
+              viewBox="0 0 100 20"
+              preserveAspectRatio="none"
+              fill="none"
+            >
+              <path
+                d="M0 10 Q25 18 50 10 T100 10"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+          &{" "}
+          <span className="relative inline-block italic font-serif text-[#EAB308] ml-2">
+            Rakit Robot
+            <svg
+              className="absolute -bottom-1 left-0 w-full h-2 text-[#FEF08A]"
+              viewBox="0 0 100 10"
+              preserveAspectRatio="none"
+              fill="none"
+            >
+              <path
+                d="M0 5 L100 5"
+                stroke="currentColor"
+                strokeWidth="6"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>{" "}
+          IoT Anak
+        </h1>
+
+        {/* Subtitle */}
+        <p className="font-body text-gray-700 text-base sm:text-lg max-w-2xl mx-auto mt-6 leading-relaxed">
+          Eksplorasi ribuan kit robotik IoT interaktif dan menyenangkan untuk
+          mendukung kreativitas, logika coding, dan pemahaman teknologi si kecil.
+        </p>
+
+        {/* Action Button dengan Margin Top & Margin Bottom Besar */}
+        <div className="mt-14 sm:mt-20 lg:mt-24 mb-28 sm:mb-36 lg:mb-44 flex justify-center">
+          <Link
+            href="/product"
+            className="group inline-flex items-center gap-3 bg-[#6C5CE7] hover:bg-[#5A4AD1] text-white font-semibold text-base px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+          >
+            <span>Mulai Sekarang</span>
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-45 transition-transform duration-300">
+              <ArrowUpRight className="w-5 h-5 text-white" />
+            </div>
+          </Link>
+        </div>
+
+        {/* Decorative Element Right Bottom */}
+        <div className="hidden lg:block absolute right-12 bottom-6 pointer-events-none">
+          <div className="relative w-28 h-28">
+            <div className="absolute inset-0 bg-[#E0E7FF] rounded-3xl transform rotate-6" />
+            <div className="relative w-full h-full rounded-3xl overflow-hidden border-2 border-white shadow-sm">
+              <Image
+                src="/images/kid-happy.png"
+                alt="Anak gembira"
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative Element Left Bottom */}
+        <div className="hidden lg:block absolute left-12 bottom-8 pointer-events-none opacity-40">
+          <div className="w-16 h-16 rounded-full border-4 border-dashed border-[#6C5CE7]" />
+        </div>
+
       </div>
     </section>
   );
