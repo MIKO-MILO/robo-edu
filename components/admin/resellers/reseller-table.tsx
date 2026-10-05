@@ -59,7 +59,7 @@ export function ResellerTable({ data, isLoading = false }: ResellerTableProps) {
   const router = useRouter();
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-xs">
+    <div className="bg-card rounded-2xl border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse font-body text-sm">
           <thead>

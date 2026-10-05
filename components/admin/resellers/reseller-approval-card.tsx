@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import { Gavel, CheckCircle2, XCircle, Info, Clock, ShieldCheck } from "lucide-react";
@@ -33,8 +33,8 @@ export function ResellerApprovalCard({
   // ── APPROVED state ──
   if (resellerStatus === "APPROVED") {
     return (
-      <div className="border-2 border-border neo-shadow bg-card">
-        <div className="p-4 border-b-2 border-border bg-success-bg flex items-center justify-between">
+      <div className="border border-border rounded-2xl bg-card overflow-hidden">
+        <div className="p-4 border-b border-border bg-success-bg flex items-center justify-between rounded-t-2xl">
           <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-success">
             <ShieldCheck className="size-[18px]" />
             Status Reseller
@@ -44,7 +44,7 @@ export function ResellerApprovalCard({
           </span>
         </div>
         <div className="p-5 space-y-3">
-          <div className="p-3.5 border-2 border-border bg-success-bg flex items-start gap-2.5">
+          <div className="p-3.5 border border-border rounded-xl bg-success-bg flex items-start gap-2.5">
             <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
             <p className="text-xs font-body text-foreground leading-relaxed">
               <strong className="font-heading">{applicantName}</strong> telah mendapatkan akses harga{" "}
@@ -52,7 +52,7 @@ export function ResellerApprovalCard({
               di seluruh katalog RoboEdu.
             </p>
           </div>
-          <div className="p-3 border border-border bg-muted text-xs text-muted-foreground font-body">
+          <div className="p-3 border border-border rounded-xl bg-muted text-xs text-muted-foreground font-body">
             Event telah ditulis ke tabel{" "}
             <code className="font-mono text-foreground">audit_log</code> secara otomatis.
           </div>
@@ -64,8 +64,8 @@ export function ResellerApprovalCard({
   // ── REJECTED state ──
   if (resellerStatus === "REJECTED") {
     return (
-      <div className="border-2 border-border neo-shadow bg-card">
-        <div className="p-4 border-b-2 border-border bg-danger-bg flex items-center justify-between">
+      <div className="border border-border rounded-2xl bg-card overflow-hidden">
+        <div className="p-4 border-b border-border bg-danger-bg flex items-center justify-between rounded-t-2xl">
           <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-danger">
             <XCircle className="size-[18px]" />
             Status Verifikasi
@@ -75,14 +75,14 @@ export function ResellerApprovalCard({
           </span>
         </div>
         <div className="p-5 space-y-3">
-          <div className="p-3.5 border-2 border-border bg-danger-bg flex items-start gap-2.5">
+          <div className="p-3.5 border border-border rounded-xl bg-danger-bg flex items-start gap-2.5">
             <XCircle className="size-5 text-danger shrink-0 mt-0.5" />
             <p className="text-xs font-body text-foreground leading-relaxed">
               Pengajuan dari <strong className="font-heading">{applicantName}</strong> telah ditolak.
               Customer tetap berstatus pelanggan reguler dengan harga normal.
             </p>
           </div>
-          <div className="p-3 border border-border bg-muted text-xs text-muted-foreground font-body">
+          <div className="p-3 border border-border rounded-xl bg-muted text-xs text-muted-foreground font-body">
             Notifikasi email penolakan telah terkirim ke pemohon.
           </div>
         </div>
@@ -92,9 +92,9 @@ export function ResellerApprovalCard({
 
   // ── PENDING state — action form ──
   return (
-    <div className="border-2 border-border neo-shadow bg-card relative">
+    <div className="border border-border rounded-2xl bg-card relative overflow-hidden">
       {/* Blue header */}
-      <div className="p-4 border-b-2 border-border bg-primary flex items-center justify-between">
+      <div className="p-4 border-b border-border bg-primary flex items-center justify-between rounded-t-2xl">
         <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-white">
           <Gavel className="size-[18px]" />
           Keputusan Verifikasi
@@ -106,7 +106,7 @@ export function ResellerApprovalCard({
 
       <div className="p-5 space-y-4">
         {/* Info callout */}
-        <div className="p-3.5 border-2 border-border bg-warning-bg flex items-start gap-2.5">
+        <div className="p-3.5 border border-border rounded-xl bg-warning-bg flex items-start gap-2.5">
           <Info className="size-5 text-warning shrink-0 mt-0.5" />
           <p className="text-xs font-body text-foreground leading-tight">
             Persetujuan akan mengaktifkan hak harga{" "}
@@ -169,7 +169,7 @@ export function ResellerApprovalCard({
         </div>
 
         {/* Audit trail live preview placeholder */}
-        <div className="p-3 border border-border bg-muted flex items-start gap-2 text-xs font-body text-muted-foreground">
+        <div className="p-3 border border-border rounded-xl bg-muted flex items-start gap-2 text-xs font-body text-muted-foreground">
           <Clock className="size-4 shrink-0 mt-0.5" />
           <span>
             Tindakan akan dicatat di <code className="font-mono text-foreground">audit_log</code>{" "}

@@ -67,7 +67,7 @@ function BentoCardHeader({
   return (
     <div
       className={cn(
-        "p-4 border-b-2 border-border flex items-center justify-between",
+        "p-4 border-b border-border flex items-center justify-between",
         bgColor
       )}
     >
@@ -87,7 +87,7 @@ function BentoCardHeader({
 /** Individual data field cell — Neo muted box */
 function DataCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="p-3 bg-muted border border-border">
+    <div className="p-3 bg-muted border border-border rounded-lg">
       <span className="text-[11px] font-bold text-secondary uppercase block mb-0.5">{label}</span>
       <span className="text-sm font-semibold text-foreground">{value}</span>
     </div>
@@ -118,7 +118,7 @@ export function ResellerInfoCard({
   return (
     <div className="space-y-6">
       {/* ── 1. Legalitas & Alamat Pemohon ── */}
-      <div className="border-2 border-border neo-shadow bg-card">
+      <div className="border border-border rounded-2xl bg-card overflow-hidden">
         <BentoCardHeader
           icon={BadgeCheck}
           title="Data Legalitas & Alamat Pemohon"
@@ -139,7 +139,7 @@ export function ResellerInfoCard({
 
           {/* Primary address box */}
           {primaryAddress && (
-            <div className="p-3.5 border-2 border-border bg-background space-y-1.5">
+            <div className="p-3.5 border border-border rounded-xl bg-background space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-heading font-bold flex items-center gap-1.5 text-foreground">
                   <MapPin className="size-4 text-primary" />
@@ -162,7 +162,7 @@ export function ResellerInfoCard({
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* KTP */}
-              <div className="p-3 border-2 border-border neo-shadow-icon bg-card flex items-center justify-between">
+              <div className="p-3 border border-border rounded-xl bg-card flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <IdCard className="size-6 text-primary" />
                   <div>
@@ -175,7 +175,7 @@ export function ResellerInfoCard({
                 {/* TODO: Wire to MinIO document preview when backend ready */}
                 <span
                   className={cn(
-                    "border-2 border-border bg-warning-bg neo-shadow-icon",
+                    "border border-border bg-warning-bg rounded-lg",
                     "text-[11px] font-heading font-bold px-2.5 py-1.5",
                     "text-foreground cursor-default"
                   )}
@@ -186,7 +186,7 @@ export function ResellerInfoCard({
               </div>
 
               {/* NPWP */}
-              <div className="p-3 border-2 border-border neo-shadow-icon bg-card flex items-center justify-between">
+              <div className="p-3 border border-border rounded-xl bg-card flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Receipt className="size-6 text-secondary" />
                   <div>
@@ -198,7 +198,7 @@ export function ResellerInfoCard({
                 </div>
                 <span
                   className={cn(
-                    "border-2 border-border bg-warning-bg neo-shadow-icon",
+                    "border border-border bg-warning-bg rounded-lg",
                     "text-[11px] font-heading font-bold px-2.5 py-1.5",
                     "text-foreground cursor-default"
                   )}
@@ -214,7 +214,7 @@ export function ResellerInfoCard({
 
 
       {/* ── 3. Milestone & Riwayat Akun ── */}
-      <div className="border-2 border-border neo-shadow bg-card">
+      <div className="border border-border rounded-2xl bg-card overflow-hidden">
         <BentoCardHeader
           icon={FileText}
           title="Milestone & Riwayat Akun"
@@ -303,7 +303,7 @@ export function ResellerInfoCard({
 
       {/* ── 4. Catatan Penolakan (hanya jika REJECTED) ── */}
       {rejectionReason && (
-        <div className="border-2 border-danger neo-shadow bg-danger-bg p-5 space-y-2">
+        <div className="border border-danger rounded-2xl bg-danger-bg p-5 space-y-2">
           <div className="flex items-center gap-2">
             <div className="size-1.5 rounded-full bg-danger" />
             <h3 className="font-heading font-bold text-sm text-danger">Alasan Penolakan</h3>

@@ -57,9 +57,9 @@ export function ResellerRejectModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-card border-2 border-border neo-shadow w-full max-w-md p-6 space-y-4">
+      <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b-2 border-border">
+        <div className="flex items-center justify-between pb-3 border-b border-border">
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-5 text-danger shrink-0" />
             <h3 className="font-heading text-base font-bold text-foreground">

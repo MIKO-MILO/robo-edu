@@ -9,7 +9,7 @@ import {
   Ban,
   CheckCircle2,
 } from "lucide-react";
-import { Button, BackButton } from "@/components/ui/button";
+import { Button, BackButton, buttonVariants } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { ResellerStatus } from "@/types/enums";
 
@@ -56,10 +56,10 @@ export function CustomerDetailHeader({
       </div>
 
       {/* Main Header Container */}
-      <div className="bg-card p-6 rounded-2xl border-2 border-border shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-card p-6 rounded-2xl border border-border flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         {/* Left: Avatar + Info */}
         <div className="flex items-center gap-4">
-          <div className="size-16 rounded-2xl bg-primary/10 border-2 border-primary/30 text-primary font-heading font-bold text-xl flex items-center justify-center shrink-0">
+          <div className="size-16 rounded-full bg-primary/10 border border-primary/30 text-primary font-heading font-bold text-xl flex items-center justify-center shrink-0">
             {getInitials(name)}
           </div>
 
@@ -110,17 +110,19 @@ export function CustomerDetailHeader({
         {/* Right: Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto justify-end">
           {waUrl && (
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-1.5 rounded-xl border-2 border-border font-heading font-bold text-xs"
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "gap-1.5 rounded-xl border-2 border-border font-heading font-bold text-xs",
+              })}
             >
-              <a href={waUrl} target="_blank" rel="noreferrer">
-                <MessageCircle className="size-4 text-emerald-600" />
-                <span>WhatsApp</span>
-              </a>
-            </Button>
+              <MessageCircle className="size-4 text-emerald-600" />
+              <span>WhatsApp</span>
+            </a>
           )}
 
           {resellerStatus === "PENDING" && (

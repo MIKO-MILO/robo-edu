@@ -44,7 +44,7 @@ export function ResellerStepper({ resellerStatus }: ResellerStepperProps) {
   const isRejected = resellerStatus === "REJECTED";
 
   return (
-    <div className="border-2 border-border neo-shadow bg-card p-4 overflow-x-auto">
+    <div className="border border-border rounded-2xl bg-card p-4 overflow-x-auto">
       <div className="min-w-[680px] grid grid-cols-4 gap-2">
         {STEPS.map((step, idx) => {
           const stepNum = idx + 1;
@@ -77,7 +77,7 @@ export function ResellerStepper({ resellerStatus }: ResellerStepperProps) {
             <div
               key={step.number}
               className={cn(
-                "p-3 border-2 border-border flex items-center gap-2.5 transition-colors",
+                "p-3 border border-border rounded-xl flex items-center gap-2.5 transition-colors",
                 bgColor,
                 shadowClass
               )}

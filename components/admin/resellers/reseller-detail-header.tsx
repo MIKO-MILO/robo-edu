@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import {
@@ -9,11 +9,11 @@ import {
   XCircle,
   Calendar,
   ChevronRight,
-  ArrowLeft,
   Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/ui/button";
 import type { ResellerStatus } from "@/types/enums";
 
 export interface ResellerDetailHeaderProps {
@@ -106,18 +106,10 @@ export function ResellerDetailHeader({
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
         <div className="flex flex-wrap items-center gap-3">
           {/* Back button — Neo style */}
-          <Link
+          <BackButton
             href="/admin/resellers"
-            className={cn(
-              "border-2 border-border neo-shadow-icon bg-card hover:bg-muted",
-              "px-3.5 py-2 text-xs font-heading font-bold",
-              "inline-flex items-center gap-2",
-              "neo-shadow-hover transition-all duration-100"
-            )}
-          >
-            <ArrowLeft className="size-4 shrink-0" />
-            KEMBALI KE DAFTAR RESELLER
-          </Link>
+            label="KEMBALI KE DAFTAR RESELLER"
+          />
 
           {/* Breadcrumb trail */}
           <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
@@ -135,7 +127,7 @@ export function ResellerDetailHeader({
         <div className="flex flex-wrap items-center gap-2">
           <span
             className={cn(
-              "border-2 border-border neo-shadow-icon px-3 py-1",
+              "border border-border rounded-full px-3 py-1",
               "font-heading text-xs font-bold flex items-center gap-1.5",
               statusCfg.bgColor,
               statusCfg.textColor
@@ -144,7 +136,7 @@ export function ResellerDetailHeader({
             <span className={cn("size-2 rounded-full shrink-0", statusCfg.dotColor)} />
             STATUS: {statusCfg.label}
           </span>
-          <span className="border-2 border-border bg-accent-soft-blue px-2.5 py-1 text-xs font-mono font-bold">
+          <span className="border border-border rounded-full bg-accent-soft-blue px-2.5 py-1 text-xs font-mono font-bold">
             ID: {id.toUpperCase()}
           </span>
           <span className="border border-border bg-muted px-2.5 py-1 text-xs font-body font-medium flex items-center gap-1 text-muted-foreground">
@@ -155,14 +147,14 @@ export function ResellerDetailHeader({
       </header>
 
       {/* ── Bento Profile Overview ── */}
-      <section className="border-2 border-border neo-shadow bg-card p-5 md:p-7 relative overflow-hidden">
+      <section className="border border-border rounded-2xl bg-card p-5 md:p-7 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           {/* Left: Avatar + Info */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             {/* Avatar initials */}
             <div
               className={cn(
-                "size-20 rounded-full bg-accent-soft-blue border-2 border-border neo-shadow-icon",
+                "size-20 rounded-full bg-accent-soft-blue border border-border",
                 "flex items-center justify-center shrink-0",
                 "font-heading font-extrabold text-2xl text-primary"
               )}
@@ -178,7 +170,7 @@ export function ResellerDetailHeader({
                   {name}
                 </h1>
                 {isActive && (
-                  <span className="border-2 border-border bg-success-bg neo-shadow-icon px-2.5 py-0.5 text-xs font-bold font-heading uppercase text-success">
+                  <span className="border border-border bg-success-bg rounded-full px-2.5 py-0.5 text-xs font-bold font-heading uppercase text-success">
                     Customer Aktif
                   </span>
                 )}

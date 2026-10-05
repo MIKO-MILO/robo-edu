@@ -61,8 +61,8 @@ export function CustomerProfileCard({
   return (
     <div className="space-y-6">
       {/* 1. Data Diri & Kontak */}
-      <div className="bg-card p-5 rounded-2xl border-2 border-border shadow-xs space-y-4">
-        <div className="flex items-center gap-2 border-b-2 border-border pb-3">
+      <div className="bg-card p-5 rounded-2xl border border-border space-y-4">
+        <div className="flex items-center gap-2 border-b border-border pb-3">
           <User className="size-4 text-primary" />
           <h3 className="font-heading font-bold text-sm text-foreground">
             Data Pribadi &amp; Kontak
@@ -115,8 +115,8 @@ export function CustomerProfileCard({
       </div>
 
       {/* 2. Daftar Alamat Tersimpan */}
-      <div className="bg-card p-5 rounded-2xl border-2 border-border shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b-2 border-border pb-3">
+      <div className="bg-card p-5 rounded-2xl border border-border space-y-4">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <MapPin className="size-4 text-primary" />
             <h3 className="font-heading font-bold text-sm text-foreground">
@@ -169,8 +169,8 @@ export function CustomerProfileCard({
       </div>
 
       {/* 3. Metadata Akun */}
-      <div className="bg-card p-5 rounded-2xl border-2 border-border shadow-xs space-y-3 text-xs">
-        <div className="flex items-center gap-2 border-b-2 border-border pb-2.5">
+      <div className="bg-card p-5 rounded-2xl border border-border space-y-3 text-xs">
+        <div className="flex items-center gap-2 border-b border-border pb-2.5">
           <Clock className="size-4 text-primary" />
           <h3 className="font-heading font-bold text-sm text-foreground">
             Informasi Akun

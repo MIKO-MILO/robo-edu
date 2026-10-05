@@ -1,4 +1,4 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { ShoppingBag, Calendar, Package } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { cn } from "@/lib/utils";
@@ -34,9 +34,9 @@ export function ResellerOrdersTab({ orders }: ResellerOrdersTabProps) {
   const isEmpty = orders.length === 0;
 
   return (
-    <div className="border-2 border-border neo-shadow bg-card">
+    <div className="border border-border rounded-2xl bg-card overflow-hidden">
       {/* Card header */}
-      <div className="p-4 border-b-2 border-border bg-accent-orange/60 flex items-center justify-between">
+      <div className="p-4 border-b border-border bg-accent-orange/60 flex items-center justify-between">
         <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-foreground">
           <ShoppingBag className="size-[18px]" />
           Riwayat Pesanan Terakhir
@@ -58,7 +58,7 @@ export function ResellerOrdersTab({ orders }: ResellerOrdersTabProps) {
               <div
                 key={order.id}
                 className={cn(
-                  "p-4 border-2 border-border bg-background",
+                  "p-4 border border-border rounded-xl bg-background",
                   "flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 )}
               >

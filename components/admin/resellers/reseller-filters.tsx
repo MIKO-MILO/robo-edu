@@ -35,7 +35,7 @@ export function ResellerFilters({
   return (
     <div
       className={cn(
-        "flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card p-3 rounded-2xl border-2 border-border shadow-xs",
+        "flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border",
         className
       )}
     >

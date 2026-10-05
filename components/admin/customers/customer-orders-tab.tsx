@@ -10,7 +10,7 @@ import {
   CreditCard,
   XCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { cn } from "@/lib/utils";
 import type { CustomerOrderHistoryRow } from "./customer-list-types";
@@ -79,9 +79,9 @@ export function CustomerOrdersTab({ orders }: CustomerOrdersTabProps) {
   }, [orders, activeTab]);
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-xs space-y-4 p-5">
+    <div className="bg-card rounded-2xl border border-border overflow-hidden space-y-4 p-5">
       {/* Tab Header & Filter */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-border pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div className="flex items-center gap-2">
           <ShoppingBag className="size-4 text-primary" />
           <h3 className="font-heading font-bold text-base text-foreground">
@@ -127,7 +127,7 @@ export function CustomerOrdersTab({ orders }: CustomerOrdersTabProps) {
         <div className="overflow-x-auto -mx-5 -mb-5">
           <table className="w-full text-left border-collapse font-body text-sm">
             <thead>
-              <tr className="border-b-2 border-border bg-muted/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-border bg-muted/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
                 <th className="py-3 px-4">No. Order &amp; Waktu</th>
                 <th className="py-3 px-4">Item Produk</th>
                 <th className="py-3 px-4">Total Tagihan</th>
@@ -230,17 +230,17 @@ export function CustomerOrdersTab({ orders }: CustomerOrdersTabProps) {
 
                   {/* Aksi */}
                   <td className="py-3.5 px-4 text-center">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="xs"
-                      className="gap-1 rounded-xl"
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "xs",
+                        className: "gap-1 rounded-xl",
+                      })}
                     >
-                      <Link href={`/admin/orders/${order.id}`}>
-                        <Eye className="size-3.5" />
-                        <span>Lihat</span>
-                      </Link>
-                    </Button>
+                      <Eye className="size-3.5" />
+                      <span>Lihat</span>
+                    </Link>
                   </td>
                 </tr>
               ))}

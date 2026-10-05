@@ -129,18 +129,18 @@ function AdminResellerDetailSkeleton() {
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="flex gap-3">
-          <Skeleton className="h-9 w-56 rounded-none border-2 border-border" />
-          <Skeleton className="h-9 w-36 rounded-none" />
+          <Skeleton className="h-9 w-56 rounded-2xl border border-border" />
+          <Skeleton className="h-9 w-36 rounded-2xl" />
         </div>
-        <Skeleton className="h-32 rounded-none border-2 border-border" />
+        <Skeleton className="h-32 rounded-2xl border border-border" />
       </div>
-      <Skeleton className="h-16 rounded-none border-2 border-border" />
+      <Skeleton className="h-16 rounded-2xl border border-border" />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-6">
-          <Skeleton className="h-96 rounded-none border-2 border-border" />
+          <Skeleton className="h-96 rounded-2xl border border-border" />
         </div>
         <div className="lg:col-span-5">
-          <Skeleton className="h-80 rounded-none border-2 border-border" />
+          <Skeleton className="h-80 rounded-2xl border border-border" />
         </div>
       </div>
     </div>
