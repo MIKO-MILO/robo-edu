@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, Suspense, useTransition } from "react";
+import React, { useMemo, Suspense, useTransition, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart } from "lucide-react";
@@ -10,156 +10,170 @@ import {
   OrderTable,
 } from "@/components/admin/orders";
 import type { AdminOrderRow, OrderStats } from "@/components/admin/orders";
-import type { OrderStatus, PaymentStatus } from "@/types/enums";
+import type { OrderStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
-// Mock data — akan diganti dengan hasil API hook saat backend siap
+// Types
 // ---------------------------------------------------------------------------
-const MOCK_ADMIN_ORDERS: AdminOrderRow[] = [
-  {
-    id: "ord-001",
-    order_number: "ORD-112-9876543-1234567",
-    customer_name: "Alex Student",
-    customer_email: "alex@example.com",
-    total: 1850000,
-    status: "DELIVERED" as OrderStatus,
-    payment_status: "PAID" as PaymentStatus,
-    payment_method: "BCA Virtual Account",
-    item_count: 3,
-    first_item_name: "Advanced Servo Motor Controller Board V2",
-    created_at: "2023-10-24T10:15:00Z",
-  },
-  {
-    id: "ord-002",
-    order_number: "ORD-112-1234567-9876543",
-    customer_name: "Budi Santoso",
-    customer_email: "budi.s@gmail.com",
-    total: 675000,
-    status: "COMPLETED" as OrderStatus,
-    payment_status: "PAID" as PaymentStatus,
-    payment_method: "GoPay",
-    item_count: 1,
-    first_item_name: "Ultrasonic Distance Sensor HC-SR04 (Pack of 5)",
-    created_at: "2023-09-12T14:20:00Z",
-  },
-  {
-    id: "ord-003",
-    order_number: "ORD-20231102-0045",
-    customer_name: "Citra Dewi",
-    customer_email: "citra.dewi@yahoo.com",
-    total: 1250000,
-    status: "SHIPPED" as OrderStatus,
-    payment_status: "PAID" as PaymentStatus,
-    payment_method: "Mandiri Bill",
-    item_count: 2,
-    first_item_name: "RoboKit Smart Obstacle Avoidance Car",
-    created_at: "2023-11-02T08:30:00Z",
-  },
-  {
-    id: "ord-004",
-    order_number: "ORD-20231105-0089",
-    customer_name: "Dimas Anggara",
-    customer_email: "dimas.ang@outlook.com",
-    total: 450000,
-    status: "PROCESSING" as OrderStatus,
-    payment_status: "PAID" as PaymentStatus,
-    payment_method: "QRIS",
-    item_count: 1,
-    first_item_name: "ESP32 IoT Starter Experiment Board",
-    created_at: "2023-11-05T13:45:00Z",
-  },
-  {
-    id: "ord-005",
-    order_number: "ORD-20231106-0112",
-    customer_name: "Eka Pratama",
-    customer_email: "eka.pratama@gmail.com",
-    total: 920000,
-    status: "PENDING" as OrderStatus,
-    payment_status: "PENDING" as PaymentStatus,
-    payment_method: "BNI Virtual Account",
-    item_count: 1,
-    first_item_name: "Bionic Robotic Arm Kit 4-DOF",
-    created_at: "2023-11-06T16:00:00Z",
-  },
-  {
-    id: "ord-006",
-    order_number: "ORD-20230810-0019",
-    customer_name: "Fajar Nugraha",
-    customer_email: "fajar.n@gmail.com",
-    total: 350000,
-    status: "CANCELLED" as OrderStatus,
-    payment_status: "EXPIRED" as PaymentStatus,
-    payment_method: "BCA Virtual Account",
-    item_count: 1,
-    first_item_name: "Solar Power Mini Bug Robot Kit",
-    created_at: "2023-08-10T09:12:00Z",
-  },
-];
+
+interface OrderListMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+interface OrderListState {
+  data: AdminOrderRow[];
+  meta: OrderListMeta;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Fetch helper
+// ---------------------------------------------------------------------------
+
+async function fetchAdminOrders(params: {
+  page: number;
+  limit: number;
+  q: string;
+  status: string;
+}): Promise<{ data: AdminOrderRow[]; meta: OrderListMeta }> {
+  const qs = new URLSearchParams({
+    page:   String(params.page),
+    limit:  String(params.limit),
+    q:      params.q,
+    status: params.status,
+  });
+
+  const res = await fetch(`/api/admin/orders?${qs.toString()}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message ?? `HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  return { data: json.data ?? [], meta: json.meta };
+}
 
 // ---------------------------------------------------------------------------
 // Inner component (needs useSearchParams — must be inside Suspense)
 // ---------------------------------------------------------------------------
+
 function AdminOrdersContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const router        = useRouter();
+  const pathname      = usePathname();
+  const searchParams  = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const searchQuery = searchParams.get("search") || "";
-  const statusFilter = searchParams.get("status") || "ALL";
+  const searchQuery  = searchParams.get("search") ?? "";
+  const statusFilter = searchParams.get("status") ?? "ALL";
+  const currentPage  = Math.max(1, Number(searchParams.get("page") ?? "1"));
+  const LIMIT        = 20;
+
+  // ── State ────────────────────────────────────────────────────────────
+  const [state, setState] = useState<OrderListState>({
+    data:      [],
+    meta:      { page: 1, limit: LIMIT, total: 0, totalPages: 0 },
+    isLoading: true,
+    error:     null,
+  });
+
+  // ── Fetch ────────────────────────────────────────────────────────────
+  const load = useCallback(async () => {
+    setState((s) => ({ ...s, isLoading: true, error: null }));
+    try {
+      const result = await fetchAdminOrders({
+        page:   currentPage,
+        limit:  LIMIT,
+        q:      searchQuery,
+        status: statusFilter,
+      });
+      setState({ data: result.data, meta: result.meta, isLoading: false, error: null });
+    } catch (err) {
+      setState((s) => ({
+        ...s,
+        isLoading: false,
+        error: err instanceof Error ? err.message : "Gagal memuat pesanan.",
+      }));
+    }
+  }, [currentPage, searchQuery, statusFilter]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // ── URL param helpers ────────────────────────────────────────────────
+  const pushParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      }
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`);
+      });
+    },
+    [searchParams, pathname, router],
+  );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (e.target.value) {
-      params.set("search", e.target.value);
-    } else {
-      params.delete("search");
-    }
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
-    });
+    pushParams({ search: e.target.value || null, page: null });
   };
 
   const handleStatusChange = (status: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (status !== "ALL") {
-      params.set("status", status);
-    } else {
-      params.delete("status");
-    }
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
-    });
+    pushParams({ status: status !== "ALL" ? status : null, page: null });
   };
 
-  const filteredOrders = useMemo(() => {
-    return MOCK_ADMIN_ORDERS.filter((order) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.first_item_name.toLowerCase().includes(searchQuery.toLowerCase());
+  const handlePageChange = (page: number) => {
+    pushParams({ page: page > 1 ? String(page) : null });
+  };
 
-      const matchesStatus =
-        statusFilter === "ALL" || order.status === statusFilter;
+  // ── Derived stats (calculated from meta + current filter context) ────
+  // For accurate cross-status totals we make a separate stats fetch once.
+  const [stats, setStats] = useState<OrderStats>({
+    total:               0,
+    pending:             0,
+    processing_shipped:  0,
+    completed:           0,
+  });
 
-      return matchesSearch && matchesStatus;
+  useEffect(() => {
+    // Fetch stats for each status bucket in parallel (no search, no status filter)
+    Promise.allSettled([
+      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "ALL" }),
+      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "PENDING" }),
+      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "PROCESSING" }),
+      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "SHIPPED" }),
+      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "DELIVERED" }),
+      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "COMPLETED" }),
+    ]).then(([all, pending, processing, shipped, delivered, completed]) => {
+      const total              = all.status        === "fulfilled" ? all.value.meta.total               : 0;
+      const pendingCount       = pending.status    === "fulfilled" ? pending.value.meta.total            : 0;
+      const processingCount    = processing.status === "fulfilled" ? processing.value.meta.total         : 0;
+      const shippedCount       = shipped.status    === "fulfilled" ? shipped.value.meta.total            : 0;
+      const deliveredCount     = delivered.status  === "fulfilled" ? delivered.value.meta.total          : 0;
+      const completedCount     = completed.status  === "fulfilled" ? completed.value.meta.total          : 0;
+
+      setStats({
+        total,
+        pending:             pendingCount,
+        processing_shipped:  processingCount + shippedCount,
+        completed:           deliveredCount + completedCount,
+      });
     });
-  }, [searchQuery, statusFilter]);
+  }, []); // only on mount — stats are a general overview
 
-  const stats = useMemo<OrderStats>(
-    () => ({
-      total: MOCK_ADMIN_ORDERS.length,
-      pending: MOCK_ADMIN_ORDERS.filter((o) => o.status === "PENDING").length,
-      processing_shipped: MOCK_ADMIN_ORDERS.filter((o) =>
-        ["PROCESSING", "SHIPPED"].includes(o.status)
-      ).length,
-      completed: MOCK_ADMIN_ORDERS.filter((o) =>
-        ["DELIVERED", "COMPLETED"].includes(o.status)
-      ).length,
-    }),
-    []
-  );
+  // ── Pagination component ─────────────────────────────────────────────
+  const { totalPages } = state.meta;
 
   return (
     <div className="space-y-6">
@@ -187,8 +201,42 @@ function AdminOrdersContent() {
         onStatusChange={handleStatusChange}
       />
 
+      {/* Error banner */}
+      {state.error && (
+        <div className="rounded-2xl border-2 border-danger/30 bg-danger-bg px-4 py-3 text-sm text-danger font-body">
+          Gagal memuat data: {state.error}
+        </div>
+      )}
+
       {/* Orders Table */}
-      <OrderTable data={filteredOrders} />
+      <OrderTable data={state.data} isLoading={state.isLoading} />
+
+      {/* Pagination */}
+      {!state.isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground font-body px-1">
+          <span>
+            Halaman {state.meta.page} dari {totalPages} &bull; {state.meta.total} pesanan
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed font-heading font-bold text-xs transition-colors"
+            >
+              ← Sebelumnya
+            </button>
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed font-heading font-bold text-xs transition-colors"
+            >
+              Berikutnya →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -203,10 +251,9 @@ export default function AdminOrdersPage() {
         <div className="space-y-4">
           <Skeleton className="h-10 w-48 rounded-xl" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Skeleton className="h-20 w-full rounded-2xl" />
-            <Skeleton className="h-20 w-full rounded-2xl" />
-            <Skeleton className="h-20 w-full rounded-2xl" />
-            <Skeleton className="h-20 w-full rounded-2xl" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+            ))}
           </div>
           <Skeleton className="h-12 w-full rounded-2xl" />
           <Skeleton className="h-64 w-full rounded-2xl" />
