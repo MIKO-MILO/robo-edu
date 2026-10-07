@@ -5,3 +5,4 @@ export * from "./product-form";
 export * from "./variant-row";
 export * from "./variant-editor";
 export * from "./product-image-manager";
+export * from "./product-video-manager";

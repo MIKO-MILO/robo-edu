@@ -140,7 +140,9 @@ export type CreateProductRequestBody = Pick<
   "category_id" | "product_type_id" | "name" | "slug" | "sku" | "description"
 >;
 
-export type UpdateProductRequestBody = Partial<CreateProductRequestBody>;
+export type UpdateProductRequestBody = Partial<CreateProductRequestBody> & {
+  status?: string;
+};
 
 export type CreateVariantRequestBody = Omit<
   ProductVariant,

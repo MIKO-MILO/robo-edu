@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import type { ProductImage, UUID } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -157,12 +156,22 @@ export function ProductImageManager({
               className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-background transition-transform duration-150 hover:-translate-y-0.5"
             >
               {/* Image Container */}
-              <div className="relative aspect-square w-full bg-muted">
-                <Image
-                  src={img.image_url}
+              <div className="relative aspect-square w-full bg-muted overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={
+                    img.image_url &&
+                    !img.image_url.includes("coresg-normal.trae.ai") &&
+                    !img.image_url.includes("text_to_image")
+                      ? img.image_url
+                      : `https://placehold.co/400x400/e8f4fd/2483d0?text=Produk`
+                  }
                   alt={img.alt_text || "Gambar Produk"}
-                  fill
-                  className="object-cover"
+                  className="size-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://placehold.co/400x400/e8f4fd/2483d0?text=Produk";
+                  }}
                 />
 
                 {/* Primary Badge */}

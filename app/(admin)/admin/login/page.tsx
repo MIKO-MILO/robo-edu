@@ -31,19 +31,23 @@ function AdminLoginForm() {
     setErrorMsg(null);
 
     try {
-      const response = await fetch("/api/mock-login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
+        if (data.data?.role !== "ADMIN") {
+          setErrorMsg("Akun ini tidak memiliki akses admin.");
+          return;
+        }
         router.push(redirectUrl);
         router.refresh();
       } else {
-        setErrorMsg(data.error?.message || "Gagal melakukan login admin");
+        setErrorMsg(data.message || "Email atau password salah.");
       }
     } catch (err) {
       setErrorMsg("Terjadi kesalahan jaringan");

@@ -11,6 +11,7 @@ import { ProductCard } from "@/components/ui/product-card";
 export interface ProductItem {
   id: number;
   name: string;
+  slug?: string;
   category: string;
   description: string;
   image: string;
@@ -202,6 +203,7 @@ export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: Product
             <div className="block md:hidden flex justify-center">
               <div className="w-full max-w-xs">
                 <ProductCard
+                  slug={products[currentIndex].slug}
                   name={products[currentIndex].name}
                   price={products[currentIndex].price}
                   rating={products[currentIndex].rating}
@@ -217,6 +219,7 @@ export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: Product
               {getVisibleProducts('tablet').map((product) => (
                 <ProductCard
                   key={product.id}
+                  slug={product.slug}
                   name={product.name}
                   price={product.price}
                   rating={product.rating}
@@ -232,6 +235,7 @@ export default function ProductShowcase({ products = DEFAULT_PRODUCTS }: Product
               {getVisibleProducts('desktop').map((product) => (
                 <ProductCard
                   key={product.id}
+                  slug={product.slug}
                   name={product.name}
                   price={product.price}
                   rating={product.rating}

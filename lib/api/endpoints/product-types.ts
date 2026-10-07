@@ -69,7 +69,7 @@ export async function getProductTypes(
   params?: GetProductTypesParams
 ): Promise<ApiCollectionResponse<ProductType>> {
   try {
-    return await http.get<ApiCollectionResponse<ProductType>>("/product-types", {
+    return await http.get<ApiCollectionResponse<ProductType>>("/admin/product-types", {
       params,
     });
   } catch (error) {

@@ -73,7 +73,7 @@ export async function getCategories(
   params?: GetCategoriesParams
 ): Promise<ApiCollectionResponse<Category>> {
   try {
-    return await http.get<ApiCollectionResponse<Category>>("/categories", { params });
+    return await http.get<ApiCollectionResponse<Category>>("/admin/categories", { params });
   } catch (error) {
     // Filter mock data sesuai query params
     let data = [...MOCK_CATEGORIES];

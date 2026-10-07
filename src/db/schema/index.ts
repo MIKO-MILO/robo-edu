@@ -5,6 +5,7 @@ export * from "./product-type";
 export * from "./product";
 export * from "./product-variant";
 export * from "./product-image";
+export * from "./product-video";
 export * from "./cart";
 export * from "./cart-item";
 export * from "./wishlist";

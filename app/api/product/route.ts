@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import {
   products,
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(total / limit);
 
     // =========================
-    // Products
+    // Products (without images — to avoid GROUP BY complexity)
     // =========================
     const productRows = await db
       .select({
@@ -164,13 +164,6 @@ export async function GET(request: NextRequest) {
           ),
           0
         )`,
-
-        primaryImage: sql<string | null>`MAX(
-          CASE
-            WHEN ${productImages.isPrimary} = true
-            THEN ${productImages.imageUrl}
-          END
-        )`,
       })
       .from(products)
       .innerJoin(categories, eq(products.categoryId, categories.id))
@@ -181,10 +174,6 @@ export async function GET(request: NextRequest) {
       .leftJoin(
         productVariants,
         eq(products.id, productVariants.productId)
-      )
-      .leftJoin(
-        productImages,
-        eq(products.id, productImages.productId)
       )
       .where(and(...filters))
       .groupBy(
@@ -205,6 +194,40 @@ export async function GET(request: NextRequest) {
       .orderBy(orderBy)
       .limit(limit)
       .offset(offset);
+
+    // =========================
+    // Thumbnail Images — separate query per batch product IDs
+    // Primary image diutamakan; fallback ke sort_order terkecil.
+    // =========================
+    const productIds = productRows.map((r) => r.id);
+
+    // Map: productId → imageUrl
+    const imageMap: Record<string, string> = {};
+
+    if (productIds.length > 0) {
+      const imageRows = await db
+        .select({
+          productId: productImages.productId,
+          imageUrl: productImages.imageUrl,
+          isPrimary: productImages.isPrimary,
+          sortOrder: productImages.sortOrder,
+        })
+        .from(productImages)
+        .where(inArray(productImages.productId, productIds))
+        .orderBy(
+          // primary first (true > false in desc), then lowest sort_order
+          desc(productImages.isPrimary),
+          asc(productImages.sortOrder)
+        );
+
+      // Per product: keep the first row that comes in
+      // (because order is: primary desc, sort_order asc — first row is always the best candidate)
+      for (const row of imageRows) {
+        if (!imageMap[row.productId]) {
+          imageMap[row.productId] = row.imageUrl;
+        }
+      }
+    }
 
     // =========================
     // Response
@@ -239,7 +262,7 @@ export async function GET(request: NextRequest) {
 
       stock: Number(product.totalStock || 0),
 
-      image: product.primaryImage,
+      image: imageMap[product.id] ?? null,
     }));
 
     return NextResponse.json({

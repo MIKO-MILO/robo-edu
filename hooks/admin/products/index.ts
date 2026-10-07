@@ -5,3 +5,4 @@ export * from "./use-update-product";
 export * from "./use-delete-product";
 export * from "./use-product-variants";
 export * from "./use-product-images";
+export * from "./use-product-videos";

@@ -53,6 +53,13 @@ interface RelatedProduct {
   bgColorClass: string;
 }
 
+interface ProductVideo {
+  id: string;
+  url: string;
+  title: string | null;
+  sort_order: number;
+}
+
 interface ProductDetail {
   id: string;
   slug: string;
@@ -70,6 +77,7 @@ interface ProductDetail {
   reviewCount: number;
   images: ProductImage[];
   mainImage: ProductImage;
+  videos: ProductVideo[];
   reviews: ProductReview[];
   reviewSummary: { average: number; total: number };
   relatedProducts: RelatedProduct[];
@@ -532,7 +540,10 @@ export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  // selectedMedia: { type: "image", index: number } | { type: "video", index: number }
+  const [selectedMedia, setSelectedMedia] = useState<
+    { type: "image"; index: number } | { type: "video"; index: number }
+  >({ type: "image", index: 0 });
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
@@ -562,8 +573,9 @@ export default function ProductDetailPage() {
           ...raw,
           images: safeImages,
           mainImage: raw.mainImage ?? safeImages[0],
+          videos: Array.isArray(raw.videos) ? raw.videos : [],
         });
-        setSelectedImageIndex(0);
+        setSelectedMedia({ type: "image", index: 0 });
       })
       .catch(() => active && setProduct(null))
       .finally(() => active && setIsLoadingProduct(false));
@@ -637,10 +649,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  const safeImageIndex = Math.min(
-    Math.max(selectedImageIndex, 0),
-    Math.max(product.images.length - 1, 0),
-  );
+  const safeImageIndex =
+    selectedMedia.type === "image"
+      ? Math.min(Math.max(selectedMedia.index, 0), Math.max(product.images.length - 1, 0))
+      : 0;
   const selectedImage = product.images[safeImageIndex] ?? product.mainImage;
 
   return (
@@ -652,15 +664,16 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-5 flex flex-col md:flex-row gap-3">
             {/* Thumbnail Strip */}
             <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible shrink-0 order-2 md:order-1">
+              {/* Image thumbnails */}
               {product.images.map((img, idx) => (
                 <button
-                  key={idx}
-                  onClick={() => setSelectedImageIndex(idx)}
-                  aria-label={`Thumbnail ${idx + 1}`}
+                  key={`img-${idx}`}
+                  onClick={() => setSelectedMedia({ type: "image", index: idx })}
+                  aria-label={`Foto produk ${idx + 1}`}
                   className={[
                     "w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden shrink-0 transition-all",
                     "border-2 bg-card",
-                    safeImageIndex === idx
+                    selectedMedia.type === "image" && safeImageIndex === idx
                       ? "border-foreground neo-shadow"
                       : "border-border-strong hover:border-foreground",
                   ].join(" ")}
@@ -677,26 +690,61 @@ export default function ProductDetailPage() {
                 </button>
               ))}
 
-              {/* Video Thumbnail Placeholder */}
-              <button
-                aria-label="Tonton video produk"
-                className="w-14 h-14 md:w-16 md:h-16 border-2 border-border-strong bg-muted rounded-lg overflow-hidden shrink-0 flex items-center justify-center hover:border-foreground transition-all"
-              >
-                <PlayCircle size={24} className="text-primary" />
-              </button>
+              {/* Video thumbnails */}
+              {product.videos.map((video, idx) => (
+                <button
+                  key={`vid-${video.id}`}
+                  onClick={() => setSelectedMedia({ type: "video", index: idx })}
+                  aria-label={video.title ?? `Video produk ${idx + 1}`}
+                  title={video.title ?? `Video ${idx + 1}`}
+                  className={[
+                    "w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden shrink-0 transition-all",
+                    "border-2 bg-muted flex items-center justify-center",
+                    selectedMedia.type === "video" && selectedMedia.index === idx
+                      ? "border-foreground neo-shadow bg-primary/10"
+                      : "border-border-strong hover:border-foreground",
+                  ].join(" ")}
+                >
+                  <PlayCircle
+                    size={24}
+                    className={
+                      selectedMedia.type === "video" && selectedMedia.index === idx
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }
+                  />
+                </button>
+              ))}
             </div>
 
-            {/* Main Image */}
-            <div className="w-full aspect-square border-2 border-foreground neo-shadow rounded-2xl overflow-hidden order-1 md:order-2">
-              <ProductImage
-                src={selectedImage.src}
-                alt={selectedImage.alt}
-                size="full"
-                aspectRatio="square"
-                className="w-full h-full rounded-none border-0"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
+            {/* Main Viewer — gambar atau video */}
+            <div className="w-full aspect-square border-2 border-foreground neo-shadow rounded-2xl overflow-hidden order-1 md:order-2 bg-black/5">
+              {selectedMedia.type === "video" && product.videos[selectedMedia.index] ? (
+                // ── Video Player ──
+                <video
+                  key={product.videos[selectedMedia.index].url}
+                  src={product.videos[selectedMedia.index].url}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain bg-black rounded-none"
+                  aria-label={
+                    product.videos[selectedMedia.index].title ?? "Video produk"
+                  }
+                >
+                  Browser kamu tidak mendukung tag video.
+                </video>
+              ) : (
+                // ── Image Viewer ──
+                <ProductImage
+                  src={selectedImage.src}
+                  alt={selectedImage.alt}
+                  size="full"
+                  aspectRatio="square"
+                  className="w-full h-full rounded-none border-0"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              )}
             </div>
           </div>
 

@@ -7,6 +7,12 @@ import {
 } from "@/types";
 import { buildQueryString } from "./query-builder";
 
+/**
+ * Base URL untuk API calls.
+ * - Kalau endpoint dimulai dengan "/admin/" atau "/api/", gunakan URL relatif
+ *   (/api/...) agar bekerja di semua environment (localhost, ngrok, production).
+ * - Kalau bukan, gunakan NEXT_PUBLIC_API_URL atau default ke external API.
+ */
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://api.roboedu.id/api/v1";
 
@@ -53,9 +59,22 @@ export async function apiClient<T>(
   } = options;
 
   const queryString = buildQueryString(params);
-  const fullUrl = endpoint.startsWith("http")
-    ? `${endpoint}${queryString}`
-    : `${BASE_URL.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}${queryString}`;
+
+  // Endpoint yang diawali /admin/ atau /api/ → gunakan URL relatif
+  // agar request selalu ke origin yang sama (localhost, ngrok, dst.)
+  let fullUrl: string;
+  if (endpoint.startsWith("/admin/") || endpoint.startsWith("/api/")) {
+    const path = endpoint.startsWith("/api/") ? endpoint : `/api${endpoint}`;
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+    fullUrl = `${origin}${path}${queryString}`;
+  } else if (endpoint.startsWith("http")) {
+    fullUrl = `${endpoint}${queryString}`;
+  } else {
+    fullUrl = `${BASE_URL.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}${queryString}`;
+  }
 
   const headers: Record<string, string> = {
     ...((customHeaders as Record<string, string>) || {}),

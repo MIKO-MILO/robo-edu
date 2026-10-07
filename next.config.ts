@@ -44,7 +44,12 @@ const nextConfig: NextConfig = {
         hostname: "via.placeholder.com",
         pathname: "/**",
       },
-      // MinIO object storage (dev: HTTP localhost, prod: HTTPS domain)
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+        pathname: "/**",
+      },
+      // MinIO object storage (dev: HTTP localhost via Docker port mapping 9002→9000)
       {
         protocol: "http",
         hostname: "localhost",
