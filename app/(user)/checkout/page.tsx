@@ -171,7 +171,7 @@ export default function CheckoutPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.line_total, 0);
   const shippingCost = selectedShipping?.cost ?? 0;
   const discountAmount = appliedVoucher?.estimated_discount ?? 0;
-  // Tax 8% — shown as "Termasuk PPN" in summary, computed server-side on submit
+  // Tax 8% — preview di client, kalkulasi final dilakukan server-side saat submit
   const taxAmount = Math.floor((subtotal - discountAmount) * 0.08);
   const total = subtotal + shippingCost - discountAmount + taxAmount;
 
@@ -191,29 +191,104 @@ export default function CheckoutPage() {
   };
 
   // ── Voucher handler ───────────────────────────────────────────────────
-  async function handleApplyVoucher(
+  // Fungsi validasi dipakai baik saat user menekan "Terapkan" maupun saat
+  // revalidasi otomatis ketika subtotal berubah (item cart diedit).
+  async function validateVoucherCode(
     code: string,
-  ): Promise<{ success: boolean; error?: string }> {
+    currentSubtotal: number,
+  ): Promise<{ success: boolean; data?: ValidateVoucherResponseData; error?: string }> {
     try {
       const res = await fetch("/api/vouchers/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, subtotal }),
+        body: JSON.stringify({ code, subtotal: currentSubtotal }),
       });
       const json = await res.json();
       if (!res.ok) return { success: false, error: json.message };
-      setAppliedVoucher(json.data as ValidateVoucherResponseData);
-      return { success: true };
+      return { success: true, data: json.data as ValidateVoucherResponseData };
     } catch {
       return { success: false, error: "Gagal memvalidasi voucher." };
     }
   }
 
+  async function handleApplyVoucher(
+    code: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const result = await validateVoucherCode(code, subtotal);
+    if (result.success && result.data) {
+      setAppliedVoucher(result.data);
+    }
+    return { success: result.success, error: result.error };
+  }
+
+  // ── Revalidasi voucher saat subtotal berubah ──────────────────────────
+  // Dipanggil via useEffect ketika subtotal atau appliedVoucher.code berubah.
+  // Jika voucher sudah tidak valid (misal subtotal turun di bawah minimum),
+  // voucher dilepas otomatis dan user diberitahu melalui submitError sementara.
+  useEffect(() => {
+    if (!appliedVoucher) return;
+
+    // Subtotal 0 berarti cart kosong — tidak ada yang perlu direvalidasi
+    if (subtotal === 0) {
+      setAppliedVoucher(null);
+      return;
+    }
+
+    let cancelled = false;
+    validateVoucherCode(appliedVoucher.code, subtotal).then((result) => {
+      if (cancelled) return;
+      if (result.success && result.data) {
+        // Update estimated_discount sesuai subtotal terbaru
+        setAppliedVoucher(result.data);
+      } else {
+        // Voucher tidak lagi valid — lepas otomatis
+        setAppliedVoucher(null);
+        setSubmitError(
+          result.error
+            ? `Voucher dilepas: ${result.error}`
+            : "Voucher tidak lagi memenuhi syarat dan telah dilepas.",
+        );
+      }
+    });
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotal]);
+
   // ── Submit order ──────────────────────────────────────────────────────
   async function handleSubmitOrder() {
-    if (!selectedAddress || !selectedShipping) return;
+    // Guard: alamat dan kurir wajib dipilih
+    if (!selectedAddress) {
+      setSubmitError("Pilih alamat pengiriman terlebih dahulu.");
+      return;
+    }
+    if (!selectedShipping) {
+      setSubmitError("Pilih layanan kurir terlebih dahulu.");
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
+
+    // Revalidasi voucher sekali lagi tepat sebelum submit untuk mencegah
+    // race condition (voucher bisa diklaim orang lain di sela-sela waktu ini)
+    let finalVoucherCode: string | undefined = undefined;
+    if (appliedVoucher) {
+      const check = await validateVoucherCode(appliedVoucher.code, subtotal);
+      if (check.success && check.data) {
+        finalVoucherCode = check.data.code;
+        setAppliedVoucher(check.data); // refresh estimasi
+      } else {
+        setAppliedVoucher(null);
+        setSubmitError(
+          check.error
+            ? `Voucher tidak valid saat checkout: ${check.error}`
+            : "Voucher sudah tidak berlaku. Silakan coba lagi tanpa voucher.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     try {
       const res = await fetch("/api/checkout/midtrans", {
@@ -225,19 +300,20 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           addressId: selectedAddress.id,
           shippingCost: selectedShipping.cost,
-          voucherCode: appliedVoucher?.code ?? undefined,
+          voucherCode: finalVoucherCode,
+          notes: notes.trim() || undefined,
         }),
       });
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.message ?? "Gagal membuat pesanan.");
 
-      // Redirect to Midtrans Snap hosted page
+      // Redirect ke Midtrans Snap hosted page
       window.location.href = json.data.redirectUrl;
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
       setIsSubmitting(false);
-      // Rotate idempotency key so a retry is treated as a new request
+      // Rotate idempotency key agar retry diperlakukan sebagai request baru
       idempotencyKey.current = crypto.randomUUID();
     }
   }
