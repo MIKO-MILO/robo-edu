@@ -1,104 +1,176 @@
 "use client";
 
-import React, { useState, useMemo, Suspense, useTransition } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  Suspense,
+  useTransition,
+} from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Star, RefreshCw, Search, X } from "lucide-react";
+import { Star, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AdminInput } from "@/components/admin/form/input";
 import { AdminSelect } from "@/components/admin/form/select";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { useToast } from "@/components/admin/use-toast";
 import {
   ReviewStatsCards,
   ReviewTable,
-  MOCK_ADMIN_REVIEWS,
   getReviewStats,
   type AdminReviewRow,
 } from "@/components/admin/reviews";
+import type { ReviewStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
-// Inner Component (Uses useSearchParams - must be inside Suspense boundary)
+// Fetch helper
+// ---------------------------------------------------------------------------
+
+interface ReviewListMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+async function fetchAdminReviews(params: {
+  page: number;
+  limit: number;
+  q: string;
+  status: string;
+  rating: string;
+  sort: string;
+}): Promise<{ data: AdminReviewRow[]; meta: ReviewListMeta }> {
+  const qs = new URLSearchParams({
+    page: String(params.page),
+    limit: String(params.limit),
+    sort: params.sort,
+  });
+  if (params.q) qs.set("q", params.q);
+  if (params.status !== "ALL") qs.set("status", params.status);
+  if (params.rating !== "ALL") qs.set("rating", params.rating);
+
+  const res = await fetch(`/api/admin/reviews?${qs.toString()}`, { cache: "no-store" });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message ?? `HTTP ${res.status}`);
+  return { data: json.data as AdminReviewRow[], meta: json.meta as ReviewListMeta };
+}
+
+// ---------------------------------------------------------------------------
+// Inner Component (uses useSearchParams — must be inside Suspense)
 // ---------------------------------------------------------------------------
 function AdminReviewsContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const router        = useRouter();
+  const pathname      = usePathname();
+  const searchParams  = useSearchParams();
   const [, startTransition] = useTransition();
   const { toast } = useToast();
 
-  // Master local state for interactive demo experience (client-side simulation)
-  const [reviews, setReviews] = useState<AdminReviewRow[]>(MOCK_ADMIN_REVIEWS);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-
-  // State for confirm delete modal
-  const [deleteTarget, setDeleteTarget] = useState<AdminReviewRow | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // URL State Params
-  const searchQuery = searchParams.get("search") || "";
+  // ── URL params ────────────────────────────────────────────────────────
+  const searchQuery  = searchParams.get("search") || "";
   const statusFilter = searchParams.get("status") || "ALL";
   const ratingFilter = searchParams.get("rating") || "ALL";
-  const sortBy = searchParams.get("sortBy") || "created_at";
-  const sortOrder = searchParams.get("sortOrder") || "desc";
+  const sortBy       = searchParams.get("sortBy") || "created_at";
+  const sortOrder    = searchParams.get("sortOrder") || "desc";
+  const currentPage  = Math.max(1, Number(searchParams.get("page") ?? "1"));
+  const LIMIT        = 20;
 
-  // URL parameter update handlers
-  const updateUrlParams = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === null || value === "" || value === "ALL") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
+  // ── Data state ────────────────────────────────────────────────────────
+  const [reviews, setReviews]       = useState<AdminReviewRow[]>([]);
+  const [meta, setMeta]             = useState<ReviewListMeta>({ page: 1, limit: LIMIT, total: 0, totalPages: 0 });
+  const [isLoading, setIsLoading]   = useState(true);
+  const [loadError, setLoadError]   = useState<string | null>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
+  // ── Delete dialog state ───────────────────────────────────────────────
+  const [deleteTarget, setDeleteTarget] = useState<AdminReviewRow | null>(null);
+  const [isDeleting, setIsDeleting]     = useState(false);
+
+  // ── URL helpers ───────────────────────────────────────────────────────
+  const pushParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "" || value === "ALL") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
       }
-    });
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
-    });
-  };
+      startTransition(() => router.push(`${pathname}?${params.toString()}`));
+    },
+    [searchParams, pathname, router],
+  );
 
-  const handleSearchChange = (val: string) => {
-    updateUrlParams({ search: val });
-  };
-
-  const handleStatusFilterChange = (val: string) => {
-    updateUrlParams({ status: val });
-  };
-
-  const handleRatingFilterChange = (val: string) => {
-    updateUrlParams({ rating: val });
-  };
-
-  const handleSortChange = (val: string) => {
-    const [field, order] = val.split("_");
-    if (field && order) {
-      updateUrlParams({ sortBy: field, sortOrder: order });
+  // ── Fetch ─────────────────────────────────────────────────────────────
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const result = await fetchAdminReviews({
+        page: currentPage,
+        limit: LIMIT,
+        q: searchQuery,
+        status: statusFilter,
+        rating: ratingFilter,
+        sort: `${sortBy}_${sortOrder}`,
+      });
+      setReviews(result.data);
+      setMeta(result.meta);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Gagal memuat ulasan.");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [currentPage, searchQuery, statusFilter, ratingFilter, sortBy, sortOrder]);
 
-  // Action Handler 1: Toggle Status (PUBLISHED <-> HIDDEN)
+  useEffect(() => { void load(); }, [load]);
+
+  // ── Stats ─────────────────────────────────────────────────────────────
+  const stats = useMemo(() => getReviewStats(reviews), [reviews]);
+
+  // ── Handlers URL params ───────────────────────────────────────────────
+  const handleSearchChange = (val: string) => pushParams({ search: val, page: null });
+  const handleStatusFilterChange = (val: string) => pushParams({ status: val, page: null });
+  const handleRatingFilterChange = (val: string) => pushParams({ rating: val, page: null });
+  const handleSortChange = (val: string) => {
+    const lastUnderscore = val.lastIndexOf("_");
+    const field = val.slice(0, lastUnderscore);
+    const order = val.slice(lastUnderscore + 1);
+    if (field && order) pushParams({ sortBy: field, sortOrder: order, page: null });
+  };
+  const handlePageChange = (page: number) => pushParams({ page: page > 1 ? String(page) : null });
+
+  // ── Toggle status ─────────────────────────────────────────────────────
   const handleToggleStatus = async (review: AdminReviewRow) => {
     setProcessingId(review.id);
-    const nextStatus = review.status === "PUBLISHED" ? "HIDDEN" : "PUBLISHED";
-    const statusLabel = nextStatus === "PUBLISHED" ? "VISIBLE" : "HIDDEN";
+    const nextStatus: ReviewStatus = review.status === "PUBLISHED" ? "HIDDEN" : "PUBLISHED";
+    const label = nextStatus === "PUBLISHED" ? "VISIBLE" : "HIDDEN";
 
     try {
-      // Simulate backend async delay (500ms)
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
+      const res = await fetch(`/api/admin/reviews/${review.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      if (!res.ok) {
+        const j = await res.json();
+        throw new Error(j.message ?? "Gagal mengubah status.");
+      }
+      // Optimistic update di state lokal
       setReviews((prev) =>
-        prev.map((r) => (r.id === review.id ? { ...r, status: nextStatus } : r))
+        prev.map((r) => (r.id === review.id ? { ...r, status: nextStatus } : r)),
       );
-
       toast({
         title: "Status Ulasan Diperbarui",
-        description: `Ulasan dari ${review.user_name} berhasil diubah menjadi ${statusLabel}.`,
+        description: `Ulasan dari ${review.user_name} berhasil diubah menjadi ${label}.`,
         variant: "success",
       });
-    } catch {
+    } catch (err) {
       toast({
         title: "Gagal Mengubah Status",
-        description: "Terjadi kesalahan saat memproses perubahan status review.",
+        description: err instanceof Error ? err.message : "Terjadi kesalahan.",
         variant: "error",
       });
     } finally {
@@ -106,26 +178,26 @@ function AdminReviewsContent() {
     }
   };
 
-  // Action Handler 2: Delete Review (Requires Confirmation Dialog)
+  // ── Delete ────────────────────────────────────────────────────────────
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
-
     try {
-      // Simulate backend async API call (600ms)
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
+      const res = await fetch(`/api/admin/reviews/${deleteTarget.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const j = await res.json();
+        throw new Error(j.message ?? "Gagal menghapus.");
+      }
       setReviews((prev) => prev.filter((r) => r.id !== deleteTarget.id));
-
       toast({
         title: "Review Berhasil Dihapus",
-        description: `Ulasan dari customer ${deleteTarget.user_name} telah dihapus permanen.`,
+        description: `Ulasan dari ${deleteTarget.user_name} telah dihapus permanen.`,
         variant: "success",
       });
-    } catch {
+    } catch (err) {
       toast({
         title: "Gagal Menghapus Ulasan",
-        description: "Terjadi kesalahan sistem saat menghapus data ulasan.",
+        description: err instanceof Error ? err.message : "Terjadi kesalahan.",
         variant: "error",
       });
     } finally {
@@ -134,52 +206,9 @@ function AdminReviewsContent() {
     }
   };
 
-  // Computed & Filtered list based on state controls
-  const filteredAndSortedReviews = useMemo(() => {
-    let result = [...reviews];
-
-    // 1. Search Query (product_name OR user_name OR comment)
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.product_name.toLowerCase().includes(q) ||
-          r.user_name.toLowerCase().includes(q) ||
-          (r.comment && r.comment.toLowerCase().includes(q))
-      );
-    }
-
-    // 2. Filter Status (PUBLISHED / HIDDEN)
-    if (statusFilter !== "ALL") {
-      result = result.filter((r) => r.status === statusFilter);
-    }
-
-    // 3. Filter Rating (1 to 5)
-    if (ratingFilter !== "ALL") {
-      const targetRating = Number(ratingFilter);
-      result = result.filter((r) => r.rating === targetRating);
-    }
-
-    // 4. Sorting (Date or Rating, asc or desc)
-    result.sort((a, b) => {
-      if (sortBy === "rating") {
-        return sortOrder === "asc" ? a.rating - b.rating : b.rating - a.rating;
-      }
-      // default: created_at
-      const timeA = new Date(a.created_at).getTime();
-      const timeB = new Date(b.created_at).getTime();
-      return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
-    });
-
-    return result;
-  }, [reviews, searchQuery, statusFilter, ratingFilter, sortBy, sortOrder]);
-
-  // Overall Stats
-  const stats = useMemo(() => getReviewStats(reviews), [reviews]);
-
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -191,36 +220,46 @@ function AdminReviewsContent() {
             </h1>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Melihat, memoderasi, menyembunyikan (hide), atau menghapus ulasan yang tidak sesuai ketentuan.
+            Melihat, memoderasi, menyembunyikan, atau menghapus ulasan yang tidak sesuai ketentuan.
           </p>
         </div>
-
         <Button
           type="button"
           variant="outline"
           size="sm"
           neo={false}
-          onClick={() => setReviews([...MOCK_ADMIN_REVIEWS])}
+          onClick={load}
           className="gap-1.5 rounded-xl border border-border font-heading font-bold text-xs self-start sm:self-auto"
-          title="Reset Data Ulasan ke kondisi awal"
         >
           <RefreshCw className="size-3.5" />
-          <span>Reset Demo Data</span>
+          Refresh
         </Button>
       </div>
 
-      {/* KPI Stats Cards */}
+      {/* KPI Stats */}
       <ReviewStatsCards stats={stats} />
 
-      {/* Main Review Data Table dengan DataTable bawaan */}
+      {/* Error banner */}
+      {loadError && (
+        <div className="flex items-center gap-2.5 rounded-2xl border-2 border-danger/30 bg-danger-bg px-4 py-3 text-sm text-danger">
+          <AlertCircle className="size-4 shrink-0" />
+          <span>{loadError}</span>
+          <Button variant="outline" size="xs" onClick={load} className="ml-auto">
+            Coba Lagi
+          </Button>
+        </div>
+      )}
+
+      {/* Table */}
       <ReviewTable
-        data={filteredAndSortedReviews}
+        data={reviews}
+        isLoading={isLoading}
         onToggleStatus={handleToggleStatus}
-        onDeleteReview={(review: AdminReviewRow) => setDeleteTarget(review)}
+        onDeleteReview={(review) => setDeleteTarget(review)}
         processingId={processingId}
         searchValue={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Cari berdasarkan nama produk atau nama customer..."
+        searchPlaceholder="Cari produk, customer, atau komentar..."
         filters={[
           {
             id: "status",
@@ -263,7 +302,34 @@ function AdminReviewsContent() {
         }
       />
 
-      {/* Confirmation Dialog for Destructive Delete Action */}
+      {/* Pagination */}
+      {!isLoading && meta.totalPages > 1 && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground font-body px-1">
+          <span>
+            Halaman {meta.page} dari {meta.totalPages} &bull; {meta.total} ulasan
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed font-heading font-bold text-xs transition-colors"
+            >
+              ← Sebelumnya
+            </button>
+            <button
+              type="button"
+              disabled={currentPage >= meta.totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed font-heading font-bold text-xs transition-colors"
+            >
+              Berikutnya →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete dialog */}
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
@@ -284,7 +350,7 @@ function AdminReviewsContent() {
 }
 
 // ---------------------------------------------------------------------------
-// Main Route Page Export (wrapped in Suspense boundary for Next.js App Router)
+// Page export with Suspense boundary
 // ---------------------------------------------------------------------------
 export default function AdminReviewsPage() {
   return (

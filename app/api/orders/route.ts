@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, desc, eq, inArray, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { db } from "@/src/db";
-import { orders, orderItems, productImages } from "@/src/db/schema";
+import { orders, orderItems, productImages, reviews } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import type { OrderStatus } from "@/types";
 
@@ -200,6 +200,40 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // ── has_reviewed: cek apakah semua items di tiap order sudah direview ─
+  // Fetch semua orderItem ids untuk page ini, lalu cari yang ada reviewnya.
+  const allOrderItemRows = await db
+    .select({ id: orderItems.id, orderId: orderItems.orderId })
+    .from(orderItems)
+    .where(inArray(orderItems.orderId, orderIds));
+
+  const allItemIdsFlat = allOrderItemRows.map((i) => i.id);
+
+  // Map: orderId → set of itemIds
+  const orderItemsMap: Record<string, string[]> = {};
+  for (const row of allOrderItemRows) {
+    if (!orderItemsMap[row.orderId]) orderItemsMap[row.orderId] = [];
+    orderItemsMap[row.orderId].push(row.id);
+  }
+
+  // Fetch reviewed item IDs
+  const reviewedItemIds = new Set<string>();
+  if (allItemIdsFlat.length > 0) {
+    const reviewedRows = await db
+      .select({ orderItemId: reviews.orderItemId })
+      .from(reviews)
+      .where(inArray(reviews.orderItemId, allItemIdsFlat));
+    for (const r of reviewedRows) reviewedItemIds.add(r.orderItemId);
+  }
+
+  // Per order: has_reviewed = true kalau SEMUA items sudah ada review-nya
+  const hasReviewedMap: Record<string, boolean> = {};
+  for (const orderId of orderIds) {
+    const itemIds = orderItemsMap[orderId] ?? [];
+    hasReviewedMap[orderId] =
+      itemIds.length > 0 && itemIds.every((iid) => reviewedItemIds.has(iid));
+  }
+
   // ── Shape response ────────────────────────────────────────────────────
   const data = rows.map((order) => {
     const fi = firstItemMap[order.id];
@@ -223,6 +257,7 @@ export async function GET(request: NextRequest) {
       cancelled_at: order.cancelledAt?.toISOString() ?? null,
       created_at: order.createdAt.toISOString(),
       item_count: countMap[order.id] ?? 0,
+      has_reviewed: hasReviewedMap[order.id] ?? false,
       first_item: fi
         ? {
             product_name_snapshot: fi.productNameSnapshot,
