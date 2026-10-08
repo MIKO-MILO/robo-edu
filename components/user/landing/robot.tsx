@@ -4,8 +4,8 @@ import Image from "next/image";
 
 export default function HeroRobot() {
   return (
-    /* Ukuran max-w & posisi robot tetap sama, hanya aspek tinggi dipotong dikit saja (449 -> 410) */
-    <div className="relative w-full max-w-[220px] min-[400px]:max-w-[250px] sm:max-w-[300px] md:max-w-[350px] lg:max-w-[390px] aspect-[269/410] mx-auto flex items-center justify-center p-0 m-0">
+    /* Ukuran khusus 1024px (lg) diperkecil menjadi lg:max-w-[290px], dan kembali besar di xl:max-w-[360px] */
+    <div className="relative w-full max-w-[200px] min-[400px]:max-w-[230px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[290px] xl:max-w-[360px] aspect-[269/410] mx-auto flex items-center justify-center p-0 m-0">
       {/* Robot Container */}
       <div className="relative w-full h-full">
         {/* Left Hand (hand1.webp) */}

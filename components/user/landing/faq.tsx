@@ -3,7 +3,6 @@
 import { useState, useId } from "react";
 import Image from "next/image";
 import { ChevronDown, HelpCircle, type LucideIcon } from "lucide-react";
-import HeroRobot from "./robot";
 
 // ==========================================
 // 1. TYPE DEFINITIONS & CONFIGS
@@ -17,7 +16,6 @@ export interface FAQItemData {
 export interface PromoBannerData {
   titlePrefix: string;
   highlightText: string;
-  description: string;
   thumbnails: Array<{
     id: string;
     src: string;
@@ -75,8 +73,6 @@ const DEFAULT_FAQS: FAQItemData[] = [
 const DEFAULT_PROMO_DATA: PromoBannerData = {
   titlePrefix: "Dapatkan Mainan IoT Edukatif RoboEdu",
   highlightText: "Sekarang!",
-  description:
-    "Miliki kit robotik pintar sekarang dan hadirkan pengalaman belajar teknologi interaktif untuk si kecil!",
   thumbnails: [
     {
       id: "thumb-1",
@@ -127,7 +123,7 @@ function AccordionItem({
   const buttonId = useId();
 
   return (
-    <div className="bg-card rounded-xl border-none shadow-none overflow-hidden transition-all duration-200">
+    <div className="bg-card rounded-md border-none shadow-none overflow-hidden transition-all duration-200">
       <button
         id={buttonId}
         type="button"
@@ -179,14 +175,17 @@ function PromoThumbnail({
   customClass?: string;
 }) {
   return (
-    <div className={`relative ${customClass}`}>
-      {/* Ukuran diperbesar sedikit (+3 unit Tailwind untuk lebar & tinggi) */}
-      <div className="relative w-23 md:w-31 lg:w-43 xl:w-51 2xl:w-55 h-23 md:h-31 lg:h-43 xl:h-51 2xl:h-55 overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl shadow-md sm:shadow-lg border-2 md:border-4 border-white/20">
+    <div className={`relative w-full flex justify-center ${customClass}`}>
+      {/* 
+        - Layar Mobile (<640px): w-[86vw] h-[86vw] dengan rounded-[3.5rem] atau rounded-[4rem] (Biar sudutnya bener-bener tumpul & melengkung habis)
+        - Layar sm ke atas (Desktop/Tablet): Menggunakan ukuran bawaan dengan rounded yang proporsional
+      */}
+      <div className="relative w-[86vw] h-[86vw] sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 xl:w-60 xl:h-60 overflow-hidden rounded-[3.5rem] sm:rounded-[3rem] md:rounded-[3.5rem] lg:rounded-[4rem] shadow-xl transition-all duration-300">
         <Image
           src={src}
           alt={alt}
           fill
-          sizes="(max-width: 768px) 92px, (max-width: 1024px) 124px, 220px"
+          sizes="(max-width: 639px) 86vw, (max-width: 768px) 176px, (max-width: 1024px) 208px, 240px"
           className="object-cover"
         />
       </div>
@@ -202,16 +201,18 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
   const rightBottom = data.thumbnails[3];
 
   return (
-    <div className="relative w-full h-[400px] md:h-[540px] lg:h-[600px] xl:h-[640px] 2xl:h-[700px] bg-background overflow-visible z-10">
-      <div className="max-w-6xl mx-auto h-full px-6 lg:px-8 relative flex items-center justify-between">
+    <div className="relative w-full h-auto sm:h-[420px] md:h-[500px] lg:h-[580px] xl:h-[620px] bg-background overflow-visible z-10">
+      <div className="max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-8 relative flex flex-col sm:flex-row items-center justify-between">
         
         {/* Header Text */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-4 sm:mb-6 text-center z-20 w-full max-w-5xl px-4 pointer-events-none flex flex-col items-center justify-center">
+        <div className="relative sm:absolute top-0 left-1/2 sm:-translate-x-1/2 pt-6 sm:pt-10 md:pt-14 lg:pt-16 z-20 w-full max-w-5xl px-4 pointer-events-none flex flex-col items-center justify-center">
           
-          <h1 className="font-heading text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-[#3D2900] tracking-tight leading-none mb-4 flex flex-row items-center justify-center gap-6 sm:gap-8 whitespace-nowrap">
-            <span className="mr-2 sm:mr-4 font-bold">{data.titlePrefix}</span>
+          <h1 className="font-heading text-[#3D2900] tracking-tight leading-none flex flex-row items-center justify-center gap-2 sm:gap-6 md:gap-8 whitespace-nowrap mb-6 sm:mb-16 md:mb-20 lg:mb-24">
+            <span className="font-bold text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl">
+              {data.titlePrefix}
+            </span>
             
-            <span className="relative inline-flex items-center justify-center px-4 sm:px-6 py-1.5 sm:py-2 mx-1">
+            <span className="relative inline-flex items-center justify-center px-3 sm:px-5 py-1 sm:py-2 -rotate-3 transition-transform">
               <svg
                 width="811"
                 height="390"
@@ -220,6 +221,7 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
                 xmlns="http://www.w3.org/2000/svg"
                 preserveAspectRatio="none"
                 className="absolute inset-0 w-[125%] h-[160%] -left-[12.5%] -top-[30%] -z-10 pointer-events-none"
+                aria-hidden="true"
               >
                 <path
                   d="M380.856 2.50367C155.783 3.14428 2.50407 80.3174 2.5 168.316C2.49593 256.315 147.105 373.728 380.856 374.496C616.612 375.27 763.54 266.132 752.965 168.316C744.159 86.8624 608.01 1.85712 380.856 2.50367Z"
@@ -233,25 +235,20 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
                 />
               </svg>
               
-              <span className="text-[#D97706] font-normal drop-shadow-sm">
+              <span className="text-[#D97706] font-extrabold text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl drop-shadow-sm">
                 {data.highlightText}
               </span>
             </span>
           </h1>
-
-          <p className="font-body text-sm sm:text-base md:text-lg font-normal text-[#3D2900] text-center max-w-3xl mx-auto drop-shadow-sm">
-            {data.description}
-          </p>
         </div>
 
-        {/* Left Thumbnails Container (Digeser lebih ke kanan/tengah) */}
-        <div className="flex flex-col gap-5 md:gap-8 lg:gap-10 z-10 translate-y-20 md:translate-y-32 lg:translate-y-40">
+        {/* Gambar Kiri */}
+        <div className="w-full sm:w-auto flex flex-col items-center gap-6 sm:gap-5 md:gap-8 lg:gap-10 z-10 sm:translate-y-32 md:translate-y-40 lg:translate-y-44 sm:translate-x-0 md:translate-x-2 lg:translate-x-12 xl:translate-x-16">
           {leftTop && (
             <PromoThumbnail
               key={leftTop.id}
               src={leftTop.src}
               alt={leftTop.alt}
-              customClass="translate-x-12 md:translate-x-20 lg:translate-x-28"
             />
           )}
           {leftBottom && (
@@ -259,28 +256,32 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
               key={leftBottom.id}
               src={leftBottom.src}
               alt={leftBottom.alt}
-              customClass="translate-x-4 md:translate-x-6 lg:translate-x-8 -translate-y-2 md:-translate-y-3 lg:-translate-y-4"
             />
           )}
         </div>
 
-        {/* Hero Center Illustration */}
-        <div className="absolute -bottom-16 sm:-bottom-20 md:-bottom-28 lg:-bottom-36 left-1/2 -translate-x-1/2 z-[70] flex flex-col items-center justify-end w-full max-w-xs md:max-w-md lg:max-w-xl pointer-events-none">
-          <div className="w-64 sm:w-80 md:w-[26rem] lg:w-[500px] xl:w-[550px] relative z-10">
-            <HeroRobot />
+        {/* Hero Center Image */}
+        <div className="absolute -bottom-14 sm:-bottom-18 md:-bottom-24 lg:-bottom-32 left-1/2 -translate-x-1/2 z-[70] hidden sm:flex flex-col items-center justify-end w-full max-w-xs md:max-w-md lg:max-w-xl pointer-events-none">
+          <div className="w-64 sm:w-80 md:w-[26rem] lg:w-[500px] xl:w-[550px] relative z-10 aspect-square">
+            <Image
+              src="/images/robo.webp"
+              alt="Robot RoboEdu"
+              fill
+              priority
+              className="object-contain"
+            />
           </div>
 
           <div className="w-[70%] sm:w-[60%] h-8 sm:h-10 md:h-12 bg-black/25 rounded-[100%] blur-md -mt-6 sm:-mt-8 md:-mt-10 z-0"></div>
         </div>
 
-        {/* Right Thumbnails Container (Digeser lebih ke kiri/tengah) */}
-        <div className="flex flex-col gap-5 md:gap-8 lg:gap-10 z-10 translate-y-20 md:translate-y-32 lg:translate-y-40">
+        {/* Gambar Kanan */}
+        <div className="w-full sm:w-auto flex flex-col items-center gap-6 sm:gap-5 md:gap-8 lg:gap-10 z-10 mt-6 sm:mt-0 sm:translate-y-32 md:translate-y-40 lg:translate-y-44 sm:translate-x-0 md:-translate-x-2 lg:-translate-x-12 xl:-translate-x-16">
           {rightTop && (
             <PromoThumbnail
               key={rightTop.id}
               src={rightTop.src}
               alt={rightTop.alt}
-              customClass="-translate-x-12 md:-translate-x-20 lg:-translate-x-28"
             />
           )}
           {rightBottom && (
@@ -288,7 +289,6 @@ function PromoBanner({ data = DEFAULT_PROMO_DATA }: { data?: PromoBannerData }) 
               key={rightBottom.id}
               src={rightBottom.src}
               alt={rightBottom.alt}
-              customClass="-translate-x-4 md:-translate-x-6 lg:-translate-x-8 -translate-y-2 md:-translate-y-3 lg:-translate-y-4"
             />
           )}
         </div>
@@ -314,36 +314,42 @@ export default function FAQ({
   };
 
   return (
-    <section className="relative z-20 bg-[#2483D0] text-card pb-24 sm:pb-23 overflow-hidden">
+    <section className="relative z-20 bg-[#2483D0] text-card pb-20 sm:pb-24 overflow-hidden">
       <PromoBanner data={promoData} />
 
       {/* SVG Shape Divider */}
       <div className="relative w-full overflow-hidden leading-none z-0 pointer-events-none">
         <svg
-          viewBox="0 0 1370 211"
+          viewBox="0 0 1440 120"
           preserveAspectRatio="none"
-          className="relative block w-full h-20 md:h-28 lg:h-36 xl:h-40 text-background"
+          className="relative block w-full h-10 sm:h-14 md:h-16 lg:h-20 text-background"
           fill="currentColor"
         >
-          <path d="M0 0H1370V121.548C1370 121.548 957.116 -9.52688 649.615 0.552926C370.339 9.70758 0 121.548 0 121.548V0Z" />
+          <path d="M0,120 Q720,-10 1440,120 L1440,0 L0,0 Z" />
         </svg>
       </div>
 
       {/* Accordion Content */}
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10 pt-24 md:pt-32 lg:pt-40">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10 pt-12 sm:pt-36 md:pt-44 lg:pt-52">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Header Column */}
-          <div className="lg:col-span-5 text-left lg:pt-4">
+          <div className="lg:col-span-5 text-left lg:pt-4 mb-6 lg:mb-0">
             <Badge icon={HelpCircle} label="Pusat Bantuan" />
             <h2 className="font-heading text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-semibold text-card tracking-tight leading-tight">
               {title}
             </h2>
-            <p className="font-body text-xs md:text-sm text-card/80 mt-2.5 leading-relaxed">
-              {description}
-            </p>
-            <div className="mt-6 flex justify-center lg:justify-start">
-              <div className="w-48 sm:w-56 md:w-64 h-auto translate-x-10 sm:translate-x-16 rotate-0">
+            
+            {/* Teks Deskripsi */}
+            {description && (
+              <p className="mt-4 text-xs sm:text-sm md:text-base text-card/90 leading-relaxed font-normal">
+                {description}
+              </p>
+            )}
+            
+            {/* Gambar Panah Penunjuk */}
+            <div className="pt-8 sm:pt-10 md:pt-12 hidden lg:flex justify-start">
+              <div className="w-48 sm:w-56 md:w-64 h-auto translate-x-6">
                 <Image
                   src="/images/arrow1.png"
                   alt="Panah penunjuk"

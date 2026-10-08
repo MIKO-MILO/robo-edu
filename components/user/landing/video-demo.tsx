@@ -58,7 +58,7 @@ function VideoThumbnail({
   return (
     <div
       onClick={onOpen}
-      className="relative overflow-hidden cursor-pointer bg-white/45 w-full max-w-[280px] xs:max-w-[340px] sm:max-w-[560px] lg:max-w-[420px] xl:max-w-[560px] z-10 transition-transform duration-200 hover:scale-[1.01]"
+      className="relative overflow-hidden cursor-pointer bg-white/45 w-full max-w-[250px] xs:max-w-[320px] sm:max-w-[460px] md:max-w-[480px] lg:max-w-[420px] xl:max-w-[560px] z-10 transition-transform duration-200 hover:scale-[1.01]"
       style={{
         borderRadius: "90px / 65px",
         boxShadow: "6px 6px 0px 0px #3D2900",

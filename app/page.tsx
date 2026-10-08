@@ -1,6 +1,7 @@
 import HeroSection from "@/components/user/landing/hero-section";
 import ICardsInfo from "@/components/user/landing/card-info";
 import InfoCardsList from "@/components/user/landing/info-cards-list";
+import TextMarquee from "@/components/user/landing/text-marquee";
 import CardProduct from "@/components/user/landing/card-product";
 import VideoDemo from "@/components/user/landing/video-demo";
 import DiskonPromo from "@/components/user/landing/diskon-promo";
@@ -15,7 +16,7 @@ export default function HomePage() {
       <HeroSection />
       <ICardsInfo />
       <InfoCardsList />
-      <CarouselLogo />
+      <TextMarquee />
       <CardProduct />
       <DiskonPromo />
       <VideoDemo />

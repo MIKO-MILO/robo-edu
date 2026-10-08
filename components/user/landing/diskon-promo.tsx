@@ -13,8 +13,9 @@ const PROMOS = [
     minPembelian: "Min. Rp 150rb",
     maxDiskon: "Maks. Rp 50rb",
     tanggalBerakhir: "31 Agt 2026",
-    bgColor: "bg-[#8B5CF6]", // Ungu Soft
+    bgColor: "bg-[#E8808C]", // Pink Soft sesuai gambar
     imgUrl: "images/product.webp",
+    imagePosition: "right", // Gambar di Kanan, Teks di Kiri
   },
   {
     id: 2,
@@ -25,8 +26,9 @@ const PROMOS = [
     minPembelian: "Min. Rp 300rb",
     maxDiskon: null,
     tanggalBerakhir: "15 Jul 2026",
-    bgColor: "bg-[#06B6D4]", // Cyan / Biru Muda Modern
+    bgColor: "bg-[#6AA2B8]", // Biru Soft sesuai gambar
     imgUrl: "images/product2.webp",
+    imagePosition: "left", // Gambar di Kiri, Teks di Kanan
   },
 ];
 
@@ -41,24 +43,24 @@ export default function DiskonPromo() {
 
   return (
     <section className="bg-[#F3EFE4] py-10 px-4 font-sans flex flex-col items-center mb-5 mt-5">
-      {/* SVG ClipPath Gelombang Scallop */}
+      {/* SVG ClipPath Gelombang Scallop Lebih Halus (Lengkungan Lebih Tipis) */}
       <svg className="absolute w-0 h-0" aria-hidden="true">
         <defs>
-          <clipPath id="scalloped-card" clipPathUnits="objectBoundingBox">
+          <clipPath id="scalloped-card-subtle" clipPathUnits="objectBoundingBox">
             <path d="
               M 0.08, 0 
-              Q 0.12, 0.03 0.16, 0 Q 0.20, -0.03 0.24, 0 Q 0.28, 0.03 0.32, 0 Q 0.36, -0.03 0.40, 0 
-              Q 0.44, 0.03 0.48, 0 Q 0.52, -0.03 0.56, 0 Q 0.60, 0.03 0.64, 0 Q 0.68, -0.03 0.72, 0 
-              Q 0.76, 0.03 0.80, 0 Q 0.84, -0.03 0.88, 0 Q 0.92, 0.03 0.96, 0 Q 1, 0 1, 0.08
-              Q 0.97, 0.12 1, 0.16 Q 1.03, 0.20 1, 0.24 Q 0.97, 0.28 1, 0.32 Q 1.03, 0.36 1, 0.40
-              Q 0.97, 0.44 1, 0.48 Q 1.03, 0.52 1, 0.56 Q 0.97, 0.60 1, 0.64 Q 1.03, 0.68 1, 0.72
-              Q 0.97, 0.76 1, 0.80 Q 1.03, 0.84 1, 0.88 Q 0.97, 0.92 1, 0.96 Q 1, 1 0.92, 1
-              Q 0.88, 0.97 0.84, 1 Q 0.80, 1.03 0.76, 1 Q 0.72, 0.97 0.68, 1 Q 0.64, 1.03 0.60, 1
-              Q 0.56, 0.97 0.52, 1 Q 0.48, 1.03 0.44, 1 Q 0.40, 0.97 0.36, 1 Q 0.32, 1.03 0.28, 1
-              Q 0.24, 0.97 0.20, 1 Q 0.16, 1.03 0.12, 1 Q 0.08, 0.97 0.04, 1 Q 0, 1 0, 0.92
-              Q 0.03, 0.88 0, 0.84 Q -0.03, 0.80 0, 0.76 Q 0.03, 0.72 0, 0.68 Q -0.03, 0.64 0, 0.60
-              Q 0.03, 0.56 0, 0.52 Q -0.03, 0.48 0, 0.44 Q 0.03, 0.40 0, 0.36 Q -0.03, 0.32 0, 0.28
-              Q 0.03, 0.24 0, 0.20 Q -0.03, 0.16 0, 0.12 Q 0.03, 0.08 0, 0.04 Q 0, 0 0.08, 0 Z
+              Q 0.12, 0.015 0.16, 0 Q 0.20, -0.015 0.24, 0 Q 0.28, 0.015 0.32, 0 Q 0.36, -0.015 0.40, 0 
+              Q 0.44, 0.015 0.48, 0 Q 0.52, -0.015 0.56, 0 Q 0.60, 0.015 0.64, 0 Q 0.68, -0.015 0.72, 0 
+              Q 0.76, 0.015 0.80, 0 Q 0.84, -0.015 0.88, 0 Q 0.92, 0.015 0.96, 0 Q 1, 0 1, 0.08
+              Q 0.985, 0.12 1, 0.16 Q 1.015, 0.20 1, 0.24 Q 0.985, 0.28 1, 0.32 Q 1.015, 0.36 1, 0.40
+              Q 0.985, 0.44 1, 0.48 Q 1.015, 0.52 1, 0.56 Q 0.985, 0.60 1, 0.64 Q 1.015, 0.68 1, 0.72
+              Q 0.985, 0.76 1, 0.80 Q 1.015, 0.84 1, 0.88 Q 0.985, 0.92 1, 0.96 Q 1, 1 0.92, 1
+              Q 0.88, 0.985 0.84, 1 Q 0.80, 1.015 0.76, 1 Q 0.72, 0.985 0.68, 1 Q 0.64, 1.015 0.60, 1
+              Q 0.56, 0.985 0.52, 1 Q 0.48, 1.015 0.44, 1 Q 0.40, 0.985 0.36, 1 Q 0.32, 1.015 0.28, 1
+              Q 0.24, 0.985 0.20, 1 Q 0.16, 1.015 0.12, 1 Q 0.08, 0.985 0.04, 1 Q 0, 1 0, 0.92
+              Q 0.015, 0.88 0, 0.84 Q -0.015, 0.80 0, 0.76 Q 0.015, 0.72 0, 0.68 Q -0.015, 0.64 0, 0.60
+              Q 0.015, 0.56 0, 0.52 Q -0.015, 0.48 0, 0.44 Q 0.015, 0.40 0, 0.36 Q -0.015, 0.32 0, 0.28
+              Q 0.015, 0.24 0, 0.20 Q -0.015, 0.16 0, 0.12 Q 0.015, 0.08 0, 0.04 Q 0, 0 0.08, 0 Z
             " />
           </clipPath>
         </defs>
@@ -72,20 +74,13 @@ export default function DiskonPromo() {
               className="relative transition-transform duration-300 hover:scale-[1.01]"
             >
               <div
-                className={`${promo.bgColor} text-white p-6 sm:p-8 flex items-center justify-between gap-4 min-h-[260px] shadow-xl relative group overflow-hidden`}
-                style={{ clipPath: "url(#scalloped-card)" }}
+                className={`${promo.bgColor} text-white p-6 sm:p-8 flex items-center justify-between gap-4 min-h-[280px] shadow-xl relative group overflow-hidden ${
+                  promo.imagePosition === "right" ? "flex-row" : "flex-row-reverse"
+                }`}
+                style={{ clipPath: "url(#scalloped-card-subtle)" }}
               >
-                {/* GAMBAR PRODUK (KIRI) TANPA BACKGROUND */}
-                <div className="w-5/12 h-36 sm:h-44 relative flex items-center justify-center shrink-0">
-                  <img
-                    src={promo.imgUrl}
-                    alt={promo.nama}
-                    className="w-full h-full object-contain filter drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-
-                {/* ISI TEKS & INFORMASI KANAN */}
-                <div className="w-7/12 flex flex-col justify-between items-start text-left z-10 pl-2 sm:pl-4">
+                {/* ISI TEKS & INFORMASI */}
+                <div className="w-1/2 flex flex-col justify-between items-start text-left z-10">
                   <div>
                     <span className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-wider block mb-1">
                       {promo.tipeDiskon}
@@ -129,6 +124,15 @@ export default function DiskonPromo() {
                       </button>
                     )}
                   </div>
+                </div>
+
+                {/* GAMBAR PRODUK - LEBIH BESAR */}
+                <div className="w-1/2 h-44 sm:h-56 relative flex items-center justify-center shrink-0">
+                  <img
+                    src={promo.imgUrl}
+                    alt={promo.nama}
+                    className="w-full h-full object-contain filter drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
               </div>
             </div>

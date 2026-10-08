@@ -59,7 +59,7 @@ function SideToyDecorations() {
       {/* Gambar Mainan Kiri (images/toy2.webp) - Lebih ke bawah & condong ke kiri (-rotate-12) */}
       <div className="absolute top-20 left-4 sm:top-28 sm:left-12 md:left-20 lg:left-28 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 pointer-events-none select-none z-0 -rotate-12 transition-transform">
         <Image
-          src="/images/toy2.webp"
+          src="/images/toys.webp"
           alt="Toy Decoration Left"
           fill
           className="object-contain"

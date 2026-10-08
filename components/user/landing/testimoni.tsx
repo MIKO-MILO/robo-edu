@@ -188,7 +188,7 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
   ];
 
   return (
-    <section className="relative text-[#3D2900] pb-36 sm:pb-44 lg:pb-52 pt-14 sm:pt-20 lg:pt-24 overflow-hidden">
+    <section className="relative text-[#3D2900] pb-28 sm:pb-44 lg:pb-52 pt-10 sm:pt-20 lg:pt-24 overflow-hidden">
       
       {/* Background Sticky Parallax / Fixed hanya di section ini */}
       <div 
@@ -201,8 +201,27 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
 
       {/* Lengkungan Atas */}
       <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none" aria-hidden="true">
+        {/* Mobile Kecil (320px) - 4 Lengkungan */}
         <svg
-          className="block lg:hidden relative w-full h-8 sm:h-10 text-[#F3EFE4]"
+          className="block sm:hidden relative w-full h-8 text-background"
+          viewBox="0 0 1200 80"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="currentColor"
+            d="M0,0 L0,80 
+               Q150,10 300,80 
+               Q450,10 600,80 
+               Q750,10 900,80 
+               Q1050,10 1200,80 
+               L1200,0 Z"
+          />
+        </svg>
+
+        {/* Mobile/Tablet (SM - MD) - 6 Lengkungan */}
+        <svg
+          className="hidden sm:block lg:hidden relative w-full h-10 text-background"
           viewBox="0 0 1200 80"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -245,10 +264,10 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
       </div>
 
       {/* Bagian kontainer utama */}
-      <div className="max-w-7xl mx-auto px-2 xs:px-4 sm:px-6 relative z-10 pt-12 sm:pt-12 lg:pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-2 xs:px-4 sm:px-6 relative z-10 pt-8 sm:pt-12 lg:pt-16 pb-4 sm:pb-8">
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-14 lg:mb-16">
-          <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight pt-7 drop-shadow-md">
+          <h2 className="font-heading text-xl xs:text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight pt-5 sm:pt-7 drop-shadow-md">
             TESTIMONI
           </h2>
 
@@ -301,66 +320,66 @@ export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: Testi
       </div>
 
       {/* Bagian Bawah: Bayangan Gelap Harmonis */}
-    <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
-  {/* Definisikan Gradasi yang Lebih Luas/Lebar */}
-  <svg width="0" height="0" className="absolute block">
-    <defs>
-      {/* Gradasi layer tengah: Penyebaran transisi dibuat luas dari ujung ke ujung */}
-      <linearGradient id="largeShadowFade" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#2563EB" stopOpacity="0.05" />
-        <stop offset="30%" stopColor="#1D4ED8" stopOpacity="0.3" />
-        <stop offset="70%" stopColor="#1E3A8A" stopOpacity="0.65" />
-        <stop offset="100%" stopColor="#172554" stopOpacity="0.85" />
-      </linearGradient>
+      <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
+        {/* Definisikan Gradasi yang Lebih Luas/Lebar */}
+        <svg width="0" height="0" className="absolute block">
+          <defs>
+            {/* Gradasi layer tengah: Penyebaran transisi dibuat luas dari ujung ke ujung */}
+            <linearGradient id="largeShadowFade" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.05" />
+              <stop offset="30%" stopColor="#1D4ED8" stopOpacity="0.3" />
+              <stop offset="70%" stopColor="#1E3A8A" stopOpacity="0.65" />
+              <stop offset="100%" stopColor="#172554" stopOpacity="0.85" />
+            </linearGradient>
 
-      {/* Gradasi penyebar untuk layer paling belakang agar area bayangan lebih tinggi */}
-      <linearGradient id="largeBaseGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1" />
-        <stop offset="50%" stopColor="#2563EB" stopOpacity="0.3" />
-        <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.5" />
-      </linearGradient>
-    </defs>
-  </svg>
+            {/* Gradasi penyebar untuk layer paling belakang agar area bayangan lebih tinggi */}
+            <linearGradient id="largeBaseGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1" />
+              <stop offset="50%" stopColor="#2563EB" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.5" />
+            </linearGradient>
+          </defs>
+        </svg>
 
-  {/* LAYER 1: Bayangan Paling Belakang (Dinaikkan Lebih Tinggi Agar Bayangan Tampak Lebih Besar) */}
-  <svg
-    className="absolute bottom-0 left-0 right-0 block w-full h-20 sm:h-32 lg:h-44 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16 z-10 overflow-visible"
-    viewBox="0 0 1440 120"
-    preserveAspectRatio="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fill="url(#largeBaseGlow)"
-      d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
-    />
-  </svg>
+        {/* LAYER 1: Bayangan Paling Belakang (Dinaikkan Lebih Tinggi Agar Bayangan Tampak Lebih Besar) */}
+        <svg
+          className="absolute bottom-0 left-0 right-0 block w-full h-20 sm:h-32 lg:h-44 -translate-y-8 sm:-translate-y-12 lg:-translate-y-16 z-10 overflow-visible"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="url(#largeBaseGlow)"
+            d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
+          />
+        </svg>
 
-  {/* LAYER 2: Bayangan Tengah dengan Area Gradasi Lebih Luas */}
-  <svg
-    className="absolute bottom-0 left-0 right-0 block w-full h-18 sm:h-28 lg:h-40 -translate-y-4 sm:-translate-y-7 lg:-translate-y-10 z-15 overflow-visible"
-    viewBox="0 0 1440 120"
-    preserveAspectRatio="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fill="url(#largeShadowFade)"
-      d="M0,32 C320,96 420,96 720,64 C1020,32 1220,20 1440,45 L1440,120 L0,120 Z"
-    />
-  </svg>
+        {/* LAYER 2: Bayangan Tengah dengan Area Gradasi Lebih Luas */}
+        <svg
+          className="absolute bottom-0 left-0 right-0 block w-full h-18 sm:h-28 lg:h-40 -translate-y-4 sm:-translate-y-7 lg:-translate-y-10 z-15 overflow-visible"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="url(#largeShadowFade)"
+            d="M0,32 C320,96 420,96 720,64 C1020,32 1220,20 1440,45 L1440,120 L0,120 Z"
+          />
+        </svg>
 
-  {/* LAYER 3: Lengkungan Utama Paling Depan (#F3EFE4) */}
-  <svg
-    className="relative block w-full h-16 sm:h-24 lg:h-36 text-[#F3EFE4] z-20 overflow-visible"
-    viewBox="0 0 1440 120"
-    preserveAspectRatio="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fill="currentColor"
-      d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
-    />
-  </svg>
-</div>
+        {/* LAYER 3: Lengkungan Utama Paling Depan (#F3EFE4) */}
+        <svg
+          className="relative block w-full h-16 sm:h-24 lg:h-36 text-[#F3EFE4] z-20 overflow-visible"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="currentColor"
+            d="M0,32 C320,96 420,96 720,64 C1020,32 1120,32 1440,64 L1440,120 L0,120 Z"
+          />
+        </svg>
+      </div>
     </section>
   );
-} 
+}
