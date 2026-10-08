@@ -6,12 +6,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { ShieldCheckIcon, LockIcon, MailIcon, ArrowRightIcon } from "lucide-react";
+import {
+  ShieldCheckIcon,
+  LockIcon,
+  MailIcon,
+  ArrowRightIcon,
+} from "lucide-react";
 
 function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirect") || "/admin/dashboard";
+  const redirectUrl = searchParams.get("redirect") || "/admin/customers";
 
   const [form, setForm] = useState({
     email: "admin@roboedu.id",
@@ -31,7 +36,7 @@ function AdminLoginForm() {
     setErrorMsg(null);
 
     try {
-      const response = await fetch("/api/mock-login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -43,7 +48,9 @@ function AdminLoginForm() {
         router.push(redirectUrl);
         router.refresh();
       } else {
-        setErrorMsg(data.error?.message || "Gagal melakukan login admin");
+        setErrorMsg(
+          data.message || data.error?.message || "Gagal melakukan login admin",
+        );
       }
     } catch (err) {
       setErrorMsg("Terjadi kesalahan jaringan");
@@ -72,7 +79,10 @@ function AdminLoginForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm mx-auto">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 w-full max-w-sm mx-auto"
+      >
         {/* Email */}
         <div className="space-y-1.5">
           <label
@@ -188,15 +198,23 @@ export default function AdminLoginPage() {
               Internal Control Panel
             </p>
             <h1 className="font-heading text-3xl md:text-4xl font-extrabold text-white leading-tight drop-shadow-sm">
-              MANAGE.<br />
-              MONITOR.<br />
+              MANAGE.
+              <br />
+              MONITOR.
+              <br />
               CONTROL.
             </h1>
           </div>
         </div>
 
         {/* Right Side — Form */}
-        <Suspense fallback={<div className="w-full md:w-1/2 p-8 flex items-center justify-center"><Spinner /></div>}>
+        <Suspense
+          fallback={
+            <div className="w-full md:w-1/2 p-8 flex items-center justify-center">
+              <Spinner />
+            </div>
+          }
+        >
           <AdminLoginForm />
         </Suspense>
       </main>

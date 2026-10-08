@@ -10,10 +10,16 @@ import {
   ShieldCheck,
   Ban,
   CheckCircle2,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { ResellerStatus } from "@/types/enums";
+import {
+  useUpdateUserStatus,
+  useUpdateResellerStatus,
+} from "@/hooks/admin/customers";
 
 export interface CustomerDetailHeaderProps {
   id: string;
@@ -37,7 +43,8 @@ function getInitials(name: string): string {
 
 /**
  * Molecule — Header detail pelanggan dengan navigasi kembali,
- * profil ringkas, status badges, dan tombol aksi (WhatsApp, setujui reseller).
+ * profil ringkas, status badges, dan tombol aksi (WhatsApp, setujui reseller,
+ * aktif/suspend akun). Aksi terhubung ke mutation hooks Tanstack Query.
  */
 export function CustomerDetailHeader({
   id,
@@ -49,6 +56,30 @@ export function CustomerDetailHeader({
 }: CustomerDetailHeaderProps) {
   const cleanPhone = phone ? phone.replace(/[^0-9]/g, "") : null;
   const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : null;
+
+  const {
+    mutateAsync: updateUserStatus,
+    isPending: isUpdatingStatus,
+  } = useUpdateUserStatus();
+
+  const {
+    mutateAsync: updateResellerStatus,
+    isPending: isUpdatingReseller,
+  } = useUpdateResellerStatus();
+
+  const handleToggleUserStatus = async () => {
+    await updateUserStatus({ id, is_active: !isActive });
+  };
+
+  const handleApproveReseller = async () => {
+    await updateResellerStatus({ id, reseller_status: "APPROVED" });
+  };
+
+  const handleRejectReseller = async () => {
+    await updateResellerStatus({ id, reseller_status: "REJECTED" });
+  };
+
+  const isActionDisabled = isUpdatingStatus || isUpdatingReseller;
 
   return (
     <div className="space-y-4">
@@ -84,10 +115,10 @@ export function CustomerDetailHeader({
                   resellerStatus === "NOT_RESELLER"
                     ? "Pelanggan Reguler"
                     : resellerStatus === "APPROVED"
-                    ? "Reseller Aktif"
-                    : resellerStatus === "PENDING"
-                    ? "Pengajuan Reseller"
-                    : "Reseller Ditolak"
+                      ? "Reseller Aktif"
+                      : resellerStatus === "PENDING"
+                        ? "Pengajuan Reseller"
+                        : "Reseller Ditolak"
                 }
               />
               <StatusBadge
@@ -123,6 +154,7 @@ export function CustomerDetailHeader({
               variant="outline"
               size="sm"
               className="gap-1.5 rounded-xl border-2 border-border font-heading font-bold text-xs"
+              disabled={isActionDisabled}
             >
               <a href={waUrl} target="_blank" rel="noreferrer">
                 <MessageCircle className="size-4 text-emerald-600" />
@@ -132,15 +164,36 @@ export function CustomerDetailHeader({
           )}
 
           {resellerStatus === "PENDING" && (
-            <Button
-              variant="default"
-              size="sm"
-              className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
-              onClick={() => alert(`Pengajuan reseller ${name} disetujui`)}
-            >
-              <CheckCircle2 className="size-4" />
-              <span>Setujui Reseller</span>
-            </Button>
+            <>
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
+                onClick={handleApproveReseller}
+                disabled={isActionDisabled}
+              >
+                {isUpdatingReseller ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-4" />
+                )}
+                <span>Setujui Reseller</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 rounded-xl text-destructive hover:text-destructive border-2 border-border font-heading font-bold text-xs"
+                onClick={handleRejectReseller}
+                disabled={isActionDisabled}
+              >
+                {isUpdatingReseller ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <XCircle className="size-4" />
+                )}
+                <span>Tolak</span>
+              </Button>
+            </>
           )}
 
           {isActive ? (
@@ -148,9 +201,14 @@ export function CustomerDetailHeader({
               variant="outline"
               size="sm"
               className="gap-1.5 rounded-xl text-destructive hover:text-destructive border-2 border-border font-heading font-bold text-xs"
-              onClick={() => alert(`Akun ${name} dinonaktifkan`)}
+              onClick={handleToggleUserStatus}
+              disabled={isActionDisabled}
             >
-              <Ban className="size-4" />
+              {isUpdatingStatus ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Ban className="size-4" />
+              )}
               <span>Suspend</span>
             </Button>
           ) : (
@@ -158,9 +216,14 @@ export function CustomerDetailHeader({
               variant="outline"
               size="sm"
               className="gap-1.5 rounded-xl text-success hover:text-success border-2 border-border font-heading font-bold text-xs"
-              onClick={() => alert(`Akun ${name} diaktifkan kembali`)}
+              onClick={handleToggleUserStatus}
+              disabled={isActionDisabled}
             >
-              <ShieldCheck className="size-4" />
+              {isUpdatingStatus ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="size-4" />
+              )}
               <span>Aktifkan</span>
             </Button>
           )}

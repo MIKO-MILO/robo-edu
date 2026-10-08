@@ -70,15 +70,37 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
+  /**
+   * When true, the Button renders no DOM element of its own and instead
+   * merges its props (className, onClick, disabled, ref…) onto its single
+   * child element. This lets you style any element — <a>, <Link>, etc. —
+   * with Button variants without producing invalid nested-button HTML.
+   */
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, neo, ...props }, ref) => {
+  ({ className, variant, size, neo, asChild = false, ...props }, ref) => {
+    const computedClass = cn(buttonVariants({ variant, size, neo, className }));
+
+    if (asChild) {
+      // Merge button styling + props onto the single child element.
+      const child = React.Children.only(props.children) as React.ReactElement<
+        React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
+      >;
+      return React.cloneElement(child, {
+        ...props,
+        // child's own className wins if it provides one; otherwise use computed
+        className: cn(computedClass, child.props.className),
+        ref,
+        children: child.props.children,
+      });
+    }
+
     return (
       <button
         ref={ref}
-        className={cn(buttonVariants({ variant, size, neo, className }))}
+        className={computedClass}
         {...props}
       />
     );

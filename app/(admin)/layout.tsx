@@ -1,8 +1,13 @@
 import * as React from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { authService } from "@/lib/api";
-import { getSession } from "@/lib/auth/session";
+import { eq } from "drizzle-orm";
+import { db } from "@/src/db";
+import { users } from "@/src/db/schema";
+import {
+  verifySessionToken,
+  SESSION_COOKIE_NAME,
+} from "@/src/lib/auth/session";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { AdminTopBar } from "@/components/admin/top-bar";
 import { Toaster } from "@/components/admin/toast";
@@ -35,53 +40,43 @@ export default async function AdminLayout({
     return <>{children}</>;
   }
 
-  // 1. Ambil cookie session di Server Component
+  // 1. Ambil cookie session di Server Component + verify signature
   const cookieStore = await cookies();
-  const sessionToken =
-    cookieStore.get("roboedu_session")?.value ||
-    cookieStore.get("auth_token")?.value ||
-    cookieStore.get("token")?.value;
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = verifySessionToken(sessionToken);
 
-  // Jika tidak ada cookie sesi, redirect langsung ke halaman admin login
-  if (!sessionToken) {
+  // Jika tidak ada cookie sesi / signature tidak valid, redirect ke halaman admin login
+  if (!session?.userId) {
     redirect("/admin/login");
   }
 
-  // Forward semua cookie dari Server Component ke HTTP client
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ");
-
+  // 2. Ambil data user langsung dari database (hindari fetch loopback ke /api/auth/me di server side)
   let user: { name: string; email: string; role: string } | null = null;
 
-  // 2. Panggil API getMe() untuk mendapatkan data autentikasi user
   try {
-    const response = await authService.getMe({
-      headers: {
-        cookie: cookieHeader,
-      },
-      skipAuthRedirect: true,
-    });
+    const [currentUser] = await db
+      .select({
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        isActive: users.isActive,
+      })
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
 
-    if (response?.success && response.data) {
-      user = response.data;
-    }
-  } catch (error) {
-    // Fallback: Jika backend getMe() belum ready, coba decode mock session
-    const mockSession = await getSession();
-    if (mockSession && isAdminRole(mockSession.role)) {
+    if (currentUser && currentUser.isActive) {
       user = {
-        name: mockSession.name || "Admin RoboEdu",
-        email: mockSession.email || "admin@roboedu.id",
-        role: mockSession.role,
+        name: currentUser.name,
+        email: currentUser.email,
+        role: currentUser.role,
       };
-    } else {
-      redirect("/admin/login");
     }
+  } catch {
+    user = null;
   }
 
-  // 4. Cek otorisasi role: jika bukan admin (misal customer), redirect ke /admin/login
+  // 3. Cek otorisasi role: jika bukan admin (misal customer), redirect ke /admin/login
   if (!user || !isAdminRole(user.role)) {
     redirect("/admin/login");
   }
