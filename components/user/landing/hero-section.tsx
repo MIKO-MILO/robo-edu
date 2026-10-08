@@ -84,8 +84,10 @@ export default function HeroSection() {
       </div>
 
       {/* Navigation Bar */}
-      <header className="relative z-20 px-4 mb-6 md:mb-10 w-full flex justify-center [&>nav]:!h-[64px] md:[&>nav]:!h-[95px] [&>nav]:!px-4 sm:[&>nav]:!px-8 md:[&>nav]:!px-12 [&>nav]:!mt-2 md:[&>nav]:!mt-4 [&_span]:!text-[22px] [&_span]:sm:!text-2xl [&_span]:md:!text-[32px] [&_span]:!leading-normal [&_img]:!w-7 [&_img]:!h-7 md:[&_img]:!w-auto md:[&_img]:!h-auto">
-        <Navbar />
+      <header className="relative z-20 px-4 mb-6 md:mb-10 w-full flex justify-center">
+        <div style={{ maxWidth: "984px", width: "100%" }}>
+          <Navbar />
+        </div>
       </header>
 
       {/* Hero Main Content */}

@@ -11,17 +11,24 @@ export default function UserLayout({
 }) {
   return (
     <WishlistProvider>
-      {/* ── Sticky Navbar ───────────────────────────────────
-          Lives at the layout level — direct child of <body> via
-          Next.js layout nesting. No trapping ancestor with overflow
-          or position that could break position:sticky.
+      {/* ── Fixed Navbar ────────────────────────────────────
+          position:fixed → keluar dari normal flow, tidak mendorong
+          konten ke bawah. Navbar pill mengapung di atas semua layer.
       ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-2 z-50 w-full flex justify-center px-4">
-        <Navbar />
+      <header className="fixed top-8 left-0 right-0 z-50 w-full flex justify-center px-4 pointer-events-none">
+        <div className="pointer-events-auto w-full" style={{ maxWidth: "984px" }}>
+          <Navbar />
+        </div>
       </header>
 
       {/* ── Page Content ──────────────────────────────────── */}
-      {children}
+      {/* Navbar sudah fixed (out-of-flow), konten mulai dari top:0.
+          Hero section di setiap halaman mengelola padding internalnya sendiri
+          agar konten tidak tertutup navbar (pt-12/pt-20 di hero = ~48-80px,
+          navbar height = 95px + 16px marginTop = 111px total floating area). */}
+      <div>
+        {children}
+      </div>
 
       {/* ── Footer ───────────────────────────────────────── */}
       <Footer />

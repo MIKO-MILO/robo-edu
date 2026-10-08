@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="w-full flex-grow flex flex-col md:flex-row min-h-[calc(100vh-80px)]">
+    <section className="w-full flex-grow flex flex-col md:flex-row min-h-screen">
       {/* Left Column: Image */}
       <div className="w-full md:w-1/2 h-[50vh] md:h-auto relative border-b-2 md:border-b-0 border-foreground">
         <Image
