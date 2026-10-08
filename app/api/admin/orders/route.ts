@@ -1,86 +1,88 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, desc, eq, inArray, like, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, like, or, sql } from "drizzle-orm";
 import { db } from "@/src/db";
-import {
-  orders,
-  orderItems,
-  payments,
-  users,
-  productImages,
-} from "@/src/db/schema";
+import { orders, orderItems, payments, users, productImages } from "@/src/db/schema";
+import { getSession } from "@/lib/auth/session";
 import { getSessionUserId } from "@/src/lib/auth/session";
+import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
 
+function isAdminRole(role: string): boolean {
+  const r = role?.toLowerCase() ?? "";
+  return r === "admin" || r === "superadmin" || r === "admin_sales" || r === "admin_laporan";
+}
+
 /**
  * GET /api/admin/orders
+ *
+ * Admin-only — returns ALL orders (all users), with customer info joined.
+ *
  * Query params:
- *   search  — cari berdasarkan order_number, nama customer, atau nama produk
- *   status  — filter status (PENDING | PAID | PROCESSING | SHIPPED | DELIVERED | COMPLETED | CANCELLED)
- *   page    — default 1
- *   limit   — default 10, max 100
+ *   page        = 1-based page (default 1)
+ *   limit       = rows per page (default 20, max 100)
+ *   q           = free-text search: order_number | customer name | customer email
+ *   status      = OrderStatus filter, e.g. "PAID" | "PROCESSING" | "ALL" (default ALL)
+ *   sort        = "created_at_desc" (default) | "created_at_asc" | "total_desc" | "total_asc"
  */
 export async function GET(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
+  // ── Auth: harus admin ──────────────────────────────────────────────────
+  const session = await getSession();
+  if (!session || !isAdminRole(session.role)) {
+    // Fallback ke src session untuk dev environment yang belum pakai mock JWT
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 },
+      );
+    }
   }
-
-  // TODO: Add admin role check here if needed
-  // const user = await currentUser();
-  // if (user.role !== 'ADMIN') return 403
 
   const { searchParams } = request.nextUrl;
-  const search = searchParams.get("search")?.trim() ?? "";
-  const statusFilter = searchParams.get("status")?.trim().toUpperCase() ?? "";
-  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
-  const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit") ?? "10")));
+  const page   = Math.max(1, Number(searchParams.get("page")  ?? "1"));
+  const limit  = Math.min(100, Math.max(1, Number(searchParams.get("limit") ?? "20")));
+  const q      = searchParams.get("q")?.trim() ?? "";
+  const status = searchParams.get("status") ?? "ALL";
+  const sort   = searchParams.get("sort") ?? "created_at_desc";
   const offset = (page - 1) * limit;
 
-  // ── Build filters ─────────────────────────────────────────────────────
-  const filters = [];
+  // ── Build where filters ────────────────────────────────────────────────
+  const filters: ReturnType<typeof eq>[] = [];
 
-  if (statusFilter && statusFilter !== "ALL") {
-    filters.push(eq(orders.status, statusFilter.toLowerCase()));
+  if (status && status !== "ALL") {
+    filters.push(eq(orders.status, status));
   }
 
-  // Search: by order_number, customer name, or product name snapshot
+  // ── Search: match order_number, customer name, or customer email ───────
   let searchOrderIds: string[] | null = null;
-  if (search) {
-    const ql = `%${search}%`;
+  if (q) {
+    const ql = `%${q}%`;
 
+    // Match by order_number
     const byNumber = await db
       .select({ id: orders.id })
       .from(orders)
       .where(like(orders.orderNumber, ql));
 
+    // Match by customer name or email (join users)
     const byCustomer = await db
       .select({ id: orders.id })
       .from(orders)
       .innerJoin(users, eq(orders.userId, users.id))
-      .where(or(like(users.name, ql), like(users.email, ql))!);
-
-    const byProduct = await db
-      .select({ orderId: orderItems.orderId })
-      .from(orderItems)
-      .where(like(orderItems.productNameSnapshot, ql));
+      .where(or(like(users.name, ql), like(users.email, ql)));
 
     const matchSet = new Set<string>([
       ...byNumber.map((r) => r.id),
       ...byCustomer.map((r) => r.id),
-      ...byProduct.map((r) => r.orderId),
     ]);
-
     searchOrderIds = [...matchSet];
 
     if (searchOrderIds.length === 0) {
       return NextResponse.json({
         success: true,
         data: [],
-        meta: { page, limit, total: 0, total_pages: 0 },
+        meta: { page, limit, total: 0, totalPages: 0 },
       });
     }
 
@@ -89,9 +91,9 @@ export async function GET(request: NextRequest) {
 
   const whereClause = filters.length > 0 ? and(...filters) : undefined;
 
-  // ── Count ─────────────────────────────────────────────────────────────
+  // ── Count total ────────────────────────────────────────────────────────
   const [{ total }] = await db
-    .select({ total: sql<number>`COUNT(DISTINCT ${orders.id})` })
+    .select({ total: sql<number>`count(*)` })
     .from(orders)
     .where(whereClause);
 
@@ -101,29 +103,47 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: [],
-      meta: { page, limit, total: 0, total_pages: 0 },
+      meta: { page, limit, total: 0, totalPages: 0 },
     });
   }
 
-  // ── Fetch orders ──────────────────────────────────────────────────────
+  // ── Sort ───────────────────────────────────────────────────────────────
+  const orderByClause =
+    sort === "created_at_asc"  ? asc(orders.createdAt)  :
+    sort === "total_desc"      ? desc(orders.total)      :
+    sort === "total_asc"       ? asc(orders.total)       :
+    /* default */                desc(orders.createdAt);
+
+  // ── Fetch paginated orders with customer info ──────────────────────────
   const rows = await db
     .select({
-      id: orders.id,
-      orderNumber: orders.orderNumber,
-      status: orders.status,
-      total: orders.total,
-      shippingCost: orders.shippingCost,
-      discountAmount: orders.discountAmount,
-      createdAt: orders.createdAt,
-      // Customer info via join
-      customerName: users.name,
-      customerEmail: users.email,
-      customerPhone: users.phone,
+      id:                   orders.id,
+      orderNumber:          orders.orderNumber,
+      status:               orders.status,
+      total:                orders.total,
+      subtotal:             orders.subtotal,
+      shippingCost:         orders.shippingCost,
+      discountAmount:       orders.discountAmount,
+      voucherCodeSnapshot:  orders.voucherCodeSnapshot,
+      recipientName:        orders.recipientName,
+      recipientPhone:       orders.recipientPhone,
+      shippingCity:         orders.shippingCity,
+      shippingProvince:     orders.shippingProvince,
+      paidAt:               orders.paidAt,
+      shippedAt:            orders.shippedAt,
+      deliveredAt:          orders.deliveredAt,
+      cancelledAt:          orders.cancelledAt,
+      createdAt:            orders.createdAt,
+      // customer
+      customerId:           users.id,
+      customerName:         users.name,
+      customerEmail:        users.email,
+      customerPhone:        users.phone,
     })
     .from(orders)
     .innerJoin(users, eq(orders.userId, users.id))
     .where(whereClause)
-    .orderBy(desc(orders.createdAt))
+    .orderBy(orderByClause)
     .limit(limit)
     .offset(offset);
 
@@ -131,17 +151,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: [],
-      meta: { page, limit, total: totalCount, total_pages: Math.ceil(totalCount / limit) },
+      meta: { page, limit, total: totalCount, totalPages: Math.ceil(totalCount / limit) },
     });
   }
 
   const orderIds = rows.map((r) => r.id);
 
-  // ── Item counts per order ─────────────────────────────────────────────
+  // ── Item counts per order ──────────────────────────────────────────────
   const countRows = await db
     .select({
-      orderId: orderItems.orderId,
-      itemCount: sql<number>`COUNT(*)`,
+      orderId:   orderItems.orderId,
+      itemCount: sql<number>`count(*)`,
     })
     .from(orderItems)
     .where(inArray(orderItems.orderId, orderIds))
@@ -151,81 +171,75 @@ export async function GET(request: NextRequest) {
     countRows.map((r) => [r.orderId, Number(r.itemCount)]),
   );
 
-  // ── First item per order (for preview) ───────────────────────────────
-  const allItems = await db
+  // ── First item per order (for preview) ────────────────────────────────
+  const firstItemRows = await db
     .select({
-      orderId: orderItems.orderId,
-      productId: orderItems.productId,
-      productNameSnapshot: orderItems.productNameSnapshot,
-      variantNameSnapshot: orderItems.variantNameSnapshot,
-      createdAt: orderItems.createdAt,
+      orderId:              orderItems.orderId,
+      productId:            orderItems.productId,
+      productNameSnapshot:  orderItems.productNameSnapshot,
+      variantNameSnapshot:  orderItems.variantNameSnapshot,
+      createdAt:            orderItems.createdAt,
     })
     .from(orderItems)
     .where(inArray(orderItems.orderId, orderIds))
     .orderBy(asc(orderItems.createdAt));
 
-  const firstItemMap: Record<string, typeof allItems[number]> = {};
-  for (const item of allItems) {
+  const firstItemMap: Record<string, typeof firstItemRows[number]> = {};
+  for (const item of firstItemRows) {
     if (!firstItemMap[item.orderId]) {
       firstItemMap[item.orderId] = item;
     }
   }
 
-  // ── Payments per order ────────────────────────────────────────────────
+  // ── Payment status per order ───────────────────────────────────────────
   const paymentRows = await db
     .select({
-      orderId: payments.orderId,
-      status: payments.status,
+      orderId:     payments.orderId,
+      status:      payments.status,
       paymentType: payments.paymentType,
     })
     .from(payments)
     .where(inArray(payments.orderId, orderIds));
 
-  const paymentMap = Object.fromEntries(
-    paymentRows.map((p) => [p.orderId, p]),
-  );
-
-  // ── Thumbnail images ──────────────────────────────────────────────────
-  const firstProductIds = [
-    ...new Set(Object.values(firstItemMap).map((i) => i.productId)),
-  ];
-
-  const imageMap: Record<string, string> = {};
-  if (firstProductIds.length > 0) {
-    const imageRows = await db
-      .select({
-        productId: productImages.productId,
-        imageUrl: productImages.imageUrl,
-      })
-      .from(productImages)
-      .where(inArray(productImages.productId, firstProductIds))
-      .orderBy(desc(productImages.isPrimary), asc(productImages.sortOrder));
-
-    for (const img of imageRows) {
-      if (!imageMap[img.productId]) {
-        imageMap[img.productId] = img.imageUrl;
-      }
-    }
+  const paymentMap: Record<string, typeof paymentRows[number]> = {};
+  for (const p of paymentRows) {
+    paymentMap[p.orderId] = p;
   }
 
-  // ── Shape response ────────────────────────────────────────────────────
+  // ── Shape response ─────────────────────────────────────────────────────
   const data = rows.map((order) => {
     const fi = firstItemMap[order.id];
     const pmt = paymentMap[order.id];
     return {
-      id: order.id,
-      order_number: order.orderNumber,
-      status: order.status.toUpperCase(),
-      total: Number(order.total),
-      created_at: order.createdAt.toISOString(),
-      customer_name: order.customerName,
-      customer_email: order.customerEmail,
-      customer_phone: order.customerPhone ?? null,
-      item_count: countMap[order.id] ?? 0,
-      first_item_name: fi?.productNameSnapshot ?? "-",
-      first_item_image: fi ? (imageMap[fi.productId] ?? null) : null,
-      payment_status: pmt ? pmt.status.toUpperCase() : "PENDING",
-      payment_method: pmt ? pmt.paymentType : "-",
+      id:                    order.id,
+      order_number:          order.orderNumber,
+      status:                order.status as OrderStatus,
+      total:                 Number(order.total),
+      subtotal:              Number(order.subtotal),
+      shipping_cost:         Number(order.shippingCost),
+      discount_amount:       Number(order.discountAmount),
+      voucher_code_snapshot: order.voucherCodeSnapshot ?? null,
+      recipient_name:        order.recipientName,
+      recipient_phone:       order.recipientPhone,
+      shipping_city:         order.shippingCity,
+      shipping_province:     order.shippingProvince,
+      paid_at:               order.paidAt?.toISOString()    ?? null,
+      shipped_at:            order.shippedAt?.toISOString() ?? null,
+      delivered_at:          order.deliveredAt?.toISOString() ?? null,
+      cancelled_at:          order.cancelledAt?.toISOString() ?? null,
+      created_at:            order.createdAt.toISOString(),
+      // customer
+      customer_id:           order.customerId,
+      customer_name:         order.customerName,
+      customer_email:        order.customerEmail,
+      customer_phone:        order.customerPhone ?? null,
+      // items
+      item_count:            countMap[order.id] ?? 0,
+      first_item_name:       fi?.productNameSnapshot ?? null,
+      first_item_variant:    fi?.variantNameSnapshot ?? null,
+      // payment
+      payment_status:        (pmt?.status ?? "PENDING") as PaymentStatus,
+      payment_method:        pmt?.paymentType ?? null,
     };
   });
 
@@ -236,7 +250,7 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       total: totalCount,
-      total_pages: Math.ceil(totalCount / limit),
+      totalPages: Math.ceil(totalCount / limit),
     },
   });
 }

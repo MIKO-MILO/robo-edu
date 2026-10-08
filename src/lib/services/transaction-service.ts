@@ -2,6 +2,7 @@ import "server-only";
 
 import crypto from "node:crypto";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
+// `delete` used via tx.delete — no extra import needed (it's a method on the tx object)
 import { db } from "@/src/db";
 import {
   cartItems,
@@ -234,6 +235,19 @@ export async function createPaymentTransaction(
         .where(eq(vouchers.id, voucher.id));
     }
 
+    // Hapus semua cart items setelah order berhasil dibuat.
+    // Dilakukan di dalam DB transaction yang sama agar rollback otomatis
+    // jika langkah berikutnya (Snap) gagal dan order di-cancel.
+    const [userCart] = await tx
+      .select({ id: carts.id })
+      .from(carts)
+      .where(eq(carts.userId, input.userId))
+      .limit(1);
+
+    if (userCart) {
+      await tx.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
+    }
+
     return { id, number, total, items, discountAmount, shippingCost };
   });
 
@@ -325,6 +339,19 @@ export async function createPaymentTransaction(
       },
       item_details: itemDetails,
     });
+
+    // Simpan snap token ke rawResponse agar bisa dipakai ulang tanpa
+    // memanggil Midtrans lagi (token berlaku 24 jam).
+    await db
+      .update(payments)
+      .set({
+        rawResponse: {
+          snap_token: transaction.token,
+          redirect_url: transaction.redirect_url,
+          created_at: new Date().toISOString(),
+        },
+      })
+      .where(eq(payments.orderId, result.id));
 
     return {
       orderId: result.id,

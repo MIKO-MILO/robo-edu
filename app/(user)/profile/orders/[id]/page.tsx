@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Package, MapPin, CreditCard, Truck,
   CheckCircle2, Clock, MapPinIcon, Copy, Check,
@@ -84,12 +84,18 @@ function formatRupiah(amount: number) {
 
 function formatDate(iso: string | null, withTime = false) {
   if (!iso) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
+  const d = new Date(iso);
+  // Selalu tampilkan dalam WIB (Asia/Jakarta, UTC+7) agar konsisten di semua device
+  const formatted = new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
     month: "long",
     year: "numeric",
-    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
-  }).format(new Date(iso));
+    timeZone: "Asia/Jakarta",
+    ...(withTime
+      ? { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+      : {}),
+  }).format(d);
+  return withTime ? `${formatted} WIB` : formatted;
 }
 
 function formatPaymentType(type: string) {
@@ -100,8 +106,53 @@ function formatPaymentType(type: string) {
     credit_card: "Kartu Kredit",
     cstore: "Minimarket",
     echannel: "Mandiri Bill",
+    MIDTRANS_SNAP: "Midtrans",
   };
   return map[type] ?? type;
+}
+
+// ── Countdown timer untuk batas bayar ────────────────────────────────────────
+function useCountdown(expiryIso: string | null) {
+  const [remaining, setRemaining] = useState<number>(() => {
+    if (!expiryIso) return 0;
+    return Math.max(0, new Date(expiryIso).getTime() - Date.now());
+  });
+
+  useEffect(() => {
+    if (!expiryIso) return;
+    const tick = () =>
+      setRemaining(Math.max(0, new Date(expiryIso).getTime() - Date.now()));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [expiryIso]);
+
+  if (remaining <= 0) return { expired: true, display: "Kadaluarsa" };
+
+  const totalSeconds = Math.floor(remaining / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  const parts: string[] = [];
+  if (h > 0) parts.push(`${h} jam`);
+  parts.push(`${m.toString().padStart(2, "0")} mnt`);
+  parts.push(`${s.toString().padStart(2, "0")} dtk`);
+
+  return { expired: false, display: parts.join(" ") };
+}
+
+function ExpiryCountdown({ expiryTime }: { expiryTime: string }) {
+  const { expired, display } = useCountdown(expiryTime);
+  return (
+    <span
+      className={`font-semibold tabular-nums text-right ${
+        expired ? "text-muted-foreground line-through" : "text-red-500"
+      }`}
+    >
+      {display}
+    </span>
+  );
 }
 
 // ── Section card wrapper ──────────────────────────────────────────────────────
@@ -173,6 +224,7 @@ function TrackingTimeline({ trackings }: { trackings: TrackingEntry[] }) {
 export default function OrderDetailPage() {
   const params = useParams();
   const id = params?.id as string;
+  const router = useRouter();
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -260,6 +312,32 @@ export default function OrderDetailPage() {
         </div>
         <OrderStatusBadge status={order.status} />
       </div>
+
+      {/* ── Banner Bayar Sekarang (hanya saat PENDING) ────────────── */}
+      {order.status === "PENDING" && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-accent-orange/20 border-2 border-foreground rounded-2xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-700 animate-pulse shrink-0" />
+            <div>
+              <p className="font-heading font-bold text-sm text-foreground">
+                Pesanan Menunggu Pembayaran
+              </p>
+              <p className="font-body text-xs text-muted-foreground mt-0.5">
+                Selesaikan pembayaran agar pesananmu segera diproses.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            className="gap-2 shrink-0"
+            onClick={() => router.push(`/payment/${order.id}`)}
+          >
+            <CreditCard className="w-4 h-4" />
+            Bayar Sekarang
+          </Button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── Kolom kiri (2/3) ──────────────────────────────────── */}
@@ -394,17 +472,23 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
                 {order.payment.transaction_time && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Waktu Bayar</span>
-                    <span className="text-foreground text-right">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground shrink-0">Waktu Bayar</span>
+                    <span className="text-foreground text-right text-xs leading-relaxed">
                       {formatDate(order.payment.transaction_time, true)}
                     </span>
                   </div>
                 )}
                 {order.payment.expiry_time && order.payment.status === "PENDING" && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Batas Bayar</span>
-                    <span className="text-red-500 font-semibold text-right">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-muted-foreground shrink-0">Sisa Waktu</span>
+                    <ExpiryCountdown expiryTime={order.payment.expiry_time} />
+                  </div>
+                )}
+                {order.payment.expiry_time && order.payment.status === "PENDING" && (
+                  <div className="flex justify-between gap-2 text-xs">
+                    <span className="text-muted-foreground shrink-0">Batas Bayar</span>
+                    <span className="text-red-400 text-right">
                       {formatDate(order.payment.expiry_time, true)}
                     </span>
                   </div>

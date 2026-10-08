@@ -37,6 +37,9 @@ export type { OrderPaymentCardProps, OrderPaymentInfo } from "./order-payment-ca
 
 // Organisms
 export { OrderTable } from "./order-table";
+
+export { OrderStatusDialog } from "./order-status-dialog";
+export type { OrderStatusDialogProps } from "./order-status-dialog";
 export type { OrderTableProps } from "./order-table";
 
 export { OrderItemsCard } from "./order-items-card";

@@ -232,8 +232,8 @@ export default function CheckoutPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.message ?? "Gagal membuat pesanan.");
 
-      // Redirect to Midtrans Snap hosted page
-      window.location.href = json.data.redirectUrl;
+      // Redirect ke halaman pembayaran dedicated (Snap popup) — bukan ke hosted Midtrans page
+      router.push(`/payment/${json.data.orderId}`);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
       setIsSubmitting(false);
