@@ -21,6 +21,7 @@
 export * from "./enums";
 export * from "./common";
 export * from "./user";
+export * from "./reseller";
 export * from "./catalog";
 export * from "./cart";
 export * from "./wishlist";

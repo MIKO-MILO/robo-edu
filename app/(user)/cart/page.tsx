@@ -200,7 +200,7 @@ export default function CartPage() {
   const total = subtotal - discountAmount + shipping + estimatedTax;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 lg:pt-44 pb-6 sm:pb-8 lg:pb-12">
       {/* 2-Column Main Layout: Cart List on Left, Summary on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-start">
         
