@@ -84,7 +84,7 @@ function BentoCardHeader({
   );
 }
 
-/** Individual data field cell — Neo muted box */
+/** Individual data field cell â?â€ Neo muted box */
 function DataCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="p-3 bg-muted border border-border rounded-lg">
@@ -95,7 +95,7 @@ function DataCell({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 /**
- * Molecule — Kartu informasi legalitas + timeline akun reseller (Neo-Brutalist).
+ * Molecule â?â€ Kartu informasi legalitas + timeline akun reseller (Neo-Brutalist).
  * Terdiri dari:
  *   1. Bento Legalitas & Alamat Pemohon (dokumen KTP/NPWP, alamat utama)
  *   2. Milestone & Riwayat Akun (timeline)
@@ -117,7 +117,7 @@ export function ResellerInfoCard({
 }: ResellerInfoCardProps) {
   return (
     <div className="space-y-6">
-      {/* ── 1. Legalitas & Alamat Pemohon ── */}
+      {/* ââ€?ââ€? 1. Legalitas & Alamat Pemohon ââ€?ââ€? */}
       <div className="border border-border rounded-2xl bg-card overflow-hidden">
         <BentoCardHeader
           icon={BadgeCheck}
@@ -129,10 +129,10 @@ export function ResellerInfoCard({
           {/* 2-column fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <DataCell label="Nama Lengkap" value={name} />
-            <DataCell label="Instansi Afiliasi" value={affiliationName ?? "—"} />
+            <DataCell label="Instansi Afiliasi" value={affiliationName ?? "â?â€"} />
             <DataCell
               label="Nomor WhatsApp"
-              value={<span className="font-mono">{phone ?? "—"}</span>}
+              value={<span className="font-mono">{phone ?? "â?â€"}</span>}
             />
             <DataCell label="Alamat Email" value={email} />
           </div>
@@ -168,7 +168,7 @@ export function ResellerInfoCard({
                   <div>
                     <div className="text-xs font-bold font-heading">Kartu Tanda Penduduk</div>
                     <div className="text-[11px] font-mono text-muted-foreground">
-                      NIK: {ktpNik ?? "••••••••••••••••"}
+                      NIK: {ktpNik ?? "â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢â?¢"}
                     </div>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export function ResellerInfoCard({
                   <div>
                     <div className="text-xs font-bold font-heading">NPWP Pribadi</div>
                     <div className="text-[11px] font-mono text-muted-foreground">
-                      NPWP: {npwpNumber ?? "••.•••.•••.•-•••"}
+                      NPWP: {npwpNumber ?? "â?¢â?¢.â?¢â?¢â?¢.â?¢â?¢â?¢.â?¢-â?¢â?¢â?¢"}
                     </div>
                   </div>
                 </div>
@@ -213,7 +213,7 @@ export function ResellerInfoCard({
       </div>
 
 
-      {/* ── 3. Milestone & Riwayat Akun ── */}
+      {/* ââ€?ââ€? 3. Milestone & Riwayat Akun ââ€?ââ€? */}
       <div className="border border-border rounded-2xl bg-card overflow-hidden">
         <BentoCardHeader
           icon={FileText}
@@ -301,7 +301,7 @@ export function ResellerInfoCard({
         </div>
       </div>
 
-      {/* ── 4. Catatan Penolakan (hanya jika REJECTED) ── */}
+      {/* ââ€?ââ€? 4. Catatan Penolakan (hanya jika REJECTED) ââ€?ââ€? */}
       {rejectionReason && (
         <div className="border border-danger rounded-2xl bg-danger-bg p-5 space-y-2">
           <div className="flex items-center gap-2">

@@ -28,7 +28,7 @@ export interface ResellerRejectModalProps {
 }
 
 /**
- * Atom — Modal konfirmasi penolakan pengajuan reseller.
+ * Atom â?â€ Modal konfirmasi penolakan pengajuan reseller.
  * Neo-Brutalist style sesuai stitch design.
  * Menampilkan pilihan alasan penolakan wajib sebelum konfirmasi.
  */

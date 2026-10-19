@@ -26,7 +26,7 @@ function formatDate(isoString: string): string {
 }
 
 /**
- * Molecule — Daftar pesanan terkini pemohon reseller (Neo-Brutalist).
+ * Molecule â?â€ Daftar pesanan terkini pemohon reseller (Neo-Brutalist).
  * Membantu admin menilai kelayakan pengajuan berdasarkan riwayat transaksi.
  * Sesuai PRD Bab 13 (Manajemen Pesanan) dan konteks review FR-010.
  */

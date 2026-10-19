@@ -49,7 +49,7 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse font-body text-sm">
           <thead>
-            <tr className="border-b-2 border-border bg-muted/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b-2 border-border bg-accent-soft-blue/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
               <th className="py-3.5 px-4">No. Order</th>
               <th className="py-3.5 px-4">Customer</th>
               <th className="py-3.5 px-4">Item &amp; Produk</th>

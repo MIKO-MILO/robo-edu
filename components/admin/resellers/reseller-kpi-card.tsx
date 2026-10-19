@@ -10,7 +10,7 @@ export interface ResellerKpiCardProps {
 }
 
 /**
- * Atom — satu KPI card di halaman daftar pengajuan reseller.
+ * Atom â?â€ satu KPI card di halaman daftar pengajuan reseller.
  * Menampilkan ikon + label + nilai dengan border neo-brutalist.
  *
  * Dipisahkan dari CustomerKpiCard untuk menjaga kemandirian modul reseller,
