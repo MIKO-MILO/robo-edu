@@ -19,6 +19,21 @@ export type UserRole = "superadmin" | "admin_sales" | "admin_laporan" | "custome
  * jadi satu field di UI/middleware (lihat PRD Bab 5–6). */
 export type ResellerStatus = "NOT_RESELLER" | "PENDING" | "APPROVED" | "REJECTED";
 
+/**
+ * Kolom `user.membership_status`. PRD Bab 6.3.
+ * Terpisah dari `role` — Member bukan role, melainkan atribut akun customer.
+ * NOT_MEMBER = paket Standar; MEMBER = paket Plus aktif.
+ */
+export type MembershipStatus = "NOT_MEMBER" | "MEMBER";
+
+/** Kolom `membership_purchase.status`. PRD Bab 25.1. */
+export type MembershipPurchaseStatus =
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "EXPIRED"
+  | "REFUNDED";
+
 /** Dipakai di kolom `product.status` DAN `product_variant.status`.
  * Sesuai PRD 9.2. */
 export type ProductStatus = "DRAFT" | "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";

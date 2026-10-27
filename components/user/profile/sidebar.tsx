@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, Lock, Bell, LogOut, ShoppingCart, HandshakeIcon } from "lucide-react";
+import { User, Lock, Bell, LogOut, ShoppingCart, CrownIcon } from "lucide-react";
 import clsx from "clsx";
 
 export default function Sidebar() {
@@ -13,7 +13,7 @@ export default function Sidebar() {
     { href: "/profile/my-profile", label: "Profile Settings", icon: User },
     { href: "/profile/settings", label: "Settings", icon: Lock },
     { href: "/profile/orders", label: "Orders History", icon: ShoppingCart },
-    { href: "/profile/reseller", label: "Program Reseller", icon: HandshakeIcon },
+    { href: "/profile/reseller", label: "Program Membership", icon: CrownIcon },
     { href: "/profile/notifications", label: "Notifications", icon: Bell },
   ];
 

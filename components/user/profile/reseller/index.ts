@@ -1,16 +1,18 @@
-/**
- * Barrel export untuk komponen /profile/reseller.
+﻿/**
+ * Barrel export untuk komponen /profile/reseller (Sistem Membership).
  *
- * Semua komponen hanya dipakai oleh:
+ * Semua komponen ini hanya dipakai oleh:
  *   - app/(user)/profile/reseller/page.tsx
  *
- * Import dari luar harus melalui file ini:
- *   import { ResellerStatusPending, ... } from "@/components/user/profile/reseller"
+ * Import dari luar selalu melalui file ini:
+ *   import { MembershipNotMember, MembershipMemberActive } from "@/components/user/profile/reseller"
+ *
+ * PRD Bab 6.8 | FR-023 | US-011, US-012
  */
 
-export { ResellerStatusBadge } from "./reseller-status-badge";
-export { ResellerApplicationDetail } from "./reseller-application-detail";
-export { ResellerStatusNotReseller } from "./reseller-status-not-reseller";
-export { ResellerStatusApproved } from "./reseller-status-approved";
-export { ResellerStatusPending } from "./reseller-status-pending";
-export { ResellerStatusRejected } from "./reseller-status-rejected";
+export { MembershipStatusBadge } from "./membership-status-badge";
+export { MembershipPurchaseStatusBadge } from "./membership-purchase-status-badge";
+export { MembershipNotMember } from "./membership-not-member";
+export { MembershipInfoCard } from "./membership-info-card";
+export { MembershipPurchaseTable } from "./membership-purchase-table";
+export { MembershipMemberActive } from "./membership-member-active";
