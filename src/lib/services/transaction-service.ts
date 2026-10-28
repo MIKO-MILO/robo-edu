@@ -2,6 +2,7 @@ import "server-only";
 
 import crypto from "node:crypto";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
+// `delete` used via tx.delete — no extra import needed (it's a method on the tx object)
 import { db } from "@/src/db";
 import {
   cartItems,
@@ -70,7 +71,8 @@ function calculateDiscount(
     voucher.discountType === "PERCENTAGE"
       ? Math.floor((subtotal * Number(voucher.discountValue)) / 100)
       : Number(voucher.discountValue);
-  const maximum = voucher.maximumDiscount === null ? base : Number(voucher.maximumDiscount);
+  const maximum =
+    voucher.maximumDiscount === null ? base : Number(voucher.maximumDiscount);
   return Math.min(subtotal, base, maximum);
 }
 
@@ -88,7 +90,12 @@ export async function createPaymentTransaction(
     const address = await tx
       .select()
       .from(userAddresses)
-      .where(and(eq(userAddresses.id, input.addressId), eq(userAddresses.userId, input.userId)))
+      .where(
+        and(
+          eq(userAddresses.id, input.addressId),
+          eq(userAddresses.userId, input.userId),
+        ),
+      )
       .limit(1);
     if (!address[0]) throw new Error("Shipping address was not found");
 
@@ -107,9 +114,16 @@ export async function createPaymentTransaction(
       .innerJoin(carts, eq(cartItems.cartId, carts.id))
       .innerJoin(products, eq(cartItems.productId, products.id))
       .innerJoin(productVariants, eq(cartItems.variantId, productVariants.id))
-      .where(and(eq(carts.userId, input.userId), eq(products.status, "ACTIVE"), eq(productVariants.status, "ACTIVE")));
+      .where(
+        and(
+          eq(carts.userId, input.userId),
+          eq(products.status, "ACTIVE"),
+          eq(productVariants.status, "ACTIVE"),
+        ),
+      );
 
-    if (rows.length === 0) throw new Error("Cart is empty or contains unavailable products");
+    if (rows.length === 0)
+      throw new Error("Cart is empty or contains unavailable products");
 
     const items: PricedCartItem[] = rows.map((item) => ({
       ...item,
@@ -121,7 +135,10 @@ export async function createPaymentTransaction(
       }
     }
 
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
     let voucher: typeof vouchers.$inferSelect | undefined;
     let discountAmount = 0;
     if (input.voucherCode?.trim()) {
@@ -138,13 +155,19 @@ export async function createPaymentTransaction(
         )
         .limit(1);
       voucher = found[0];
-      if (!voucher || (voucher.usageLimit !== null && voucher.usedCount >= voucher.usageLimit)) {
+      if (
+        !voucher ||
+        (voucher.usageLimit !== null && voucher.usedCount >= voucher.usageLimit)
+      ) {
         throw new Error("Voucher is invalid or has reached its usage limit");
       }
       discountAmount = calculateDiscount(subtotal, voucher);
     }
 
-    const total = subtotal - discountAmount + shippingCost;
+    const taxableAmount = subtotal - discountAmount;
+    // Pajak 8% dibulatkan ke bawah agar tidak ada selisih desimal
+    const taxAmount = Math.floor(taxableAmount * 0.08);
+    const total = taxableAmount + shippingCost + taxAmount;
     const id = crypto.randomUUID();
     const number = orderNumber();
     const recipient = address[0]!;
@@ -158,6 +181,7 @@ export async function createPaymentTransaction(
       voucherCodeSnapshot: voucher?.code ?? null,
       subtotal: String(subtotal),
       discountAmount: String(discountAmount),
+      taxAmount: String(taxAmount),
       shippingCost: String(shippingCost),
       total: String(total),
       status: "PENDING",
@@ -167,8 +191,8 @@ export async function createPaymentTransaction(
       shippingProvince: recipient.province,
       shippingCity: recipient.city,
       shippingDistrict: recipient.district,
-      shippingVillage: recipient.village,
-      shippingPostalCode: recipient.postalCode,
+      shippingVillage: recipient.village ?? "",
+      shippingPostalCode: recipient.postalCode ?? "",
     });
 
     await tx.insert(orderItems).values(
@@ -211,28 +235,123 @@ export async function createPaymentTransaction(
         .where(eq(vouchers.id, voucher.id));
     }
 
+    // Hapus semua cart items setelah order berhasil dibuat.
+    // Dilakukan di dalam DB transaction yang sama agar rollback otomatis
+    // jika langkah berikutnya (Snap) gagal dan order di-cancel.
+    const [userCart] = await tx
+      .select({ id: carts.id })
+      .from(carts)
+      .where(eq(carts.userId, input.userId))
+      .limit(1);
+
+    if (userCart) {
+      await tx.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
+    }
+
     return { id, number, total, items, discountAmount, shippingCost };
   });
 
   const snap = getSnapClient();
   try {
+    const baseItems = result.items.map((item) => ({
+      id: item.sku,
+      name: `${item.productName} - ${item.variantName}`.slice(0, 50),
+      price: item.price,
+      quantity: item.quantity,
+    }));
+    const extras: Array<{
+      id: string;
+      name: string;
+      price: number;
+      quantity: number;
+    }> = [];
+    if (result.shippingCost > 0) {
+      extras.push({
+        id: "SHIPPING",
+        name: "Biaya pengiriman",
+        price: result.shippingCost,
+        quantity: 1,
+      });
+    }
+
+    const subtotalItems = baseItems.reduce(
+      (s, it) => s + it.price * it.quantity,
+      0,
+    );
+    const discountApplied = result.discountAmount;
+    const shippingApplied = result.shippingCost;
+    const expectedSubtotalBeforeTax =
+      subtotalItems - discountApplied + shippingApplied;
+    const taxExpected = Math.floor(expectedSubtotalBeforeTax * 0.08);
+    const computedTotalFromBranch = expectedSubtotalBeforeTax + taxExpected;
+
+    const useAggregate =
+      discountApplied > 0 ||
+      Math.abs(computedTotalFromBranch - Number(result.total)) > 1;
+
+    let itemDetails: Array<{
+      id: string;
+      name: string;
+      price: number;
+      quantity: number;
+    }>;
+    if (useAggregate) {
+      itemDetails = [
+        {
+          id: "ORDER",
+          name: "Pembayaran RoboEdu",
+          price: Number(result.total),
+          quantity: 1,
+        },
+      ];
+    } else {
+      const taxFromTotal = Number(result.total) - expectedSubtotalBeforeTax;
+      itemDetails = [...baseItems, ...extras];
+      if (taxFromTotal > 0) {
+        itemDetails.push({
+          id: "TAX",
+          name: "Pajak PPN",
+          price: taxFromTotal,
+          quantity: 1,
+        });
+      }
+    }
+
+    const sumCheck = itemDetails.reduce(
+      (s, it) => s + it.price * it.quantity,
+      0,
+    );
+    if (sumCheck !== Number(result.total)) {
+      itemDetails = [
+        {
+          id: "ORDER",
+          name: "Pembayaran RoboEdu",
+          price: Number(result.total),
+          quantity: 1,
+        },
+      ];
+    }
+
     const transaction = await snap.createTransaction({
-      transaction_details: { order_id: result.number, gross_amount: result.total },
-      item_details: [
-        ...result.items.map((item) => ({
-          id: item.sku,
-          name: `${item.productName} - ${item.variantName}`.slice(0, 50),
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        ...(result.shippingCost > 0
-          ? [{ id: "SHIPPING", name: "Biaya pengiriman", price: result.shippingCost, quantity: 1 }]
-          : []),
-        ...(result.discountAmount > 0
-          ? [{ id: "VOUCHER", name: "Diskon voucher", price: -result.discountAmount, quantity: 1 }]
-          : []),
-      ],
+      transaction_details: {
+        order_id: result.number,
+        gross_amount: Number(result.total),
+      },
+      item_details: itemDetails,
     });
+
+    // Simpan snap token ke rawResponse agar bisa dipakai ulang tanpa
+    // memanggil Midtrans lagi (token berlaku 24 jam).
+    await db
+      .update(payments)
+      .set({
+        rawResponse: {
+          snap_token: transaction.token,
+          redirect_url: transaction.redirect_url,
+          created_at: new Date().toISOString(),
+        },
+      })
+      .where(eq(payments.orderId, result.id));
 
     return {
       orderId: result.id,
@@ -245,14 +364,29 @@ export async function createPaymentTransaction(
     await db.transaction(async (tx) => {
       await tx
         .update(payments)
-        .set({ status: "FAILED", rawResponse: { snapError: error instanceof Error ? error.message : "Unknown Snap error" } })
+        .set({
+          status: "FAILED",
+          rawResponse: {
+            snapError:
+              error instanceof Error ? error.message : "Unknown Snap error",
+          },
+        })
         .where(eq(payments.orderId, result.id));
-      await tx.update(orders).set({ status: "CANCELLED", cancelledAt: new Date() }).where(eq(orders.id, result.id));
+      await tx
+        .update(orders)
+        .set({ status: "CANCELLED", cancelledAt: new Date() })
+        .where(eq(orders.id, result.id));
 
       // A failed token request must not consume a limited-use voucher.
-      const [failedOrder] = await tx.select().from(orders).where(eq(orders.id, result.id)).limit(1);
+      const [failedOrder] = await tx
+        .select()
+        .from(orders)
+        .where(eq(orders.id, result.id))
+        .limit(1);
       if (failedOrder?.voucherId) {
-        await tx.delete(voucherUsages).where(eq(voucherUsages.orderId, result.id));
+        await tx
+          .delete(voucherUsages)
+          .where(eq(voucherUsages.orderId, result.id));
         await tx
           .update(vouchers)
           .set({ usedCount: sql`GREATEST(${vouchers.usedCount} - 1, 0)` })

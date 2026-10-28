@@ -1,17 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, Lock, Bell, LogOut, ShoppingCart } from "lucide-react";
+import { User, Lock, Bell, LogOut, ShoppingCart, MapPin, Loader2 } from "lucide-react";
 import clsx from "clsx";
+import { Button } from "@/components/ui/button";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
   const links = [
     { href: "/profile/my-profile", label: "Profile Settings", icon: User },
     { href: "/profile/settings", label: "Settings", icon: Lock },
+    { href: "/profile/addresses", label: "Alamat Pengiriman", icon: MapPin },
     { href: "/profile/orders", label: "Orders History", icon: ShoppingCart },
     { href: "/profile/notifications", label: "Notifications", icon: Bell },
   ];
@@ -41,9 +47,10 @@ export default function Sidebar() {
         })}
         
         <button
-          onClick={() => {
-            // Logic logout
-            router.push("/home");
+          onClick={async () => {
+            await fetch("/api/auth/logout", { method: "POST" });
+            router.push("/login");
+            router.refresh();
           }}
           className={clsx(
             "flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors border-r-[4px] text-left w-full",
