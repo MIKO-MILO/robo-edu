@@ -13,6 +13,7 @@ import { ProductFilters, ProductTable } from "@/components/admin/products";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { Pagination } from "@/components/ui/pagination";
 import { PlusIcon, AlertTriangleIcon } from "lucide-react";
 import type { GetProductsParams } from "@/lib/api/endpoints/products";
 import type { ProductListItem, UUID, ProductStatus } from "@/types";
@@ -210,6 +211,13 @@ function AdminProductsContent() {
         confirmLabel="Ya, Ubah"
         onConfirm={handleStatusChangeConfirm}
         isLoading={isUpdatingStatus}
+      />
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={meta?.current_page ?? 1}
+        totalPages={meta?.total_pages ?? 1}
+        onPageChange={handlePageChange}
       />
     </div>
   );

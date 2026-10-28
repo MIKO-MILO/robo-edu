@@ -21,7 +21,7 @@ function formatDate(isoString: string): string {
 export function CustomerReviewsTab({ reviews }: CustomerReviewsTabProps) {
   if (reviews.length === 0) {
     return (
-      <div className="bg-card rounded-2xl border-2 border-border p-10 text-center text-muted-foreground shadow-xs flex flex-col items-center justify-center gap-2">
+      <div className="bg-card rounded-2xl border border-border p-10 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
         <XCircle className="size-8 text-muted-foreground" />
         <p className="font-heading font-bold text-sm text-foreground">
           Belum ada ulasan produk
@@ -34,8 +34,8 @@ export function CustomerReviewsTab({ reviews }: CustomerReviewsTabProps) {
   }
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border p-5 shadow-xs space-y-4">
-      <div className="flex items-center gap-2 border-b-2 border-border pb-3">
+    <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+      <div className="flex items-center gap-2 border-b border-border pb-3">
         <Star className="size-4 text-warning fill-warning" />
         <h3 className="font-heading font-bold text-base text-foreground">
           Riwayat Ulasan Produk

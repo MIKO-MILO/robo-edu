@@ -12,7 +12,7 @@ import {
   OrderPaymentCard,
   OrderStatusDialog,
 } from "@/components/admin/orders";
-import type { OrderLineItem, OrderPricingSummary } from "@/components/admin/orders";
+import type { OrderLineItem, OrderPricingSummary, OrderShippingSnapshot } from "@/components/admin/orders";
 import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
@@ -216,6 +216,7 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
     shipping_cost:    order.shipping_cost,
     discount_amount:  order.discount_amount,
     total:            order.total,
+    voucher_code:     order.voucher_code_snapshot,
   };
 
   const customer = {
@@ -224,20 +225,18 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
     phone: order.customer.phone ?? order.recipient_phone ?? "—",
   };
 
-  const shipping = {
-    courier:         order.shipment?.provider_name ?? "—",
-    service:         order.shipment?.service        ?? "—",
-    tracking_number: order.shipment?.tracking_number ?? null,
-    address: [
-      order.shipping_address,
-      order.shipping_village,
-      order.shipping_district,
-      order.shipping_city,
-      order.shipping_province,
-      order.shipping_postal_code,
-    ]
-      .filter(Boolean)
-      .join(", "),
+  const shipping: OrderShippingSnapshot = {
+    courier:              order.shipment?.provider_name ?? "—",
+    service:              order.shipment?.service        ?? "—",
+    tracking_number:      order.shipment?.tracking_number ?? null,
+    recipient_name:       order.recipient_name,
+    recipient_phone:      order.recipient_phone,
+    shipping_address:     order.shipping_address,
+    shipping_province:    order.shipping_province,
+    shipping_city:        order.shipping_city,
+    shipping_district:    order.shipping_district,
+    shipping_village:     order.shipping_village ?? "",
+    shipping_postal_code: order.shipping_postal_code,
   };
 
   const payment = order.payment

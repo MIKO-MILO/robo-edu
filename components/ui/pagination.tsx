@@ -93,7 +93,7 @@ export function Pagination({
           aria-current={isActive ? "page" : undefined}
           className={cn(
             "font-heading font-bold text-xs",
-            isActive && "scale-105"
+            isActive && "scale-105",
           )}
         >
           {page}
@@ -109,7 +109,7 @@ export function Pagination({
           aria-current={isActive ? "page" : undefined}
           className={cn(
             "font-heading font-bold text-xs",
-            isActive && "scale-105"
+            isActive && "scale-105",
           )}
         >
           {page}

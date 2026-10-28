@@ -23,7 +23,7 @@ export function CustomerKpiCard({
   return (
     <div
       className={cn(
-        "p-4 rounded-2xl bg-card border-2 border-border shadow-xs flex items-center gap-3 transition-colors",
+        "p-4 rounded-2xl bg-card border border-border flex items-center gap-3 transition-colors",
         onClick && "cursor-pointer hover:bg-muted/30"
       )}
       onClick={onClick}

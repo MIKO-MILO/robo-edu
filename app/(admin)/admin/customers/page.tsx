@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useMemo, Suspense, useTransition } from "react";
+import React, { useMemo, useState, Suspense, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Download, AlertTriangle } from "lucide-react";
+import { Download, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import {
   CustomerStatsGrid,
   CustomerFilters,
@@ -27,8 +28,11 @@ function AdminCustomersContent() {
   const searchQuery = searchParams.get("search") || "";
   const resellerFilter = searchParams.get("reseller") || "ALL";
   const statusFilter = searchParams.get("status") || "ALL";
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentPage(1);
     const params = new URLSearchParams(searchParams.toString());
     if (e.target.value) {
       params.set("search", e.target.value);
@@ -41,6 +45,7 @@ function AdminCustomersContent() {
   };
 
   const handleResellerFilterChange = (key: string) => {
+    setCurrentPage(1);
     const params = new URLSearchParams(searchParams.toString());
     if (key === "ALL") {
       params.delete("reseller");
@@ -53,6 +58,7 @@ function AdminCustomersContent() {
   };
 
   const handleStatusFilterChange = (status: string) => {
+    setCurrentPage(1);
     const params = new URLSearchParams(searchParams.toString());
     if (status === "ALL") {
       params.delete("status");
@@ -116,8 +122,14 @@ function AdminCustomersContent() {
     });
   }, [apiCustomers, searchQuery, resellerFilter, statusFilter]);
 
-  const stats = useMemo(() => getCustomerStats(apiCustomers), [apiCustomers]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE));
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const stats = useMemo(() => getCustomerStats(apiCustomers), [apiCustomers]);
   const totalCount = data?.meta?.total_count ?? apiCustomers.length;
 
   const handleExport = () => {
@@ -155,9 +167,9 @@ function AdminCustomersContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+            {/* <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <Users className="size-5" />
-            </div>
+            </div> */}
             <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground">
               Manajemen Pelanggan
             </h1>
@@ -210,7 +222,16 @@ function AdminCustomersContent() {
           </span>
         </div>
 
-        <CustomerTable data={filteredCustomers} isLoading={isLoading} />
+        <CustomerTable data={paginatedCustomers} isLoading={isLoading} />
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ export default async function ProfileLayout({
   }
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-8 min-h-[80vh]">
+    <main className="max-w-6xl mx-auto px-6 pt-[200px] pb-16 flex flex-col md:flex-row gap-8 min-h-[80vh]">
       {/* Sidebar */}
       <aside className="w-full md:w-64 flex flex-col gap-6 shrink-0">
         <Sidebar />

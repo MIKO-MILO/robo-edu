@@ -47,6 +47,7 @@ export function TopProductsCard({
         className || ""
       }`}
     >
+      {/* Header */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b-2 border-border/15">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-accent-orange text-secondary border border-border neo-shadow-icon shrink-0">
@@ -71,6 +72,7 @@ export function TopProductsCard({
         </Link>
       </div>
 
+      {/* List Content */}
       <div className="py-4 space-y-4 flex-1">
         {isLoading ? (
           <div className="space-y-3">
@@ -100,6 +102,7 @@ export function TopProductsCard({
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
+                    {/* Rank Badge */}
                     <div
                       className={`flex size-7 items-center justify-center rounded-xl border text-xs shrink-0 ${getRankBadgeStyle(
                         rank
@@ -124,6 +127,7 @@ export function TopProductsCard({
                     </div>
                   </div>
 
+                  {/* Total Sold Badge */}
                   <div className="text-right shrink-0">
                     <span className="font-heading font-extrabold text-sm text-foreground">
                       {formatNumber(item.total_sold)}
@@ -134,6 +138,7 @@ export function TopProductsCard({
                   </div>
                 </div>
 
+                {/* Progress bar visual */}
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border/20">
                   <div
                     className="bg-primary h-full rounded-full transition-all duration-500"
@@ -146,6 +151,7 @@ export function TopProductsCard({
         )}
       </div>
 
+      {/* Footer Info */}
       <div className="pt-3 border-t border-border/15 flex items-center justify-between text-xs text-muted-foreground">
         <span>Menampilkan 5 produk teratas</span>
         <span className="font-semibold text-primary">Diperbarui otomatis</span>

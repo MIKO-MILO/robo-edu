@@ -10,7 +10,7 @@ import {
   UserX,
   AlertTriangle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, BackButton } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   CustomerDetailHeader,
@@ -98,7 +98,7 @@ export default function AdminCustomerDetailPage({
 
   if (!customer) {
     return (
-      <div className="bg-card rounded-2xl border-2 border-border p-12 text-center shadow-xs max-w-md mx-auto my-12 space-y-4">
+      <div className="bg-card rounded-2xl border border-border p-12 text-center max-w-md mx-auto my-12 space-y-4">
         <div className="size-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
           <UserX className="size-8" />
         </div>
@@ -111,12 +111,7 @@ export default function AdminCustomerDetailPage({
             sistem.
           </p>
         </div>
-        <Button asChild variant="default" size="sm" className="rounded-xl">
-          <Link href="/admin/customers">
-            <ChevronLeft className="size-4 mr-1.5" />
-            Kembali ke Daftar Pelanggan
-          </Link>
-        </Button>
+        <BackButton href="/admin/customers" label="Kembali ke Daftar Pelanggan" />
       </div>
     );
   }
@@ -148,7 +143,7 @@ export default function AdminCustomerDetailPage({
         {/* Kolom Kiri — Tabs Navigasi Aktivitas (Orders, Komplain, Reviews) */}
         <div className="lg:col-span-2 space-y-4">
           {/* Main Tab Navigation Buttons */}
-          <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl border-2 border-border shadow-xs overflow-x-auto">
+          <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl border border-border overflow-x-auto">
             <button
               type="button"
               onClick={() => setActiveMainTab("orders")}

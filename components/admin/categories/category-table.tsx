@@ -6,7 +6,13 @@ import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Edit2Icon, Trash2Icon, LayersIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
+import {
+  Edit2Icon,
+  Trash2Icon,
+  LayersIcon,
+  CheckCircle2Icon,
+  XCircleIcon,
+} from "lucide-react";
 
 export interface CategoryTableProps {
   data: Category[];
@@ -70,7 +76,8 @@ export function CategoryTable({
           Tidak Ada Kategori
         </h3>
         <p className="font-body text-sm text-muted-foreground mt-1 max-w-sm">
-          Belum ada kategori yang tersedia atau tidak ada yang cocok dengan pencarian.
+          Belum ada kategori yang tersedia atau tidak ada yang cocok dengan
+          pencarian.
         </p>
       </div>
     );
@@ -120,7 +127,9 @@ export function CategoryTable({
                   <td className="py-3 px-4 max-w-xs">
                     <span className="text-xs text-muted-foreground line-clamp-2">
                       {category.description || (
-                        <span className="italic opacity-50">Tidak ada deskripsi</span>
+                        <span className="italic opacity-50">
+                          Tidak ada deskripsi
+                        </span>
                       )}
                     </span>
                   </td>
@@ -193,7 +202,9 @@ export function CategoryTable({
       {/* Confirm Delete Dialog */}
       <ConfirmDeleteDialog
         open={Boolean(deleteTarget)}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title="Hapus Kategori"
         description="Kategori yang dihapus tidak dapat dikembalikan. Produk yang terhubung ke kategori ini mungkin terpengaruh."
         itemName={deleteTarget?.name}

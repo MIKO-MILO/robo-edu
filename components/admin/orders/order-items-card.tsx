@@ -1,23 +1,9 @@
 import * as React from "react";
-import { Package } from "lucide-react";
+import { Package, Tag } from "lucide-react";
 import { OrderInfoCard } from "./order-info-card";
+import type { OrderLineItem, OrderPricingSummary } from "./order-list-types";
 
-export interface OrderLineItem {
-  id: string;
-  name: string;
-  variant: string | null;
-  sku: string;
-  price: number;
-  quantity: number;
-  subtotal: number;
-}
-
-export interface OrderPricingSummary {
-  subtotal: number;
-  shipping_cost: number;
-  discount_amount: number;
-  total: number;
-}
+export type { OrderLineItem, OrderPricingSummary };
 
 export interface OrderItemsCardProps {
   items: OrderLineItem[];
@@ -77,7 +63,15 @@ export function OrderItemsCard({ items, pricing }: OrderItemsCardProps) {
         </div>
         {pricing.discount_amount > 0 && (
           <div className="flex justify-between text-success">
-            <span>Diskon Voucher</span>
+            <span className="flex items-center gap-1">
+              Diskon Voucher
+              {pricing.voucher_code && (
+                <span className="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded bg-success-bg text-success font-mono text-[10px]">
+                  <Tag className="size-3" />
+                  {pricing.voucher_code}
+                </span>
+              )}
+            </span>
             <span>-{formatIDR(pricing.discount_amount)}</span>
           </div>
         )}

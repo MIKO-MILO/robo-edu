@@ -354,7 +354,7 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Page Header */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 lg:pt-44 pb-4">
         <div className="bg-card rounded-2xl p-4 sm:p-5 border-2 border-border flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-heading font-black text-2xl sm:text-3xl text-foreground tracking-tight">
@@ -424,11 +424,11 @@ export default function CheckoutPage() {
                 subtitle="Diambil langsung dari kuota produksi RoboEdu"
                 iconBg="bg-accent-soft-blue"
                 icon={<Package className="w-4 h-4 text-foreground" />}
-                rightElement={
-                  <span className="text-xs font-bold bg-accent-yellow px-2.5 py-1 rounded-full border border-border neo-shadow-icon">
-                    Made-By-Order Quota
-                  </span>
-                }
+                // rightElement={
+                //   <span className="text-xs font-bold bg-accent-yellow px-2.5 py-1 rounded-full border border-border neo-shadow-icon">
+                //     Made-By-Order Quota
+                //   </span>
+                // }
               />
 
               <div className="space-y-3">

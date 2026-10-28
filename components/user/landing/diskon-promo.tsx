@@ -1,81 +1,136 @@
 "use client";
 
-import { Tag, Clock, Gift, ArrowRight, Sparkles } from "lucide-react";
+import { useState } from"react";
+import { Copy, Check, ArrowRight } from"lucide-react";
+
+const PROMOS = [
+ {
+ id: 1,
+ kode:"MERDEKA24",
+ nama:"Diskon Kemerdekaan",
+ tipeDiskon:"PROMO TERBATAS",
+ nilaiDiskon:"Diskon 20%",
+ minPembelian:"Min. Rp 150rb",
+ maxDiskon:"Maks. Rp 50rb",
+ tanggalBerakhir:"31 Agt 2026",
+ bgColor:"bg-[#E8808C]", // Pink Soft (TIDAK DIUBAH SAMA SEKALI)
+ imgUrl:"images/product.webp",
+ },
+ {
+ id: 2,
+ nama:"Spesial Robotik Anak",
+ kode:"AUTO_APPLIED",
+ tipeDiskon:"DISKON OTOMATIS",
+ nilaiDiskon:"Potongan Rp 75rb",
+ minPembelian:"Min. Rp 300rb",
+ maxDiskon: null,
+ tanggalBerakhir:"15 Jul 2026",
+ bgColor:"bg-[#6AA2B8]", // Biru Soft
+ imgUrl:"images/product2.webp"
+ },
+];
 
 export default function DiskonPromo() {
-  return (
-    <section className="relative bg-[#F1ECE0] py-12 sm:py-16 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-        <div className="bg-gradient-to-r from-[#FF7E5F] via-[#FEB47B] to-[#F5C045] rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
-          {/* Background Decorative Element */}
-          <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+ const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            {/* Promo Info */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs sm:text-sm font-extrabold backdrop-blur-md uppercase tracking-wider">
-                <Tag className="w-4 h-4 text-[#FFF6A0]" />
-                <span>Promo Spesial Liburan Sekolah</span>
-              </div>
+ const handleCopy = (kode: string) => {
+ navigator.clipboard.writeText(kode);
+ setCopiedCode(kode);
+ setTimeout(() => setCopiedCode(null), 2000);
+ };
 
-              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
-                Diskon Hingga <span className="text-[#FFF6A0] underline underline-offset-4">35% OFF</span> + Gratis Ongkir!
-              </h2>
+ return (
+ <section className="bg-background py-10 px-4 font-sans flex flex-col items-center mb-5 mt-5">
+ <div className="max-w-6xl mx-auto w-full">
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+ {PROMOS.map((promo) => {
+ // Jika Card Pink (id: 1)
+ if (promo.id === 1) {
+ return (
+ <div key={promo.id} className="relative transition-transform duration-300 hover:scale-[1.01] h-full flex">
+ <div className={`${promo.bgColor} text-white p-6 sm:p-6 lg:p-8 flex flex-col sm:flex-row-reverse items-center justify-center sm:gap-6 lg:gap-10 rounded-2xl relative group overflow-hidden w-full h-full`}>
+ <div className="absolute inset-0 pointer-events-none opacity-15 overflow-hidden">
+ <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+ <line x1="-50" y1="350" x2="350" y2="-50" stroke="white" strokeWidth="20" />
+ <line x1="50" y1="350" x2="450" y2="-50" stroke="white" strokeWidth="20" />
+ <line x1="150" y1="350" x2="550" y2="-50" stroke="white" strokeWidth="20" />
+ </svg>
+ </div>
+ <div className="w-full sm:w-[55%] flex flex-col justify-between items-start text-left z-15 h-full order-2 sm:order-none">
+ <div>
+ <span className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-wider block mb-1">{promo.tipeDiskon}</span>
+ <h3 className="text-xl sm:text-2xl font-black leading-tight tracking-tight">{promo.nama}</h3>
+ <p className="text-2xl sm:text-3xl font-extrabold text-amber-200 mt-1">{promo.nilaiDiskon}</p>
+ <p className="text-[11px] sm:text-xs text-white/90 font-medium mt-1.5 leading-snug">
+ {promo.minPembelian} {promo.maxDiskon ? `• ${promo.maxDiskon}` :""}<br />
+ <span className="text-white/80">• s/d {promo.tanggalBerakhir}</span>
+ </p>
+ </div>
+ <div className="mt-4 w-full z-20">
+ <button onClick={() => handleCopy(promo.kode)} className="w-full sm:w-auto border-2 border-white/90 text-white hover:bg-white hover:text-stone-900 px-5 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+ {copiedCode === promo.kode ? (
+ <>
+ <Check className="w-4 h-4 text-emerald-300" />
+ <span>TERSALIN!</span>
+ </>
+ ) : (
+ <>
+ <Copy className="w-4 h-4" />
+ <span>KODE: {promo.kode}</span>
+ </>
+ )}
+ </button>
+ </div>
+ </div>
+ <div className="w-full sm:w-[45%] h-60 sm:h-52 relative flex items-center justify-center shrink-0 z-10 order-1 sm:order-none">
+ <img src={promo.imgUrl} alt={promo.nama} className="h-full w-full object-contain filter drop-shadow-2xl scale-110 sm:scale-105 lg:scale-95 transform group-hover:scale-110 transition-transform duration-300" />
+ </div>
+ </div>
+ </div>
+ );
+ }
 
-              <p className="font-body text-sm sm:text-base text-white/90 max-w-xl">
-                Dapatkan bonus eksklusif Buku Panduan Proyek Robotik 50 Halaman & Sticker Maskot lucu setiap pembelian Kit RoboEdu hari ini.
-              </p>
+ // Khusus Card Biru (id: 2) - Diatur agar jarak/gap di 768px sangat pas dan rapat
+ return (
+ <div key={promo.id} className="relative transition-transform duration-300 hover:scale-[1.01] h-full flex">
+ <div className={`${promo.bgColor} text-white p-6 sm:p-6 lg:p-8 flex flex-col sm:flex-row items-center justify-between sm:px-6 lg:px-8 rounded-2xl relative group overflow-hidden w-full h-full`}>
+ <div className="absolute inset-0 pointer-events-none opacity-15 overflow-hidden">
+ <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+ <line x1="-50" y1="350" x2="350" y2="-50" stroke="white" strokeWidth="20" />
+ <line x1="50" y1="350" x2="450" y2="-50" stroke="white" strokeWidth="20" />
+ <line x1="150" y1="350" x2="550" y2="-50" stroke="white" strokeWidth="20" />
+ </svg>
+ </div>
 
-              {/* Promo Benefits */}
-              <div className="flex flex-wrap gap-4 pt-2">
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-sm">
-                  <Gift className="w-4 h-4 text-[#FFF6A0]" />
-                  <span>Free Bonus E-Book Proyek</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-sm">
-                  <Sparkles className="w-4 h-4 text-[#FFF6A0]" />
-                  <span>Garansi Tukar Baru 30 Hari</span>
-                </div>
-              </div>
-            </div>
+ {/* Teks Card Biru */}
+ <div className="w-full sm:w-[50%] flex flex-col justify-between items-start text-left z-15 h-full order-2 sm:order-1 sm:pr-2 sm:pl-8 lg:pl-0">
+ <div>
+ <span className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-wider block mb-1">{promo.tipeDiskon}</span>
+ <h3 className="text-xl sm:text-2xl font-black leading-tight tracking-tight">{promo.nama}</h3>
+ <p className="text-2xl sm:text-3xl font-extrabold text-amber-200 mt-1">{promo.nilaiDiskon}</p>
+ <p className="text-[11px] sm:text-xs text-white/90 font-medium mt-1.5 leading-snug">
+ {promo.minPembelian} {promo.maxDiskon ? `• ${promo.maxDiskon}` :""}<br />
+ <span className="text-white/80">• s/d {promo.tanggalBerakhir}</span>
+ </p>
+ </div>
+ <div className="mt-4 w-full z-20">
+ <button className="w-full sm:w-auto border-2 border-white/90 text-white hover:bg-white hover:text-stone-900 px-5 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+ <span>GUNAKAN DISKON</span>
+ <ArrowRight className="w-4 h-4" />
+ </button>
+ </div>
+ </div>
 
-            {/* Countdown & Action Box */}
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
-              <div className="bg-white/95 text-[#3D2900] p-6 rounded-2xl shadow-lg w-full max-w-sm text-center border border-white/40">
-                <div className="flex items-center justify-center gap-2 text-xs font-bold text-gray-500 mb-3">
-                  <Clock className="w-4 h-4 text-[#FF7E5F]" />
-                  <span>BERAKHIR DALAM</span>
-                </div>
-
-                {/* Timer Display */}
-                <div className="grid grid-cols-3 gap-2 mb-5">
-                  <div className="bg-[#F7F5F0] p-2 rounded-xl text-center">
-                    <span className="font-mono text-2xl font-black text-[#18598D]">02</span>
-                    <span className="block text-[10px] text-gray-500 font-semibold uppercase">Hari</span>
-                  </div>
-                  <div className="bg-[#F7F5F0] p-2 rounded-xl text-center">
-                    <span className="font-mono text-2xl font-black text-[#18598D]">14</span>
-                    <span className="block text-[10px] text-gray-500 font-semibold uppercase">Jam</span>
-                  </div>
-                  <div className="bg-[#F7F5F0] p-2 rounded-xl text-center">
-                    <span className="font-mono text-2xl font-black text-[#18598D]">45</span>
-                    <span className="block text-[10px] text-gray-500 font-semibold uppercase">Menit</span>
-                  </div>
-                </div>
-
-                {/* Claim Voucher Button */}
-                <button
-                  type="button"
-                  className="w-full inline-flex items-center justify-center gap-2 bg-[#18598D] hover:bg-[#134670] text-white font-extrabold py-3 px-4 rounded-xl shadow-md hover:scale-[1.02] transition-all cursor-pointer text-sm"
-                >
-                  <span>Klaim Kode Promo Now</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+ {/* Gambar Card Biru */}
+ <div className="w-full sm:w-[48%] h-60 sm:h-52 relative flex items-center justify-center shrink-0 z-10 order-1 sm:order-2 sm:pl-2">
+ <img src={promo.imgUrl} alt={promo.nama} className="h-full w-full object-contain filter drop-shadow-2xl scale-110 sm:scale-105 lg:scale-95 transform group-hover:scale-110 transition-transform duration-300" />
+ </div>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ </section>
+ );
 }

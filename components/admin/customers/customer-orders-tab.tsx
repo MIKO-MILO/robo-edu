@@ -79,9 +79,9 @@ export function CustomerOrdersTab({ orders }: CustomerOrdersTabProps) {
   }, [orders, activeTab]);
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-xs space-y-4 p-5">
+    <div className="bg-card rounded-2xl border border-border overflow-hidden space-y-4 p-5">
       {/* Tab Header & Filter */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-border pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div className="flex items-center gap-2">
           <ShoppingBag className="size-4 text-primary" />
           <h3 className="font-heading font-bold text-base text-foreground">

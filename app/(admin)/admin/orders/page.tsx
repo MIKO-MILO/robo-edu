@@ -3,7 +3,7 @@
 import React, { useMemo, Suspense, useTransition, useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 import {
   OrderStatsGrid,
   OrderFilters,
@@ -38,6 +38,8 @@ function AdminOrdersContent() {
     () =>
       (result?.data ?? []).map((o) => ({
         ...o,
+        customer_id: (o as { customer_id?: string }).customer_id,
+        voucher_code: (o as { voucher_code?: string | null }).voucher_code ?? null,
         status: o.status as OrderStatus,
         payment_status: o.payment_status as PaymentStatus,
       })),
@@ -50,6 +52,7 @@ function AdminOrdersContent() {
   const [allStats, setAllStats] = useState<OrderStats>({
     total: 0,
     pending: 0,
+    paid: 0,
     processing_shipped: 0,
     completed: 0,
   });
@@ -57,15 +60,17 @@ function AdminOrdersContent() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [all, pending, procShip, done] = await Promise.all([
+        const [all, pending, paid, procShip, done] = await Promise.all([
           fetch("/api/admin/orders?limit=1").then((r) => r.json()),
           fetch("/api/admin/orders?limit=1&status=PENDING").then((r) => r.json()),
+          fetch("/api/admin/orders?limit=1&status=PAID").then((r) => r.json()),
           fetch("/api/admin/orders?limit=1&status=PROCESSING").then((r) => r.json()),
           fetch("/api/admin/orders?limit=1&status=COMPLETED").then((r) => r.json()),
         ]);
         setAllStats({
           total: all.meta?.total ?? 0,
           pending: pending.meta?.total ?? 0,
+          paid: paid.meta?.total ?? 0,
           processing_shipped: procShip.meta?.total ?? 0,
           completed: done.meta?.total ?? 0,
         });
@@ -119,11 +124,12 @@ function AdminOrdersContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight flex items-center gap-2.5">
-            <ShoppingCart className="size-6 text-primary" />
+            {/* <ShoppingCart className="size-6 text-primary" /> */}
             Manajemen Pesanan
           </h1>
           <p className="font-body text-xs md:text-sm text-muted-foreground mt-0.5">
-            Kelola transaksi, update status pesanan, dan pantau pengiriman RoboEdu.
+            Kelola transaksi, update status pesanan, dan pantau pengiriman
+            RoboEdu.
           </p>
         </div>
       </div>
@@ -151,35 +157,11 @@ function AdminOrdersContent() {
 
       {/* Pagination */}
       {meta && meta.total_pages > 1 && (
-        <div className="flex items-center justify-between gap-4 pt-2">
-          <p className="text-xs text-muted-foreground font-medium">
-            Menampilkan{" "}
-            <span className="font-bold text-foreground">
-              {(meta.page - 1) * meta.limit + 1}–
-              {Math.min(meta.page * meta.limit, meta.total)}
-            </span>{" "}
-            dari <span className="font-bold text-foreground">{meta.total}</span> pesanan
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page <= 1 || isLoading}
-              className="h-8 px-3 rounded-xl border-2 border-border bg-card text-xs font-bold text-foreground disabled:opacity-40 hover:bg-muted transition-colors"
-            >
-              ← Sebelumnya
-            </button>
-            <span className="text-xs font-bold text-foreground px-1">
-              {meta.page} / {meta.total_pages}
-            </span>
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page >= meta.total_pages || isLoading}
-              className="h-8 px-3 rounded-xl border-2 border-border bg-card text-xs font-bold text-foreground disabled:opacity-40 hover:bg-muted transition-colors"
-            >
-              Selanjutnya →
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={page}
+          totalPages={meta.total_pages}
+          onPageChange={handlePageChange}
+        />
       )}
     </div>
   );

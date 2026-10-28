@@ -11,6 +11,7 @@ export interface QuickActionItem {
   href: string;
   icon: React.ReactNode;
   bgColor: string;
+  borderColor?: string;
 }
 
 const actions: QuickActionItem[] = [

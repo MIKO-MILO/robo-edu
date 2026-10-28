@@ -57,7 +57,7 @@ export function CustomerTable({ data, isLoading = false }: CustomerTableProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse font-body text-sm">
             <thead>
-              <tr className="border-b-2 border-border bg-muted/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b-2 border-border bg-accent-soft-blue/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
                 <th className="py-3.5 px-4">Pelanggan</th>
                 <th className="py-3.5 px-4">Kontak</th>
                 <th className="py-3.5 px-4">Tipe Akun</th>

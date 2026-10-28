@@ -135,9 +135,12 @@ export function ProductTable({
         <div className="p-4 rounded-full bg-accent-yellow/30 border border-border mb-4">
           <PackageIcon className="size-10 text-foreground" />
         </div>
-        <h3 className="font-heading font-bold text-lg text-foreground">Tidak Ada Produk</h3>
+        <h3 className="font-heading font-bold text-lg text-foreground">
+          Tidak Ada Produk
+        </h3>
         <p className="font-body text-sm text-muted-foreground mt-1 max-w-sm">
-          Belum ada produk yang tersedia atau tidak ada produk yang cocok dengan filter pencarian.
+          Belum ada produk yang tersedia atau tidak ada produk yang cocok dengan
+          filter pencarian.
         </p>
       </div>
     );

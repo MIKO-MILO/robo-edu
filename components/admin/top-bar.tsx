@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Menu, Bell, Bot } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { AdminSearchBar } from "@/components/admin/search-bar";
 import { cn } from "@/lib/utils";
 
 export interface AdminUserProps {
@@ -60,9 +61,12 @@ export function AdminTopBar({
         </Link>
       </div>
 
-      {/* Right: Only Role Badge & Borderless Notification Icon */}
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* Notification Icon - borderless */}
+      {/* Right: Search + Notification + Role Badge */}
+      <div className="flex items-center gap-2 md:gap-3">
+        {/* Global navigation search */}
+        <AdminSearchBar className="hidden sm:block" />
+
+        {/* Notification Icon */}
         <button
           type="button"
           className="relative flex size-9 items-center justify-center rounded-xl bg-muted/60 text-foreground hover:bg-muted transition-colors"
