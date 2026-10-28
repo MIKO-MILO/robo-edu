@@ -21,7 +21,7 @@
 | Ekspedisi Awal | J&T (dengan abstraksi shipping provider) |
 | Monitoring | Sentry (error tracking), UptimeRobot (uptime) |
 | Status Dokumen | Dokumen kebutuhan produk / acuan pengembangan |
-| Tanggal | Agustus 2026 |
+| Tanggal | Oktober 2026 (revisi membership) |
  
 *Dokumen ini menjadi acuan utama dalam proses perancangan, pengembangan, pengujian, dan pengembangan lanjutan RoboEdu.*
  
@@ -34,7 +34,7 @@
 | Nama Produk | RoboEdu |
 | Jenis Produk | Platform e-commerce |
 | Bidang Bisnis | Penjualan kit robotika edukasi dan sparepart robot |
-| Pengguna Utama | Customer, Reseller, Admin |
+| Pengguna Utama | Customer, Member, Admin |
 | Pasar Utama | Indonesia |
 | Pasar Masa Depan | Internasional |
 | Frontend | Next.js + Tailwind CSS |
@@ -68,8 +68,8 @@ Kategori digunakan untuk pengelompokan utama produk, sedangkan Product Type digu
  
 - Menyediakan kanal penjualan online resmi untuk RoboEdu.
 - Mempermudah pelanggan menemukan dan membeli produk robotika.
-- Menyediakan sistem reseller dengan harga khusus setelah mendapatkan persetujuan admin.
-- Menyediakan pengelolaan produk, stok, pesanan, customer, reseller, promosi, review, klaim garansi, dan laporan dalam satu sistem.
+- Menyediakan sistem membership berbayar bulanan (paket Plus) yang memberi harga khusus member dan akses dropship, aktif langsung setelah pembayaran tanpa proses review admin.
+- Menyediakan pengelolaan produk, stok, pesanan, customer, member, promosi, review, klaim garansi, dan laporan dalam satu sistem.
 - Menyediakan pembayaran online melalui Midtrans dengan notifikasi receipt otomatis via email.
 - Mempersiapkan sistem agar dapat menggunakan lebih dari satu penyedia ekspedisi di masa depan.
 - Mempersiapkan fondasi untuk ekspansi penjualan ke luar Indonesia.
@@ -80,56 +80,182 @@ Kategori digunakan untuk pengelompokan utama produk, sedangkan Product Type digu
 | --- | --- | --- |
 | Customer Individual | Individu yang membeli produk untuk belajar, proyek, hobi, atau kebutuhan pribadi. | Mencari produk, membeli, membayar, melacak pesanan, memberikan review, dan mengajukan klaim garansi bila diperlukan. |
 | Customer Institusi | Sekolah, lembaga pendidikan, komunitas, atau organisasi. | Menemukan produk, melakukan pembelian, dan melihat histori pesanan. Menggunakan data alamat standar (`user_address`) untuk kebutuhan pengiriman/invoice manual. |
-| Reseller | Customer yang telah mendapatkan persetujuan admin sebagai reseller. | Mendapatkan harga khusus dan melakukan pembelian melalui sistem yang sama. |
-| Admin | Pengelola operasional RoboEdu. | Mengelola katalog, stok, pesanan, pengguna, reseller, promosi, review, klaim garansi, laporan, dan pengaturan. |
+| Member | Customer yang telah membeli paket membership Plus dan masa berlakunya belum berakhir. | Mendapatkan harga khusus member, dapat melakukan pembelian melalui sistem yang sama, dan dapat menggunakan pengiriman dropship. |
+| Admin | Pengelola operasional RoboEdu. | Mengelola katalog, stok, pesanan, pengguna, member, promosi, review, klaim garansi, laporan, dan pengaturan. |
  
 ## 5. Role dan Hak Akses
  
-Sistem menggunakan dua konsep yang berbeda: role (menentukan hak akses ke sistem) dan `reseller_status` (menentukan status khusus dalam hal harga). Reseller bukan role terpisah — ia tetap berada pada role customer, dengan atribut `reseller_status` yang menentukan apakah harga khusus reseller berlaku untuknya.
+Sistem menggunakan dua konsep yang berbeda: role (menentukan hak akses ke sistem) dan `membership_status` (menentukan status membership dalam hal harga dan benefit). Member bukan role terpisah — ia tetap berada pada role customer, dengan atribut `membership_status` dan `membership_expires_at` yang menentukan apakah harga khusus member dan akses dropship berlaku untuknya. Paket **Standar** adalah user biasa (`NOT_MEMBER`) dan paket **Plus** adalah membership berbayar (`MEMBER`).
  
-| Fitur | Customer | Reseller | Admin |
+| Fitur | Customer | Member | Admin |
 | --- | --- | --- | --- |
 | Melihat produk | ✓ | ✓ | ✓ |
 | Search, filter, sorting | ✓ | ✓ | ✓ |
 | Wishlist | ✓ | ✓ | — |
 | Cart dan checkout | ✓ | ✓ | — |
 | Harga normal | ✓ | — | ✓ |
-| Harga reseller | — | ✓ setelah disetujui | Kelola |
+| Harga member | — | ✓ selama membership aktif | Kelola |
+| Beli / perpanjang membership Plus | ✓ | ✓ | — |
+| Dropship | — | ✓ selama membership aktif | — |
 | Riwayat pesanan | ✓ | ✓ | Kelola semua |
 | Review | ✓ jika memenuhi syarat | ✓ jika memenuhi syarat | Moderasi |
 | Klaim garansi | ✓ | ✓ | Tindak lanjut manual |
 | Kelola produk | — | — | ✓ |
 | Kelola stok | — | — | ✓ |
-| Persetujuan reseller | — | — | ✓ |
+| Lihat daftar & riwayat membership | — | — | ✓ (read-only) |
 | Voucher | — | — | ✓ |
 | Laporan / settings | — | — | ✓ |
  
 *Role internal admin dibagi menjadi tiga: superadmin, admin sales, dan admin laporan, disimpan pada kolom `role` di tabel `user` bersama nilai customer.*
  
-## 6. Sistem Reseller
- 
-Reseller tidak langsung aktif setelah melakukan pendaftaran. Customer harus mengajukan status reseller dan menunggu persetujuan dari admin. Status ini disimpan sebagai atribut `reseller_status` pada akun customer yang bersangkutan, bukan sebagai role akses terpisah.
- 
-### 6.1 Alur Reseller
- 
-`Customer → Mengajukan Reseller → PENDING → Admin melakukan review → APPROVED / REJECTED`
- 
-### 6.2 Status Reseller
- 
+## 6. Sistem Membership
+
+Fitur yang sebelumnya disebut sistem reseller kini menjadi **sistem membership**. Customer tidak lagi mengajukan permohonan dan menunggu persetujuan admin. Customer cukup membayar paket membership bulanan (seperti layanan langganan Spotify atau YouTube) dan langsung menjadi member. Data pemohon diambil dari profil akun, sehingga tidak ada formulir pengajuan. Status membership disimpan sebagai atribut `membership_status` pada akun customer yang bersangkutan, bukan sebagai role akses terpisah.
+
+### 6.1 Paket Membership
+
+Hanya tersedia satu paket berbayar.
+
+| Paket | Biaya | Keterangan |
+| --- | --- | --- |
+| Standar | Gratis | User biasa (`NOT_MEMBER`). Menggunakan harga normal dan tidak memiliki akses dropship. |
+| Plus | Berbayar per bulan | Membership (`MEMBER`). Mendapatkan harga member dan akses dropship selama masa berlaku. Harga dan durasi periode paket dikonfigurasi admin pada Settings. |
+
+### 6.2 Alur Membership
+
+`Customer → Membuka /reseller → Beli Paket Plus → Konfirmasi ringkasan → Midtrans → Pembayaran dikonfirmasi webhook → membership_status = MEMBER → Benefit aktif sampai membership_expires_at`
+
+Alur perpanjangan: `Member → Beli Paket Plus lagi (manual) → Webhook tervalidasi → Masa berlaku bertambah satu periode`
+
+### 6.3 Status Membership
+
 | Status | Keterangan |
 | --- | --- |
-| NOT_RESELLER | User merupakan customer biasa dan belum memiliki pengajuan reseller. |
-| PENDING | User telah mengajukan reseller dan menunggu pemeriksaan admin. |
-| APPROVED | Pengajuan disetujui. User mendapatkan akses harga reseller. |
-| REJECTED | Pengajuan ditolak. User tetap menjadi customer biasa. |
- 
-### 6.3 Aturan Harga Reseller
- 
-- Customer biasa menggunakan harga normal.
-- Reseller yang telah disetujui menggunakan harga reseller.
-- Admin dapat menentukan harga reseller untuk produk (termasuk override per variant bila diperlukan).
-- Harga yang benar-benar digunakan dalam transaksi harus disimpan pada order item sebagai snapshot.
-- Perubahan harga produk setelah transaksi tidak boleh mengubah histori transaksi lama.
+| NOT_MEMBER | User menggunakan paket Standar: belum pernah membeli atau masa membership sudah berakhir. |
+| MEMBER | User telah membayar paket Plus dan `membership_expires_at` belum terlewati. User mendapatkan harga member dan akses dropship. |
+
+*Tidak ada status PENDING atau REJECTED pada user karena tidak ada proses pengajuan dan review. Status pembayaran yang belum selesai dicatat pada `membership_purchase` dan `payment` (lih. Bab 6.9 dan 25.1), bukan pada `user`.*
+
+### 6.4 Benefit Member
+
+| Benefit | Keterangan |
+| --- | --- |
+| Harga member | Potongan harga melalui harga member pada produk dan variant (lih. Bab 6.5). |
+| Dropship | Member dapat memesan dengan pengiriman langsung ke alamat pembeli akhir (lih. Bab 6.10). |
+
+### 6.5 Aturan Harga Member
+
+- Customer biasa (`NOT_MEMBER`) menggunakan harga normal.
+- Member yang masa berlakunya belum berakhir menggunakan harga member.
+- Admin dapat menentukan harga member untuk produk (termasuk override per variant bila diperlukan).
+- Harga member berlaku di katalog, detail produk, cart, dan checkout sejak pembayaran membership dikonfirmasi.
+- Server memeriksa `membership_status` dan `membership_expires_at` setiap kali menghitung harga, sehingga harga member tidak berlaku lagi tepat setelah masa berlaku berakhir.
+- Harga yang benar-benar digunakan dalam transaksi harus disimpan pada order item sebagai snapshot (`price_snapshot`).
+- Perubahan harga produk atau status membership setelah transaksi tidak boleh mengubah histori transaksi lama.
+
+### 6.6 Halaman / Route Membership
+
+Route `/reseller`, `/profile/reseller`, dan `/admin/resellers` tetap dipertahankan sebagai route membership. Route `/reseller/apply` dihapus.
+
+| Route | Akses | Fungsi |
+| --- | --- | --- |
+| `/reseller` | Publik | Halaman informasi membership: perbandingan paket Standar dan Plus, manfaat (harga member dan dropship), harga paket, FAQ singkat, dan tombol beli "Beli Membership Plus" (menjadi "Perpanjang Membership" bagi member aktif). Tidak ada CTA pengajuan. |
+| `/profile/reseller` | Customer login | Halaman membership: benefit, status, durasi, dan riwayat pembelian membership. |
+| `/admin/resellers` | Admin | Daftar member dan pembelian membership. |
+| `/admin/resellers/[id]` | Admin | Detail member beserta riwayat pembelian (read-only, tanpa aksi setuju/tolak). |
+
+Aturan akses route:
+
+- Pengguna yang belum login dan menekan tombol beli diarahkan ke `/login?redirect=/reseller`, lalu dikembalikan ke halaman membership setelah login berhasil.
+- Item menu "Program Membership" ditambahkan pada navigasi profil (`/profile/my-profile`, `/profile/orders`, `/profile/settings`) dan link "Membership" ditambahkan pada footer.
+
+### 6.7 Alur UX Pembelian Membership
+
+Alur utama (happy path):
+
+`Customer melihat CTA (navbar/footer/profil/halaman produk) → /reseller (baca manfaat & harga paket) → klik "Beli Membership Plus" → login bila diperlukan → layar konfirmasi (ringkasan paket, harga, durasi, serta nama/email/telepon dari profil, read-only) → bayar via Midtrans → halaman hasil pembayaran → /profile/reseller (status MEMBER dan durasi) → email receipt membership → harga member langsung aktif.`
+
+Rincian layar:
+
+- **Konfirmasi pembelian**: menampilkan paket Plus, harga, durasi periode, tanggal berlaku yang akan didapat, dan data akun dari profil (tanpa input tambahan).
+- **Setelah pembayaran**: halaman hasil menampilkan status pembayaran. Status MEMBER hanya aktif setelah webhook Midtrans tervalidasi, bukan dari redirect browser.
+- **Banner/badge global**: untuk MEMBER, badge "Harga Member" tampil pada kartu produk serta ringkasan cart dan checkout.
+
+Edge case:
+
+- Klik ganda saat membeli: dicegah melalui header `Idempotency-Key`.
+- Satu user hanya boleh memiliki satu pembelian membership berstatus PENDING pada satu waktu; bila sudah ada, UI mengarahkan customer untuk melanjutkan pembayaran yang ada.
+- Pembayaran gagal atau kedaluwarsa (FAILED/EXPIRED): status membership tidak berubah dan customer dapat mencoba membeli lagi.
+- Webhook terlambat diterima: status MEMBER aktif saat webhook tervalidasi, dan halaman `/profile/reseller` menampilkan kondisi terbaru.
+- Akun dengan `is_active = false`: pembelian ditolak dengan `403 FORBIDDEN`.
+
+### 6.8 Tampilan `/profile/reseller`
+
+Halaman hanya menampilkan benefit, status, dan riwayat; tidak ada form maupun data yang dikirim customer.
+
+| Status | Tampilan di `/profile/reseller` | CTA | Efek ke harga |
+| --- | --- | --- | --- |
+| NOT_MEMBER | Ajakan bergabung dan ringkasan manfaat. | "Beli Membership Plus" menuju `/reseller` | Harga normal |
+| MEMBER | Badge hijau "Member Aktif", paket Plus, tanggal mulai dan tanggal berakhir (`membership_expires_at`) beserta sisa hari, ringkasan benefit, dan tabel purchase history. | "Perpanjang Membership" dan "Lihat Produk" | Harga member tampil di katalog, detail produk, cart, dan checkout |
+
+**Tabel purchase history** (ditampilkan untuk status MEMBER; berisi riwayat pembelian membership, diurutkan dari yang terbaru dengan pagination standar):
+
+| Kolom | Sumber Data | Catatan |
+| --- | --- | --- |
+| Tanggal pembelian | `membership_purchase.created_at` | |
+| Nomor pembelian | `membership_purchase.purchase_number` | |
+| Paket | `membership_purchase.plan_name_snapshot` | Snapshot nama paket saat pembelian. |
+| Periode berlaku | `starts_at` – `ends_at` | Kosong bila pembayaran belum dikonfirmasi. |
+| Nominal | `membership_purchase.price_snapshot` | Snapshot harga saat pembelian, bukan harga paket terkini. |
+| Metode pembayaran | `payment.payment_method` | |
+| Status | `membership_purchase.status` | Badge: PENDING, PAID, FAILED, EXPIRED, REFUNDED. |
+
+### 6.9 Pembelian, Masa Berlaku, dan Perpanjangan
+
+- Satu pembelian memberi satu periode membership (1 bulan). Harga dan durasi periode diambil dari konfigurasi Settings dan disimpan sebagai snapshot pada `membership_purchase`.
+- Setiap pembelian dicatat pada tabel `membership_purchase` dan dibayar melalui Midtrans. Pembayarannya dicatat pada tabel `payment` yang merujuk ke `membership_purchase_id` (bukan `order_id`), sehingga pembelian membership tidak tercampur dengan pesanan barang dan laporan penjualan produk (lih. Bab 11.3).
+- Setelah pembayaran dikonfirmasi (PAID): `user.membership_status` menjadi `MEMBER` dan `user.membership_expires_at` diperbarui ke `ends_at`.
+- **Perpanjangan bersifat manual**: member membeli paket Plus lagi. Bila dibeli saat membership masih aktif, periode baru dimulai dari `membership_expires_at` yang lama sehingga sisa masa berlaku tidak hangus. Bila membership sudah berakhir, periode baru dimulai saat pembayaran dikonfirmasi.
+- **Kedaluwarsa**: job terjadwal BullMQ (harian) mengubah user `MEMBER` dengan `membership_expires_at` terlewati menjadi `NOT_MEMBER`. Perhitungan harga di server tetap memeriksa `membership_expires_at` secara langsung, sehingga keterlambatan job tidak memberi harga member secara gratis.
+- **Dampak saat membership berakhir**: status kembali `NOT_MEMBER`, harga kembali normal (item di cart dihitung ulang), dan opsi dropship tidak tersedia. Order yang sudah dibuat tidak berubah (sesuai aturan snapshot pada 6.5).
+- **Pengingat expired**: email dikirim pada H-7 dan H-3 sebelum `membership_expires_at` (lih. Bab 6.12).
+- Voucher tidak berlaku untuk pembelian membership.
+- Bila pembelian berstatus REFUNDED, masa berlaku dari pembelian tersebut dicabut dan `membership_expires_at` dihitung ulang.
+
+### 6.10 Dropship
+
+Dropship adalah benefit khusus member. Member menjual ulang produk RoboEdu kepada pembeli akhir, dan RoboEdu mengirim pesanan langsung ke pembeli akhir tersebut.
+
+- **Hak akses**: hanya user `MEMBER` dengan masa berlaku aktif.
+- **Checkout**: member mengaktifkan opsi "Kirim sebagai Dropship". Alamat tujuan adalah alamat pembeli akhir, yang dipilih atau dibuat pada buku alamat member (`user_address`, mis. label "Dropship – Nama Pembeli").
+- **Pembayaran dan harga**: member yang membayar, menggunakan harga member. Ongkir dihitung ke alamat pembeli akhir.
+- **Pengirim**: pada resi dan label paket, pengirim adalah nama dan nomor telepon member, bukan RoboEdu. Data ini disimpan sebagai snapshot pada order (`sender_name`, `sender_phone`).
+- **Invoice**: invoice digital dan receipt hanya diberikan kepada member. Pembeli akhir tidak menerima dokumen apa pun dari RoboEdu (tidak ada invoice, surat jalan, atau email); informasi yang diterima pembeli akhir cukup resi paket yang berasal dari member.
+- **Notifikasi order**: seluruh email dan notifikasi order dikirim ke member saja.
+- **Admin**: halaman pesanan admin menandai order dropship dan menampilkan data pengirim, sehingga resi dan label paket dibuat atas nama member dan tidak ada dokumen berharga di dalam paket.
+- **Membership berakhir**: opsi dropship tidak tersedia untuk order baru, sedangkan order dropship yang sudah dibuat tetap diproses.
+- **Data**: `order.is_dropship`, `order.sender_name`, dan `order.sender_phone` (lih. Bab 25.4).
+
+### 6.11 Alur Admin
+
+Tidak ada proses review atau persetujuan. Admin hanya memantau.
+
+`/admin/resellers (daftar member dan pembelian; filter status MEMBER/NOT_MEMBER, pencarian, dan masa berlaku segera berakhir) → /admin/resellers/[id] (data user, status dan masa berlaku membership, riwayat pembelian membership, dan riwayat order) → hanya lihat (read-only)`
+
+- Halaman detail tidak memiliki aksi setuju/tolak.
+- Tidak ada antrean review dan tidak ada badge jumlah PENDING pada sidebar atau dashboard.
+- Harga dan durasi paket Plus dikelola pada Settings (Bab 8).
+
+### 6.12 Notifikasi Terkait Membership
+
+| Event | Penerima | Kanal |
+| --- | --- | --- |
+| Pembelian membership berhasil (PAID) | Customer | Email receipt membership (berisi paket, periode berlaku, dan penjelasan benefit) |
+| H-7 sebelum `membership_expires_at` | Member | Email pengingat disertai tautan perpanjang (`/reseller`) |
+| H-3 sebelum `membership_expires_at` | Member | Email pengingat disertai tautan perpanjang (`/reseller`) |
+
+Pengiriman email melalui BullMQ dan dicatat pada `email_log` (tipe `MEMBERSHIP_RECEIPT` dan `MEMBERSHIP_REMINDER`). Pengingat tidak dikirim bila member telah memperpanjang sehingga sisa masa berlaku lebih dari 7 hari (H-7) atau 3 hari (H-3), dan setiap pengingat hanya dikirim sekali per periode (`reminder_h7_sent_at` dan `reminder_h3_sent_at` pada `membership_purchase`). Tidak ada notifikasi untuk admin karena tidak ada proses persetujuan.
+
 ## 7. Fitur Customer
  
 | Fitur | Kebutuhan |
@@ -139,7 +265,7 @@ Reseller tidak langsung aktif setelah melakukan pendaftaran. Customer harus meng
 | Katalog Produk | Menampilkan produk aktif berdasarkan kategori dan Product Type. |
 | Search | Mencari produk berdasarkan nama, keyword, SKU, dan data katalog terkait. |
 | Filter & Sorting | Filter berdasarkan kategori, harga, stok, product type, variant, rating; sorting berdasarkan terbaru, harga, popularitas, dan rating. |
-| Detail Produk | Galeri foto produk multi-angle, component breakdown, highlight keunggulan & keamanan, harga (termasuk harga reseller bila relevan), deskripsi, stok, variant, rating, review, tombol Quick Buy, dan rekomendasi produk terkait. |
+| Detail Produk | Galeri foto produk multi-angle, component breakdown, highlight keunggulan & keamanan, harga (termasuk harga member bila relevan), deskripsi, stok, variant, rating, review, tombol Quick Buy, dan rekomendasi produk terkait. |
 | Cart | Menambah produk (dengan variant bila ada), mengubah jumlah, menghapus item, menghitung subtotal, dan melihat produk rekomendasi cross-selling. Struktur cart terdiri dari satu cart per user dengan banyak cart_item. |
 | Wishlist | Menyimpan produk untuk dibeli kemudian tanpa pengaturan jumlah/quantity, diakses melalui halaman terpisah maupun slide-over drawer dan floating action button. |
 | Alamat | Menambah, mengubah, menghapus, dan menentukan alamat utama. Digunakan juga oleh customer institusi. |
@@ -148,6 +274,7 @@ Reseller tidak langsung aktif setelah melakukan pendaftaran. Customer harus meng
 | Order Tracking | Melihat status pesanan, invoice digital, dan pelacakan kurir bertahap jika tersedia. |
 | Review | Customer yang telah membeli produk (tervalidasi melalui order item) dapat memberikan rating dan ulasan, termasuk langsung dari kartu pesanan yang berstatus `COMPLETED`. |
 | Klaim Garansi | Customer dapat mengajukan komplain terhadap produk yang telah dibeli, disertai kronologi dan lampiran foto/video. |
+| Membership | Customer membeli paket membership Plus (bayar via Midtrans) dan langsung menjadi member tanpa formulir. Member mendapatkan harga member dan akses dropship, serta dapat melihat status, durasi, dan riwayat pembelian membership di `/profile/reseller`. |
 | Notifikasi Email | Customer menerima email receipt otomatis setelah pembayaran berhasil dikonfirmasi. |
 | Tentang Kami | Halaman profil brand, misi edukasi robotika, dan sertifikasi keamanan anak. |
 | Kontak | Formulir masukan/pesan dan tautan media sosial resmi. |
@@ -197,19 +324,19 @@ Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel ker
 | Modul | Kebutuhan |
 | --- | --- |
 | Dashboard | Revenue, jumlah pesanan, pesanan pending, produk terlaris, customer, dan stok menipis. |
-| Produk | CRUD produk, harga normal, harga reseller, status, gambar, slug, dan informasi produk. |
+| Produk | CRUD produk, harga normal, harga member, status, gambar, slug, dan informasi produk. |
 | Kategori | CRUD kategori dan pengaturan status. |
 | Product Type | Mengelola pengelompokan produk secara general dan fleksibel (tema, jenis, dsb). |
 | Variant | Mengelola variant produk (mis. warna), termasuk harga dan stok per variant. |
 | Inventory | Mengelola stok/kuota produksi, penambahan/pengurangan stok, dan monitoring stok rendah. |
 | Pesanan | Melihat dan memproses pesanan, mengubah status fulfillment, dan mengelola informasi pengiriman. |
 | Customer | Melihat, mencari, dan mengelola data customer serta histori pesanan. |
-| Reseller | Melihat pengajuan, menyetujui/menolak, dan mengelola status reseller. |
+| Membership | Melihat daftar member, detail member, riwayat pembelian membership, dan masa berlaku (read-only, tanpa persetujuan/penolakan). |
 | Voucher | Membuat dan mengelola voucher, jenis diskon, masa berlaku, dan batas penggunaan. |
 | Review | Melihat, memoderasi, menyembunyikan, atau menghapus review yang tidak sesuai. |
 | Klaim Garansi | Melihat pengajuan klaim, mengubah status, mencatat hasil tindak lanjut manual (WA/email). |
 | Laporan | Laporan revenue, pesanan, produk terlaris, kategori, dan metrik penjualan. |
-| Settings | Informasi toko, konfigurasi pembayaran, pengiriman, dan pengaturan umum. |
+| Settings | Informasi toko, konfigurasi pembayaran, pengiriman, dan pengaturan umum, termasuk harga dan durasi paket membership Plus. |
  
 ## 9. Manajemen Produk
  
@@ -221,7 +348,7 @@ Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel ker
 - Product Type (opsional, general/fleksibel)
 - Deskripsi
 - Harga normal
-- Harga reseller
+- Harga member
 - Jenis produk (ready stock / pre-order)
 - Stok (berfungsi sebagai kuota produksi untuk produk made-by-order)
 - Slug
@@ -245,7 +372,8 @@ Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel ker
 - Customer memeriksa isi cart dan jumlah produk.
 - Customer melanjutkan ke checkout.
 - Customer memilih atau membuat alamat pengiriman.
-- Sistem menentukan harga berdasarkan status customer/reseller.
+- Khusus member, customer dapat mengaktifkan opsi dropship (kirim langsung ke alamat pembeli akhir); lihat Bab 6.10.
+- Sistem menentukan harga berdasarkan status membership customer (harga member hanya untuk `MEMBER` yang masa berlakunya belum berakhir).
 - Customer memilih metode/layanan pengiriman yang tersedia dari shipping provider yang aktif.
 - Customer dapat memasukkan voucher jika tersedia.
 - Sistem menghitung subtotal, ongkir, diskon, dan total pembayaran.
@@ -272,6 +400,19 @@ Payment Gateway yang digunakan: Midtrans.
  
 *Aturan penting: status pembayaran final tidak boleh hanya bergantung pada redirect browser customer. Konfirmasi pembayaran harus berasal dari mekanisme notifikasi/webhook Midtrans yang divalidasi oleh backend.*
  
+### 11.3 Pembayaran Membership
+
+Pembelian membership menggunakan Midtrans dengan mekanisme webhook yang sama seperti pembayaran order, tetapi tidak membuat `order`.
+
+`Beli Paket Plus → Membuat membership_purchase (PENDING) → Membuat transaksi Midtrans (Idempotency-Key wajib) → Customer Membayar → Notifikasi/Webhook Midtrans → Validasi Backend → payment dan membership_purchase menjadi PAID → user.membership_status = MEMBER dan membership_expires_at diperbarui → Job email receipt membership dimasukkan ke antrian (BullMQ)`
+
+- Tabel `payment` merujuk ke `membership_purchase_id` (dan `order_id` dikosongkan). Tepat satu dari keduanya harus terisi.
+- Webhook membedakan jenis transaksi dari referensi yang terisi pada `payment`, lalu memperbarui order atau membership sesuai jenisnya.
+- `purchase_number` pada `membership_purchase` digunakan sebagai referensi transaksi ke Midtrans.
+- Aturan pada Bab 11.2 berlaku sama: status final tidak boleh hanya bergantung pada redirect browser, dan status MEMBER hanya aktif setelah webhook tervalidasi.
+- Voucher tidak berlaku untuk pembelian membership.
+
+
 ## 12. Pengiriman
  
 J&T menjadi ekspedisi pada tahap awal. Sistem menggunakan tabel `shipping_provider` terpisah, sehingga penyedia ekspedisi dapat ditambah atau diganti tanpa mengubah struktur inti pesanan. Data pengiriman per order dikelola pada tabel `shipment` beserta riwayat perjalanannya pada `shipment_tracking` (lih. Bab 25.4).
@@ -285,6 +426,7 @@ J&T menjadi ekspedisi pada tahap awal. Sistem menggunakan tabel `shipping_provid
 | Status Pengiriman | Status pergerakan paket (`PENDING, PACKED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED`) pada `shipment.status`. |
 | Shipment Tracking | Riwayat titik perjalanan paket (status, deskripsi, lokasi, waktu) pada `shipment_tracking`, ditampilkan sebagai modal pelacakan kurir interaktif di `/profile/orders`. |
 | Shipped At / Delivered At | Waktu pesanan dikirim/diterima, dicatat baik pada `order` (milestone pesanan) maupun `shipment` (milestone pengiriman). |
+| Pengirim (Dropship) | Untuk order dropship, nama dan telepon pengirim pada resi/label adalah milik member (`order.sender_name`, `order.sender_phone`), bukan RoboEdu (lih. Bab 6.10). |
  
 ## 13. Manajemen Pesanan
  
@@ -309,9 +451,11 @@ Alur alternatif: `PENDING → CANCELLED` dan `PAID → REFUNDED`. Pembayaran gag
  
 ### 13.3 Snapshot Harga & Alamat Transaksi
  
-Setiap order item harus menyimpan harga transaksi pada saat pembelian (`price_snapshot`), termasuk nama produk dan nama variant. Hal ini berlaku untuk harga normal maupun harga reseller, dan menjadi dasar validasi kelayakan review serta klaim garansi.
+Setiap order item harus menyimpan harga transaksi pada saat pembelian (`price_snapshot`), termasuk nama produk dan nama variant. Hal ini berlaku untuk harga normal maupun harga member, dan menjadi dasar validasi kelayakan review serta klaim garansi.
 
 Selain itu, setiap order juga menyimpan snapshot alamat pengiriman lengkap (`recipient_name`, `recipient_phone`, `shipping_address`, `shipping_province`, `shipping_city`, `shipping_district`, `shipping_village`, `shipping_postal_code`) serta `voucher_code_snapshot` langsung pada tabel `order`, agar histori transaksi tidak berubah meskipun customer kemudian mengubah data alamat atau voucher yang bersangkutan sudah tidak berlaku (lih. Bab 25.4). Semua field pada halaman `/orders` dan `/orders/{id}` wajib bersumber dari field snapshot ini, bukan dari query langsung ke tabel produk/alamat.
+
+Untuk order dropship, order juga menyimpan snapshot `is_dropship`, `sender_name`, dan `sender_phone`. Invoice digital hanya diperuntukkan bagi member (pemilik order) dan tidak dikirim ke pembeli akhir (lih. Bab 6.10).
  
 ## 14. Inventory / Stok
  
@@ -369,6 +513,7 @@ Sistem mengirimkan email receipt secara otomatis kepada customer setelah pembaya
 - Email dikirim melalui layanan pihak ketiga (Resend atau SendGrid).
 - Pengiriman dijalankan sebagai background job melalui Redis + BullMQ, dengan mekanisme retry otomatis apabila pengiriman gagal.
 - Status setiap pengiriman email (`PENDING/SENT/FAILED`) dicatat oleh sistem pada `email_log`, beserta `subject` email yang dikirim, untuk keperluan audit dan troubleshooting.
+- Selain email receipt order, sistem mengirim email terkait membership (receipt pembelian membership serta pengingat H-7 dan H-3 sebelum masa berlaku berakhir) dengan mekanisme yang sama; lihat Bab 6.12.
 ## 19. Infrastruktur dan Teknologi Pendukung
  
 ### 19.1 Containerization
@@ -385,7 +530,7 @@ MinIO digunakan sebagai object storage self-hosted untuk menyimpan berkas sepert
  
 ### 19.4 Queue dan Background Job
  
-Redis dan BullMQ digunakan untuk memproses tugas yang berjalan di latar belakang, seperti pengiriman email receipt, sehingga proses utama (mis. webhook pembayaran) dapat merespons dengan cepat tanpa menunggu tugas tersebut selesai.
+Redis dan BullMQ digunakan untuk memproses tugas yang berjalan di latar belakang, seperti pengiriman email receipt dan pengingat membership, serta job terjadwal harian yang mengembalikan membership kedaluwarsa menjadi NOT_MEMBER, sehingga proses utama (mis. webhook pembayaran) dapat merespons dengan cepat tanpa menunggu tugas tersebut selesai.
  
 ### 19.5 Monitoring dan Logging
  
@@ -411,9 +556,9 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
  
 `Browse Produk → Detail Produk → Add to Cart → Checkout → Alamat → Pengiriman → Voucher (opsional) → Review Order → Midtrans → Pembayaran Berhasil → Email Receipt Terkirim → Processing → Shipped → Delivered → Completed → Review`
  
-### 20.2 Alur Pengajuan Reseller
+### 20.2 Alur Pembelian Membership
  
-`Customer → Ajukan Reseller → PENDING → Admin Review → APPROVED / REJECTED → Jika APPROVED, customer memperoleh harga reseller`
+`Customer → Beli Paket Plus → Bayar via Midtrans → Webhook tervalidasi → MEMBER → Customer memperoleh harga member dan akses dropship`
  
 ### 20.3 Alur Pemrosesan Admin
  
@@ -423,6 +568,15 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
  
 `Customer mengajukan komplain (subjek + kronologi + foto/video) → Status OPEN → Admin review → Admin hubungi customer manual via WA/email → Status diperbarui (IN_REVIEW/RESOLVED/REJECTED) beserta resolution`
  
+### 20.5 Alur Perpanjangan Membership
+
+`Member → Menerima email pengingat H-7 / H-3 → Beli Paket Plus lagi → Webhook tervalidasi → Masa berlaku bertambah satu periode → Jika tidak diperpanjang: setelah membership_expires_at, status kembali NOT_MEMBER dan harga kembali normal`
+
+### 20.6 Alur Dropship
+
+`Member (aktif) → Pilih produk → Cart → Checkout → Aktifkan "Kirim sebagai Dropship" → Pilih/buat alamat pembeli akhir → Pengiriman → Bayar dengan harga member → Admin memproses dan membuat resi atas nama member → Pesanan sampai ke pembeli akhir tanpa dokumen dari RoboEdu`
+
+
 ## 21. Struktur Halaman / Route
  
 ### 21.1 Customer
@@ -434,10 +588,12 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - `/checkout` — Alur checkout & pembayaran
 - `/about` — Profil brand, nilai STEM, & sertifikasi keamanan anak
 - `/contact` — Formulir masukan & kontak media sosial
+- `/reseller` — Informasi membership & pembelian paket Plus
 - `/login` & `/register` — Halaman autentikasi
 - `/profile/my-profile` — Data akun pribadi & manajemen alamat
 - `/profile/orders` — Riwayat pesanan (dengan modal invoice, tracking, & review)
 - `/profile/orders/[id]` — Detail lengkap pesanan spesifik
+- `/profile/reseller` — Benefit, status, durasi, & riwayat pembelian membership
 - `/profile/settings` — Pengaturan preferensi akun
 ### 21.2 Admin
  
@@ -448,7 +604,8 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - `/admin/inventory`
 - `/admin/orders`
 - `/admin/customers`
-- `/admin/resellers`
+- `/admin/resellers` — Daftar member & pembelian membership
+- `/admin/resellers/[id]` — Detail member (read-only)
 - `/admin/vouchers`
 - `/admin/reviews`
 - `/admin/complaints`
@@ -467,7 +624,7 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | FR-007 | Pembayaran | Sistem terintegrasi dengan Midtrans dan memproses notifikasi pembayaran. | WAJIB |
 | FR-008 | Pesanan | Customer dan admin dapat melihat/mengelola status order. | WAJIB |
 | FR-009 | Inventory | Admin dapat mengelola stok dan sistem mencegah stok negatif. | WAJIB |
-| FR-010 | Reseller | Admin dapat menyetujui/menolak reseller dan reseller memperoleh harga khusus. | WAJIB |
+| FR-010 | Membership | Sistem memberikan harga member kepada user berstatus MEMBER yang masa berlakunya belum berakhir. | WAJIB |
 | FR-011 | Wishlist | Customer dapat menyimpan produk untuk dibeli kemudian. | SEBAIKNYA |
 | FR-012 | Voucher | Admin dapat mengelola voucher dan sistem memvalidasinya saat checkout. | SEBAIKNYA |
 | FR-013 | Review | Customer yang memenuhi syarat dapat memberikan review. | SEBAIKNYA |
@@ -479,6 +636,12 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | FR-019 | Invoice Digital | Sistem dapat menampilkan ringkasan faktur digital terperinci untuk pesanan yang telah dibayar. | WAJIB |
 | FR-020 | Tracking Pengiriman Multi-Point | Sistem mendukung riwayat catatan perjalanan kurir bertahap (`shipment_tracking`). | SEBAIKNYA |
 | FR-021 | Wishlist Drawer & Quick Action | Sistem menyediakan antarmuka drawer interaktif untuk akses cepat ke item wishlist tanpa navigasi penuh. | SEBAIKNYA |
+| FR-022 | Membership | Customer dapat membeli paket membership Plus melalui Midtrans dan langsung menjadi member tanpa formulir maupun review admin. | WAJIB |
+| FR-023 | Membership | Customer dapat melihat benefit, status, durasi, dan riwayat pembelian membership (purchase history). | WAJIB |
+| FR-024 | Membership | Admin dapat melihat daftar member, detail member, dan riwayat pembelian membership (read-only). | SEBAIKNYA |
+| FR-025 | Membership | Sistem mengembalikan status ke NOT_MEMBER dan harga normal saat masa berlaku berakhir, serta mendukung perpanjangan manual. | WAJIB |
+| FR-026 | Membership | Sistem mengirim email pengingat H-7 dan H-3 sebelum membership berakhir serta email receipt pembelian membership. | SEBAIKNYA |
+| FR-027 | Dropship | Member dapat checkout dengan pengiriman langsung ke alamat pembeli akhir; invoice hanya untuk member dan pembeli akhir tidak menerima dokumen dari RoboEdu. | SEBAIKNYA |
  
 ## 23. Kebutuhan Non-Fungsional
  
@@ -488,6 +651,7 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | Keamanan | Password di-hash dengan aman, otorisasi dilakukan di server, dan endpoint admin dilindungi. |
 | Pembayaran | Webhook/notification Midtrans divalidasi di backend. |
 | Integritas Data | Harga dan total transaksi disimpan sebagai snapshot pada order. |
+| Masa Berlaku Membership | Status dan harga member divalidasi di server terhadap `membership_expires_at` pada setiap perhitungan harga, tidak hanya bergantung pada job penjadwal. |
 | Skalabilitas | Integrasi pembayaran dan pengiriman dibuat terpisah dari logika order utama; ekspedisi menggunakan provider abstraction. |
 | Ketersediaan | Aplikasi berjalan dalam container Docker dengan restart policy otomatis, backup terjadwal, dan monitoring uptime. |
 | Responsif | Website customer dan admin harus nyaman digunakan pada desktop, tablet, dan mobile. |
@@ -498,13 +662,13 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 ## 24. Persyaratan Keamanan
  
 - Authentication dan authorization wajib dilakukan di sisi server.
-- Role dan `reseller_status` harus divalidasi untuk setiap operasi yang relevan.
+- Role, `membership_status`, dan `membership_expires_at` harus divalidasi untuk setiap operasi yang relevan.
 - Password tidak boleh disimpan dalam bentuk plaintext.
 - Seluruh secret (Midtrans, database, email service) disimpan menggunakan environment variable, tidak masuk ke version control.
 - Endpoint webhook pembayaran harus melakukan validasi keamanan yang sesuai.
 - Semua input dari user harus divalidasi.
 - Query database harus menggunakan mekanisme aman/parameterized melalui Drizzle ORM.
-- Perubahan harga, stok, order, approval reseller, dan status klaim garansi dicatat dalam log.
+- Perubahan harga, stok, order, pembelian dan perubahan status membership, dan status klaim garansi dicatat dalam log.
 - Data pribadi customer hanya dapat diakses oleh pihak yang berwenang.
 - File `.env` pada production dibatasi aksesnya (permission ketat) dan tidak pernah di-commit ke Git.
 ## 25. ERD Final
@@ -523,8 +687,8 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | password_hash | VARCHAR | |
 | phone | VARCHAR | |
 | role | ENUM | superadmin, admin_sales, admin_laporan, customer |
-| reseller_status | ENUM | NOT_RESELLER, PENDING, APPROVED, REJECTED |
-| reseller_approved_at | TIMESTAMP, NULLABLE | Waktu pengajuan reseller disetujui admin |
+| membership_status | ENUM | NOT_MEMBER, MEMBER |
+| membership_expires_at | TIMESTAMP, NULLABLE | Waktu masa berlaku membership berakhir; NULL bila belum pernah menjadi member |
 | is_active | BOOLEAN | Menentukan apakah akun dapat digunakan untuk login |
 | last_login_at | TIMESTAMP, NULLABLE | Waktu login terakhir |
 | created_at / updated_at | TIMESTAMP | |
@@ -543,7 +707,28 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | is_primary | BOOLEAN | |
 | created_at / updated_at | TIMESTAMP | |
  
+**membership_purchase** *(Menyimpan setiap pembelian membership paket Plus dan menjadi sumber purchase history — lih. Bab 6.8 dan 6.9. Status yang digunakan untuk logika harga tetap `user.membership_status` dan `user.membership_expires_at`.)*
+
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| id | PK | |
+| purchase_number | VARCHAR, UNIQUE | Nomor pembelian; dipakai sebagai referensi transaksi ke Midtrans |
+| user_id | FK -> user | |
+| plan_name_snapshot | VARCHAR | Snapshot nama paket (Plus) |
+| price_snapshot | DECIMAL | Snapshot harga paket saat pembelian |
+| duration_months_snapshot | INT | Snapshot durasi periode (bulan) |
+| status | ENUM | PENDING, PAID, FAILED, EXPIRED, REFUNDED |
+| starts_at | TIMESTAMP, NULLABLE | Awal masa berlaku; diisi saat PAID |
+| ends_at | TIMESTAMP, NULLABLE | Akhir masa berlaku; diisi saat PAID |
+| paid_at | TIMESTAMP, NULLABLE | |
+| reminder_h7_sent_at | TIMESTAMP, NULLABLE | Penanda pengingat H-7 sudah dikirim |
+| reminder_h3_sent_at | TIMESTAMP, NULLABLE | Penanda pengingat H-3 sudah dikirim |
+| created_at / updated_at | TIMESTAMP | |
+
+
 ### 25.2 Modul Katalog Produk
+
+*Catatan: kolom `base_reseller_price` dan `reseller_price_override` tetap digunakan sebagai harga member (nama kolom tidak diubah agar tidak memerlukan migrasi nama kolom).*
  
 **category**
  
@@ -591,7 +776,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | sku | VARCHAR, UNIQUE | |
 | variant_name | VARCHAR | mis. Merah, Biru |
 | price_override | DECIMAL, NULLABLE | Harga normal khusus variant |
-| reseller_price_override | DECIMAL, NULLABLE | Harga reseller khusus variant |
+| reseller_price_override | DECIMAL, NULLABLE | Harga member khusus variant |
 | stock | INT | kuota/kapasitas produksi |
 | status | ENUM | DRAFT, ACTIVE, INACTIVE, OUT_OF_STOCK |
 | created_at / updated_at | TIMESTAMP | |
@@ -671,6 +856,9 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | shipping_province / shipping_city / shipping_district | VARCHAR | Snapshot wilayah pengiriman |
 | shipping_village | VARCHAR, NULLABLE | Snapshot kelurahan/desa |
 | shipping_postal_code | VARCHAR, NULLABLE | Snapshot kode pos |
+| is_dropship | BOOLEAN | Menandai order dropship (default false) |
+| sender_name | VARCHAR, NULLABLE | Snapshot nama pengirim (member) untuk order dropship |
+| sender_phone | VARCHAR, NULLABLE | Snapshot nomor telepon pengirim (member) untuk order dropship |
 | paid_at / shipped_at / delivered_at / completed_at / cancelled_at | TIMESTAMP, NULLABLE | Milestone waktu siklus pesanan |
 | created_at / updated_at | TIMESTAMP | |
  
@@ -689,12 +877,13 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | subtotal | DECIMAL | |
 | created_at | TIMESTAMP | |
  
-**payment** *(Terpisah dari order untuk menangani multiple percobaan pembayaran.)*
+**payment** *(Terpisah dari order untuk menangani multiple percobaan pembayaran. Dapat merujuk ke order atau ke membership_purchase; tepat satu dari `order_id` atau `membership_purchase_id` harus terisi.)*
  
 | Kolom | Tipe | Keterangan |
 | --- | --- | --- |
 | id | PK | |
-| order_id | FK -> order | |
+| order_id | FK -> order, NULLABLE, UNIQUE | Terisi untuk pembayaran pesanan barang |
+| membership_purchase_id | FK -> membership_purchase, NULLABLE, UNIQUE | Terisi untuk pembayaran membership |
 | midtrans_transaction_id | VARCHAR | |
 | payment_method | VARCHAR | |
 | amount | DECIMAL | |
@@ -808,8 +997,9 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | --- | --- | --- |
 | id | PK | |
 | order_id | FK -> order, NULLABLE | |
+| membership_purchase_id | FK -> membership_purchase, NULLABLE | |
 | user_id | FK -> user | |
-| email_type | ENUM | RECEIPT, OTHER |
+| email_type | ENUM | RECEIPT, MEMBERSHIP_RECEIPT, MEMBERSHIP_REMINDER, OTHER |
 | email | VARCHAR | Alamat email penerima |
 | subject | VARCHAR | Subjek email yang dikirim |
 | status | ENUM | PENDING, SENT, FAILED |
@@ -835,9 +1025,9 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
  
 | Tahap | Ruang Lingkup |
 | --- | --- |
-| MVP / Tahap 1 | Autentikasi, homepage, katalog, search/filter, detail produk, kategori, cart & cart_item, alamat, checkout, Midtrans, email receipt otomatis, struktur pengiriman/J&T, order management, stok sederhana (kuota), customer management, approval reseller, dan harga reseller. |
-| Tahap 2 | Wishlist, voucher/promo, review, klaim garansi, laporan penjualan, dan dashboard admin yang lebih lengkap. |
-| Tahap 3 | Multi-ekspedisi, reseller bertingkat, pembelian institusi/B2B lebih formal, pengiriman internasional, riwayat pergerakan stok yang lebih detail (stock movement log), analitik lanjutan, dan integrasi tambahan. |
+| MVP / Tahap 1 | Autentikasi, homepage, katalog, search/filter, detail produk, kategori, cart & cart_item, alamat, checkout, Midtrans, email receipt otomatis, struktur pengiriman/J&T, order management, stok sederhana (kuota), customer management, pembelian membership Plus via Midtrans (tanpa formulir dan tanpa review admin), masa berlaku & perpanjangan manual, email pengingat H-7/H-3, dan harga member. |
+| Tahap 2 | Wishlist, voucher/promo, review, klaim garansi, laporan penjualan, dashboard admin yang lebih lengkap, dan dropship untuk member. |
+| Tahap 3 | Multi-ekspedisi, tingkatan paket membership, pembelian institusi/B2B lebih formal, pengiriman internasional, riwayat pergerakan stok yang lebih detail (stock movement log), analitik lanjutan, dan integrasi tambahan. |
  
 ## 27. Checklist Setup Awal Pengembangan
  
@@ -862,13 +1052,13 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 ### Tahap 3 — Autentikasi & Otorisasi
  
 - Setup login/register, hashing password, session/JWT
-- Middleware pengecekan role (customer/admin) dan reseller_status
+- Middleware pengecekan role (customer/admin) dan membership_status dan masa berlaku (`membership_expires_at`)
 - Uji login sebagai admin dan customer dummy
 ### Tahap 4 — Integrasi Eksternal
  
 - MinIO — uji upload file dummy
 - Midtrans — sandbox mode, uji transaksi hingga menerima webhook
-- Redis + BullMQ — uji job sederhana berjalan di worker
+- Redis + BullMQ — uji job sederhana dan job terjadwal (pengingat/kedaluwarsa membership) berjalan di worker
 - Email service (Resend/SendGrid) — uji kirim email dummy
 ### Tahap 5 — Mulai Development Frontend
  
@@ -883,13 +1073,18 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 | US-001 | Sebagai customer, saya ingin mencari produk agar dapat menemukan produk robotika dengan cepat. | Ketika keyword dimasukkan, sistem menampilkan produk relevan dan tidak menampilkan produk nonaktif. |
 | US-002 | Sebagai customer, saya ingin menambahkan produk ke cart agar dapat membeli beberapa produk. | Jika stok/kuota mencukupi, produk, variant, dan jumlah yang benar masuk ke cart_item. |
 | US-003 | Sebagai customer, saya ingin membayar melalui Midtrans agar dapat menyelesaikan pembelian. | Jika pembayaran berhasil, webhook tervalidasi, order berubah menjadi PAID, dan email receipt terkirim. |
-| US-004 | Sebagai reseller, saya ingin mendapatkan harga khusus. | Jika reseller_status APPROVED, sistem menggunakan harga reseller pada transaksi. |
-| US-005 | Sebagai admin, saya ingin menyetujui pengajuan reseller. | Saat admin menyetujui pengajuan PENDING, reseller_status menjadi APPROVED dan harga reseller tersedia. |
+| US-004 | Sebagai member, saya ingin mendapatkan harga khusus. | Jika `membership_status` MEMBER dan `membership_expires_at` belum terlewati, sistem menggunakan harga member pada transaksi. |
+| US-005 | Sebagai customer, saya ingin membeli membership Plus agar langsung menjadi member. | Setelah pembayaran dikonfirmasi webhook, `membership_status` menjadi MEMBER dan `membership_expires_at` terisi, tanpa formulir dan tanpa review admin. |
 | US-006 | Sebagai admin, saya ingin mengelola stok agar ketersediaan produk akurat. | Stok berkurang setelah pembayaran berhasil dan tidak boleh menjadi negatif. |
 | US-007 | Sebagai customer, saya ingin melihat status pesanan agar dapat mengetahui proses pengiriman. | Detail order menampilkan status dan informasi resi jika tersedia. |
 | US-008 | Sebagai customer, saya ingin memberikan review setelah membeli produk. | Customer hanya dapat me-review produk yang memiliki order_item dengan status pembelian yang sah. |
 | US-009 | Sebagai customer, saya ingin mengajukan klaim garansi atas produk yang bermasalah. | Customer dapat mengisi kronologi dan mengunggah foto/video; pengajuan tersimpan dengan status OPEN. |
 | US-010 | Sebagai admin, saya ingin menindaklanjuti klaim garansi. | Admin dapat mengubah status klaim dan mencatat catatan tindak lanjut (`resolution`) beserta metode kontak yang digunakan (WA/email). |
+| US-011 | Sebagai member, saya ingin melihat status dan durasi membership saya. | `/profile/reseller` menampilkan status MEMBER, paket, tanggal mulai dan berakhir, serta benefit; untuk NOT_MEMBER menampilkan ajakan bergabung dan ringkasan manfaat. |
+| US-012 | Sebagai member, saya ingin melihat riwayat pembelian membership. | `/profile/reseller` menampilkan tabel purchase history (tanggal, nomor, paket, periode, nominal, metode bayar, status) berdasarkan snapshot pembelian. |
+| US-013 | Sebagai member, saya ingin diingatkan sebelum membership berakhir dan dapat memperpanjang. | Email pengingat dikirim H-7 dan H-3; perpanjangan manual menambah masa berlaku dari `membership_expires_at` yang lama; setelah berakhir status kembali NOT_MEMBER dan harga normal. |
+| US-014 | Sebagai admin, saya ingin melihat daftar dan detail member. | `/admin/resellers` dan `/admin/resellers/[id]` menampilkan data member dan riwayat pembelian secara read-only, tanpa aksi setuju/tolak. |
+| US-015 | Sebagai member, saya ingin memesan dengan dropship. | Order dikirim ke alamat pembeli akhir dengan nama member sebagai pengirim; invoice hanya untuk member dan pembeli akhir tidak menerima dokumen dari RoboEdu. |
  
 ## 29. Metrik Keberhasilan
  
@@ -899,7 +1094,8 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 - Nilai rata-rata transaksi (Average Order Value).
 - Total revenue bulanan.
 - Persentase pembelian ulang.
-- Jumlah reseller aktif.
+- Jumlah member aktif.
+- Tingkat perpanjangan membership.
 - Produk dan kategori terlaris.
 - Persentase cart yang ditinggalkan.
 - Frekuensi produk stok/kuota rendah atau habis.
@@ -909,7 +1105,8 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
  
 - Penjualan internasional dan pengiriman lintas negara.
 - Integrasi beberapa penyedia ekspedisi.
-- Tingkatan harga reseller.
+- Tingkatan paket membership (paket tambahan di atas Plus).
+- Perpanjangan otomatis (auto-renew) untuk membership.
 - Sistem pembelian khusus institusi/B2B yang lebih formal (termasuk invoice otomatis).
 - Riwayat pergerakan stok yang lebih detail (stock movement log).
 - Analitik penjualan lanjutan.
@@ -921,6 +1118,8 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 PRD ini digunakan sebagai sumber kebenaran pada level produk. ERD pada Bab 25 telah diselaraskan dengan seluruh requirement yang telah disepakati. Tahap berikutnya adalah menentukan kontrak API, struktur route, aturan validasi, desain UI, dan acceptance test.
  
 *Urutan pengembangan yang disarankan: PRD → User Flow → Business Rules → ERD Final → Setup Infrastruktur → API Specification → UI/UX → Development → Testing → Deployment.*
+
+*Revisi Oktober 2026: fitur reseller diganti menjadi membership berbayar bulanan (paket Standar dan Plus). Pengajuan reseller, formulir, dan review admin dihapus; ditambahkan pembelian membership, purchase history, pengingat masa berlaku, dan dropship. Perubahan ini perlu diselaraskan ke `api.md`, `reseller_todo.md`, dan schema database.*
 
 ## 32. Desain Visual & Branding
 
