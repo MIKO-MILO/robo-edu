@@ -1,83 +1,100 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 // ==========================================
-// 1. TYPES & INTERFACES (Backend-Ready)
+// 1. TYPES & INTERFACES
 // ==========================================
-export interface Testimonial {
-  id: number;
+
+/** Shape data dari DB (via page.tsx server component) */
+export interface FeaturedReview {
+  id: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+/** Shape internal yang dipakai oleh card (termasuk warna aksen) */
+interface Testimonial {
+  id: string;
   name: string;
-  role: string;
-  childAge: string;
-  avatar: string;
   rating: number;
   comment: string;
   accentBg: string;
   innerBorderColor: string;
   quoteColor: string;
+  avatarInitial: string;
+  avatarBg: string;
 }
 
 export interface TestimoniProps {
-  testimonials?: Testimonial[];
+  /** Review dari DB. Jika kosong, komponen tampil data statis fallback. */
+  reviews?: FeaturedReview[];
 }
 
-const DEFAULT_TESTIMONIALS: Testimonial[] = [
+// Palet warna aksen untuk card — digilir berdasarkan index
+const ACCENT_PALETTES = [
+  { accentBg: "bg-[#FFF9D2]", innerBorderColor: "border-[#E2C044]", quoteColor: "text-[#E2C044]", avatarBg: "bg-[#FFF37E]" },
+  { accentBg: "bg-[#E6F4FF]", innerBorderColor: "border-[#85BDE6]", quoteColor: "text-[#85BDE6]", avatarBg: "bg-[#BDE0FF]" },
+  { accentBg: "bg-[#EAE4FF]", innerBorderColor: "border-[#A090E0]", quoteColor: "text-[#A090E0]", avatarBg: "bg-[#D6CEFF]" },
+  { accentBg: "bg-[#FFEAD5]", innerBorderColor: "border-[#E8A36E]", quoteColor: "text-[#E8A36E]", avatarBg: "bg-[#FFD3AD]" },
+  { accentBg: "bg-[#DCFCE7]", innerBorderColor: "border-[#6EBE8A]", quoteColor: "text-[#6EBE8A]", avatarBg: "bg-[#AEECC4]" },
+  { accentBg: "bg-[#FFE4E8]", innerBorderColor: "border-[#E07090]", quoteColor: "text-[#E07090]", avatarBg: "bg-[#FFC0CE]" },
+];
+
+// Data statis sebagai fallback jika DB belum punya review
+const FALLBACK_REVIEWS: FeaturedReview[] = [
   {
-    id: 1,
-    name: "Bunda Siska Utami",
-    role: "Ibu Rumah Tangga",
-    childAge: "Anak 7 Tahun",
-    avatar: "/images/11.png",
+    id: "fallback-1",
+    userName: "Bunda Siska Utami",
     rating: 5,
     comment:
       "Luar biasa! Anak saya yang tadinya kecanduan game HP, sekarang malah asyik merakit robot dan mencoba misi-misi logika di buku panduannya. Pilihan terbaik untuk belajar STEM!",
-    accentBg: "bg-[#FFF9D2]",
-    innerBorderColor: "border-[#E2C044]",
-    quoteColor: "text-[#E2C044]",
+    createdAt: new Date().toISOString(),
   },
   {
-    id: 2,
-    name: "Pak Hendra Wijaya",
-    role: "Guru Sekolah Dasar",
-    childAge: "Anak 9 Tahun",
-    avatar: "/images/22.png",
+    id: "fallback-2",
+    userName: "Pak Hendra Wijaya",
     rating: 5,
     comment:
       "Komponennya sangat aman dan presisi. Konsep belajar sambil bermainnya pas sekali, bahasa di buku panduan sangat ramah untuk pemula.",
-    accentBg: "bg-[#E6F4FF]",
-    innerBorderColor: "border-[#85BDE6]",
-    quoteColor: "text-[#85BDE6]",
+    createdAt: new Date().toISOString(),
   },
   {
-    id: 3,
-    name: "Dr. Amanda Putri",
-    role: "Orang Tua & Pengamat",
-    childAge: "Anak 11 Tahun",
-    avatar: "/images/3.png",
+    id: "fallback-3",
+    userName: "Dr. Amanda Putri",
     rating: 5,
     comment:
       "Maskot interaktifnya buat anak betah belajar jam-jaman. Logika pemrogramannya disajikan intuitif dan bertahap. Sangat recommended!",
-    accentBg: "bg-[#EAE4FF]",
-    innerBorderColor: "border-[#A090E0]",
-    quoteColor: "text-[#A090E0]",
+    createdAt: new Date().toISOString(),
   },
   {
-    id: 4,
-    name: "Ibu Rina Marlina",
-    role: "Orang Tua",
-    childAge: "Anak 8 Tahun",
-    avatar: "/images/11.png",
+    id: "fallback-4",
+    userName: "Ibu Rina Marlina",
     rating: 5,
     comment:
       "Sangat membantu tumbuh kembang anak dalam berfikir kritis. Materi pembelajaran mudah dipahami dan sangat interaktif!",
-    accentBg: "bg-[#FFEAD5]",
-    innerBorderColor: "border-[#E8A36E]",
-    quoteColor: "text-[#E8A36E]",
+    createdAt: new Date().toISOString(),
   },
 ];
+
+/** Mapping FeaturedReview → Testimonial internal dengan warna aksen */
+function mapToTestimonials(source: FeaturedReview[]): Testimonial[] {
+  return source.map((r, i) => {
+    const palette = ACCENT_PALETTES[i % ACCENT_PALETTES.length];
+    const initial = r.userName.trim().charAt(0).toUpperCase();
+    return {
+      id: r.id,
+      name: r.userName,
+      rating: r.rating,
+      comment: r.comment,
+      avatarInitial: initial,
+      ...palette,
+    };
+  });
+}
 
 // ==========================================
 // 2. SUB-COMPONENT (Internal Helper)
@@ -106,22 +123,19 @@ function TestimonialCard({ item }: { item: Testimonial }) {
         <div className="relative z-10 flex flex-col justify-between h-full pt-1 sm:pt-2">
           {/* Header Card */}
           <div className="flex items-center gap-2.5 xs:gap-3 pt-1 mb-2 sm:mb-3">
-            <div className="relative w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full bg-[#FFF37E] overflow-hidden shrink-0 flex items-center justify-center border border-[#3D2900]/10">
-              <Image
-                src={item.avatar}
-                alt={`Avatar ${item.name}`}
-                width={44}
-                height={44}
-                className="object-cover"
-              />
+            {/* Avatar inisial — avatar key di MinIO bersifat private, tidak bisa diakses publik */}
+            <div
+              className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full ${item.avatarBg} shrink-0 flex items-center justify-center border border-[#3D2900]/10`}
+              aria-hidden="true"
+            >
+              <span className="font-heading font-extrabold text-[#3D2900] text-xs xs:text-sm sm:text-base select-none">
+                {item.avatarInitial}
+              </span>
             </div>
             <div className="overflow-hidden">
               <h3 className="font-heading text-xs xs:text-sm sm:text-base font-extrabold text-[#3D2900] leading-tight truncate">
                 {item.name}
               </h3>
-              <p className="text-[10px] xs:text-[11px] sm:text-xs font-semibold text-[#3D2900]/70 truncate mt-0.5">
-                {item.role} • {item.childAge}
-              </p>
             </div>
           </div>
 
@@ -161,10 +175,14 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 // ==========================================
 // 3. MAIN COMPONENT CONTAINER
 // ==========================================
-export default function Testimoni({ testimonials = DEFAULT_TESTIMONIALS }: TestimoniProps) {
+export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
+  // Gunakan data dari DB jika ada, fallback ke data statis
+  const source = rawReviews && rawReviews.length > 0 ? rawReviews : FALLBACK_REVIEWS;
+  const testimonials = mapToTestimonials(source);
+
   const [startIndex, setstartIndex] = useState(0);
 
-  if (!testimonials || testimonials.length === 0) {
+  if (testimonials.length === 0) {
     return null;
   }
 

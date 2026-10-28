@@ -49,6 +49,8 @@ function DotGrid() {
 
 // ── Page Component ────────────────────────────────────────────────────────────
 export default function RegisterPage() {
+  const router = useRouter();
+  // RegisterRequestBody: { name, email, password, phone? }
   const [form, setForm] = useState<RegisterRequestBody>({
     name: "",
     email: "",
@@ -61,7 +63,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   // true = pernah mulai ketik password (baru tampilkan indikator)
   const [passwordTouched, setPasswordTouched] = useState(false);
-  const router = useRouter();
 
   const passwordValid = form.password.length >= 8;
 

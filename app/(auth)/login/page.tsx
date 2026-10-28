@@ -35,6 +35,7 @@ function GoogleIcon() {
 
 // ── Page Component ────────────────────────────────────────────────────────────
 export default function LoginPage() {
+  const router = useRouter();
   const [form, setForm] = useState<LoginRequestBody>({
     email: "",
     password: "",
@@ -47,7 +48,6 @@ export default function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   // Tandai field mana yang perlu border merah saat salah credentials
   const [credentialError, setCredentialError] = useState(false);
-  const router = useRouter();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -180,8 +180,10 @@ export default function LoginPage() {
                 textShadow: "2px 2px 0px rgba(0,0,0,0.25)",
               }}
             >
-              BUILD.<br />
-              LEARN.<br />
+              BUILD.
+              <br />
+              LEARN.
+              <br />
               CREATE.
             </h1>
           </div>

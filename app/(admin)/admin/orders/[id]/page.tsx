@@ -1,38 +1,41 @@
 "use client";
 
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
+import { RefreshCw, AlertTriangle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   OrderDetailHeader,
   OrderItemsCard,
   OrderCustomerCard,
   OrderShippingCard,
   OrderPaymentCard,
+  OrderStatusDialog,
 } from "@/components/admin/orders";
 import type { OrderLineItem, OrderPricingSummary } from "@/components/admin/orders";
 import type { OrderStatus, PaymentStatus } from "@/types/enums";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, RefreshCw } from "lucide-react";
 
 // ---------------------------------------------------------------------------
-// Types
+// Types for the API response shape from GET /api/admin/orders/[id]
 // ---------------------------------------------------------------------------
+
 interface AdminOrderDetail {
   id: string;
   order_number: string;
   status: OrderStatus;
   subtotal: number;
   discount_amount: number;
-  shipping_cost: number;
   tax_amount: number;
+  shipping_cost: number;
   total: number;
   voucher_code_snapshot: string | null;
   recipient_name: string;
   recipient_phone: string;
   shipping_address: string;
-  shipping_district: string;
-  shipping_city: string;
   shipping_province: string;
+  shipping_city: string;
+  shipping_district: string;
+  shipping_village?: string;
   shipping_postal_code: string;
   paid_at: string | null;
   shipped_at: string | null;
@@ -40,10 +43,12 @@ interface AdminOrderDetail {
   completed_at: string | null;
   cancelled_at: string | null;
   created_at: string;
+  updated_at: string;
   customer: {
+    id?: string;
     name: string;
     email: string;
-    phone: string;
+    phone: string | null;
   };
   order_items: Array<{
     id: string;
@@ -59,7 +64,7 @@ interface AdminOrderDetail {
   payment: {
     status: PaymentStatus;
     payment_type: string;
-    transaction_id: string;
+    transaction_id?: string | null;
     amount: number;
     transaction_time: string | null;
     expiry_time: string | null;
@@ -81,122 +86,26 @@ interface AdminOrderDetail {
   } | null;
 }
 
-// Status yang bisa dipilih admin untuk diupdate
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: "pending",    label: "Menunggu (Pending)" },
-  { value: "paid",       label: "Dibayar (Paid)" },
-  { value: "processing", label: "Diproses (Processing)" },
-  { value: "shipped",    label: "Dikirim (Shipped)" },
-  { value: "delivered",  label: "Terkirim (Delivered)" },
-  { value: "completed",  label: "Selesai (Completed)" },
-  { value: "cancelled",  label: "Dibatalkan (Cancelled)" },
-];
-
 // ---------------------------------------------------------------------------
-// Status Updater Component
+// Skeleton for the whole detail page
 // ---------------------------------------------------------------------------
-function StatusUpdater({
-  orderId,
-  currentStatus,
-  onUpdated,
-}: {
-  orderId: string;
-  currentStatus: OrderStatus;
-  onUpdated: (newStatus: OrderStatus) => void;
-}) {
-  const [selected, setSelected] = useState(currentStatus.toLowerCase());
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const handleUpdate = async () => {
-    if (selected === currentStatus.toLowerCase()) return;
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: selected }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.message || "Gagal update status");
-      setMessage({ type: "success", text: json.message });
-      onUpdated(selected.toUpperCase() as OrderStatus);
-    } catch (err) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Terjadi kesalahan" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="bg-card rounded-2xl border-2 border-border p-4 space-y-3">
-      <h3 className="font-heading font-bold text-sm text-foreground">Update Status Pesanan</h3>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <select
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-            disabled={isLoading}
-            className="w-full appearance-none rounded-xl border-2 border-border bg-background px-3 py-2 pr-8 text-sm font-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        </div>
-
-        <Button
-          type="button"
-          variant="default"
-          size="sm"
-          onClick={handleUpdate}
-          disabled={isLoading || selected === currentStatus.toLowerCase()}
-          className="rounded-xl gap-1.5 shrink-0"
-        >
-          {isLoading ? (
-            <RefreshCw className="size-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="size-3.5" />
-          )}
-          Simpan
-        </Button>
-      </div>
-
-      {message && (
-        <p
-          className={`text-xs font-body px-2 py-1.5 rounded-lg ${
-            message.type === "success"
-              ? "bg-success/10 text-success border border-success/30"
-              : "bg-destructive/10 text-destructive border border-destructive/30"
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Loading skeleton
-// ---------------------------------------------------------------------------
 function DetailSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-12 w-72 rounded-xl" />
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-9 w-24 rounded-xl" />
+        <Skeleton className="h-8 w-64 rounded-xl" />
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-3">
+        <div className="lg:col-span-2 space-y-4">
           <Skeleton className="h-64 w-full rounded-2xl" />
         </div>
         <div className="space-y-4">
-          <Skeleton className="h-28 w-full rounded-2xl" />
-          <Skeleton className="h-28 w-full rounded-2xl" />
-          <Skeleton className="h-28 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
         </div>
       </div>
     </div>
@@ -204,8 +113,9 @@ function DetailSkeleton() {
 }
 
 // ---------------------------------------------------------------------------
-// Page
+// Main page component
 // ---------------------------------------------------------------------------
+
 interface AdminOrderDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -216,108 +126,165 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   const [order, setOrder] = useState<AdminOrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
-  const loadOrder = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/admin/orders/${id}`, { cache: "no-store" });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.message || "Gagal memuat pesanan");
-      setOrder(json.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
+  // ── Fetch detail ─────────────────────────────────────────────────────
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
-    loadOrder();
-  }, [loadOrder]);
+    let ignore = false;
+    async function fetchDetail() {
+      try {
+        const res = await fetch(`/api/admin/orders/${id}`, { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.message ?? `HTTP ${res.status}`);
+        }
+        if (!ignore) {
+          setOrder(json.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : "Gagal memuat detail pesanan.");
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
 
+    fetchDetail();
+    return () => {
+      ignore = true;
+    };
+  }, [id, retryKey]);
+
+  // ── Handle status update success ─────────────────────────────────────
+  const handleStatusSuccess = (newStatus: OrderStatus) => {
+    setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
+  };
+
+  // ── Loading ───────────────────────────────────────────────────────────
   if (isLoading) return <DetailSkeleton />;
 
+  // ── Error ─────────────────────────────────────────────────────────────
   if (error || !order) {
     return (
-      <div className="rounded-2xl border-2 border-destructive/40 bg-destructive/10 px-6 py-8 text-center space-y-2">
-        <p className="font-heading font-bold text-destructive">Pesanan tidak ditemukan</p>
-        <p className="text-sm text-muted-foreground font-body">{error}</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <AlertTriangle className="size-7" />
+        </div>
+        <div>
+          <p className="font-heading font-bold text-lg text-foreground">
+            Gagal memuat pesanan
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {error ?? "Pesanan tidak ditemukan."}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setIsLoading(true);
+            setRetryKey((k) => k + 1);
+          }}
+          className="gap-2 rounded-xl"
+        >
+          <RefreshCw className="size-4" />
+          Coba Lagi
+        </Button>
       </div>
     );
   }
 
-  // ── Map API data ke props komponen ──────────────────────────────────────
-  const lineItems: OrderLineItem[] = order.order_items.map((item) => ({
-    id: item.id,
-    name: item.product_name_snapshot,
-    variant: item.variant_name_snapshot,
-    sku: item.sku_snapshot,
-    price: item.price_snapshot,
+  // ── Map API response → component props ───────────────────────────────
+  const items: OrderLineItem[] = order.order_items.map((item) => ({
+    id:       item.id,
+    name:     item.product_name_snapshot,
+    variant:  item.variant_name_snapshot ?? null,
+    sku:      item.sku_snapshot,
+    price:    item.price_snapshot,
     quantity: item.quantity,
     subtotal: item.subtotal,
   }));
 
   const pricing: OrderPricingSummary = {
-    subtotal: order.subtotal,
-    shipping_cost: order.shipping_cost,
-    discount_amount: order.discount_amount,
-    total: order.total,
+    subtotal:         order.subtotal,
+    shipping_cost:    order.shipping_cost,
+    discount_amount:  order.discount_amount,
+    total:            order.total,
   };
 
-  const fullAddress = [
-    order.shipping_address,
-    order.shipping_district,
-    order.shipping_city,
-    order.shipping_province,
-    order.shipping_postal_code,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const customer = {
+    name:  order.customer.name,
+    email: order.customer.email,
+    phone: order.customer.phone ?? order.recipient_phone ?? "—",
+  };
+
+  const shipping = {
+    courier:         order.shipment?.provider_name ?? "—",
+    service:         order.shipment?.service        ?? "—",
+    tracking_number: order.shipment?.tracking_number ?? null,
+    address: [
+      order.shipping_address,
+      order.shipping_village,
+      order.shipping_district,
+      order.shipping_city,
+      order.shipping_province,
+      order.shipping_postal_code,
+    ]
+      .filter(Boolean)
+      .join(", "),
+  };
+
+  const payment = order.payment
+    ? {
+        status:         order.payment.status as PaymentStatus,
+        method:         order.payment.payment_type,
+        transaction_id: order.payment.transaction_id ?? null,
+      }
+    : {
+        status:         "PENDING" as PaymentStatus,
+        method:         "—",
+        transaction_id: null,
+      };
 
   return (
     <div className="space-y-6">
-      {/* Back + Title + Status */}
-      <OrderDetailHeader
-        orderNumber={order.order_number}
-        status={order.status}
-        createdAt={order.created_at}
-      />
+      {/* Back + Title + Status + Update button */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <OrderDetailHeader
+          orderNumber={order.order_number}
+          status={order.status}
+          createdAt={order.created_at}
+        />
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setStatusDialogOpen(true)}
+          className="shrink-0 gap-1.5 rounded-xl self-start sm:self-auto"
+        >
+          <RefreshCw className="size-4" />
+          Update Status
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left — Items & pricing */}
         <div className="lg:col-span-2">
-          <OrderItemsCard items={lineItems} pricing={pricing} />
+          <OrderItemsCard items={items} pricing={pricing} />
         </div>
 
-        {/* Right — Customer, Status updater, Shipping, Payment */}
+        {/* Right sidebar */}
         <div className="space-y-6">
-          <OrderCustomerCard customer={order.customer} />
-
-          <StatusUpdater
-            orderId={order.id}
-            currentStatus={order.status}
-            onUpdated={(newStatus) =>
-              setOrder((prev) => prev ? { ...prev, status: newStatus } : prev)
-            }
-          />
-
-          <OrderShippingCard
-            shipping={{
-              courier: order.shipment?.provider_name ?? "Belum ada",
-              service: order.shipment?.service ?? "-",
-              tracking_number: order.shipment?.tracking_number ?? null,
-              address: fullAddress,
-            }}
-          />
-
-          <OrderPaymentCard
-            payment={{
-              status: (order.payment?.status ?? "PENDING") as PaymentStatus,
-              method: order.payment?.payment_type ?? "-",
-              transaction_id: order.payment?.transaction_id ?? null,
-            }}
-          />
+          <OrderCustomerCard customer={customer} />
+          <OrderShippingCard shipping={shipping} />
+          <OrderPaymentCard payment={payment} />
         </div>
       </div>
 
@@ -327,7 +294,7 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
           Voucher digunakan:{" "}
           <span className="font-heading font-bold">{order.voucher_code_snapshot}</span>
           {order.discount_amount > 0 && (
-            <span className="text-success ml-2">
+            <span className="text-success ml-2 font-bold">
               (diskon Rp{order.discount_amount.toLocaleString("id-ID")})
             </span>
           )}
@@ -360,6 +327,16 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
           </ol>
         </div>
       )}
+
+      {/* Status update dialog */}
+      <OrderStatusDialog
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        orderId={order.id}
+        orderNumber={order.order_number}
+        currentStatus={order.status}
+        onSuccess={handleStatusSuccess}
+      />
     </div>
   );
 }

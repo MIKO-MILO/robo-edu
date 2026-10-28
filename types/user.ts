@@ -19,6 +19,10 @@ export interface User {
   name: string;
   email: string;
   phone: string | null;
+  gender?: "MALE" | "FEMALE" | "OTHER" | null;
+  tax_id?: string | null;
+  tax_country?: string | null;
+  avatar_url?: string | null;
   role: UserRole;
   reseller_status: ResellerStatus;
   reseller_approved_at: ISODateString | null;

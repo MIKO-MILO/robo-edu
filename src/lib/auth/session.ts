@@ -53,6 +53,11 @@ export async function getSessionUserId() {
   return verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value)?.userId ?? null;
 }
 
+export async function getSession(): Promise<{ userId: string; expiresAt: number } | null> {
+  const cookieStore = await cookies();
+  return verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+}
+
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,

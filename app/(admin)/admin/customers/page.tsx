@@ -3,16 +3,17 @@
 import React, { useMemo, Suspense, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Download } from "lucide-react";
+import { Users, Download, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   CustomerStatsGrid,
   CustomerFilters,
   CustomerTable,
-  MOCK_ADMIN_CUSTOMERS,
   getCustomerStats,
 } from "@/components/admin/customers";
 import type { AdminCustomerRow } from "@/components/admin/customers";
+import { useCustomers } from "@/hooks/admin/customers";
+import type { AdminCustomersQueryParams } from "@/lib/api/services/user.service";
 
 // ---------------------------------------------------------------------------
 // Inner component (needs useSearchParams — must be inside Suspense)
@@ -63,19 +64,43 @@ function AdminCustomersContent() {
     });
   };
 
-  // Filter pelanggan berdasarkan search & filter
+  const apiParams = useMemo(() => {
+    const params: AdminCustomersQueryParams = {
+      page: 1,
+      limit: 50,
+    };
+    if (searchQuery) params.search = searchQuery;
+    if (resellerFilter !== "ALL") {
+      if (resellerFilter === "CUSTOMER") {
+        params.reseller_status = "NOT_RESELLER";
+      } else {
+        params.reseller_status = resellerFilter;
+      }
+    }
+    if (statusFilter !== "ALL") {
+      params.is_active = statusFilter === "ACTIVE";
+    }
+    return params;
+  }, [searchQuery, resellerFilter, statusFilter]);
+
+  const { data, isLoading, isError, error, refetch } = useCustomers(apiParams);
+
+  const apiCustomers = useMemo<AdminCustomerRow[]>(
+    () => data?.data ?? [],
+    [data],
+  );
+
   const filteredCustomers = useMemo(() => {
-    return MOCK_ADMIN_CUSTOMERS.filter((customer: AdminCustomerRow) => {
-      // 1. Search (Nama, Email, No Telepon)
+    return apiCustomers.filter((customer: AdminCustomerRow) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesName = customer.name.toLowerCase().includes(query);
         const matchesEmail = customer.email.toLowerCase().includes(query);
-        const matchesPhone = customer.phone?.toLowerCase().includes(query) ?? false;
+        const matchesPhone =
+          customer.phone?.toLowerCase().includes(query) ?? false;
         if (!matchesName && !matchesEmail && !matchesPhone) return false;
       }
 
-      // 2. Reseller Status Filter
       if (resellerFilter !== "ALL") {
         if (resellerFilter === "CUSTOMER") {
           if (customer.reseller_status !== "NOT_RESELLER") return false;
@@ -84,16 +109,16 @@ function AdminCustomersContent() {
         }
       }
 
-      // 3. Account Active Status Filter
       if (statusFilter === "ACTIVE" && !customer.is_active) return false;
       if (statusFilter === "INACTIVE" && customer.is_active) return false;
 
       return true;
     });
-  }, [searchQuery, resellerFilter, statusFilter]);
+  }, [apiCustomers, searchQuery, resellerFilter, statusFilter]);
 
-  // Hitung statistik keseluruhan dari master data
-  const stats = useMemo(() => getCustomerStats(MOCK_ADMIN_CUSTOMERS), []);
+  const stats = useMemo(() => getCustomerStats(apiCustomers), [apiCustomers]);
+
+  const totalCount = data?.meta?.total_count ?? apiCustomers.length;
 
   const handleExport = () => {
     alert("Data pelanggan berhasil diunduh sebagai file CSV.");
@@ -101,6 +126,31 @@ function AdminCustomersContent() {
 
   return (
     <div className="space-y-6">
+      {isError && (
+        <div className="flex items-start gap-3 rounded-2xl border-2 border-destructive/30 bg-destructive/10 p-4 text-destructive">
+          <AlertTriangle className="size-5 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1">
+            <p className="font-heading font-bold text-sm">
+              Gagal memuat data pelanggan
+            </p>
+            <p className="text-xs opacity-90">
+              {error instanceof Error
+                ? error.message
+                : "Terjadi kesalahan saat menghubungi server."}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="shrink-0 rounded-xl border-2 border-destructive/40 text-destructive hover:bg-destructive/20 hover:text-destructive"
+          >
+            Coba Lagi
+          </Button>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -113,7 +163,8 @@ function AdminCustomersContent() {
             </h1>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Pantau seluruh data pelanggan terdaftar, status kemitraan reseller, dan akumulasi nilai belanja (LTV).
+            Pantau seluruh data pelanggan terdaftar, status kemitraan reseller,
+            dan akumulasi nilai belanja (LTV).
           </p>
         </div>
 
@@ -155,11 +206,11 @@ function AdminCustomersContent() {
             <strong className="text-foreground font-semibold">
               {filteredCustomers.length}
             </strong>{" "}
-            dari {MOCK_ADMIN_CUSTOMERS.length} pelanggan
+            dari {totalCount} pelanggan
           </span>
         </div>
 
-        <CustomerTable data={filteredCustomers} />
+        <CustomerTable data={filteredCustomers} isLoading={isLoading} />
       </div>
     </div>
   );

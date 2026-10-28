@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { OrderStatusTabs, type OrderTabKey } from "@/components/user/orders/order-status-tabs";
 import { OrderPeriodSelect, type OrderPeriod } from "@/components/user/orders/order-period-select";
 import { OrderCard } from "@/components/user/orders/order-card";
@@ -34,6 +35,7 @@ export interface ApiOrder {
   cancelled_at: string | null;
   created_at: string;
   item_count: number;
+  has_reviewed: boolean;
   first_item: {
     product_name_snapshot: string;
     variant_name_snapshot: string | null;
@@ -82,6 +84,7 @@ function matchesPeriod(createdAt: string, period: OrderPeriod): boolean {
 }
 
 function OrdersContent() {
+  const router = useRouter();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [meta, setMeta] = useState<ApiMeta>({ page: 1, limit: ITEMS_PER_PAGE, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -229,7 +232,10 @@ function OrdersContent() {
   }
 
   function handlePayNow(orderNumber: string) {
-    showToast(`Membuka instruksi pembayaran untuk ${orderNumber}...`);
+    const order = orders.find((o) => o.order_number === orderNumber);
+    if (order) {
+      router.push(`/payment/${order.id}`);
+    }
   }
 
   function handleCancelOrder(orderNumber: string) {
@@ -244,6 +250,14 @@ function OrdersContent() {
 
   function handleReviewSuccess() {
     showToast("Ulasanmu berhasil dikirim!");
+    // Tandai order ini sebagai sudah direview agar banner hilang
+    if (selectedReviewOrder) {
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === selectedReviewOrder.id ? { ...o, has_reviewed: true } : o,
+        ),
+      );
+    }
     setSelectedReviewOrder(null);
   }
 
@@ -355,6 +369,7 @@ function OrdersContent() {
                     courier_name: order.courier_name,
                     tracking_number: order.tracking_number,
                     shipment_summary: order.shipment_summary,
+                    has_reviewed: order.has_reviewed,
                   }}
                   onViewInvoice={handleViewInvoice}
                   onTrackPackage={handleTrackPackage}
@@ -427,7 +442,7 @@ function OrdersContent() {
           isOpen
           onClose={() => setSelectedReviewOrder(null)}
           orderNumber={selectedReviewOrder.order_number}
-          productName={selectedReviewOrder.first_item?.product_name_snapshot ?? "Produk RoboEdu"}
+          orderId={selectedReviewOrder.id}
           onSubmitSuccess={handleReviewSuccess}
         />
       )}
