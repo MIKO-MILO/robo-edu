@@ -71,6 +71,9 @@
   /* ==== HEART === */
   --color-heart: #FF4040;
 
+  /* ==== ANIMATION — Marquee ===== */
+  --animate-marquee: marquee-scroll 25s linear infinite;
+
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
   --font-body: var(--font-outfit), sans-serif;
@@ -268,4 +271,17 @@
 .animate-waving-hand {
   animation: wave-hand 2.4s ease-in-out infinite;
   transform-origin: 15% 85%;
+}
+
+/* ==========================================
+   Marquee / Ticker Strip Animation
+   ========================================== */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: var(--animate-marquee);
+  will-change: transform;
 }

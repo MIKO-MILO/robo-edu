@@ -11,9 +11,8 @@ import {
   ChevronRight,
   Shield,
 } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { BackButton } from "@/components/ui/button";
+import { BackButton, Button, buttonVariants } from "@/components/ui/button";
 import type { ResellerStatus } from "@/types/enums";
 
 export interface ResellerDetailHeaderProps {
@@ -80,9 +79,9 @@ const STATUS_CONFIG: Record<
 };
 
 /**
- * Molecule — Header detail pengajuan reseller (Neo-Brutalist).
+ * Molecule â€” Header detail pengajuan reseller (Neo-Brutalist).
  * Menampilkan breadcrumb, status badge, profil pemohon, dan tombol aksi CTA.
- * Layout: top action bar → profile bento card.
+ * Layout: top action bar ? profile bento card.
  */
 export function ResellerDetailHeader({
   id,
@@ -102,10 +101,10 @@ export function ResellerDetailHeader({
 
   return (
     <div className="space-y-4">
-      {/* ── Top Action Bar & Breadcrumbs ── */}
+      {/* -- Top Action Bar & Breadcrumbs -- */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
         <div className="flex flex-wrap items-center gap-3">
-          {/* Back button — Neo style */}
+          {/* Back button â€” Neo style */}
           <BackButton
             href="/admin/resellers"
             label="KEMBALI KE DAFTAR RESELLER"
@@ -146,7 +145,7 @@ export function ResellerDetailHeader({
         </div>
       </header>
 
-      {/* ── Bento Profile Overview ── */}
+      {/* -- Bento Profile Overview -- */}
       <section className="border border-border rounded-2xl bg-card p-5 md:p-7 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           {/* Left: Avatar + Info */}
@@ -215,10 +214,8 @@ export function ResellerDetailHeader({
                 target="_blank"
                 rel="noreferrer"
                 className={cn(
-                  "border-2 border-border neo-shadow-icon bg-card hover:bg-muted",
-                  "text-xs font-heading font-bold px-3 py-2.5",
-                  "flex items-center justify-center gap-1.5 flex-1 sm:flex-initial",
-                  "neo-shadow-hover transition-all duration-100"
+                  buttonVariants({ variant: "default", size: "sm", neo: false }),
+                  "flex-1 sm:flex-initial font-heading font-bold text-xs"
                 )}
               >
                 <MessageCircle className="size-4 text-green-700" />
@@ -227,32 +224,28 @@ export function ResellerDetailHeader({
             )}
             {resellerStatus === "PENDING" && (
               <>
-                <button
+                <Button
                   type="button"
                   onClick={onReject}
-                  className={cn(
-                    "border-2 border-border neo-shadow bg-danger-bg hover:bg-accent-pink text-danger",
-                    "text-xs font-heading font-bold px-4 py-2.5",
-                    "flex items-center justify-center gap-1.5 flex-1 sm:flex-initial",
-                    "neo-shadow-hover transition-all duration-100"
-                  )}
+                  variant="danger"
+                  size="sm"
+                  neo={false}
+                  className="flex-1 sm:flex-initial font-heading font-bold text-xs"
                 >
                   <XCircle className="size-4" />
                   TOLAK
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={onApprove}
-                  className={cn(
-                    "border-2 border-border neo-shadow bg-primary hover:bg-primary-600 text-white",
-                    "text-xs font-heading font-bold px-5 py-2.5",
-                    "flex items-center justify-center gap-1.5 flex-1 sm:flex-initial",
-                    "neo-shadow-hover transition-all duration-100"
-                  )}
+                  variant="success"
+                  size="sm"
+                  neo={false}
+                  className="flex-1 sm:flex-initial font-heading font-bold text-xs"
                 >
                   <CheckCircle2 className="size-4" />
                   SETUJUI RESELLER
-                </button>
+                </Button>
               </>
             )}
           </div>

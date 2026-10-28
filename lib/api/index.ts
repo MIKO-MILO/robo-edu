@@ -19,5 +19,5 @@ export * from "./services/payment.service";
 export * from "./services/shipping.service";
 export * from "./services/review.service";
 export * from "./services/complaint.service";
-export * from "./services/reseller.service";
+export * from "./services/membership.service";
 export * from "./services/admin.service";

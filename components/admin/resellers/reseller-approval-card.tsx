@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Gavel, CheckCircle2, XCircle, Info, Clock, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { ResellerStatus } from "@/types/enums";
 
 export interface ResellerApprovalCardProps {
@@ -13,14 +14,14 @@ export interface ResellerApprovalCardProps {
 }
 
 /**
- * Molecule — Kartu Keputusan Verifikasi pengajuan reseller (Neo-Brutalist).
+ * Molecule â?â€ Kartu Keputusan Verifikasi pengajuan reseller (Neo-Brutalist).
  * State-based rendering:
  *   - PENDING: form catatan verifikator + tombol approve/reject
  *   - APPROVED: read-only card status berhasil
  *   - REJECTED: read-only card status ditolak
  *
  * FR-010 / FR-017 (PRD): Persetujuan mengaktifkan hak reseller_price.
- * Aksi dicatat di audit_log — handled by backend on Phase 2.
+ * Aksi dicatat di audit_log â?â€ handled by backend on Phase 2.
  */
 export function ResellerApprovalCard({
   resellerStatus,
@@ -30,7 +31,7 @@ export function ResellerApprovalCard({
 }: ResellerApprovalCardProps) {
   const [notes, setNotes] = React.useState("");
 
-  // ── APPROVED state ──
+  // -- APPROVED state --
   if (resellerStatus === "APPROVED") {
     return (
       <div className="border border-border rounded-2xl bg-card overflow-hidden">
@@ -61,7 +62,7 @@ export function ResellerApprovalCard({
     );
   }
 
-  // ── REJECTED state ──
+  // -- REJECTED state --
   if (resellerStatus === "REJECTED") {
     return (
       <div className="border border-border rounded-2xl bg-card overflow-hidden">
@@ -90,16 +91,16 @@ export function ResellerApprovalCard({
     );
   }
 
-  // ── PENDING state — action form ──
+  // -- PENDING state â?â€ action form --
   return (
     <div className="border border-border rounded-2xl bg-card relative overflow-hidden">
-      {/* Blue header */}
-      <div className="p-4 border-b border-border bg-primary flex items-center justify-between rounded-t-2xl">
-        <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-white">
+      {/* Header */}
+      <div className="p-4 border-b border-border bg-accent-soft-blue flex items-center justify-between rounded-t-2xl">
+        <h2 className="font-heading text-sm md:text-base font-bold flex items-center gap-2 text-foreground">
           <Gavel className="size-[18px]" />
           Keputusan Verifikasi
         </h2>
-        <span className="border border-white/50 bg-white/10 text-white text-[10px] font-mono px-2 py-0.5 font-bold">
+        <span className="border border-border bg-white/30 text-foreground text-[10px] font-mono px-2 py-0.5 font-bold">
           FR-010 / FR-017
         </span>
       </div>
@@ -140,32 +141,28 @@ export function ResellerApprovalCard({
 
         {/* Action buttons stack */}
         <div className="grid grid-cols-1 gap-3 pt-1">
-          <button
+          <Button
             type="button"
             onClick={onApprove}
-            className={cn(
-              "border-2 border-border neo-shadow bg-primary hover:bg-primary-600 text-white",
-              "py-3 px-4 font-heading text-xs md:text-sm font-bold",
-              "flex items-center justify-center gap-2",
-              "neo-shadow-hover transition-all duration-100"
-            )}
+            variant="success"
+            size="lg"
+            neo={false}
+            className="w-full font-heading font-bold text-xs md:text-sm rounded-xl"
           >
             <CheckCircle2 className="size-5" />
             SETUJUI RESELLER (APPROVED)
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onReject}
-            className={cn(
-              "border-2 border-border neo-shadow bg-danger-bg hover:bg-accent-pink text-danger",
-              "py-2.5 px-4 font-heading text-xs font-bold",
-              "flex items-center justify-center gap-2",
-              "neo-shadow-hover transition-all duration-100"
-            )}
+            variant="danger"
+            size="lg"
+            neo={false}
+            className="w-full font-heading font-bold md:text-sm text-xs rounded-xl"
           >
             <XCircle className="size-5" />
             TOLAK PENGAJUAN (REJECTED)
-          </button>
+          </Button>
         </div>
 
         {/* Audit trail live preview placeholder */}

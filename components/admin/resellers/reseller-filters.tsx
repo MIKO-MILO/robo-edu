@@ -22,7 +22,7 @@ export interface ResellerFiltersProps {
 }
 
 /**
- * Molecule — toolbar pencarian + tab filter status pengajuan reseller.
+ * Molecule â?â€ toolbar pencarian + tab filter status pengajuan reseller.
  * Tab: Semua / Menunggu Review / Disetujui / Ditolak
  */
 export function ResellerFilters({
@@ -52,7 +52,7 @@ export function ResellerFilters({
           />
         </div>
 
-        {/* Status Filter Mobile (Select) — visible hanya di mobile sebagai alternatif tabs */}
+        {/* Status Filter Mobile (Select) â?â€ visible hanya di mobile sebagai alternatif tabs */}
         <div className="w-40 shrink-0 lg:hidden">
           <Select
             value={statusFilter}
@@ -73,7 +73,7 @@ export function ResellerFilters({
         </div>
       </div>
 
-      {/* Status Tabs — visible di lg+ */}
+      {/* Status Tabs â?â€ visible di lg+ */}
       <div className="hidden lg:flex items-center gap-1.5">
         {RESELLER_STATUS_TABS.map((tab) => (
           <button

@@ -51,7 +51,7 @@ function getInitials(name: string): string {
 const SKELETON_ROWS = 5;
 
 /**
- * Organism — tabel daftar pengajuan reseller di halaman /admin/resellers.
+ * Organism â?â€ tabel daftar pengajuan reseller di halaman /admin/resellers.
  * Menampilkan avatar inisial, info nama/email, no HP, status pengajuan,
  * tanggal pengajuan, riwayat belanja, dan aksi detail/approve.
  */
@@ -63,7 +63,7 @@ export function ResellerTable({ data, isLoading = false }: ResellerTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse font-body text-sm">
           <thead>
-            <tr className="border-b-2 border-border bg-muted/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b-2 border-border bg-accent-soft-blue/40 text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
               <th className="py-3.5 px-4">Pemohon</th>
               <th className="py-3.5 px-4">Kontak</th>
               <th className="py-3.5 px-4">Status</th>

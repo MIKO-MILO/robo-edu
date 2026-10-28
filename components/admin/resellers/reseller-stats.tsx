@@ -9,7 +9,7 @@ export interface ResellerStatsProps {
 }
 
 /**
- * Molecule — grid 4 KPI cards ringkasan status pengajuan reseller.
+ * Molecule â?â€ grid 4 KPI cards ringkasan status pengajuan reseller.
  * Mendukung klik untuk filter status terkait.
  */
 export function ResellerStatsGrid({ stats, onFilterStatus }: ResellerStatsProps) {

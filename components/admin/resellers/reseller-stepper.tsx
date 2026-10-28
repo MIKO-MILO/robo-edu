@@ -24,7 +24,7 @@ const STEPS: Step[] = [
 function statusToStep(status: ResellerStatus): number {
   if (status === "APPROVED") return 5; // all steps done
   if (status === "REJECTED") return 3;  // stopped at step 3
-  return 3; // PENDING — currently at step 3
+  return 3; // PENDING â?â€ currently at step 3
 }
 
 export interface ResellerStepperProps {
@@ -32,7 +32,7 @@ export interface ResellerStepperProps {
 }
 
 /**
- * Atom — Horizontal stepper bar for reseller verification flow.
+ * Atom â?â€ Horizontal stepper bar for reseller verification flow.
  * Visual progress indicator matching stitch design:
  *   Step 1: Account registered (done)
  *   Step 2: KTP & NPWP uploaded (done)

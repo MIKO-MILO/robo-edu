@@ -5,9 +5,11 @@
  *   import type { Product, Order, ApiResponse } from "@/types";
  *
  * Struktur file:
- *   enums.ts      -> semua status/enum (ProductStatus, OrderStatus, dst)
+ *   enums.ts      -> semua status/enum (ProductStatus, OrderStatus, MembershipStatus, dst)
  *   common.ts     -> amplop response API (ApiResponse, ApiError, dst)
  *   user.ts       -> User, UserAddress, auth request/response
+ *   membership.ts -> MembershipPurchase, MembershipStatusData (sistem membership baru)
+ *   reseller.ts   -> LEGACY: types sistem reseller lama (masih dipakai User type)
  *   catalog.ts    -> Category, ProductType, Product, Variant, Image
  *   cart.ts       -> Cart, CartItem
  *   wishlist.ts   -> WishlistItem
@@ -21,7 +23,8 @@
 export * from "./enums";
 export * from "./common";
 export * from "./user";
-export * from "./reseller";
+export * from "./membership";
+export * from "./reseller"; // LEGACY: sistem reseller lama; dipertahankan karena User type masih punya reseller_status
 export * from "./catalog";
 export * from "./cart";
 export * from "./wishlist";
