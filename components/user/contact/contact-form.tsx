@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,35 @@ export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // Tandai field mana yang di-prefill agar tampilkan hint "dari akun kamu"
+  const [prefilled, setPrefilled] = useState({ name: false, email: false, phone: false });
+
+  // ── Prefill dari data user yang login ─────────────────────────────
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) return; // belum login, biarkan kosong
+        const json = await res.json();
+        const user = json.data;
+        if (!user) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          name:  user.name  ?? prev.name,
+          email: user.email ?? prev.email,
+          phone: user.phone ?? prev.phone,
+        }));
+        setPrefilled({
+          name:  Boolean(user.name),
+          email: Boolean(user.email),
+          phone: Boolean(user.phone),
+        });
+      } catch {
+        // Tidak login atau error — abaikan saja
+      }
+    })();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -56,12 +85,21 @@ export function ContactForm() {
     setIsSubmitting(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setIsSubmitting(false);
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setErrorMessage(result.message ?? "Gagal mengirim pesan. Silakan coba lagi.");
+        return;
+      }
       setIsSubmitted(true);
     } catch {
+      setErrorMessage("Gagal mengirim pesan. Periksa koneksi internet Anda.");
+    } finally {
       setIsSubmitting(false);
-      setErrorMessage("Gagal mengirim pesan. Silakan coba lagi beberapa saat lagi.");
     }
   };
 

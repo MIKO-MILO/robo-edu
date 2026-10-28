@@ -1,51 +1,37 @@
-import { db } from '../../../../src/db';
-import { users } from '../../../../src/db/schema/user';
-import { eq } from 'drizzle-orm';
-import { createHash } from 'crypto';
-import type { LoginRequestBody } from '@/types/user';
+import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { db } from "@/src/db";
+import { users } from "@/src/db/schema";
+import { hashPassword, verifyPassword } from "@/src/lib/auth/password";
+import { createSessionToken, SESSION_COOKIE_NAME, sessionCookieOptions } from "@/src/lib/auth/session";
+
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const body: LoginRequestBody = await request.json();
-    const { email, password } = body;
+    const body = await request.json();
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    const rememberMe = body.rememberMe === true;
+    if (!email || !password) return NextResponse.json({ success: false, message: "Email dan password wajib diisi." }, { status: 400 });
 
-    if (!email || !password) {
-      return new Response(JSON.stringify({ message: 'Missing email or password' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (!user || !user.isActive || !(await verifyPassword(password, user.password))) {
+      return NextResponse.json({ success: false, message: "Email atau password salah." }, { status: 401 });
     }
 
-    // Find the user by email
-    const existing = await db.select().from(users).where(eq(users.email, email));
-    if (existing.length === 0) {
-      return new Response(JSON.stringify({ message: 'Invalid credentials' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    if (!user.password.startsWith("scrypt$")) {
+      await db.update(users).set({ password: await hashPassword(password) }).where(eq(users.id, user.id));
     }
+    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
-    const user = existing[0];
-    // Verify password (same SHA256 hash method as registration)
-    const passwordHash = createHash('sha256').update(password).digest('hex');
-    if (user.password !== passwordHash) {
-      return new Response(JSON.stringify({ message: 'Invalid credentials' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Return minimal user info (add JWT / session handling here if needed)
-    const responseBody = { id: user.id, name: user.name, email: user.email };
-    return new Response(JSON.stringify(responseBody), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
+    const response = NextResponse.json({ success: true, data: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    response.cookies.set(SESSION_COOKIE_NAME, createSessionToken(user.id, rememberMe), {
+      ...sessionCookieOptions,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60,
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    return new Response(JSON.stringify({ message: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return response;
+  } catch {
+    return NextResponse.json({ success: false, message: "Data login tidak valid." }, { status: 400 });
   }
 }

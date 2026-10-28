@@ -27,7 +27,7 @@ export default function Navbar() {
       }}
     >
       {/* Brand / Logo */}
-      <Link  
+      <Link
         href="/"
         className="flex items-center gap-2 transition-opacity hover:opacity-90"
       >
@@ -91,9 +91,10 @@ export default function Navbar() {
       {/* Trailing Actions */}
       <div className="flex items-center gap-6">
         {/* Cart */}
-        <button
+        <Link
+          href="/cart"
           aria-label="Shopping Basket"
-          className="transition-opacity hover:opacity-80"
+          className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
             src="/assets/svg/icon-cart.svg"
@@ -101,12 +102,13 @@ export default function Navbar() {
             width={34}
             height={34}
           />
-        </button>
+        </Link>
 
         {/* Profile */}
-        <button
+        <Link
+          href="/profile/my-profile"
           aria-label="Account Profile"
-          className="transition-opacity hover:opacity-80"
+          className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
             src="/assets/svg/icon-user-profile.svg"
@@ -114,7 +116,7 @@ export default function Navbar() {
             width={36}
             height={36}
           />
-        </button>
+        </Link>
       </div>
     </nav>
   );

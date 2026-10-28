@@ -21,3 +21,4 @@ export * from "./complaint";
 export * from "./complaint-attachment";
 export * from "./email-log";
 export * from "./audit-log";
+export * from "./contact-message";

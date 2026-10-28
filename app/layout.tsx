@@ -1,6 +1,8 @@
 import { Unbounded, Outfit } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ReactQueryProvider } from "@/components/providers/query-provider";
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -16,6 +18,11 @@ const outfit = Outfit({
   display: "swap",
 });
 
+const MIDTRANS_SNAP_URL =
+  process.env.MIDTRANS_IS_PRODUCTION === "true"
+    ? "https://app.midtrans.com/snap/snap.js"
+    : "https://app.sandbox.midtrans.com/snap/snap.js";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -24,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="font-body bg-background text-foreground" suppressHydrationWarning>
-        {children}
+        <ReactQueryProvider>{children}</ReactQueryProvider>
       </body>
     </html>
   );

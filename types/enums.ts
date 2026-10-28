@@ -12,9 +12,8 @@
  * ------------------------------------------------------------------
  */
 
-/** Kolom `user.role`. PRD Bab 5 minta superadmin/admin_sales/admin_laporan,
- * tapi kodebase saat ini baru CUSTOMER & ADMIN. // TODO: role granular admin */
-export type UserRole = "CUSTOMER" | "ADMIN";
+/** Kolom `user.role`. Granular role di DB: superadmin, admin_sales, admin_laporan, customer. */
+export type UserRole = "superadmin" | "admin_sales" | "admin_laporan" | "customer";
 
 /** Kolom `user.reseller_status`. Ini TERPISAH dari `role` — jangan digabung
  * jadi satu field di UI/middleware (lihat PRD Bab 5–6). */
