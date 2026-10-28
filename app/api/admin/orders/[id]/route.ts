@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import {
   orders,
@@ -10,9 +10,8 @@ import {
   shippingProviders,
   users,
 } from "@/src/db/schema";
-import { getSession } from "@/lib/auth/session";
 import { getSessionUserId } from "@/src/lib/auth/session";
-import type { OrderStatus } from "@/types/enums";
+import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
 
@@ -32,15 +31,25 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // ── Auth ───────────────────────────────────────────────────────────────
-  const session = await getSession();
-  if (!session || !isAdminRole(session.role)) {
-    const userId = await getSessionUserId();
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  const userId = await getSessionUserId();
+  if (!userId) {
+    return NextResponse.json(
+      { success: false, message: "Silakan login terlebih dahulu." },
+      { status: 401 },
+    );
+  }
+
+  const [currentUser] = await db
+    .select({ role: users.role, isActive: users.isActive })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!currentUser || !currentUser.isActive || !isAdminRole(currentUser.role)) {
+    return NextResponse.json(
+      { success: false, message: "Anda tidak memiliki izin akses admin." },
+      { status: 403 },
+    );
   }
 
   const { id } = await params;
@@ -113,6 +122,7 @@ export async function GET(
     .select({
       status:          payments.status,
       paymentType:     payments.paymentType,
+      transactionId:   payments.transactionId,
       amount:          payments.amount,
       transactionTime: payments.transactionTime,
       expiryTime:      payments.expiryTime,
@@ -174,7 +184,7 @@ export async function GET(
     data: {
       id:                    row.id,
       order_number:          row.orderNumber,
-      status:                row.status as OrderStatus,
+      status:                row.status.toUpperCase() as OrderStatus,
       subtotal:              Number(row.subtotal),
       discount_amount:       Number(row.discountAmount),
       tax_amount:            Number(row.taxAmount),
@@ -218,8 +228,9 @@ export async function GET(
       // payment
       payment: payment
         ? {
-            status:           payment.status,
+            status:           payment.status.toUpperCase() as PaymentStatus,
             payment_type:     payment.paymentType,
+            transaction_id:   payment.transactionId,
             amount:           Number(payment.amount),
             transaction_time: payment.transactionTime?.toISOString() ?? null,
             expiry_time:      payment.expiryTime?.toISOString()      ?? null,

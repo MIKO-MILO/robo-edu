@@ -10,6 +10,8 @@ import {
   useUploadProductImage,
   useDeleteProductImage,
   useReorderProductImage,
+  useUploadProductVideo,
+  useDeleteProductVideo,
 } from "@/hooks/admin/products";
 import { useCategories } from "@/hooks/admin/categories/use-categories";
 import { useProductTypes } from "@/hooks/admin/product-types/use-product-types";
@@ -17,8 +19,10 @@ import {
   ProductForm,
   VariantEditor,
   ProductImageManager,
+  ProductVideoManager,
   type VariantItem,
   type ImageItem,
+  type VideoItem,
 } from "@/components/admin/products";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, CheckCircle2Icon, CheckIcon } from "lucide-react";
@@ -39,6 +43,7 @@ export default function CreateProductPage() {
   // Local variants & images state for realtime UI update
   const [variantsList, setVariantsList] = useState<VariantItem[]>([]);
   const [imagesList, setImagesList] = useState<ImageItem[]>([]);
+  const [videosList, setVideosList] = useState<VideoItem[]>([]);
 
   // Hooks
   const { data: categoriesResponse } = useCategories();
@@ -51,6 +56,8 @@ export default function CreateProductPage() {
   const uploadImageMutation = useUploadProductImage();
   const deleteImageMutation = useDeleteProductImage();
   const reorderImageMutation = useReorderProductImage();
+  const uploadVideoMutation = useUploadProductVideo();
+  const deleteVideoMutation = useDeleteProductVideo();
 
   const categoriesList = categoriesResponse?.data || [];
   const productTypesList = productTypesResponse?.data || [];
@@ -70,6 +77,7 @@ export default function CreateProductPage() {
       setCreatedProduct(response.data);
       setVariantsList(response.data.variants || []);
       setImagesList(response.data.images || []);
+      setVideosList([]);
     }
   };
 
@@ -171,6 +179,27 @@ export default function CreateProductPage() {
     }
   };
 
+  const handleUploadVideo = async (file: File, title?: string) => {
+    if (!createdProduct) return;
+    const response = await uploadVideoMutation.mutateAsync({
+      productId: createdProduct.id,
+      file,
+      title,
+    });
+    if (response) {
+      setVideosList((prev) => [...prev, response]);
+    }
+  };
+
+  const handleDeleteVideo = async (videoId: UUID) => {
+    if (!createdProduct) return;
+    await deleteVideoMutation.mutateAsync({
+      videoId,
+      productId: createdProduct.id,
+    });
+    setVideosList((prev) => prev.filter((v) => v.id !== videoId));
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
@@ -260,6 +289,19 @@ export default function CreateProductPage() {
           uploadImageMutation.isPending ||
           deleteImageMutation.isPending ||
           reorderImageMutation.isPending
+        }
+      />
+
+      {/* Step 2 Section: Video Manager */}
+      <ProductVideoManager
+        productId={createdProduct?.id}
+        videos={videosList}
+        disabled={!createdProduct}
+        onUploadVideo={handleUploadVideo}
+        onDeleteVideo={handleDeleteVideo}
+        isUploading={
+          uploadVideoMutation.isPending ||
+          deleteVideoMutation.isPending
         }
       />
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, Suspense, useTransition, useEffect, useState, useCallback } from "react";
+import React, { useMemo, Suspense, useTransition, useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart } from "lucide-react";
@@ -10,170 +10,108 @@ import {
   OrderTable,
 } from "@/components/admin/orders";
 import type { AdminOrderRow, OrderStats } from "@/components/admin/orders";
-import type { OrderStatus } from "@/types/enums";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface OrderListMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
-interface OrderListState {
-  data: AdminOrderRow[];
-  meta: OrderListMeta;
-  isLoading: boolean;
-  error: string | null;
-}
-
-// ---------------------------------------------------------------------------
-// Fetch helper
-// ---------------------------------------------------------------------------
-
-async function fetchAdminOrders(params: {
-  page: number;
-  limit: number;
-  q: string;
-  status: string;
-}): Promise<{ data: AdminOrderRow[]; meta: OrderListMeta }> {
-  const qs = new URLSearchParams({
-    page:   String(params.page),
-    limit:  String(params.limit),
-    q:      params.q,
-    status: params.status,
-  });
-
-  const res = await fetch(`/api/admin/orders?${qs.toString()}`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.message ?? `HTTP ${res.status}`);
-  }
-
-  const json = await res.json();
-  return { data: json.data ?? [], meta: json.meta };
-}
+import type { OrderStatus, PaymentStatus } from "@/types/enums";
+import { useAdminOrders } from "@/hooks/admin/orders/use-admin-orders";
 
 // ---------------------------------------------------------------------------
 // Inner component (needs useSearchParams — must be inside Suspense)
 // ---------------------------------------------------------------------------
-
 function AdminOrdersContent() {
-  const router        = useRouter();
-  const pathname      = usePathname();
-  const searchParams  = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const searchQuery  = searchParams.get("search") ?? "";
+  const searchQuery = searchParams.get("search") ?? "";
   const statusFilter = searchParams.get("status") ?? "ALL";
-  const currentPage  = Math.max(1, Number(searchParams.get("page") ?? "1"));
-  const LIMIT        = 20;
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
 
-  // ── State ────────────────────────────────────────────────────────────
-  const [state, setState] = useState<OrderListState>({
-    data:      [],
-    meta:      { page: 1, limit: LIMIT, total: 0, totalPages: 0 },
-    isLoading: true,
-    error:     null,
+  // ── Fetch dari API via TanStack Query ──────────────────────────────────
+  const { data: result, isLoading, isError } = useAdminOrders({
+    search: searchQuery || undefined,
+    status: statusFilter !== "ALL" ? statusFilter : undefined,
+    page,
+    limit: 10,
   });
 
-  // ── Fetch ────────────────────────────────────────────────────────────
-  const load = useCallback(async () => {
-    setState((s) => ({ ...s, isLoading: true, error: null }));
-    try {
-      const result = await fetchAdminOrders({
-        page:   currentPage,
-        limit:  LIMIT,
-        q:      searchQuery,
-        status: statusFilter,
-      });
-      setState({ data: result.data, meta: result.meta, isLoading: false, error: null });
-    } catch (err) {
-      setState((s) => ({
-        ...s,
-        isLoading: false,
-        error: err instanceof Error ? err.message : "Gagal memuat pesanan.",
-      }));
-    }
-  }, [currentPage, searchQuery, statusFilter]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  // ── URL param helpers ────────────────────────────────────────────────
-  const pushParams = useCallback(
-    (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === null || value === "") {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
-      }
-      startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
-      });
-    },
-    [searchParams, pathname, router],
+  const orders: AdminOrderRow[] = useMemo(
+    () =>
+      (result?.data ?? []).map((o) => ({
+        ...o,
+        status: o.status as OrderStatus,
+        payment_status: o.payment_status as PaymentStatus,
+      })),
+    [result],
   );
 
+  const meta = result?.meta;
+
+  // ── KPI stats global tanpa filter ─────────────────────────────────────
+  const [allStats, setAllStats] = useState<OrderStats>({
+    total: 0,
+    pending: 0,
+    processing_shipped: 0,
+    completed: 0,
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [all, pending, procShip, done] = await Promise.all([
+          fetch("/api/admin/orders?limit=1").then((r) => r.json()),
+          fetch("/api/admin/orders?limit=1&status=PENDING").then((r) => r.json()),
+          fetch("/api/admin/orders?limit=1&status=PROCESSING").then((r) => r.json()),
+          fetch("/api/admin/orders?limit=1&status=COMPLETED").then((r) => r.json()),
+        ]);
+        setAllStats({
+          total: all.meta?.total ?? 0,
+          pending: pending.meta?.total ?? 0,
+          processing_shipped: procShip.meta?.total ?? 0,
+          completed: done.meta?.total ?? 0,
+        });
+      } catch {
+        // stats gagal tidak critical
+      }
+    };
+    loadStats();
+  }, []);
+
+  // ── URL param helpers ─────────────────────────────────────────────────
+  const updateParams = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
+    // Reset ke halaman 1 saat filter berubah
+    params.delete("page");
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    pushParams({ search: e.target.value || null, page: null });
+    updateParams({ search: e.target.value || null });
   };
 
   const handleStatusChange = (status: string) => {
-    pushParams({ status: status !== "ALL" ? status : null, page: null });
+    updateParams({ status: status !== "ALL" ? status : null });
   };
 
-  const handlePageChange = (page: number) => {
-    pushParams({ page: page > 1 ? String(page) : null });
-  };
-
-  // ── Derived stats (calculated from meta + current filter context) ────
-  // For accurate cross-status totals we make a separate stats fetch once.
-  const [stats, setStats] = useState<OrderStats>({
-    total:               0,
-    pending:             0,
-    processing_shipped:  0,
-    completed:           0,
-  });
-
-  useEffect(() => {
-    // Fetch stats for each status bucket in parallel (no search, no status filter)
-    Promise.allSettled([
-      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "ALL" }),
-      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "PENDING" }),
-      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "PROCESSING" }),
-      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "SHIPPED" }),
-      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "DELIVERED" }),
-      fetchAdminOrders({ page: 1, limit: 1, q: "", status: "COMPLETED" }),
-    ]).then(([all, pending, processing, shipped, delivered, completed]) => {
-      const total              = all.status        === "fulfilled" ? all.value.meta.total               : 0;
-      const pendingCount       = pending.status    === "fulfilled" ? pending.value.meta.total            : 0;
-      const processingCount    = processing.status === "fulfilled" ? processing.value.meta.total         : 0;
-      const shippedCount       = shipped.status    === "fulfilled" ? shipped.value.meta.total            : 0;
-      const deliveredCount     = delivered.status  === "fulfilled" ? delivered.value.meta.total          : 0;
-      const completedCount     = completed.status  === "fulfilled" ? completed.value.meta.total          : 0;
-
-      setStats({
-        total,
-        pending:             pendingCount,
-        processing_shipped:  processingCount + shippedCount,
-        completed:           deliveredCount + completedCount,
-      });
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newPage <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(newPage));
+    }
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
     });
-  }, []); // only on mount — stats are a general overview
-
-  // ── Pagination component ─────────────────────────────────────────────
-  const { totalPages } = state.meta;
+  };
 
   return (
     <div className="space-y-6">
@@ -191,7 +129,14 @@ function AdminOrdersContent() {
       </div>
 
       {/* KPI Stats */}
-      <OrderStatsGrid stats={stats} />
+      <OrderStatsGrid stats={allStats} />
+
+      {/* Error state */}
+      {isError && (
+        <div className="rounded-2xl border-2 border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 font-medium">
+          Gagal memuat data pesanan. Silakan refresh halaman.
+        </div>
+      )}
 
       {/* Toolbar: search + filter */}
       <OrderFilters
@@ -201,38 +146,37 @@ function AdminOrdersContent() {
         onStatusChange={handleStatusChange}
       />
 
-      {/* Error banner */}
-      {state.error && (
-        <div className="rounded-2xl border-2 border-danger/30 bg-danger-bg px-4 py-3 text-sm text-danger font-body">
-          Gagal memuat data: {state.error}
-        </div>
-      )}
-
       {/* Orders Table */}
-      <OrderTable data={state.data} isLoading={state.isLoading} />
+      <OrderTable data={orders} isLoading={isLoading} />
 
       {/* Pagination */}
-      {!state.isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between text-xs text-muted-foreground font-body px-1">
-          <span>
-            Halaman {state.meta.page} dari {totalPages} &bull; {state.meta.total} pesanan
-          </span>
+      {meta && meta.total_pages > 1 && (
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <p className="text-xs text-muted-foreground font-medium">
+            Menampilkan{" "}
+            <span className="font-bold text-foreground">
+              {(meta.page - 1) * meta.limit + 1}–
+              {Math.min(meta.page * meta.limit, meta.total)}
+            </span>{" "}
+            dari <span className="font-bold text-foreground">{meta.total}</span> pesanan
+          </p>
           <div className="flex items-center gap-2">
             <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed font-heading font-bold text-xs transition-colors"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1 || isLoading}
+              className="h-8 px-3 rounded-xl border-2 border-border bg-card text-xs font-bold text-foreground disabled:opacity-40 hover:bg-muted transition-colors"
             >
               ← Sebelumnya
             </button>
+            <span className="text-xs font-bold text-foreground px-1">
+              {meta.page} / {meta.total_pages}
+            </span>
             <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed font-heading font-bold text-xs transition-colors"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= meta.total_pages || isLoading}
+              className="h-8 px-3 rounded-xl border-2 border-border bg-card text-xs font-bold text-foreground disabled:opacity-40 hover:bg-muted transition-colors"
             >
-              Berikutnya →
+              Selanjutnya →
             </button>
           </div>
         </div>

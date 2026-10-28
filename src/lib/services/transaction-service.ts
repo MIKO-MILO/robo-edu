@@ -191,8 +191,8 @@ export async function createPaymentTransaction(
       shippingProvince: recipient.province,
       shippingCity: recipient.city,
       shippingDistrict: recipient.district,
-      shippingVillage: recipient.village,
-      shippingPostalCode: recipient.postalCode,
+      shippingVillage: recipient.village ?? "",
+      shippingPostalCode: recipient.postalCode ?? "",
     });
 
     await tx.insert(orderItems).values(

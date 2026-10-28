@@ -30,34 +30,71 @@ const ASPECT_MAP = {
   auto: "",
 };
 
-const DEFAULT_FALLBACK = "/images/placeholder-product.jpg";
+/**
+ * URL sumber yang diketahui tidak bisa dirender sebagai gambar statis —
+ * langsung skip ke fallback tanpa mencoba load.
+ */
+function isUnrenderableUrl(url: string): boolean {
+  return (
+    url.includes("coresg-normal.trae.ai") ||
+    url.includes("text_to_image") ||
+    url.includes("image_is_generating")
+  );
+}
+
+/**
+ * URL yang tidak perlu dioptimasi oleh Next.js Image Optimizer.
+ */
+function shouldSkipOptimization(url: string): boolean {
+  return (
+    url.startsWith("/api/images/") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:") ||
+    url.includes("placehold.co")
+  );
+}
+
+/**
+ * Generate URL placeholder dari placehold.co dengan label nama produk.
+ * Format: https://placehold.co/400x400/e8f4fd/2483d0?text=Nama+Produk
+ */
+function makePlaceholderUrl(label: string): string {
+  const text = encodeURIComponent(
+    label.length > 20 ? label.slice(0, 20) + "…" : label,
+  );
+  return `https://placehold.co/400x400/e8f4fd/2483d0?text=${text}`;
+}
 
 export function ProductImage({
   src,
   alt,
   size = "full",
   aspectRatio = "square",
-  fallbackSrc = DEFAULT_FALLBACK,
+  fallbackSrc,
   className,
   imageClassName,
   priority = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   ...props
 }: ProductImageProps) {
-  const [lastSrc, setLastSrc] = useState<string | null | undefined>(src);
-  const [lastErrorSrc, setLastErrorSrc] = useState<string | null>(null);
-  const [fallbackFailed, setFallbackFailed] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
-  if (lastSrc !== src) {
-    setLastSrc(src);
-    setLastErrorSrc(null);
-    setFallbackFailed(false);
+  // Reset error state kalau src berubah
+  const [prevSrc, setPrevSrc] = useState(src);
+  if (prevSrc !== src) {
+    setPrevSrc(src);
+    setImgError(false);
   }
 
-  const baseSrc = src ?? fallbackSrc;
-  const tryFallback = Boolean(baseSrc) && lastErrorSrc === baseSrc;
-  const imgSrc = tryFallback ? fallbackSrc : baseSrc;
-  const hasError = !imgSrc || (tryFallback && fallbackFailed);
+  // Tentukan URL yang akan dirender
+  const resolvedFallback = fallbackSrc ?? makePlaceholderUrl(alt);
+
+  const shouldUseFallback =
+    !src ||
+    imgError ||
+    isUnrenderableUrl(src);
+
+  const imgSrc = shouldUseFallback ? resolvedFallback : src;
 
   const containerSizeClass = size !== "full" ? SIZE_MAP[size] : "";
   const aspectClass = aspectRatio !== "auto" ? ASPECT_MAP[aspectRatio] : "";
@@ -71,35 +108,21 @@ export function ProductImage({
         className,
       )}
     >
-      {hasError ? (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-accent-soft-blue text-foreground/70 p-2 text-center">
-          <span className="text-2xl mb-1">🤖</span>
-          <span className="font-body text-xs font-semibold line-clamp-1">
-            {alt}
-          </span>
-        </div>
-      ) : (
-        <Image
-          key={imgSrc}
-          src={imgSrc}
-          alt={alt}
-          fill
-          priority={priority}
-          sizes={sizes}
-          onError={() => {
-            if (!tryFallback) {
-              setLastErrorSrc(baseSrc);
-            } else if (!fallbackFailed) {
-              setFallbackFailed(true);
-            }
-          }}
-          className={cn(
-            "object-cover w-full h-full transition-opacity duration-200",
-            imageClassName,
-          )}
-          {...props}
-        />
-      )}
+      <Image
+        key={imgSrc}
+        src={imgSrc}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes={sizes}
+        unoptimized={shouldSkipOptimization(imgSrc)}
+        onError={() => setImgError(true)}
+        className={cn(
+          "object-cover w-full h-full transition-opacity duration-200",
+          imageClassName,
+        )}
+        {...props}
+      />
     </div>
   );
 }

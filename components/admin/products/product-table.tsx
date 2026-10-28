@@ -1,11 +1,11 @@
-import React from "react";
-import Image from "next/image";
-import type { ProductListItem, PaginationMeta, UUID } from "@/types";
+import React, { useRef, useState } from "react";
+import type { ProductListItem, PaginationMeta, ProductStatus } from "@/types";
 import { ProductStatusBadge } from "./product-status-badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Edit2Icon, Trash2Icon, PackageIcon } from "lucide-react";
+import { Edit2Icon, Trash2Icon, PackageIcon, ChevronDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface ProductTableProps {
   data: ProductListItem[];
@@ -13,8 +13,16 @@ export interface ProductTableProps {
   meta?: PaginationMeta;
   onPageChange?: (page: number) => void;
   onEdit?: (product: ProductListItem) => void;
-  onDelete?: (id: UUID) => void;
+  onDelete?: (product: ProductListItem) => void;
+  onStatusChange?: (product: ProductListItem, newStatus: ProductStatus) => void;
 }
+
+const STATUS_OPTIONS: { value: ProductStatus; label: string }[] = [
+  { value: "ACTIVE",       label: "Aktif" },
+  { value: "DRAFT",        label: "Draft" },
+  { value: "INACTIVE",     label: "Nonaktif" },
+  { value: "OUT_OF_STOCK", label: "Stok Habis" },
+];
 
 function formatIDR(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -24,6 +32,70 @@ function formatIDR(amount: number): string {
   }).format(amount);
 }
 
+// ── Inline Status Dropdown ────────────────────────────────────────────────
+
+function StatusDropdown({
+  product,
+  onStatusChange,
+}: {
+  product: ProductListItem;
+  onStatusChange: (product: ProductListItem, newStatus: ProductStatus) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Tutup kalau klik di luar
+  React.useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative inline-block">
+      {/* Badge yang bisa diklik */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        title="Klik untuk ubah status"
+        className="flex items-center gap-1 group"
+      >
+        <ProductStatusBadge status={product.status} />
+        <ChevronDownIcon
+          className={cn(
+            "size-3 text-muted-foreground transition-transform duration-150",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-50 min-w-[130px] rounded-2xl border-2 border-border bg-card shadow-lg overflow-hidden">
+          {STATUS_OPTIONS.filter((opt) => opt.value !== product.status).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onStatusChange(product, opt.value);
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-body text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <ProductStatusBadge status={opt.value} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Table ─────────────────────────────────────────────────────────────
+
 export function ProductTable({
   data,
   isLoading,
@@ -31,13 +103,17 @@ export function ProductTable({
   onPageChange,
   onEdit,
   onDelete,
+  onStatusChange,
 }: ProductTableProps) {
   if (isLoading) {
     return (
       <div className="w-full space-y-4">
         <div className="overflow-hidden rounded-2xl border border-border bg-card p-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0">
+            <div
+              key={i}
+              className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0"
+            >
               <Skeleton className="h-12 w-12 rounded-xl" />
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-4 w-1/3" />
@@ -69,7 +145,6 @@ export function ProductTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Table Container */}
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-left border-collapse font-body">
           <thead>
@@ -77,7 +152,12 @@ export function ProductTable({
               <th className="py-3.5 px-4 font-bold">Produk</th>
               <th className="py-3.5 px-4 font-bold">Kategori</th>
               <th className="py-3.5 px-4 font-bold">Harga Base</th>
-              <th className="py-3.5 px-4 font-bold">Status</th>
+              <th className="py-3.5 px-4 font-bold">
+                Status
+                <span className="ml-1 text-[10px] font-normal text-muted-foreground normal-case">
+                  (klik untuk ubah)
+                </span>
+              </th>
               <th className="py-3.5 px-4 font-bold text-right">Aksi</th>
             </tr>
           </thead>
@@ -87,22 +167,30 @@ export function ProductTable({
                 key={product.id}
                 className="hover:bg-muted/40 transition-colors duration-150"
               >
-                {/* Thumbnail & Product Info */}
+                {/* Thumbnail & Info */}
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
                     <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
-                      {product.primary_image_url ? (
-                        <Image
-                          src={product.primary_image_url}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-full items-center justify-center bg-accent-yellow/20 text-foreground">
-                          <PackageIcon className="size-6" />
-                        </div>
-                      )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={
+                          product.primary_image_url &&
+                          !product.primary_image_url.includes("coresg-normal.trae.ai") &&
+                          !product.primary_image_url.includes("text_to_image")
+                            ? product.primary_image_url
+                            : `https://placehold.co/48x48/e8f4fd/2483d0?text=${encodeURIComponent(
+                                product.name.slice(0, 2).toUpperCase(),
+                              )}`
+                        }
+                        alt={product.name}
+                        className="size-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            `https://placehold.co/48x48/e8f4fd/2483d0?text=${encodeURIComponent(
+                              product.name.slice(0, 2).toUpperCase(),
+                            )}`;
+                        }}
+                      />
                     </div>
                     <div>
                       <div className="font-heading font-bold text-foreground line-clamp-1">
@@ -130,9 +218,16 @@ export function ProductTable({
                   )}
                 </td>
 
-                {/* Status */}
+                {/* Status — inline dropdown jika onStatusChange tersedia */}
                 <td className="py-3 px-4">
-                  <ProductStatusBadge status={product.status} />
+                  {onStatusChange ? (
+                    <StatusDropdown
+                      product={product}
+                      onStatusChange={onStatusChange}
+                    />
+                  ) : (
+                    <ProductStatusBadge status={product.status} />
+                  )}
                 </td>
 
                 {/* Actions */}
@@ -157,7 +252,7 @@ export function ProductTable({
                         variant="danger"
                         size="xs"
                         neo={false}
-                        onClick={() => onDelete(product.id)}
+                        onClick={() => onDelete(product)}
                         title="Hapus Produk"
                       >
                         <Trash2Icon className="size-3.5" />
@@ -172,7 +267,7 @@ export function ProductTable({
         </table>
       </div>
 
-      {/* Pagination Footer */}
+      {/* Pagination */}
       {meta && meta.total_pages > 1 && onPageChange && (
         <div className="flex justify-end pt-2">
           <Pagination

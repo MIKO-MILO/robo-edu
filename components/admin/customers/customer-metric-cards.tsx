@@ -38,11 +38,11 @@ export function CustomerMetricCards({
   lastOrderAt,
 }: CustomerMetricCardsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       {/* Total Belanja (LTV) */}
       <CustomerKpiCard
         icon={<CircleDollarSign className="size-5" />}
-        label="Total Belanja (LTV)"
+        label="Total Belanja (LT)"
         value={formatIDR(totalSpent)}
         iconColorClass="bg-primary/10 text-primary"
       />

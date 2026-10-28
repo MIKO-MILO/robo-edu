@@ -11,6 +11,9 @@ import {
   useUploadProductImage,
   useDeleteProductImage,
   useReorderProductImage,
+  useProductVideos,
+  useUploadProductVideo,
+  useDeleteProductVideo,
 } from "@/hooks/admin/products";
 import { useCategories } from "@/hooks/admin/categories/use-categories";
 import { useProductTypes } from "@/hooks/admin/product-types/use-product-types";
@@ -18,6 +21,7 @@ import {
   ProductForm,
   VariantEditor,
   ProductImageManager,
+  ProductVideoManager,
   type VariantItem,
   type ImageItem,
 } from "@/components/admin/products";
@@ -60,6 +64,17 @@ export default function EditProductPage({
   const uploadImageMutation = useUploadProductImage();
   const deleteImageMutation = useDeleteProductImage();
   const reorderImageMutation = useReorderProductImage();
+
+  // Video hooks
+  const { data: videosData } = useProductVideos(productId);
+  const [videosList, setVideosList] = React.useState(videosData ?? []);
+  const uploadVideoMutation = useUploadProductVideo();
+  const deleteVideoMutation = useDeleteProductVideo();
+
+  // Sync videosData ke state saat loaded
+  React.useEffect(() => {
+    if (videosData) setVideosList(videosData);
+  }, [videosData]);
 
   const productDetail = productResponse?.data;
   const categoriesList = categoriesResponse?.data || [];
@@ -219,6 +234,16 @@ export default function EditProductPage({
     }
   };
 
+  const handleUploadVideo = async (file: File, title?: string) => {
+    const response = await uploadVideoMutation.mutateAsync({ productId, file, title });
+    if (response) setVideosList((prev) => [...prev, response]);
+  };
+
+  const handleDeleteVideo = async (videoId: UUID) => {
+    await deleteVideoMutation.mutateAsync({ videoId, productId });
+    setVideosList((prev) => prev.filter((v) => v.id !== videoId));
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
@@ -297,6 +322,18 @@ export default function EditProductPage({
           uploadImageMutation.isPending ||
           deleteImageMutation.isPending ||
           reorderImageMutation.isPending
+        }
+      />
+
+      {/* Video Manager */}
+      <ProductVideoManager
+        productId={productId}
+        videos={videosList}
+        onUploadVideo={handleUploadVideo}
+        onDeleteVideo={handleDeleteVideo}
+        isUploading={
+          uploadVideoMutation.isPending ||
+          deleteVideoMutation.isPending
         }
       />
     </div>

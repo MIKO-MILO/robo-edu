@@ -77,6 +77,9 @@ services:
       - .env
     environment:
       WATCHPACK_POLLING: "true"
+      # Override DATABASE_URL agar app container pakai hostname "mysql"
+      # (bukan 127.0.0.1 yang hanya valid di lokal/XAMPP)
+      DATABASE_URL: "mysql://roboedu:${DB_PASSWORD}@mysql:3306/roboedu"
     depends_on:
       mysql:
         condition: service_healthy

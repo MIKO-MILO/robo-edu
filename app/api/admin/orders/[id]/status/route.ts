@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { orders } from "@/src/db/schema";
-import { getSession } from "@/lib/auth/session";
+import { orders, shipments, users } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import type { OrderStatus } from "@/types/enums";
 
@@ -57,15 +56,25 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // ── Auth ───────────────────────────────────────────────────────────────
-  const session = await getSession();
-  if (!session || !isAdminRole(session.role)) {
-    const userId = await getSessionUserId();
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 },
-      );
-    }
+  const userId = await getSessionUserId();
+  if (!userId) {
+    return NextResponse.json(
+      { success: false, message: "Silakan login terlebih dahulu." },
+      { status: 401 },
+    );
+  }
+
+  const [currentUser] = await db
+    .select({ role: users.role, isActive: users.isActive })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!currentUser || !currentUser.isActive || !isAdminRole(currentUser.role)) {
+    return NextResponse.json(
+      { success: false, message: "Anda tidak memiliki izin akses admin." },
+      { status: 403 },
+    );
   }
 
   const { id } = await params;
@@ -81,7 +90,8 @@ export async function PATCH(
     );
   }
 
-  const newStatus = body.status as OrderStatus | undefined;
+  const rawStatus = body.status?.trim().toUpperCase();
+  const newStatus = rawStatus as OrderStatus | undefined;
 
   if (!newStatus || !ALLOWED_STATUSES.includes(newStatus)) {
     return NextResponse.json(
@@ -95,7 +105,7 @@ export async function PATCH(
 
   // ── Fetch current order ────────────────────────────────────────────────
   const [order] = await db
-    .select({ id: orders.id, status: orders.status })
+    .select({ id: orders.id, status: orders.status, orderNumber: orders.orderNumber })
     .from(orders)
     .where(eq(orders.id, id))
     .limit(1);
@@ -107,7 +117,7 @@ export async function PATCH(
     );
   }
 
-  const currentStatus = order.status as OrderStatus;
+  const currentStatus = order.status.toUpperCase() as OrderStatus;
 
   // ── Validate transition ────────────────────────────────────────────────
   if (currentStatus === newStatus) {
@@ -144,6 +154,20 @@ export async function PATCH(
   // ── Execute update ─────────────────────────────────────────────────────
   await db.update(orders).set(updateData).where(eq(orders.id, id));
 
+  // ── Sync shipment status jika relevan ─────────────────────────────────
+  if (newStatus === "SHIPPED" || newStatus === "DELIVERED") {
+    const shipmentStatus = newStatus === "SHIPPED" ? "shipped" : "delivered";
+    const shipmentTimestamp =
+      newStatus === "SHIPPED"
+        ? { shippedAt: now, updatedAt: now }
+        : { deliveredAt: now, status: shipmentStatus, updatedAt: now };
+
+    await db
+      .update(shipments)
+      .set({ status: shipmentStatus, ...shipmentTimestamp })
+      .where(eq(shipments.orderId, id));
+  }
+
   // ── Fetch updated record to return ────────────────────────────────────
   const [updated] = await db
     .select({
@@ -158,11 +182,11 @@ export async function PATCH(
 
   return NextResponse.json({
     success: true,
-    message: `Status pesanan berhasil diperbarui ke ${newStatus}.`,
+    message: `Status pesanan ${updated.orderNumber} berhasil diperbarui ke ${newStatus}.`,
     data: {
       id:           updated.id,
       order_number: updated.orderNumber,
-      status:       updated.status as OrderStatus,
+      status:       updated.status.toUpperCase() as OrderStatus,
       updated_at:   updated.updatedAt.toISOString(),
     },
   });

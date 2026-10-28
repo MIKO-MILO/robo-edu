@@ -2,22 +2,21 @@ import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 /**
  * AdminOrderRow — DTO ringan untuk baris di tabel pesanan admin.
- * Dibuat terpisah dari `OrderListItem` (user-facing) karena admin
- * butuh kolom tambahan (customer_email, payment_method, payment_status).
- * Saat backend siap, ganti mock data di page dengan API call dan
- * petakan response ke interface ini.
+ * Shape ini cocok dengan response GET /api/admin/orders.
  */
 export interface AdminOrderRow {
   id: string;
   order_number: string;
   customer_name: string;
   customer_email: string;
+  customer_phone: string | null;
   total: number;
   status: OrderStatus;
   payment_status: PaymentStatus;
   payment_method: string;
   item_count: number;
   first_item_name: string;
+  first_item_image: string | null;
   created_at: string;
 }
 

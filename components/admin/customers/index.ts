@@ -13,8 +13,14 @@ export type {
   CustomerComplaintRow,
   CustomerReviewRow,
   AdminCustomerDetailData,
+  UserOrderSummary,
 } from "./customer-list-types";
-export { CUSTOMER_RESELLER_TABS } from "./customer-list-types";
+export {
+  CUSTOMER_RESELLER_TABS,
+  normalizeResellerStatus,
+  mapUserToCustomerRow,
+  mapUserAndRelationsToCustomerDetail,
+} from "./customer-list-types";
 
 // Mock Data & Helpers
 export {

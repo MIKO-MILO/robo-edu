@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useState, useCallback } from "react";
+import React, { use, useEffect, useState } from "react";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,8 @@ import {
   OrderPaymentCard,
   OrderStatusDialog,
 } from "@/components/admin/orders";
-import type { OrderStatus, PaymentStatus } from "@/types/enums";
 import type { OrderLineItem, OrderPricingSummary } from "@/components/admin/orders";
+import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
 // Types for the API response shape from GET /api/admin/orders/[id]
@@ -35,7 +35,7 @@ interface AdminOrderDetail {
   shipping_province: string;
   shipping_city: string;
   shipping_district: string;
-  shipping_village: string;
+  shipping_village?: string;
   shipping_postal_code: string;
   paid_at: string | null;
   shipped_at: string | null;
@@ -45,7 +45,7 @@ interface AdminOrderDetail {
   created_at: string;
   updated_at: string;
   customer: {
-    id: string;
+    id?: string;
     name: string;
     email: string;
     phone: string | null;
@@ -64,6 +64,7 @@ interface AdminOrderDetail {
   payment: {
     status: PaymentStatus;
     payment_type: string;
+    transaction_id?: string | null;
     amount: number;
     transaction_time: string | null;
     expiry_time: string | null;
@@ -128,26 +129,37 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   // ── Fetch detail ─────────────────────────────────────────────────────
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/admin/orders/${id}`, { cache: "no-store" });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.message ?? `HTTP ${res.status}`);
-      }
-      setOrder(json.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memuat detail pesanan.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let ignore = false;
+    async function fetchDetail() {
+      try {
+        const res = await fetch(`/api/admin/orders/${id}`, { cache: "no-store" });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.message ?? `HTTP ${res.status}`);
+        }
+        if (!ignore) {
+          setOrder(json.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : "Gagal memuat detail pesanan.");
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchDetail();
+    return () => {
+      ignore = true;
+    };
+  }, [id, retryKey]);
 
   // ── Handle status update success ─────────────────────────────────────
   const handleStatusSuccess = (newStatus: OrderStatus) => {
@@ -161,7 +173,7 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   if (error || !order) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-danger-bg text-danger">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
           <AlertTriangle className="size-7" />
         </div>
         <div>
@@ -172,7 +184,15 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
             {error ?? "Pesanan tidak ditemukan."}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} className="gap-2 rounded-xl">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setIsLoading(true);
+            setRetryKey((k) => k + 1);
+          }}
+          className="gap-2 rounded-xl"
+        >
           <RefreshCw className="size-4" />
           Coba Lagi
         </Button>
@@ -201,7 +221,7 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   const customer = {
     name:  order.customer.name,
     email: order.customer.email,
-    phone: order.customer.phone ?? order.recipient_phone,
+    phone: order.customer.phone ?? order.recipient_phone ?? "—",
   };
 
   const shipping = {
@@ -224,7 +244,7 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
     ? {
         status:         order.payment.status as PaymentStatus,
         method:         order.payment.payment_type,
-        transaction_id: null,
+        transaction_id: order.payment.transaction_id ?? null,
       }
     : {
         status:         "PENDING" as PaymentStatus,
@@ -267,6 +287,46 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
           <OrderPaymentCard payment={payment} />
         </div>
       </div>
+
+      {/* Voucher info jika ada */}
+      {order.voucher_code_snapshot && (
+        <div className="rounded-2xl border-2 border-border bg-accent-yellow/20 px-4 py-3 text-sm font-body text-foreground">
+          Voucher digunakan:{" "}
+          <span className="font-heading font-bold">{order.voucher_code_snapshot}</span>
+          {order.discount_amount > 0 && (
+            <span className="text-success ml-2 font-bold">
+              (diskon Rp{order.discount_amount.toLocaleString("id-ID")})
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Shipment trackings jika ada */}
+      {order.shipment && order.shipment.trackings.length > 0 && (
+        <div className="bg-card rounded-2xl border-2 border-border p-4 space-y-3">
+          <h3 className="font-heading font-bold text-sm text-foreground">Riwayat Pengiriman</h3>
+          <ol className="relative border-l-2 border-border space-y-4 pl-4">
+            {order.shipment.trackings.map((t) => (
+              <li key={t.id} className="relative">
+                <div className="absolute -left-[1.125rem] top-1 size-3 rounded-full border-2 border-primary bg-background" />
+                <p className="font-heading font-bold text-xs text-foreground">{t.status}</p>
+                {t.description && (
+                  <p className="text-xs text-muted-foreground font-body mt-0.5">{t.description}</p>
+                )}
+                {t.location && (
+                  <p className="text-[11px] text-muted-foreground font-body">{t.location}</p>
+                )}
+                <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                  {new Intl.DateTimeFormat("id-ID", {
+                    day: "numeric", month: "short", year: "numeric",
+                    hour: "2-digit", minute: "2-digit",
+                  }).format(new Date(t.occurred_at))}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {/* Status update dialog */}
       <OrderStatusDialog
