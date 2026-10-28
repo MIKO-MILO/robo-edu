@@ -172,7 +172,7 @@ const products: PricingCardProps[] = [
 
 export function ResellerPricingSection() {
   return (
-    <section className="w-full pt-1 sm:pt-1 pb-20 sm:pb-28 bg-background border-b-2 border-foreground/20">
+    <section className="w-full pt-1 sm:pt-1 pb-20 sm:pb-28 bg-background">
       
       {/* Decorative SVG Pattern di Paling Atas */}
       <div className="w-full mt-12 sm:mt-16 overflow-hidden leading-none mb-25">

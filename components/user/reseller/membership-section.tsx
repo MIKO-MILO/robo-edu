@@ -29,7 +29,7 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
       "Cocok buat kamu mitra & reseller pemula yang mau mulai kerja sama dengan santai dan mudah.",
     price: "Gratis",
     pricePeriod: "/ selamanya",
-    priceColor: "text-amber-600",
+    priceColor: "text-amber-300",
     benefits: [
       "Harga reseller standar (diskon up to 15%)",
       "Akses katalog produk lengkap",
@@ -46,7 +46,7 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
       "Pilihan terbaik buat kamu yang mau ngebut cuan dengan benefit super lengkap & prioritas utama!",
     price: "Rp 500.000",
     pricePeriod: "/ 6 bulan",
-    priceColor: "text-rose-600",
+    priceColor: "text-amber-300",
     benefits: [
       "Harga grosir & diskon eksklusif up to 35%",
       "Prioritas stok & akses pre-order duluan",
@@ -57,20 +57,22 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
   },
 ];
 
-// ── Membership Card (Bersebelahan, Melebar ke Samping & Lucu) ─
+// ── Membership Card (Transparan & Blur / Glassmorphism) ─
 function MembershipCard({ tier }: { tier: MembershipTier }) {
   return (
     <article
       className={cn(
-        "relative flex flex-col justify-between bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-7",
-        "shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 w-full",
-        tier.isSpecial ? "border-amber-400 bg-gradient-to-b from-amber-50/60 via-white to-white" : "border-sky-100"
+        "relative flex flex-col justify-between backdrop-blur-xl rounded-3xl p-5 sm:p-6",
+        "shadow-2xl hover:shadow-sky-900/20 transition-all duration-300 hover:-translate-y-2 border-2 w-full",
+        tier.isSpecial
+          ? "border-amber-300/60 bg-gradient-to-b from-white/35 via-white/20 to-white/10 text-white"
+          : "border-white/40 bg-white/20 text-white"
       )}
     >
       {/* Top Cute Badge */}
       {tier.badgeText && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-slate-900 font-black text-[11px] uppercase tracking-wider shadow-md whitespace-nowrap animate-bounce">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-slate-900 font-black text-[11px] uppercase tracking-wider shadow-lg whitespace-nowrap animate-bounce">
             <Sparkles className="w-3.5 h-3.5 fill-current" />
             {tier.badgeText}
           </span>
@@ -79,35 +81,35 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
 
       <div>
         {/* Header Title */}
-        <div className="text-center mb-3 mt-2">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <h3 className="font-heading text-lg sm:text-xl font-extrabold text-slate-800">
+        <div className="text-center mb-2.5 mt-1">
+          <div className="flex items-center justify-center gap-1.5 mb-0.5">
+            <h3 className="font-heading text-base sm:text-lg font-extrabold text-white drop-shadow-sm">
               {tier.tierName}
             </h3>
             {tier.isSpecial ? (
-              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+              <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
             ) : (
-              <Heart className="w-4 h-4 text-sky-400 fill-sky-200" />
+              <Heart className="w-4 h-4 text-sky-200 fill-sky-200" />
             )}
           </div>
-          <span className="inline-block text-[11px] font-bold text-sky-600 bg-sky-50 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+          <span className="inline-block text-[10px] font-bold text-sky-900 bg-amber-300/90 px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
             {tier.subtitle}
           </span>
         </div>
 
         {/* Short Description */}
-        <p className="text-slate-600 text-xs text-center leading-relaxed mb-4">
+        <p className="text-sky-50 text-[11px] sm:text-xs text-center leading-relaxed mb-3 font-medium opacity-90">
           {tier.description}
         </p>
 
         {/* Benefits List */}
-        <ul className="space-y-2.5 mb-6 pt-3 border-t border-slate-100">
+        <ul className="space-y-2 mb-4 pt-2.5 border-t border-white/20">
           {tier.benefits.map((benefit, i) => (
             <li key={i} className="flex items-start gap-2">
-              <div className="mt-0.5 rounded-full bg-emerald-100 p-1 text-emerald-600 shrink-0">
+              <div className="mt-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 p-0.5 text-amber-300 shrink-0">
                 <Check className="w-3 h-3 stroke-[3]" />
               </div>
-              <span className="text-xs text-slate-700 font-semibold leading-snug">
+              <span className="text-[11px] sm:text-xs text-white font-medium leading-snug drop-shadow-sm">
                 {benefit}
               </span>
             </li>
@@ -116,14 +118,14 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
       </div>
 
       {/* Bottom Price & Action */}
-      <div className="pt-4 border-t border-slate-100 text-center">
-        <div className="mb-3">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Biaya Paket</span>
+      <div className="pt-3 border-t border-white/20 text-center">
+        <div className="mb-2.5">
+          <span className="text-[9px] uppercase font-bold text-sky-100/70 block mb-0.5">Biaya Paket</span>
           <div className="flex items-baseline justify-center gap-1">
-            <span className={cn("text-xl sm:text-2xl font-black tracking-tight", tier.priceColor)}>
+            <span className={cn("text-lg sm:text-xl font-black tracking-tight drop-shadow-sm", tier.priceColor)}>
               {tier.price}
             </span>
-            <span className="text-xs text-slate-400 font-semibold">
+            <span className="text-[11px] text-sky-100/80 font-semibold">
               {tier.pricePeriod}
             </span>
           </div>
@@ -132,10 +134,10 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
         <Link
           href="/contact"
           className={cn(
-            "w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-3 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95",
+            "w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95",
             tier.isSpecial
               ? "bg-amber-400 hover:bg-amber-500 text-slate-900 shadow-amber-400/30"
-              : "bg-sky-500 hover:bg-sky-600 text-white shadow-sky-500/30"
+              : "bg-white text-sky-700 hover:bg-sky-50 shadow-white/20"
           )}
         >
           {tier.isSpecial ? "Gabung VIP Sekarang" : "Mulai Gratis"}
@@ -149,12 +151,12 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
 // ── Main Component ─────────────────────────────────
 export function ResellerMembershipSection() {
   return (
-    <section className="relative w-full bg-[#F3EFE4] overflow-visible py-20 sm:py-32 min-h-[1050px] flex items-center justify-center">
-      {/* Background Biru SVG Full-Width (Dibuat Jauh Lebih Besar & Megah) */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+    <section className="relative w-full bg-[#F3EFE4] overflow-visible py-20 sm:py-32 min-h-[1250px] flex items-center justify-center">
+      {/* Background Biru SVG Full-Width */}
+      <div className="absolute -inset-6 pointer-events-none z-0 overflow-hidden">
         <svg
           className="w-full h-full"
-          viewBox="0 0 100 100"
+          viewBox="0 0 105 105"
           preserveAspectRatio="none"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -162,12 +164,12 @@ export function ResellerMembershipSection() {
           {/* Layer Gradasi 1 */}
           <path
             d="M 0,0 
-               C 12,18 22,2 33,10 
-               C 44,22 55,2 66,11 
-               C 77,23 88,4 100,12 
-               L 100,95 
-               C 80,101 60,88 40,95 
-               C 20,99 10,105 0,102 Z"
+               C 13,30 24,4 35,20 
+               C 47,35 58,4 70,22 
+               C 82,38 93,8 105,25 
+               L 105,90 
+               C 85,96 63,83 43,90 
+               C 22,94 11,100 0,97 Z"
             fill="#BBE1FA"
             opacity="0.98"
           />
@@ -175,12 +177,12 @@ export function ResellerMembershipSection() {
           {/* Layer Gradasi 2 */}
           <path
             d="M 0,0 
-               C 12,20 22,4 33,13 
-               C 44,24 55,4 66,14 
-               C 77,25 88,6 100,15 
-               L 100,92 
-               C 80,98 60,85 40,92 
-               C 20,96 10,102 0,99 Z"
+               C 13,32 24,6 35,23 
+               C 47,38 58,6 70,25 
+               C 82,41 93,10 105,28 
+               L 105,87 
+               C 85,93 63,80 43,87 
+               C 22,91 11,97 0,94 Z"
             fill="#62B4EE"
             opacity="0.99"
           />
@@ -188,44 +190,45 @@ export function ResellerMembershipSection() {
           {/* Layer Utama */}
           <path
             d="M 0,0 
-               C 12,22 22,6 33,16 
-               C 44,26 55,6 66,17 
-               C 77,27 88,8 100,18 
-               L 100,88 
-               C 80,94 60,82 40,88 
-               C 20,92 10,98 0,95 Z"
+               C 13,35 24,8 35,26 
+               C 47,41 58,8 70,28 
+               C 82,44 93,12 105,31 
+               L 105,83 
+               C 85,89 63,77 43,83 
+               C 22,87 11,93 0,90 Z"
             fill="#3897e0"
           />
         </svg>
       </div>
 
-      {/* Gambar Ilustrasi Kanan: Dinaikkan tinggi ke atas & digeser ke kanan */}
-      <div className="hidden lg:block absolute -right-20 -top-36 bottom-0 z-10 pointer-events-none w-[55%] max-w-[800px] h-[calc(100%+8rem)]">
+      {/* Gambar Ilustrasi Kanan */}
+      <div className="hidden lg:block absolute -right-32 -top-26 bottom-0 z-10 pointer-events-none w-[70%] max-w-[1050px] h-[calc(100%+6rem)]">
         <div className="relative w-full h-full flex items-start justify-end">
           <Image
             src="/images/iot.webp"
             alt="Roboedu IoT Illustration"
-            width={1100}
-            height={1300}
+            width={1300}
+            height={1500}
             className="object-contain object-top max-h-none w-full drop-shadow-2xl"
             priority
           />
         </div>
       </div>
 
-      {/* Konten Utama (Berada di Atas Gambar dengan z-30) */}
-      <div className="relative z-30 w-full max-w-5xl mx-auto px-6 sm:px-8 py-18">
+      {/* Konten Utama (Posisi dinaikkan sedikit dengan pt-44 sm:pt-52) */}
+      <div className="relative z-30 w-full max-w-6xl mx-auto px-6 sm:px-8 pt-44 sm:pt-52 pb-18">
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto mb-10 sm:mb-14">
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-3 drop-shadow-sm pt-16">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-3 drop-shadow-sm">
             Pilihan Kemitraan Membership
-          </h2>          <p className="text-sky-100 text-xs sm:text-sm font-medium leading-relaxed">
+          </h2>
+          <p className="text-sky-100 text-xs sm:text-sm font-medium leading-relaxed">
             Pilih paket yang paling pas buat nemenin perjalanan sukses bisnis kamu bersama RoboEdu! 
           </p>
         </div>
 
-        {/* Grid Cards (Bersebelahan 2 Kolom ke Samping) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
+        {/* Grid Cards (Transparan & Blur) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto items-stretch">
           {MEMBERSHIP_TIERS.map((tier) => (
             <MembershipCard key={tier.id} tier={tier} />
           ))}
