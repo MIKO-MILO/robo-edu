@@ -50,7 +50,16 @@ async function fetchAdminOrders(
     throw new Error((json as { message?: string }).message ?? "Gagal memuat pesanan.");
   }
   const json = await res.json();
-  return { data: json.data, meta: json.meta };
+  const meta = json.meta ?? {};
+  return {
+    data: json.data ?? [],
+    meta: {
+      page:        meta.page        ?? 1,
+      limit:       meta.limit       ?? 20,
+      total:       meta.total       ?? 0,
+      total_pages: meta.total_pages ?? meta.totalPages ?? 0,
+    },
+  };
 }
 
 export const ADMIN_ORDERS_QUERY_KEY = ["admin", "orders"] as const;

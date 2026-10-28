@@ -22,8 +22,6 @@ import type {
   AdminCustomerRow,
   AdminCustomerDetailData,
 } from "@/components/admin/customers";
-import { orderService } from "./order.service";
-import type { OrderListQueryParams } from "./order.service";
 
 export interface AdminUsersQueryParams extends ListQueryParams {
   role?: string;
@@ -168,38 +166,29 @@ export const userService = {
   },
 
   /** GET /admin/users/{id} - Detail customer lengkap.
-   *  Jika response BE hanya user dasar tanpa relasi, akan fetch orders secara paralel
-   *  via orderService.getAdminOrders. Addresses/complaints/reviews fallback ke empty array
-   *  sambil menunggu endpoint admin tersedia. */
+   *  Fetch orders via endpoint dedicated /admin/users/{id}/orders
+   *  untuk memastikan data akurat dari DB. */
   async getAdminCustomerDetail(
     id: string,
   ): Promise<ApiResponse<AdminCustomerDetailData>> {
-    const userResp = await this.getAdminUserById(id);
+    // Fetch user data dan orders secara paralel
+    const [userResp, ordersResp] = await Promise.all([
+      this.getAdminUserById(id),
+      http.get<{ success: boolean; data: OrderListItem[] }>(
+        `/admin/users/${id}/orders`,
+        { params: { limit: 200 } },
+      ).catch(() => ({ success: true, data: [] as OrderListItem[] })),
+    ]);
+
     const user: User = {
       ...userResp.data,
       reseller_status: normalizeResellerStatus(userResp.data.reseller_status),
     };
 
-    const typedUser = user as UserWithNestedRelations;
-
-    let orders: OrderListItem[] = typedUser.orders ?? [];
-    const addresses: UserAddress[] = typedUser.addresses ?? [];
-    const complaints: AdminComplaintWithOrder[] = typedUser.complaints ?? [];
-    const reviews: AdminReviewWithProduct[] = typedUser.reviews ?? [];
-
-    if (!typedUser.orders) {
-      try {
-        const ordersParams: OrderListQueryParams = {
-          user_id: id,
-          limit: 100,
-          sort: "-created_at",
-        };
-        const ordersResp = await orderService.getAdminOrders(ordersParams);
-        orders = ordersResp.data ?? [];
-      } catch {
-        orders = [];
-      }
-    }
+    const orders: OrderListItem[] = ordersResp.data ?? [];
+    const addresses: UserAddress[] = [];
+    const complaints: AdminComplaintWithOrder[] = [];
+    const reviews: AdminReviewWithProduct[] = [];
 
     const detail = mapUserAndRelationsToCustomerDetail(
       user,

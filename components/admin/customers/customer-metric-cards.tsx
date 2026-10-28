@@ -42,7 +42,7 @@ export function CustomerMetricCards({
       {/* Total Belanja (LTV) */}
       <CustomerKpiCard
         icon={<CircleDollarSign className="size-5" />}
-        label="Total Belanja (LTV)"
+        label="Total Belanja (LT)"
         value={formatIDR(totalSpent)}
         iconColorClass="bg-primary/10 text-primary"
       />
