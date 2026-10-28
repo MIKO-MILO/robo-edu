@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import Image, { ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
-export interface ProductImageProps
-  extends Omit<ImageProps, "src" | "alt"> {
+export interface ProductImageProps extends Omit<ImageProps, "src" | "alt"> {
   src?: string | null;
   alt: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "full";
@@ -31,30 +30,71 @@ const ASPECT_MAP = {
   auto: "",
 };
 
-const DEFAULT_FALLBACK =
-  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80";
+/**
+ * URL sumber yang diketahui tidak bisa dirender sebagai gambar statis —
+ * langsung skip ke fallback tanpa mencoba load.
+ */
+function isUnrenderableUrl(url: string): boolean {
+  return (
+    url.includes("coresg-normal.trae.ai") ||
+    url.includes("text_to_image") ||
+    url.includes("image_is_generating")
+  );
+}
+
+/**
+ * URL yang tidak perlu dioptimasi oleh Next.js Image Optimizer.
+ */
+function shouldSkipOptimization(url: string): boolean {
+  return (
+    url.startsWith("/api/images/") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:") ||
+    url.includes("placehold.co")
+  );
+}
+
+/**
+ * Generate URL placeholder dari placehold.co dengan label nama produk.
+ * Format: https://placehold.co/400x400/e8f4fd/2483d0?text=Nama+Produk
+ */
+function makePlaceholderUrl(label: string): string {
+  const text = encodeURIComponent(
+    label.length > 20 ? label.slice(0, 20) + "…" : label,
+  );
+  return `https://placehold.co/400x400/e8f4fd/2483d0?text=${text}`;
+}
 
 export function ProductImage({
   src,
   alt,
   size = "full",
   aspectRatio = "square",
-  fallbackSrc = DEFAULT_FALLBACK,
+  fallbackSrc,
   className,
   imageClassName,
   priority = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   ...props
 }: ProductImageProps) {
-  const [prevSrc, setPrevSrc] = useState<string | null | undefined>(src);
-  const [imgSrc, setImgSrc] = useState<string>(src || fallbackSrc);
-  const [hasError, setHasError] = useState<boolean>(!src);
+  const [imgError, setImgError] = useState(false);
 
+  // Reset error state kalau src berubah
+  const [prevSrc, setPrevSrc] = useState(src);
   if (prevSrc !== src) {
     setPrevSrc(src);
-    setImgSrc(src || fallbackSrc);
-    setHasError(!src);
+    setImgError(false);
   }
+
+  // Tentukan URL yang akan dirender
+  const resolvedFallback = fallbackSrc ?? makePlaceholderUrl(alt);
+
+  const shouldUseFallback =
+    !src ||
+    imgError ||
+    isUnrenderableUrl(src);
+
+  const imgSrc = shouldUseFallback ? resolvedFallback : src;
 
   const containerSizeClass = size !== "full" ? SIZE_MAP[size] : "";
   const aspectClass = aspectRatio !== "auto" ? ASPECT_MAP[aspectRatio] : "";
@@ -65,37 +105,24 @@ export function ProductImage({
         "bg-card rounded-2xl overflow-hidden border border-foreground relative flex items-center justify-center shrink-0 select-none",
         containerSizeClass,
         aspectClass,
-        className
+        className,
       )}
     >
-      {hasError || !imgSrc ? (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-accent-soft-blue text-foreground/70 p-2 text-center">
-          <span className="text-2xl mb-1">🤖</span>
-          <span className="font-body text-xs font-semibold line-clamp-1">
-            {alt}
-          </span>
-        </div>
-      ) : (
-        <Image
-          src={imgSrc}
-          alt={alt}
-          fill
-          priority={priority}
-          sizes={sizes}
-          onError={() => {
-            if (imgSrc !== fallbackSrc) {
-              setImgSrc(fallbackSrc);
-            } else {
-              setHasError(true);
-            }
-          }}
-          className={cn(
-            "object-cover w-full h-full transition-opacity duration-200",
-            imageClassName
-          )}
-          {...props}
-        />
-      )}
+      <Image
+        key={imgSrc}
+        src={imgSrc}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes={sizes}
+        unoptimized={shouldSkipOptimization(imgSrc)}
+        onError={() => setImgError(true)}
+        className={cn(
+          "object-cover w-full h-full transition-opacity duration-200",
+          imageClassName,
+        )}
+        {...props}
+      />
     </div>
   );
 }

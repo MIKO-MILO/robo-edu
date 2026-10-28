@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export function AboutHeroSection() {
   return (
-    <section className="relative w-full bg-accent-soft-blue border-b-2 border-foreground pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
+    <section className="relative w-full min-h-[100dvh] bg-accent-soft-blue border-b-2 border-foreground pt-[111px] pb-16 overflow-hidden flex flex-col justify-center">
       {/* Polka Dot Background Accent */}
       <div className="absolute inset-0 opacity-40 pointer-events-none [background-image:radial-gradient(#3D2900_1.5px,transparent_0)] [background-size:24px_24px]" />
 

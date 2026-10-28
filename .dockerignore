@@ -1,0 +1,63 @@
+# ================================================================
+# Docker build context optimizations (CACHE FRIENDLY + CROSS-OS)
+# Setiap file yang di-ignore di bawah ini TIDAK akan dikirim ke
+# Docker daemon saat "COPY . ." di stage builder.
+# Dampak: build 2x-5x lebih cepat, terutama di Windows.
+# ================================================================
+
+# --- Local dependencies (sudah di-install via stage "deps") ---
+node_modules
+.pnp
+.pnp.js
+
+# --- Next.js dev / build artifacts (dibikin ulang di stage builder) ---
+.next
+out
+dist
+build
+
+# --- Local env & secrets (JANGAN ikut ke image, pakai env_file compose saja) ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+
+# --- VCS ---
+.git
+.gitignore
+.gitattributes
+.github
+
+# --- IDE / Editor ---
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- OS files ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Project-specific documentation (tidak dibutuhkan saat runtime) ---
+docs
+README.md
+AGENTS.md
+CLAUDE.md
+
+# --- Docker files sendiri (agar perubahan compose tidak invalidasi cache) ---
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# --- Backup / temp ---
+*.bak
+*.tmp
+*.old

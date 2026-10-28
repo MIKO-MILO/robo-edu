@@ -30,11 +30,13 @@ export type Money = number;
 
 /** Sesuai rest-api-standards-v2.md §5 — struktur single resource. */
 export interface ApiResponse<T> {
+  success: boolean;
   data: T;
 }
 
 /** Sesuai rest-api-standards-v2.md §5 & api.md §1.3 — struktur collection + pagination. */
 export interface ApiCollectionResponse<T> {
+  success: boolean;
   data: T[];
   meta: PaginationMeta;
 }
@@ -49,6 +51,7 @@ export interface PaginationMeta {
 /** Sesuai rest-api-standards-v2.md §5 & api.md §1.4 — struktur error.
  * `trace_id` WAJIB ada di setiap error (diambil dari header X-Request-ID). */
 export interface ApiError {
+  success: false;
   error: {
     code: ApiErrorCode | (string & {});
     message: string;

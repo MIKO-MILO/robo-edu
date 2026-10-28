@@ -16,9 +16,8 @@ export default function Navbar() {
 
   return (
     <nav
-      className="sticky top-4 z-20 shadow-md mx-auto flex justify-between items-center px-12 py-4"
+      className="shadow-md flex justify-between items-center px-12 py-4"
       style={{
-        maxWidth: "984px",
         width: "100%",
         height: "95px",
         backgroundColor: "var(--color-primary)", // #2483D0
@@ -28,7 +27,7 @@ export default function Navbar() {
     >
       {/* Brand / Logo */}
       <Link
-        href="/home"
+        href="/"
         className="flex items-center gap-2 transition-opacity hover:opacity-90"
       >
         <Image

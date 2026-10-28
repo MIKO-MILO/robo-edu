@@ -12,13 +12,27 @@
  * ------------------------------------------------------------------
  */
 
-/** Kolom `user.role`. PRD Bab 5 minta superadmin/admin_sales/admin_laporan,
- * tapi kodebase saat ini baru CUSTOMER & ADMIN. // TODO: role granular admin */
-export type UserRole = "CUSTOMER" | "ADMIN";
+/** Kolom `user.role`. Granular role di DB: superadmin, admin_sales, admin_laporan, customer. */
+export type UserRole = "superadmin" | "admin_sales" | "admin_laporan" | "customer";
 
 /** Kolom `user.reseller_status`. Ini TERPISAH dari `role` — jangan digabung
  * jadi satu field di UI/middleware (lihat PRD Bab 5–6). */
 export type ResellerStatus = "NOT_RESELLER" | "PENDING" | "APPROVED" | "REJECTED";
+
+/**
+ * Kolom `user.membership_status`. PRD Bab 6.3.
+ * Terpisah dari `role` — Member bukan role, melainkan atribut akun customer.
+ * NOT_MEMBER = paket Standar; MEMBER = paket Plus aktif.
+ */
+export type MembershipStatus = "NOT_MEMBER" | "MEMBER";
+
+/** Kolom `membership_purchase.status`. PRD Bab 25.1. */
+export type MembershipPurchaseStatus =
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "EXPIRED"
+  | "REFUNDED";
 
 /** Dipakai di kolom `product.status` DAN `product_variant.status`.
  * Sesuai PRD 9.2. */
