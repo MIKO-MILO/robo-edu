@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState, Suspense, useTransition } from "react";
+import React, { useMemo, Suspense, useTransition, useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart } from "lucide-react";
@@ -11,25 +11,7 @@ import {
 } from "@/components/admin/orders";
 import type { AdminOrderRow, OrderStats } from "@/components/admin/orders";
 import type { OrderStatus, PaymentStatus } from "@/types/enums";
-
-// ---------------------------------------------------------------------------
-// Fetch helper
-// ---------------------------------------------------------------------------
-async function fetchAdminOrders(params: {
-  search: string;
-  status: string;
-  page: number;
-}): Promise<{ data: AdminOrderRow[]; meta: { total: number; total_pages: number } }> {
-  const qs = new URLSearchParams();
-  if (params.search) qs.set("search", params.search);
-  if (params.status && params.status !== "ALL") qs.set("status", params.status);
-  qs.set("page", String(params.page));
-  qs.set("limit", "20");
-
-  const res = await fetch(`/api/admin/orders?${qs.toString()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Gagal mengambil data pesanan");
-  return res.json();
-}
+import { useAdminOrders } from "@/hooks/admin/orders/use-admin-orders";
 
 // ---------------------------------------------------------------------------
 // Inner component (needs useSearchParams — must be inside Suspense)
@@ -40,72 +22,39 @@ function AdminOrdersContent() {
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const searchQuery = searchParams.get("search") || "";
-  const statusFilter = searchParams.get("status") || "ALL";
-  const page = Math.max(1, Number(searchParams.get("page") || "1"));
+  const searchQuery = searchParams.get("search") ?? "";
+  const statusFilter = searchParams.get("status") ?? "ALL";
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
 
-  const [orders, setOrders] = useState<AdminOrderRow[]>([]);
-  const [meta, setMeta] = useState({ total: 0, total_pages: 1 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // ── Fetch dari API via TanStack Query ──────────────────────────────────
+  const { data: result, isLoading, isError } = useAdminOrders({
+    search: searchQuery || undefined,
+    status: statusFilter !== "ALL" ? statusFilter : undefined,
+    page,
+    limit: 10,
+  });
 
-  // ── Fetch on param change ──────────────────────────────────────────────
-  const loadOrders = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await fetchAdminOrders({ search: searchQuery, status: statusFilter, page });
-      setOrders(result.data);
-      setMeta(result.meta);
-    } catch {
-      setError("Gagal memuat data pesanan. Coba refresh halaman.");
-      setOrders([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchQuery, statusFilter, page]);
+  const orders: AdminOrderRow[] = useMemo(
+    () =>
+      (result?.data ?? []).map((o) => ({
+        ...o,
+        status: o.status as OrderStatus,
+        payment_status: o.payment_status as PaymentStatus,
+      })),
+    [result],
+  );
 
-  useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
+  const meta = result?.meta;
 
-  // ── URL param helpers ─────────────────────────────────────────────────
-  const pushParams = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    for (const [key, val] of Object.entries(updates)) {
-      if (val) params.set(key, val);
-      else params.delete(key);
-    }
-    // Reset to page 1 on filter change
-    if (!("page" in updates)) params.delete("page");
-    startTransition(() => router.push(`${pathname}?${params.toString()}`));
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    pushParams({ search: e.target.value || null });
-  };
-
-  const handleStatusChange = (status: string) => {
-    pushParams({ status: status !== "ALL" ? status : null });
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (newPage > 1) params.set("page", String(newPage));
-    else params.delete("page");
-    startTransition(() => router.push(`${pathname}?${params.toString()}`));
-  };
-
-  // ── KPI Stats (computed from full count per status via separate fetch) ─
-  // Untuk simplisitas, hitung dari data yang ada di halaman saat ini +
-  // total dari meta. Stats yang akurat butuh endpoint terpisah, tapi
-  // ini sudah cukup untuk gambaran umum.
+  // ── KPI stats global tanpa filter ─────────────────────────────────────
   const [allStats, setAllStats] = useState<OrderStats>({
-    total: 0, pending: 0, processing_shipped: 0, completed: 0,
+    total: 0,
+    pending: 0,
+    processing_shipped: 0,
+    completed: 0,
   });
 
   useEffect(() => {
-    // Fetch stats tanpa filter untuk KPI cards
     const loadStats = async () => {
       try {
         const [all, pending, procShip, done] = await Promise.all([
@@ -127,6 +76,43 @@ function AdminOrdersContent() {
     loadStats();
   }, []);
 
+  // ── URL param helpers ─────────────────────────────────────────────────
+  const updateParams = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
+    // Reset ke halaman 1 saat filter berubah
+    params.delete("page");
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateParams({ search: e.target.value || null });
+  };
+
+  const handleStatusChange = (status: string) => {
+    updateParams({ status: status !== "ALL" ? status : null });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newPage <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(newPage));
+    }
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -145,6 +131,13 @@ function AdminOrdersContent() {
       {/* KPI Stats */}
       <OrderStatsGrid stats={allStats} />
 
+      {/* Error state */}
+      {isError && (
+        <div className="rounded-2xl border-2 border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 font-medium">
+          Gagal memuat data pesanan. Silakan refresh halaman.
+        </div>
+      )}
+
       {/* Toolbar: search + filter */}
       <OrderFilters
         searchQuery={searchQuery}
@@ -153,38 +146,37 @@ function AdminOrdersContent() {
         onStatusChange={handleStatusChange}
       />
 
-      {/* Error */}
-      {error && (
-        <div className="rounded-2xl border-2 border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive font-body">
-          {error}
-        </div>
-      )}
-
       {/* Orders Table */}
       <OrderTable data={orders} isLoading={isLoading} />
 
       {/* Pagination */}
-      {meta.total_pages > 1 && (
-        <div className="flex items-center justify-between text-sm font-body text-muted-foreground">
-          <span>
-            Halaman {page} dari {meta.total_pages} &bull; {meta.total} pesanan
-          </span>
-          <div className="flex gap-2">
+      {meta && meta.total_pages > 1 && (
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <p className="text-xs text-muted-foreground font-medium">
+            Menampilkan{" "}
+            <span className="font-bold text-foreground">
+              {(meta.page - 1) * meta.limit + 1}–
+              {Math.min(meta.page * meta.limit, meta.total)}
+            </span>{" "}
+            dari <span className="font-bold text-foreground">{meta.total}</span> pesanan
+          </p>
+          <div className="flex items-center gap-2">
             <button
-              type="button"
-              disabled={page <= 1}
               onClick={() => handlePageChange(page - 1)}
-              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-heading font-bold"
+              disabled={page <= 1 || isLoading}
+              className="h-8 px-3 rounded-xl border-2 border-border bg-card text-xs font-bold text-foreground disabled:opacity-40 hover:bg-muted transition-colors"
             >
               ← Sebelumnya
             </button>
+            <span className="text-xs font-bold text-foreground px-1">
+              {meta.page} / {meta.total_pages}
+            </span>
             <button
-              type="button"
-              disabled={page >= meta.total_pages}
               onClick={() => handlePageChange(page + 1)}
-              className="px-3 py-1.5 rounded-xl border-2 border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-heading font-bold"
+              disabled={page >= meta.total_pages || isLoading}
+              className="h-8 px-3 rounded-xl border-2 border-border bg-card text-xs font-bold text-foreground disabled:opacity-40 hover:bg-muted transition-colors"
             >
-              Berikutnya →
+              Selanjutnya →
             </button>
           </div>
         </div>

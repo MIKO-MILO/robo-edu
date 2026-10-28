@@ -1,4 +1,4 @@
-import type { RequestOptions } from "@/types";
+import type { RequestOptions, ApiErrorDetail } from "@/types";
 import {
   ApiErrorResponse,
   ApiValidationError,
@@ -9,12 +9,9 @@ import { buildQueryString } from "./query-builder";
 
 /**
  * Base URL untuk API calls.
- * - Kalau endpoint dimulai dengan "/admin/" atau "/api/", gunakan URL relatif
- *   (/api/...) agar bekerja di semua environment (localhost, ngrok, production).
- * - Kalau bukan, gunakan NEXT_PUBLIC_API_URL atau default ke external API.
+ * Menggunakan NEXT_PUBLIC_API_URL atau default ke /api (Next.js internal API).
  */
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.roboedu.id/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 /**
  * Interface internal untuk penanganan global auth error callback
@@ -46,7 +43,7 @@ function handle401Redirect() {
  */
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ): Promise<T> {
   const {
     body,
@@ -81,7 +78,8 @@ export async function apiClient<T>(
   };
 
   // Set default Content-Type to JSON if body is not FormData
-  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
   if (!isFormData && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
@@ -102,13 +100,18 @@ export async function apiClient<T>(
     formattedBody = isFormData ? body : JSON.stringify(body);
   }
 
-  const response = await fetch(fullUrl, {
-    ...fetchOptions,
-    headers,
-    body: formattedBody,
-    // Cookies: roboedu_session HTTP-only cookie sent automatically
-    credentials: fetchOptions.credentials || "include",
-  });
+  let response: Response;
+  try {
+    response = await fetch(fullUrl, {
+      ...fetchOptions,
+      headers,
+      body: formattedBody,
+      // Cookies: roboedu_session HTTP-only cookie sent automatically
+      credentials: fetchOptions.credentials || "include",
+    });
+  } catch (fetchErr) {
+    throw fetchErr;
+  }
 
   // Handle No Content (204)
   if (response.status === 204) {
@@ -116,7 +119,7 @@ export async function apiClient<T>(
   }
 
   // Parse JSON response
-  let jsonResponse: any = null;
+  let jsonResponse: unknown = null;
   const contentType = response.headers.get("Content-Type") || "";
   if (contentType.includes("application/json")) {
     try {
@@ -132,12 +135,19 @@ export async function apiClient<T>(
   }
 
   // Extract error info from response envelope
-  const errorObj = jsonResponse?.error || {};
-  const errorCode = errorObj.code || "UNKNOWN_ERROR";
+  const jr = jsonResponse as Record<string, unknown> | null;
+  const errorObj = (jr?.error as Record<string, unknown>) || {};
+  const errorCode = (errorObj.code as string) || "UNKNOWN_ERROR";
   const errorMessage =
-    errorObj.message || jsonResponse?.message || response.statusText || "Request failed";
-  const responseTraceId = errorObj.trace_id || response.headers.get("X-Request-ID") || traceId;
-  const details = errorObj.details || [];
+    (errorObj.message as string) ||
+    (jr?.message as string) ||
+    response.statusText ||
+    "Request failed";
+  const responseTraceId =
+    (errorObj.trace_id as string) ||
+    response.headers.get("X-Request-ID") ||
+    traceId;
+  const details = (errorObj.details as ApiErrorDetail[]) || [];
 
   // Status Code Specific Handling:
   // 401: Unauthorized -> Redirect to login
@@ -150,7 +160,7 @@ export async function apiClient<T>(
       errorCode || "UNAUTHORIZED",
       errorMessage,
       responseTraceId,
-      details
+      details,
     );
   }
 
@@ -158,7 +168,7 @@ export async function apiClient<T>(
   if (response.status === 403) {
     throw new ApiForbiddenError(
       errorMessage || "Anda tidak memiliki akses ke fitur atau halaman ini.",
-      responseTraceId
+      responseTraceId,
     );
   }
 
@@ -176,14 +186,17 @@ export async function apiClient<T>(
       if (!isNaN(parsed)) {
         retryAfterSeconds = parsed;
       }
-    } else if (typeof jsonResponse?.retry_after === "number") {
-      retryAfterSeconds = jsonResponse.retry_after;
+    } else if (
+      typeof (jr as { retry_after?: number })?.retry_after === "number"
+    ) {
+      retryAfterSeconds = (jr as { retry_after: number }).retry_after;
     }
 
     throw new ApiRateLimitError(
-      errorMessage || "Terlalu banyak request, silakan coba beberapa saat lagi.",
+      errorMessage ||
+        "Terlalu banyak request, silakan coba beberapa saat lagi.",
       retryAfterSeconds,
-      responseTraceId
+      responseTraceId,
     );
   }
 
@@ -193,7 +206,7 @@ export async function apiClient<T>(
     errorCode,
     errorMessage,
     responseTraceId,
-    details
+    details,
   );
 }
 
@@ -205,15 +218,27 @@ export const http = {
     return apiClient<T>(endpoint, { ...options, method: "GET" });
   },
 
-  post<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
+  post<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: RequestOptions,
+  ): Promise<T> {
     return apiClient<T>(endpoint, { ...options, method: "POST", body });
   },
 
-  patch<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
+  patch<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: RequestOptions,
+  ): Promise<T> {
     return apiClient<T>(endpoint, { ...options, method: "PATCH", body });
   },
 
-  put<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
+  put<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: RequestOptions,
+  ): Promise<T> {
     return apiClient<T>(endpoint, { ...options, method: "PUT", body });
   },
 

@@ -9,16 +9,23 @@ import {
   productImages,
 } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
+import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
 
 /**
  * GET /api/admin/orders
+ *
+ * Returns ALL orders (all users) with customer info joined.
+ *
  * Query params:
- *   search  — cari berdasarkan order_number, nama customer, atau nama produk
- *   status  — filter status (PENDING | PAID | PROCESSING | SHIPPED | DELIVERED | COMPLETED | CANCELLED)
- *   page    — default 1
- *   limit   — default 10, max 100
+ *   page     — 1-based (default 1)
+ *   limit    — rows per page (default 20, max 100)
+ *   q        — full-text: order_number | customer name/email | product name
+ *   search   — alias for q (untuk kompatibilitas OrderFilters component)
+ *   status   — OrderStatus filter, e.g. "PAID" | "PROCESSING" | "ALL"
+ *   user_id  — filter by specific customer (dipakai oleh customer detail page)
+ *   sort     — "created_at_desc" (default) | "created_at_asc" | "total_desc" | "total_asc"
  */
 export async function GET(request: NextRequest) {
   const userId = await getSessionUserId();
@@ -30,23 +37,32 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = request.nextUrl;
-  const search = searchParams.get("search")?.trim() ?? "";
-  const statusFilter = searchParams.get("status")?.trim().toUpperCase() ?? "";
-  const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
-  const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit") ?? "10")));
-  const offset = (page - 1) * limit;
+  const page       = Math.max(1, Number(searchParams.get("page")   ?? "1"));
+  const limit      = Math.min(100, Math.max(1, Number(searchParams.get("limit") ?? "20")));
+  const offset     = (page - 1) * limit;
+  // "q" dari orderService, "search" dari admin UI filter
+  const q          = (searchParams.get("q") ?? searchParams.get("search") ?? "").trim();
+  const status     = (searchParams.get("status") ?? "ALL").trim().toUpperCase();
+  const userIdParam = searchParams.get("user_id")?.trim() ?? "";
+  const sort       = searchParams.get("sort") ?? "created_at_desc";
 
-  // ── Build filters ─────────────────────────────────────────────────────
+  // ── Build base filters ─────────────────────────────────────────────────
   const filters = [];
 
-  if (statusFilter && statusFilter !== "ALL") {
-    filters.push(eq(orders.status, statusFilter.toLowerCase()));
+  // Filter per customer (untuk halaman detail customer)
+  if (userIdParam) {
+    filters.push(eq(orders.userId, userIdParam));
   }
 
-  // Search: by order_number, customer name, or product name snapshot
-  let searchOrderIds: string[] | null = null;
-  if (search) {
-    const ql = `%${search}%`;
+  // Filter status
+  if (status && status !== "ALL") {
+    // DB simpan lowercase, UI kirim uppercase
+    filters.push(eq(orders.status, status.toLowerCase()));
+  }
+
+  // ── Search ─────────────────────────────────────────────────────────────
+  if (q) {
+    const ql = `%${q}%`;
 
     const byNumber = await db
       .select({ id: orders.id })
@@ -57,7 +73,7 @@ export async function GET(request: NextRequest) {
       .select({ id: orders.id })
       .from(orders)
       .innerJoin(users, eq(orders.userId, users.id))
-      .where(or(like(users.name, ql), like(users.email, ql))!);
+      .where(or(like(users.name, ql), like(users.email, ql)));
 
     const byProduct = await db
       .select({ orderId: orderItems.orderId })
@@ -70,22 +86,22 @@ export async function GET(request: NextRequest) {
       ...byProduct.map((r) => r.orderId),
     ]);
 
-    searchOrderIds = [...matchSet];
+    const searchIds = [...matchSet];
 
-    if (searchOrderIds.length === 0) {
+    if (searchIds.length === 0) {
       return NextResponse.json({
         success: true,
         data: [],
-        meta: { page, limit, total: 0, total_pages: 0 },
+        meta: { page, limit, total: 0, total_pages: 0, totalPages: 0 },
       });
     }
 
-    filters.push(inArray(orders.id, searchOrderIds));
+    filters.push(inArray(orders.id, searchIds));
   }
 
   const whereClause = filters.length > 0 ? and(...filters) : undefined;
 
-  // ── Count ─────────────────────────────────────────────────────────────
+  // ── Count total ────────────────────────────────────────────────────────
   const [{ total }] = await db
     .select({ total: sql<number>`COUNT(DISTINCT ${orders.id})` })
     .from(orders)
@@ -97,29 +113,46 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: [],
-      meta: { page, limit, total: 0, total_pages: 0 },
+      meta: { page, limit, total: 0, total_pages: 0, totalPages: 0 },
     });
   }
 
-  // ── Fetch orders ──────────────────────────────────────────────────────
+  // ── Sort ───────────────────────────────────────────────────────────────
+  const orderByClause =
+    sort === "created_at_asc" ? asc(orders.createdAt)  :
+    sort === "total_desc"     ? desc(orders.total)      :
+    sort === "total_asc"      ? asc(orders.total)       :
+    /* default */               desc(orders.createdAt);
+
+  // ── Fetch rows ─────────────────────────────────────────────────────────
   const rows = await db
     .select({
-      id: orders.id,
-      orderNumber: orders.orderNumber,
-      status: orders.status,
-      total: orders.total,
-      shippingCost: orders.shippingCost,
-      discountAmount: orders.discountAmount,
-      createdAt: orders.createdAt,
-      // Customer info via join
-      customerName: users.name,
-      customerEmail: users.email,
-      customerPhone: users.phone,
+      id:                  orders.id,
+      orderNumber:         orders.orderNumber,
+      status:              orders.status,
+      total:               orders.total,
+      subtotal:            orders.subtotal,
+      shippingCost:        orders.shippingCost,
+      discountAmount:      orders.discountAmount,
+      voucherCodeSnapshot: orders.voucherCodeSnapshot,
+      recipientName:       orders.recipientName,
+      recipientPhone:      orders.recipientPhone,
+      shippingCity:        orders.shippingCity,
+      shippingProvince:    orders.shippingProvince,
+      paidAt:              orders.paidAt,
+      shippedAt:           orders.shippedAt,
+      deliveredAt:         orders.deliveredAt,
+      cancelledAt:         orders.cancelledAt,
+      createdAt:           orders.createdAt,
+      customerId:          users.id,
+      customerName:        users.name,
+      customerEmail:       users.email,
+      customerPhone:       users.phone,
     })
     .from(orders)
     .innerJoin(users, eq(orders.userId, users.id))
     .where(whereClause)
-    .orderBy(desc(orders.createdAt))
+    .orderBy(orderByClause)
     .limit(limit)
     .offset(offset);
 
@@ -127,16 +160,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: [],
-      meta: { page, limit, total: totalCount, total_pages: Math.ceil(totalCount / limit) },
+      meta: {
+        page, limit,
+        total: totalCount,
+        total_pages: Math.ceil(totalCount / limit),
+        totalPages: Math.ceil(totalCount / limit),
+      },
     });
   }
 
   const orderIds = rows.map((r) => r.id);
 
-  // ── Item counts per order ─────────────────────────────────────────────
+  // ── Item counts ────────────────────────────────────────────────────────
   const countRows = await db
     .select({
-      orderId: orderItems.orderId,
+      orderId:   orderItems.orderId,
       itemCount: sql<number>`COUNT(*)`,
     })
     .from(orderItems)
@@ -147,41 +185,37 @@ export async function GET(request: NextRequest) {
     countRows.map((r) => [r.orderId, Number(r.itemCount)]),
   );
 
-  // ── First item per order (for preview) ───────────────────────────────
-  const allItems = await db
+  // ── First item per order ───────────────────────────────────────────────
+  const firstItemRows = await db
     .select({
-      orderId: orderItems.orderId,
-      productId: orderItems.productId,
+      orderId:             orderItems.orderId,
+      productId:           orderItems.productId,
       productNameSnapshot: orderItems.productNameSnapshot,
       variantNameSnapshot: orderItems.variantNameSnapshot,
-      createdAt: orderItems.createdAt,
     })
     .from(orderItems)
     .where(inArray(orderItems.orderId, orderIds))
     .orderBy(asc(orderItems.createdAt));
 
-  const firstItemMap: Record<string, typeof allItems[number]> = {};
-  for (const item of allItems) {
-    if (!firstItemMap[item.orderId]) {
-      firstItemMap[item.orderId] = item;
-    }
+  const firstItemMap: Record<string, typeof firstItemRows[number]> = {};
+  for (const item of firstItemRows) {
+    if (!firstItemMap[item.orderId]) firstItemMap[item.orderId] = item;
   }
 
-  // ── Payments per order ────────────────────────────────────────────────
+  // ── Payments ───────────────────────────────────────────────────────────
   const paymentRows = await db
     .select({
-      orderId: payments.orderId,
-      status: payments.status,
+      orderId:     payments.orderId,
+      status:      payments.status,
       paymentType: payments.paymentType,
     })
     .from(payments)
     .where(inArray(payments.orderId, orderIds));
 
-  const paymentMap = Object.fromEntries(
-    paymentRows.map((p) => [p.orderId, p]),
-  );
+  const paymentMap: Record<string, typeof paymentRows[number]> = {};
+  for (const p of paymentRows) paymentMap[p.orderId] = p;
 
-  // ── Thumbnail images ──────────────────────────────────────────────────
+  // ── Thumbnail images ───────────────────────────────────────────────────
   const firstProductIds = [
     ...new Set(Object.values(firstItemMap).map((i) => i.productId)),
   ];
@@ -189,39 +223,58 @@ export async function GET(request: NextRequest) {
   const imageMap: Record<string, string> = {};
   if (firstProductIds.length > 0) {
     const imageRows = await db
-      .select({
-        productId: productImages.productId,
-        imageUrl: productImages.imageUrl,
-      })
+      .select({ productId: productImages.productId, imageUrl: productImages.imageUrl })
       .from(productImages)
       .where(inArray(productImages.productId, firstProductIds))
       .orderBy(desc(productImages.isPrimary), asc(productImages.sortOrder));
 
     for (const img of imageRows) {
-      if (!imageMap[img.productId]) {
-        imageMap[img.productId] = img.imageUrl;
-      }
+      if (!imageMap[img.productId]) imageMap[img.productId] = img.imageUrl;
     }
   }
 
-  // ── Shape response ────────────────────────────────────────────────────
+  // ── Shape response ─────────────────────────────────────────────────────
   const data = rows.map((order) => {
-    const fi = firstItemMap[order.id];
+    const fi  = firstItemMap[order.id];
     const pmt = paymentMap[order.id];
     return {
-      id: order.id,
-      order_number: order.orderNumber,
-      status: order.status.toUpperCase(),
-      total: Number(order.total),
-      created_at: order.createdAt.toISOString(),
-      customer_name: order.customerName,
-      customer_email: order.customerEmail,
-      customer_phone: order.customerPhone ?? null,
-      item_count: countMap[order.id] ?? 0,
-      first_item_name: fi?.productNameSnapshot ?? "-",
-      first_item_image: fi ? (imageMap[fi.productId] ?? null) : null,
-      payment_status: pmt ? pmt.status.toUpperCase() : "PENDING",
-      payment_method: pmt ? pmt.paymentType : "-",
+      id:                    order.id,
+      order_number:          order.orderNumber,
+      status:                order.status.toUpperCase() as OrderStatus,
+      total:                 Number(order.total),
+      subtotal:              Number(order.subtotal),
+      shipping_cost:         Number(order.shippingCost),
+      discount_amount:       Number(order.discountAmount),
+      voucher_code_snapshot: order.voucherCodeSnapshot ?? null,
+      recipient_name:        order.recipientName,
+      recipient_phone:       order.recipientPhone,
+      shipping_city:         order.shippingCity,
+      shipping_province:     order.shippingProvince,
+      paid_at:               order.paidAt?.toISOString()      ?? null,
+      shipped_at:            order.shippedAt?.toISOString()   ?? null,
+      delivered_at:          order.deliveredAt?.toISOString() ?? null,
+      cancelled_at:          order.cancelledAt?.toISOString() ?? null,
+      created_at:            order.createdAt.toISOString(),
+      // customer
+      customer_id:           order.customerId,
+      customer_name:         order.customerName,
+      customer_email:        order.customerEmail,
+      customer_phone:        order.customerPhone ?? null,
+      // items
+      item_count:            countMap[order.id] ?? 0,
+      first_item_name:       fi?.productNameSnapshot ?? "-",
+      first_item_image:      fi ? (imageMap[fi.productId] ?? null) : null,
+      // Shape kompatibel dengan OrderListItem.first_item
+      first_item: fi
+        ? {
+            product_name_snapshot: fi.productNameSnapshot,
+            variant_name_snapshot: fi.variantNameSnapshot ?? null,
+            image_url:             imageMap[fi.productId] ?? null,
+          }
+        : null,
+      // payment
+      payment_status:  (pmt?.status?.toUpperCase() ?? "PENDING") as PaymentStatus,
+      payment_method:  pmt?.paymentType ?? "-",
     };
   });
 
@@ -233,6 +286,8 @@ export async function GET(request: NextRequest) {
       limit,
       total: totalCount,
       total_pages: Math.ceil(totalCount / limit),
+      // alias untuk kompatibilitas service layer lama
+      totalPages: Math.ceil(totalCount / limit),
     },
   });
 }

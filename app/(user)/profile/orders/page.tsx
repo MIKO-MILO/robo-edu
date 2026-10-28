@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { OrderStatusTabs, type OrderTabKey } from "@/components/user/orders/order-status-tabs";
 import { OrderPeriodSelect, type OrderPeriod } from "@/components/user/orders/order-period-select";
 import { OrderCard } from "@/components/user/orders/order-card";
@@ -82,6 +83,7 @@ function matchesPeriod(createdAt: string, period: OrderPeriod): boolean {
 }
 
 function OrdersContent() {
+  const router = useRouter();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [meta, setMeta] = useState<ApiMeta>({ page: 1, limit: ITEMS_PER_PAGE, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -229,7 +231,10 @@ function OrdersContent() {
   }
 
   function handlePayNow(orderNumber: string) {
-    showToast(`Membuka instruksi pembayaran untuk ${orderNumber}...`);
+    const order = orders.find((o) => o.order_number === orderNumber);
+    if (order) {
+      router.push(`/payment/${order.id}`);
+    }
   }
 
   function handleCancelOrder(orderNumber: string) {

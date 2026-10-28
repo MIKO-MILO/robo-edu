@@ -37,20 +37,30 @@ export default async function AdminLayout({
     redirect("/admin/login");
   }
 
-  // Ambil data user dari DB dan validasi role.
-  const [user] = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      role: users.role,
-      isActive: users.isActive,
-    })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+  // Ambil data user langsung dari database (hindari fetch loopback ke /api/auth/me di server side)
+  let user: { name: string; email: string; role: string; isActive?: boolean } | null = null;
+  try {
+    const [currentUser] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        isActive: users.isActive,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-  if (!user || !user.isActive || !isAdminRole(user.role)) {
+    if (currentUser && currentUser.isActive) {
+      user = currentUser;
+    }
+  } catch {
+    user = null;
+  }
+
+  // Cek otorisasi role: jika bukan admin (misal customer), redirect ke /admin/login
+  if (!user || !isAdminRole(user.role)) {
     redirect("/admin/login");
   }
 

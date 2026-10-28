@@ -1,0 +1,294 @@
+*   0eb91dd (origin/frontend-reseller, origin/frontend, frontend-reseller, frontend) Merge remote-tracking branch 'origin/frontend' into frontend-reseller
+|\  
+| * e4a62d4 (origin/frontend-membership-profile, frontend-membership-profile) feat(user): refactor reseller profile to membership system with new components and API
+| * 2deef64 docs: add comprehensive product requirements document for RoboEdu e-commerce platform
+| * 530a41f feat(user): add reseller status page with multi-state components and marquee animation
+| * 147416e feat(admin): enhance admin tables styling and expand mock customer data
+* | bab2b16 update design membership page
+* | 3175d77 update fe reseller
+|/  
+* 14c6cc1 feat(reseller): add frontend-backend contract types, validation & service
+*   c7ad556 fix: fix merge conflict on landing components
+|\  
+| * 279dd46 (origin/frontend-landing) fix-desain landing page
+| * c0f746c update landing page and responsive
+| * ef362b2 update landing page
+| * a09c1db update design landing page
+| * 10b7347 redesign landing page
+* | 7b06878 feat(user): refactor navbar to fixed positioning with full-viewport hero sections
+* |   3e1b284 (origin/frontend-admin-cust, frontend-admin-cust) Merge remote-tracking branch 'origin/frontend' into frontend-admin-cust
+|\ \  
+| * \   b123070 resolve merge conflicts
+| |\ \  
+| | * | 2b4bca6 (origin/frontend-admin-settings) fix design setting page
+| | * | 8bc68c6 fe admin settings page
+| * | |   8169f1b Merge remote-tracking branch 'origin/frontend-admin-complaints' into frontend
+| |\ \ \  
+| | * | | 25db0a7 (origin/frontend-admin-complaints) fix design complaints page
+| | * | | b978fc1 fe admin complaints page
+| | |/ /  
+| * | |   ac7aa62 merge frontend admin dashboard
+| |\ \ \  
+| | * | | 2f1b34a (origin/frontend-admin-dashboard) feat(admin): fe admin dashboard
+* | | | | cb5b4cf feat(admin): add admin customer and reseller detail components and pages
+* | | | | 4b7c196 (origin/frontend-admin-reseller, frontend-admin-reseller) feat(admin): new design on resellers detail
+* | | | | c048db7 (origin/frontend-admin-resellers, frontend-admin-resellers) feat(admin): add admin dashboard pages and components for orders, customers, resellers, and inventory
+| |_|/ /  
+|/| | |   
+| | | | * e38f479 (HEAD -> backend, origin/backend-admincustomer, origin/backend, backend-admincustomer) feat: add admin customers and orders management modules with API endpoints and hooks
+| | | | *   063bf17 Merge backend-adminorder into backend-admincustomer
+| | | | |\  
+| | | | * | 37fafd8 hmmm butuh order ternyata
+| | | | * | aefed86 (origin/backend-adminview) fix base url error
+| | | | | | * 3612c66 (origin/backend-voucher) voucher fix
+| | | | | | * 4a45fcc (origin/backend-admin-product) product & category
+| | | | | |/  
+| | | | |/|   
+| | | | | | * 497d513 (origin/backend-adminriview) ok fix
+| | | | | |/  
+| | | | | * 0ec24ec (origin/backend-adminorder) order
+| | | | | * e8d95ef feat(admin): implement order detail page and API endpoints
+| | | | |/  
+| | | | * ce6b6cc (origin/backend-riview) fix backend after merge
+| | | | *   f04e21a merge frontend into backend-adminview
+| | | | |\  
+| | |_|_|/  
+| |/| | |   
+| * | | |   c0c8286 Merge remote-tracking branch 'origin/frontend-admin-reports' into frontend
+| |\ \ \ \  
+| | * | | | bb59f06 (origin/frontend-admin-reports) feat(admin): fe admin reports
+| |/ / / /  
+|/| | | |   
+| * | | |   a80d9fd Merge remote-tracking branch 'origin/frontend-admin-vouchers' into frontend
+| |\ \ \ \  
+| | * | | | e7be7d7 (origin/frontend-admin-vouchers) FIX: fe admin vaoucher page
+| |/ / / /  
+|/| | | |   
+| * | | | 0db8b07 (origin/frontend-admin-review) fe admin review page
+|/ / / /  
+* | | | 9be3b8b (origin/frontend-admin-orders, frontend-admin-orders) feat: add admin customer and order management components and pages
+* | | |   9c75896 Merge branch 'frontend-admin-categories' into frontend
+|\ \ \ \  
+* | | | | 5f5da74 (origin/frontend-profile, frontend-profile) fix: fixing coloring and styling in profile page. add badge for user's status in profile page
+* | | | | 0be67cb (origin/frontend-orders-history, frontend-orders-history) feat: fixing orders history component and dependencies
+* | | | | 4dc166e chore: bump next to version 16.3.5
+| | | | * b34b252 readme update
+| | | | * 3747451 fix docker and midtrans
+| | | | * 610fe01 docker fix
+| | | | *   982ab5c Merge branch 'backend' of https://github.com/MIKO-MILO/robo-edu into backend
+| | | | |\  
+| | | | | * b45aadf (origin/backend-404page) fix
+| | | | * | 7049409 AAA
+| | | | |/  
+| | | | * 42bf63c fix yeyyyy
+| | | | * e274e30 (origin/backend_riwayat) finish backend
+| | | | * 76c1c18 (origin/backend-profilesetting) fix login alamat
+| | | | * ff25d16 midtrans
+| | | | *   7a14c1b merge backend-profilesetting into backend-product
+| | | | |\  
+| | | | | * cab42f3 (origin/backend-product) profile-1
+| | | | | * 3e61a7c fix midtrans button
+| | | | | * b720397 Refactor application components and update supporting code
+| | | | | * df0f5bc product
+| | | | * | dd91a1b profile
+| | | | | | * 3dee337 (origin/frontend-admin-categories) style(admin): replace ai slop
+| | |_|_|_|/  
+| |/| | | |   
+| * | | | | d44a4ab feat(admin): fe manage stock
+| * | | | | 49e3696 feat(admin): fe manage product type
+| * | | | | df0a4c5 feat(admin): fe manage category
+|/ / / / /  
+* | | | |   fccad35 Merge remote-tracking branch 'origin/frontend-checkout' into frontend
+|\ \ \ \ \  
+* \ \ \ \ \   4c48573 Merge branch 'frontend-admin-product' into frontend
+|\ \ \ \ \ \  
+| |_|/ / / /  
+|/| | | | |   
+| * | | | | ffde2ec (origin/frontend-admin-product) style: no shadow & show labels on filter
+* | | | | | f03fb6e Merge branch 'frontend-admin-product' into frontend
+|\| | | | | 
+| * | | | | 472dc25 feat(admin): product management + login page with mock auth
+* | | | | |   69d2caf Merge remote-tracking branch 'origin/frontend-checkout' into frontend
+|\ \ \ \ \ \  
+| |/ / / / /  
+|/| | | | |   
+* | | | | | 4b8c76c feat(admin): add role-based access guard in admin layout
+* | | | | |   c625ef4 Merge remote-tracking branch 'origin/frontend-components' into frontend
+|\ \ \ \ \ \  
+| * | | | | | 6aee2f5 (origin/frontend-components) docs: update prd
+| * | | | | |   0b7a2b2 Merge branch 'frontend-components' into frontend-components
+| |\ \ \ \ \ \  
+| | * | | | | | 8cfd7e1 (frontend-components) feat: new component footer
+| | * | | | | | 3decdd7 feat: new component footer
+| * | | | | | | abdcca6 chore(admin): components
+* | | | | | | | 63d575a feat: api client layer
+| | | | | | | | * 93f6ff2 (origin/main, origin/HEAD, main) docs: remove table of contents and setup instructions from README
+| | | | | |_|_|/  
+| | | | |/| | |   
+| | | | * | | | fc0066b (origin/frontend-checkout, frontend-checkout) feat: add checkout page with address modal
+| | | |/ / / /  
+| | | * | | | a404876 feat: implement checkout page with address management, order summary, and voucher application functionality
+| | | * | | | 0490d84 (origin/development, development) docs: create PRD-NEW.md and STRUCTURE.md for project documentation
+| |_|/ / / /  
+|/| | | | |   
+* | | | | | c606f73 fix: implement user orders history page with filtering, pagination, and order detail modals
+* | | | | |   4654d45 Merge remote-tracking branch 'origin/frontend-profile' into frontend-orders-history
+|\ \ \ \ \ \  
+| * | | | | | b1e6788 update profile
+| | | | | | | *   d39e901 (origin/backend-midtrans) Merge branch 'backend-midtrans' of https://github.com/MIKO-MILO/robo-edu into backend-midtrans
+| | | | | | | |\  
+| | | | | | |_|/  
+| | | | | |/| |   
+| | | | | * | | d7695d4 aa
+| | | | | * | | 5bd84c0 fix profile
+| | | | | | | * 0911263 midtrans1
+| | | | | | | * 299ab93 midtrans
+| | | | | | |/  
+| | | | | |/|   
+| | | | | * | 9f979c7 fix docker compose
+| | | | | |/  
+| | | | | | * b0d7c91 (origin/backend-auth) auth login register
+| | | | | | * e9360a8 aaa
+| | | | | |/  
+| | | | | * e4837de cloner fix
+| | | | | * b62a702 Merge remote-tracking branch 'origin/DB' into backend
+| |_|_|_|/| 
+|/| | | | | 
+| | | | | * 3d7f910 (origin/DB) fix techstack
+| | | | | * 464bb0b (DB) DB FIRTS
+* | | | | | af63472 feat: implement main landing page layout with modular components
+* | | | | | ca12813 feat: implement user order management system including tracking, reviewing, and invoice components
+* | | | | | f748ec4 Merge remote-tracking branch 'origin/frontend-orders-history' into frontend
+|\| | | | | 
+| * | | | | 30b7098 chore: reset frontend orders
+| * | | | | f39fd6b archive: add order management types and profile order history UI components
+| * | | | | dfa34da feat: initialize order history page for user profiles
+* | | | | | 5c8a031 fix: fixing code from about's branch
+* | | | | |   6c87233 Merge remote-tracking branch 'origin/frontend-auth' into frontend
+|\ \ \ \ \ \  
+| * | | | | | 206e061 (origin/frontend-auth, frontend-auth) feat: initialize core UI library, reusable components, and modular section templates for product, auth, and about pages
+| * | | | | | 9f0f9d4 feat: implement authentication login and registration pages with associated design documentation
+| |/ / / / /  
+* | | | | |   fc2b99e Merge branch 'frontend' of https://github.com/MIKO-MILO/robo-edu into frontend
+|\ \ \ \ \ \  
+| * \ \ \ \ \   1807f0a Merge remote-tracking branch 'origin/frontend-about' into frontend
+| |\ \ \ \ \ \  
+| | * | | | | | f0c02a3 (origin/frontend-about) style: fix minor detail
+| | * | | | | | 59b321d feat: add about page components including Hero, KidSafe, OurStory, Values, and FinalCTA sections
+* | | | | | | |   4321dc5 Merge remote-tracking branch 'origin/frontend-landing' into frontend
+|\ \ \ \ \ \ \ \  
+| |/ / / / / / /  
+|/| | | | | / /   
+| | |_|_|_|/ /    
+| |/| | | | |     
+| * | | | | | 8f3685e update landing-page
+| * | | | | | 795bba4 rename file info-card to card-info, add carousel page & update card
+| * | | | | | ac071d3 update & responsive card-promo, info-card page
+| * | | | | | e1bfc38 update & responsive video-demo page
+| * | | | | | 7509f03 update & responsive testimoni design
+| * | | | | | 5268e54 final design FAQ page & responsive
+| * | | | | | 9e22f5b add new file
+| * | | | | | 6364d51 fix desaign card maskot & carousel
+| * | | | | | 37ed157 new update desaign info cards maskot
+| * | | | | | e075575 update desaign info cards maskot
+| * | | | | | f04d857 add maskot folder
+| * | | | | | c388022 final hero-section design
+| * | | | | | 8b554d1 redesign hero-section
+| * | | | | | e876551 edit desaign hero-section
+* | | | | | | dc6250f fix: resolve conflict pt. 2
+| |/ / / / /  
+|/| | | | |   
+* | | | | |   738b212 Merge remote-tracking branch 'origin/frontend-contact' into frontend
+|\ \ \ \ \ \  
+| * | | | | | c459b99 (origin/frontend-contact) style: card & form design
+* | | | | | | bb30584 fix: resolve conflict (ketinggalan)
+* | | | | | | ab54e5b Merge remote-tracking branch 'origin/frontend-contact' into frontend
+|\| | | | | | 
+| * | | | | | 6c60f5d feat: contact page
+* | | | | | | fe047a9 feat: about page
+* | | | | | | 6275f39 (origin/frontend-wishlist) feat: wishlist
+* | | | | | | 0bd4ed4 Merge branch 'frontend-wishlist' of https://github.com/MIKO-MILO/robo-edu into frontend-wishlist
+|\| | | | | | 
+| * | | | | | b1674c0 (origin/frontend-wishlists) fix: product card import
+* | | | | | | cbee9c6 feat: initialize project structure with core UI components, user navigation, and layout scaffolding
+|\| | | | | | 
+| * | | | | |   aa477ac Merge branch 'frontend' of https://github.com/MIKO-MILO/robo-edu into frontend
+| |\ \ \ \ \ \  
+| | | |/ / / /  
+| | |/| | | |   
+| | * | | | | d7d207e feat: implement user navigation, home page, and product detail layout components
+| | * | | | |   2dfef1a Merge branch 'frontend' of https://github.com/MIKO-MILO/robo-edu into frontend
+| | |\ \ \ \ \  
+| | * \ \ \ \ \   f553697 Merge branch 'frontend-detail-products' into frontend
+| | |\ \ \ \ \ \  
+| | | * | | | | | 8ec4c5d (origin/frontend-detail-products, frontend-detail-products) feat: initialize tailwindcss and define custom neo-brutalist theme colors and utilities
+| | | * | | | | | 343748c feat: initialize global CSS with custom theme variables and neo-brutalist utility classes
+| * | | | | | | |   8583d4d Merge branch 'frontend-catalog' into frontend
+| |\ \ \ \ \ \ \ \  
+| | |_|_|/ / / / /  
+| |/| | | | | | |   
+| | * | | | | | | 9ee7af2 (origin/frontend-catalog) feat: checkout docs & public folder
+| | * | | | | | | 14e589c feat: implement product discovery features including search bar, pagination, and product card components with layout pages
+| | * | | | | | | d10c326 feat: implement product search and catalog page UI with new components and assets
+| * | | | | | | | e8153fa Merge remote-tracking branch 'origin/frontend-catalog' into frontend
+| |\| | | | | | | 
+| | |/ / / / / /  
+| |/| | | | | |   
+| | * | | | | | 4054a1c feat: initialize root layout with Unbounded and Outfit font configurations
+| * | | | | | |   ff0c87d Merge branch 'frontend' of https://github.com/MIKO-MILO/robo-edu into frontend
+| |\ \ \ \ \ \ \  
+| | * | | | | | | 3a9761c feat: implement product detail page with modular components, shared navbar, and footer
+| | * | | | | | |   5e9177e feat: implement product page structure and establish design system documentation
+| | |\ \ \ \ \ \ \  
+| | | | |/ / / / /  
+| | | |/| | | | |   
+| | | * | | | | | d2b6fba feat: new page for slug product/detail product
+| | | * | | | | | 621999b docs: updating README.md
+| | * | | | | | |   c04be69 Merge remote-tracking branch 'origin/frontend-catalog' into frontend
+| | |\ \ \ \ \ \ \  
+| | | | |/ / / / /  
+| | | |/| | | | |   
+| | | * | | | | | a2feb2b chore: adding wishlist btn, product image, & star rating components
+| | | |/ / / / /  
+| | | * | | | | 02bb34f fix: components detail and products
+| * | | | | | |   8a7b934 Merge remote-tracking branch 'origin/frontend-cart' into frontend
+| |\ \ \ \ \ \ \  
+| | |_|_|/ / / /  
+| |/| | | | | |   
+| | * | | | | | 101082b (origin/frontend-cart) responsive & edit desaign cart page, and add navbar
+| | * | | | | | 3a96d09 fix : responsive and edit cart web desaign
+| | * | | | | | 2d8222b chore: maintain this branch
+| | * | | | | | 5913b6e feat: new page cart
+| | | |_|/ / /  
+| | |/| | | |   
+| * | | | | | 73e6f95 edit desaign hero-section
+| | |/ / / /  
+| |/| | | |   
+| * | | | |   9e7a2ca Merge remote-tracking branch 'origin/frontend-catalog' into frontend
+| |\ \ \ \ \  
+| | | |/ / /  
+| | |/| | |   
+| | * | | | 0f91892 fix: shadcn color theme overriding custom colors
+| * | | | | 94a4591 Merge remote-tracking branch 'origin/frontend-catalog' into frontend
+| |\| | | | 
+| | |_|/ /  
+| |/| | |   
+| | * | | 5c6e1c2 chore: change product page url
+| | * | | cbe91e9 feat: catalog page
+| | |/ /  
+| * | | eb40430 chore: styling in-code in components
+| * | | c181ccb feat: new components carousel
+| * | | f8a35c2 feat: making a new comp navbar
+| |/ /  
+* / / 07276ad fix: global.css and src problema
+|/ /  
+* | 5b4373a docs: add PRD
+* | b12ec56 docs: adding some MD and types folder
+* | c2d4752 (frontend-cart) chore: renaming dynamic folder
+* | 4ea6fda chore: modify config for tailwind in global.css and layout.tsx
+* | f948f1f chore: changing frontend workplace structure
+* | 4aa9194 chore: clean frontend project
+|/  
+* 110822b fix bug docker.yml
+* 657152c config: initialize environment
+* 9ed482e Initial commit from Create Next App
