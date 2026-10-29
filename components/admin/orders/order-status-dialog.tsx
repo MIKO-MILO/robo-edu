@@ -11,6 +11,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { cn } from "@/lib/utils";
 import type { OrderStatus } from "@/types/enums";
@@ -65,12 +73,47 @@ export function OrderStatusDialog({
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // ── Tracking fields (hanya relevan saat SHIPPED) ──────────────────────
+  const [trackingNumber, setTrackingNumber] = React.useState("");
+  const [providerId, setProviderId] = React.useState<string>("");
+  const [providers, setProviders] = React.useState<
+    Array<{ id: string; name: string }>
+  >([]);
+
+  // Ambil daftar shipping provider aktif untuk dropdown.
+  React.useEffect(() => {
+    if (!open) return;
+    let ignore = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/shipping-providers", { cache: "no-store" });
+        const json = await res.json();
+        if (ignore || !res.ok || !json.success) return;
+        // Endpoint mengembalikan opsi per service; ambil provider unik.
+        const seen = new Map<string, string>();
+        for (const opt of json.data ?? []) {
+          if (opt.provider_id && !seen.has(opt.provider_id)) {
+            seen.set(opt.provider_id, opt.provider_name ?? opt.provider_id);
+          }
+        }
+        setProviders([...seen.entries()].map(([id, name]) => ({ id, name })));
+      } catch {
+        /* non-fatal — dropdown tinggal kosong */
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [open]);
+
   // Reset state saat dialog dibuka/ditutup
   React.useEffect(() => {
     if (!open) {
       setSelectedStatus(null);
       setError(null);
       setIsLoading(false);
+      setTrackingNumber("");
+      setProviderId("");
     }
   }, [open]);
 
@@ -83,10 +126,20 @@ export function OrderStatusDialog({
     setError(null);
 
     try {
+      const payload: Record<string, unknown> = { status: selectedStatus };
+
+      // Sertakan info resi hanya saat transisi ke SHIPPED.
+      if (selectedStatus === "SHIPPED") {
+        const tn = trackingNumber.trim();
+        if (tn) payload.tracking_number = tn;
+        const pid = providerId.trim();
+        if (pid) payload.provider_id = pid;
+      }
+
       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: selectedStatus }),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
@@ -167,6 +220,69 @@ export function OrderStatusDialog({
                 Tidak ada transisi status yang tersedia dari status{" "}
                 <strong>{STATUS_LABELS[currentStatus] ?? currentStatus}</strong>.
               </span>
+            </div>
+          )}
+
+          {/* Tracking info — hanya muncul saat memilih SHIPPED */}
+          {selectedStatus === "SHIPPED" && (
+            <div className="space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-3">
+              <p className="text-xs font-medium text-muted-foreground font-body">
+                Informasi Pengiriman (opsional)
+              </p>
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="tracking-number"
+                  className="block text-[11px] font-semibold text-muted-foreground font-body"
+                >
+                  Nomor Resi
+                </label>
+                <Input
+                  id="tracking-number"
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="cth. JNT98273618293"
+                  disabled={isLoading}
+                  className="h-9 rounded-xl text-sm"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="tracking-provider"
+                  className="block text-[11px] font-semibold text-muted-foreground font-body"
+                >
+                  Kurir / Provider
+                </label>
+                <Select
+                  value={providerId}
+                  onValueChange={(val) => setProviderId(val ?? "")}
+                >
+                  <SelectTrigger
+                    id="tracking-provider"
+                    className="h-9 w-full rounded-xl border border-border bg-background px-3 text-sm font-body cursor-pointer"
+                  >
+                    <SelectValue placeholder="-- Pilih kurir (opsional) --" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl p-1.5 bg-popover border border-border shadow-lg font-body z-50">
+                    {providers.length === 0 ? (
+                      <SelectItem value="__none__" disabled>
+                        Tidak ada provider tersedia
+                      </SelectItem>
+                    ) : (
+                      providers.map((p) => (
+                        <SelectItem
+                          key={p.id}
+                          value={p.id}
+                          className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium"
+                        >
+                          {p.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 

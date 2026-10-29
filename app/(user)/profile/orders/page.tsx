@@ -6,13 +6,13 @@ import { OrderStatusTabs, type OrderTabKey } from "@/components/user/orders/orde
 import { OrderPeriodSelect, type OrderPeriod } from "@/components/user/orders/order-period-select";
 import { OrderCard } from "@/components/user/orders/order-card";
 import { OrderEmptyState } from "@/components/user/orders/order-empty-state";
-import { OrderTrackingModal } from "@/components/user/orders/order-tracking-modal";
+import { OrderTrackingModal, type TrackingStep } from "@/components/user/orders/order-tracking-modal";
 import { OrderInvoiceModal } from "@/components/user/orders/order-invoice-modal";
 import { OrderReviewModal } from "@/components/user/orders/order-review-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Search, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { OrderStatus } from "@/types";
+import type { OrderStatus, ShipmentStatus } from "@/types";
 
 // ── Tipe data dari API /api/orders ────────────────────────────────────────────
 export interface ApiOrder {
@@ -46,6 +46,7 @@ export interface ApiOrder {
   tracking_number?: string;
   shipping_service?: string;
   shipment_summary?: string;
+  trackings?: TrackingStep[];
   all_items?: Array<{
     name: string;
     variant: string | null;
@@ -182,11 +183,29 @@ function OrdersContent() {
       if (!res.ok) return null;
       const d = json.data;
       // Shape ke ApiOrder dengan field tambahan
+      const rawTrackings: Array<{
+        id: string;
+        status: string;
+        description: string | null;
+        location: string | null;
+        occurred_at: string;
+      }> = d.shipment?.trackings ?? [];
+
       return {
         ...orders.find((o) => o.id === orderId)!,
         courier_name: d.shipment?.provider_name ?? undefined,
         tracking_number: d.shipment?.tracking_number ?? undefined,
         shipping_service: d.shipment?.service ?? undefined,
+        // Urutkan terbaru → terlama agar modal menampilkan checkpoint terakhir di atas.
+        trackings: [...rawTrackings]
+          .sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime())
+          .map((t) => ({
+            id: t.id,
+            status: t.status as ShipmentStatus,
+            description: t.description ?? null,
+            location: t.location ?? null,
+            occurred_at: t.occurred_at,
+          })),
         all_items: d.order_items?.map((item: {
           product_name_snapshot: string;
           variant_name_snapshot: string | null;
@@ -404,6 +423,7 @@ function OrdersContent() {
           courierName={selectedTrackingOrder.courier_name ?? "-"}
           service={selectedTrackingOrder.shipping_service ?? "-"}
           trackingNumber={selectedTrackingOrder.tracking_number ?? "-"}
+          trackings={selectedTrackingOrder.trackings ?? []}
         />
       )}
 

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { use, useEffect, useState } from "react";
-import { RefreshCw, AlertTriangle } from "lucide-react";
+import { RefreshCw, AlertTriangle, Plus, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   OrderDetailHeader,
   OrderItemsCard,
@@ -128,8 +129,21 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   const [error, setError] = useState<string | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
+  // ── Form tambah checkpoint tracking ──────────────────────────────────
+  const [cpLocation, setCpLocation] = useState("");
+  const [cpDescription, setCpDescription] = useState("");
+  const [cpTimestamp, setCpTimestamp] = useState("");
+  const [cpStatus, setCpStatus] = useState("IN_TRANSIT");
+  const [cpSubmitting, setCpSubmitting] = useState(false);
+  const [cpError, setCpError] = useState<string | null>(null);
+
   // ── Fetch detail ─────────────────────────────────────────────────────
   const [retryKey, setRetryKey] = useState(0);
+
+  // Refetch seluruh detail order (dipakai setelah update status / tambah checkpoint).
+  const refetch = React.useCallback(() => {
+    setRetryKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -164,6 +178,42 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   // ── Handle status update success ─────────────────────────────────────
   const handleStatusSuccess = (newStatus: OrderStatus) => {
     setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
+    // Refetch agar info resi/kurir terbaru (jika SHIPPED) ikut tampil.
+    refetch();
+  };
+
+  // ── Tambah checkpoint tracking ────────────────────────────────────────
+  const handleAddCheckpoint = async () => {
+    setCpSubmitting(true);
+    setCpError(null);
+    try {
+      const payload: Record<string, unknown> = {
+        status: cpStatus.trim() || "IN_TRANSIT",
+      };
+      if (cpLocation.trim()) payload.location = cpLocation.trim();
+      if (cpDescription.trim()) payload.description = cpDescription.trim();
+      if (cpTimestamp.trim()) payload.timestamp = cpTimestamp.trim();
+
+      const res = await fetch(`/api/admin/orders/${id}/tracking`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message ?? "Gagal menambahkan checkpoint.");
+      }
+      // Reset form & refresh
+      setCpLocation("");
+      setCpDescription("");
+      setCpTimestamp("");
+      setCpStatus("IN_TRANSIT");
+      refetch();
+    } catch (err) {
+      setCpError(err instanceof Error ? err.message : "Gagal menambahkan checkpoint.");
+    } finally {
+      setCpSubmitting(false);
+    }
   };
 
   // ── Loading ───────────────────────────────────────────────────────────
@@ -300,30 +350,126 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
         </div>
       )}
 
-      {/* Shipment trackings jika ada */}
-      {order.shipment && order.shipment.trackings.length > 0 && (
-        <div className="bg-card rounded-2xl border-2 border-border p-4 space-y-3">
+      {/* Shipment + form tambah checkpoint — muncul bila shipment sudah ada */}
+      {order.shipment && (
+        <div className="bg-card rounded-2xl border-2 border-border p-4 space-y-4">
           <h3 className="font-heading font-bold text-sm text-foreground">Riwayat Pengiriman</h3>
-          <ol className="relative border-l-2 border-border space-y-4 pl-4">
-            {order.shipment.trackings.map((t) => (
-              <li key={t.id} className="relative">
-                <div className="absolute -left-[1.125rem] top-1 size-3 rounded-full border-2 border-primary bg-background" />
-                <p className="font-heading font-bold text-xs text-foreground">{t.status}</p>
-                {t.description && (
-                  <p className="text-xs text-muted-foreground font-body mt-0.5">{t.description}</p>
-                )}
-                {t.location && (
-                  <p className="text-[11px] text-muted-foreground font-body">{t.location}</p>
-                )}
-                <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                  {new Intl.DateTimeFormat("id-ID", {
-                    day: "numeric", month: "short", year: "numeric",
-                    hour: "2-digit", minute: "2-digit",
-                  }).format(new Date(t.occurred_at))}
-                </p>
-              </li>
-            ))}
-          </ol>
+
+          {order.shipment.trackings.length > 0 ? (
+            <ol className="relative border-l-2 border-border space-y-4 pl-4">
+              {order.shipment.trackings.map((t) => (
+                <li key={t.id} className="relative">
+                  <div className="absolute -left-[1.125rem] top-1 size-3 rounded-full border-2 border-primary bg-background" />
+                  <p className="font-heading font-bold text-xs text-foreground">{t.status}</p>
+                  {t.description && (
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">{t.description}</p>
+                  )}
+                  {t.location && (
+                    <p className="text-[11px] text-muted-foreground font-body">{t.location}</p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                    {new Intl.DateTimeFormat("id-ID", {
+                      day: "numeric", month: "short", year: "numeric",
+                      hour: "2-digit", minute: "2-digit",
+                    }).format(new Date(t.occurred_at))}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-xs text-muted-foreground font-body py-2">
+              Belum ada checkpoint. Tambahkan pergerakan paket di bawah.
+            </p>
+          )}
+
+          {/* ── Form: tambah checkpoint tracking ──────────────────────── */}
+          <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+            <p className="text-xs font-heading font-bold text-foreground flex items-center gap-1.5">
+              <Plus className="size-3.5" />
+              Tambah Checkpoint
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label htmlFor="cp-status" className="block text-[11px] font-semibold text-muted-foreground font-body">
+                  Status
+                </label>
+                <Input
+                  id="cp-status"
+                  value={cpStatus}
+                  onChange={(e) => setCpStatus(e.target.value)}
+                  placeholder="IN_TRANSIT"
+                  disabled={cpSubmitting}
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="cp-location" className="block text-[11px] font-semibold text-muted-foreground font-body">
+                  Lokasi
+                </label>
+                <Input
+                  id="cp-location"
+                  value={cpLocation}
+                  onChange={(e) => setCpLocation(e.target.value)}
+                  placeholder="cth. Hub Jakarta Selatan"
+                  disabled={cpSubmitting}
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="cp-description" className="block text-[11px] font-semibold text-muted-foreground font-body">
+                Deskripsi
+              </label>
+              <Input
+                id="cp-description"
+                value={cpDescription}
+                onChange={(e) => setCpDescription(e.target.value)}
+                placeholder="cth. Paket tiba di sorting center"
+                disabled={cpSubmitting}
+                className="h-9 rounded-xl text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="cp-timestamp" className="block text-[11px] font-semibold text-muted-foreground font-body">
+                Waktu (opsional — kosongkan untuk sekarang)
+              </label>
+              <Input
+                id="cp-timestamp"
+                type="datetime-local"
+                value={cpTimestamp}
+                onChange={(e) => setCpTimestamp(e.target.value)}
+                disabled={cpSubmitting}
+                className="h-9 rounded-xl text-xs"
+              />
+            </div>
+
+            {cpError && (
+              <p className="text-xs text-danger font-body flex items-center gap-1.5">
+                <AlertTriangle className="size-3.5 shrink-0" />
+                {cpError}
+              </p>
+            )}
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAddCheckpoint}
+              disabled={cpSubmitting || (!cpLocation.trim() && !cpDescription.trim())}
+              className="gap-2 w-full sm:w-auto"
+            >
+              {cpSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="size-4" />
+                  <span>Tambah Checkpoint</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       )}
 

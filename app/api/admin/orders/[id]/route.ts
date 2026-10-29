@@ -10,15 +10,10 @@ import {
   shippingProviders,
   users,
 } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
-
-function isAdminRole(role: string): boolean {
-  const r = role?.toLowerCase() ?? "";
-  return r === "admin" || r === "superadmin" || r === "admin_sales" || r === "admin_laporan";
-}
 
 /**
  * GET /api/admin/orders/[id]
@@ -31,26 +26,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // ── Auth ───────────────────────────────────────────────────────────────
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
-
-  const [currentUser] = await db
-    .select({ role: users.role, isActive: users.isActive })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-
-  if (!currentUser || !currentUser.isActive || !isAdminRole(currentUser.role)) {
-    return NextResponse.json(
-      { success: false, message: "Anda tidak memiliki izin akses admin." },
-      { status: 403 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 

@@ -15,8 +15,10 @@ import { ShipmentStatus } from "@/types";
 export interface TrackingStep {
   id: string;
   status: ShipmentStatus;
-  description: string;
-  location: string;
+  /** Bisa null di data asli (dari DB); fallback ke status saat render. */
+  description: string | null;
+  location: string | null;
+  /** ISO datetime string dari API. */
   occurred_at: string;
 }
 
@@ -28,6 +30,23 @@ export interface OrderTrackingModalProps {
   service?: string;
   trackingNumber?: string;
   trackings?: TrackingStep[];
+}
+
+/** Format ISO datetime → string ramah baca dalam WIB. Fallback ke input bila
+ *  bukan tanggal valid (mis. string pre-formatted lama). */
+function formatOccurredAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return (
+    new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jakarta",
+    }).format(d) + " WIB"
+  );
 }
 
 export function OrderTrackingModal({
@@ -54,28 +73,28 @@ export function OrderTrackingModal({
       status: "DELIVERED",
       description: "Paket telah sampai di alamat tujuan dan diterima oleh penghuni rumah.",
       location: "Jakarta Selatan, DKI Jakarta",
-      occurred_at: "27 Okt 2023, 14:32 WIB",
+      occurred_at: "2023-10-27T14:32:00+07:00",
     },
     {
       id: "2",
       status: "IN_TRANSIT",
       description: "Paket sedang dibawa oleh kurir menuju alamat pengiriman.",
       location: "Hub Distribusi Jakarta Selatan",
-      occurred_at: "27 Okt 2023, 08:15 WIB",
+      occurred_at: "2023-10-27T08:15:00+07:00",
     },
     {
       id: "3",
       status: "IN_TRANSIT",
       description: "Paket tiba di sorting hub pusat Jakarta.",
       location: "Sorting Center Jakarta Barat",
-      occurred_at: "26 Okt 2023, 19:40 WIB",
+      occurred_at: "2023-10-26T19:40:00+07:00",
     },
     {
       id: "4",
       status: "PICKED_UP",
       description: "Paket telah diserahkan oleh penjual ke kurir.",
       location: "Drop Point Bandung",
-      occurred_at: "25 Okt 2023, 11:20 WIB",
+      occurred_at: "2023-10-25T11:20:00+07:00",
     },
   ];
 
@@ -173,15 +192,19 @@ export function OrderTrackingModal({
                         : "font-medium text-foreground/80"
                     }`}
                   >
-                    {track.description}
+                    {track.description ?? track.status}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 shrink-0" />
-                      {track.location}
-                    </span>
-                    <span>•</span>
-                    <span>{track.occurred_at}</span>
+                    {track.location ? (
+                      <>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 shrink-0" />
+                          {track.location}
+                        </span>
+                        <span>•</span>
+                      </>
+                    ) : null}
+                    <span>{formatOccurredAt(track.occurred_at)}</span>
                   </div>
                 </div>
               </div>

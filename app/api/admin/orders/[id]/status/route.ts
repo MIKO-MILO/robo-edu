@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { orders, shipments, users } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { orders, shipments, shippingProviders } from "@/src/db/schema";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import type { OrderStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
@@ -34,11 +34,6 @@ const VALID_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
   REFUNDED:   [],
 };
 
-function isAdminRole(role: string): boolean {
-  const r = role?.toLowerCase() ?? "";
-  return r === "admin" || r === "superadmin" || r === "admin_sales" || r === "admin_laporan";
-}
-
 /**
  * PATCH /api/admin/orders/[id]/status
  *
@@ -56,31 +51,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // ── Auth ───────────────────────────────────────────────────────────────
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
-
-  const [currentUser] = await db
-    .select({ role: users.role, isActive: users.isActive })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-
-  if (!currentUser || !currentUser.isActive || !isAdminRole(currentUser.role)) {
-    return NextResponse.json(
-      { success: false, message: "Anda tidak memiliki izin akses admin." },
-      { status: 403 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
   // ── Parse body ─────────────────────────────────────────────────────────
-  let body: { status?: string; note?: string };
+  let body: {
+    status?: string;
+    note?: string;
+    tracking_number?: string;
+    provider_id?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -101,6 +83,25 @@ export async function PATCH(
       },
       { status: 422 },
     );
+  }
+
+  // ── Optional tracking info (hanya relevan saat SHIPPED) ────────────────
+  const trackingNumber = body.tracking_number?.trim() || null;
+  const providerId = body.provider_id?.trim() || null;
+
+  // Validasi provider_id bila diberikan — pastikan benar-benar ada di DB.
+  if (providerId) {
+    const [provider] = await db
+      .select({ id: shippingProviders.id })
+      .from(shippingProviders)
+      .where(eq(shippingProviders.id, providerId))
+      .limit(1);
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, message: "Provider pengiriman tidak ditemukan." },
+        { status: 422 },
+      );
+    }
   }
 
   // ── Fetch current order ────────────────────────────────────────────────
@@ -157,15 +158,28 @@ export async function PATCH(
   // ── Sync shipment status jika relevan ─────────────────────────────────
   if (newStatus === "SHIPPED" || newStatus === "DELIVERED") {
     const shipmentStatus = newStatus === "SHIPPED" ? "shipped" : "delivered";
-    const shipmentTimestamp =
-      newStatus === "SHIPPED"
-        ? { shippedAt: now, updatedAt: now }
-        : { deliveredAt: now, status: shipmentStatus, updatedAt: now };
 
-    await db
-      .update(shipments)
-      .set({ status: shipmentStatus, ...shipmentTimestamp })
-      .where(eq(shipments.orderId, id));
+    if (newStatus === "SHIPPED") {
+      // Saat SHIPPED, set tracking number + provider (jika diberikan) + shipped_at.
+      const shipmentUpdate: Partial<typeof shipments.$inferInsert> = {
+        status: shipmentStatus,
+        shippedAt: now,
+        updatedAt: now,
+      };
+      if (trackingNumber) shipmentUpdate.trackingNumber = trackingNumber;
+      if (providerId) shipmentUpdate.shippingProviderId = providerId;
+
+      await db
+        .update(shipments)
+        .set(shipmentUpdate)
+        .where(eq(shipments.orderId, id));
+    } else {
+      // DELIVERED
+      await db
+        .update(shipments)
+        .set({ status: shipmentStatus, deliveredAt: now, updatedAt: now })
+        .where(eq(shipments.orderId, id));
+    }
   }
 
   // ── Fetch updated record to return ────────────────────────────────────
@@ -180,14 +194,26 @@ export async function PATCH(
     .where(eq(orders.id, id))
     .limit(1);
 
+  // Ambil tracking number terbaru dari shipment (jika SHIPPED barusan di-set).
+  let trackingNumberOut: string | null = null;
+  if (newStatus === "SHIPPED") {
+    const [shipment] = await db
+      .select({ trackingNumber: shipments.trackingNumber })
+      .from(shipments)
+      .where(eq(shipments.orderId, id))
+      .limit(1);
+    trackingNumberOut = shipment?.trackingNumber ?? null;
+  }
+
   return NextResponse.json({
     success: true,
     message: `Status pesanan ${updated.orderNumber} berhasil diperbarui ke ${newStatus}.`,
     data: {
-      id:           updated.id,
-      order_number: updated.orderNumber,
-      status:       updated.status.toUpperCase() as OrderStatus,
-      updated_at:   updated.updatedAt.toISOString(),
+      id:             updated.id,
+      order_number:   updated.orderNumber,
+      status:         updated.status.toUpperCase() as OrderStatus,
+      tracking_number: trackingNumberOut,
+      updated_at:     updated.updatedAt.toISOString(),
     },
   });
 }

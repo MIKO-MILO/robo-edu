@@ -8,7 +8,7 @@ import {
   users,
   productImages,
 } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import type { OrderStatus, PaymentStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
@@ -28,13 +28,9 @@ export const runtime = "nodejs";
  *   sort     — "created_at_desc" (default) | "created_at_asc" | "total_desc" | "total_asc"
  */
 export async function GET(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  // ── Auth: admin-only ───────────────────────────────────────────────────
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = request.nextUrl;
   const page       = Math.max(1, Number(searchParams.get("page")   ?? "1"));
