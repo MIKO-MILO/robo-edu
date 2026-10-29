@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { users } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
-import type { User, ResellerStatus } from "@/types";
+import type { User, MembershipStatus } from "@/types";
 
 export const runtime = "nodejs";
 
@@ -15,12 +15,9 @@ const ADMIN_ROLES = new Set([
   "admin",
 ]);
 
-const VALID_RESELLER_STATUS = new Set([
-  "NOT_RESELLER",
-  "APPROVED",
-  "PENDING",
-  "REJECTED",
-  "none",
+const VALID_MEMBERSHIP_STATUS = new Set<MembershipStatus>([
+  "NOT_MEMBER",
+  "MEMBER",
 ]);
 
 type UserDbRow = typeof users.$inferSelect;
@@ -36,9 +33,9 @@ function dbUserToResponse(user: UserDbRow): User {
     tax_country: user.taxIdentificationCountry ?? null,
     avatar_url: user.avatarKey ? `/api/profile/avatar?id=${user.id}` : null,
     role: user.role as User["role"],
-    reseller_status: user.resellerStatus as User["reseller_status"],
-    reseller_approved_at: user.resellerApprovedAt
-      ? new Date(user.resellerApprovedAt).toISOString()
+    membership_status: (user.membershipStatus as User["membership_status"]) ?? "NOT_MEMBER",
+    membership_expires_at: user.membershipExpiresAt
+      ? new Date(user.membershipExpiresAt).toISOString()
       : null,
     is_active: !!user.isActive,
     last_login_at: user.lastLoginAt
@@ -80,6 +77,18 @@ async function assertAdminOr403(): Promise<NextResponse | null> {
   return null;
 }
 
+/**
+ * PATCH /api/admin/users/:id/reseller-status
+ *
+ * Endpoint ini dipertahankan untuk kompatibilitas dengan kode frontend
+ * yang belum dimigrasikan. Secara internal ia sekarang mengupdate
+ * `membership_status` (NOT_MEMBER | MEMBER) di tabel `users`.
+ *
+ * Body: { membership_status: "NOT_MEMBER" | "MEMBER" }
+ *
+ * @deprecated Gunakan PATCH /api/admin/users/:id/membership-status untuk
+ * kode baru. Endpoint ini akan dihapus setelah migrasi frontend selesai.
+ */
 export async function PATCH(
   request: Request,
   segment: { params: Promise<{ id: string }> },
@@ -103,53 +112,30 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const reseller_status = body?.reseller_status as ResellerStatus | undefined;
+    // Accept both old field name (reseller_status) and new (membership_status)
+    // for backward compatibility during transition.
+    const raw = body?.membership_status ?? body?.reseller_status;
+    // Map legacy reseller values to new membership values
+    let membershipStatus: MembershipStatus | undefined;
+    if (raw === "APPROVED") membershipStatus = "MEMBER";
+    else if (raw === "NOT_RESELLER" || raw === "PENDING" || raw === "REJECTED") membershipStatus = "NOT_MEMBER";
+    else if (raw === "NOT_MEMBER" || raw === "MEMBER") membershipStatus = raw as MembershipStatus;
 
-    if (
-      !reseller_status ||
-      typeof reseller_status !== "string" ||
-      !VALID_RESELLER_STATUS.has(reseller_status)
-    ) {
+    if (!membershipStatus || !VALID_MEMBERSHIP_STATUS.has(membershipStatus)) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Request tidak valid: field `reseller_status` (NOT_RESELLER | APPROVED | PENDING | REJECTED) diperlukan.",
+            "Request tidak valid: field `membership_status` (NOT_MEMBER | MEMBER) diperlukan.",
         },
         { status: 400 },
       );
     }
 
-    const dbResellerStatus =
-      reseller_status === "NOT_RESELLER"
-        ? "none"
-        : reseller_status.toLowerCase();
-
-    const updatePayload: {
-      resellerStatus: string;
-      resellerApprovedAt?: Date;
-    } = {
-      resellerStatus: dbResellerStatus,
-    };
-
-    if (reseller_status === "APPROVED" && !existing.resellerApprovedAt) {
-      updatePayload.resellerApprovedAt = new Date();
-    }
-
-    await db.update(users).set(updatePayload).where(eq(users.id, id));
-
-    const [updated] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1);
-
-    if (updated && reseller_status === "APPROVED") {
-      await db
-        .update(users)
-        .set({ resellerApprovedAt: sql`COALESCE(reseller_approved_at, NOW())` })
-        .where(eq(users.id, id));
-    }
+    await db
+      .update(users)
+      .set({ membershipStatus })
+      .where(eq(users.id, id));
 
     const [finalRow] = await db
       .select()
@@ -166,7 +152,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: false,
-        message: "Gagal memperbarui status reseller.",
+        message: "Gagal memperbarui status membership.",
       },
       { status: 500 },
     );

@@ -8,12 +8,11 @@ import {
   ShieldCheck,
   Ban,
   CheckCircle2,
-  XCircle,
   Loader2,
 } from "lucide-react";
 import { Button, BackButton, buttonVariants } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
-import type { ResellerStatus } from "@/types/enums";
+import type { MembershipStatus } from "@/types/enums";
 import {
   useUpdateUserStatus,
   useUpdateResellerStatus,
@@ -24,7 +23,7 @@ export interface CustomerDetailHeaderProps {
   name: string;
   email: string;
   phone: string | null;
-  resellerStatus: ResellerStatus;
+  membershipStatus: MembershipStatus;
   isActive: boolean;
   createdAt: string;
 }
@@ -41,15 +40,15 @@ function getInitials(name: string): string {
 
 /**
  * Molecule — Header detail pelanggan dengan navigasi kembali,
- * profil ringkas, status badges, dan tombol aksi (WhatsApp, setujui reseller,
- * aktif/suspend akun). Aksi terhubung ke mutation hooks Tanstack Query.
+ * profil ringkas, status badges, dan tombol aksi (WhatsApp, aktif/suspend akun).
+ * Aksi terhubung ke mutation hooks Tanstack Query.
  */
 export function CustomerDetailHeader({
   id,
   name,
   email,
   phone,
-  resellerStatus,
+  membershipStatus,
   isActive,
 }: CustomerDetailHeaderProps) {
   const cleanPhone = phone ? phone.replace(/[^0-9]/g, "") : null;
@@ -61,23 +60,19 @@ export function CustomerDetailHeader({
   } = useUpdateUserStatus();
 
   const {
-    mutateAsync: updateResellerStatus,
-    isPending: isUpdatingReseller,
+    mutateAsync: updateMembershipStatus,
+    isPending: isUpdatingMembership,
   } = useUpdateResellerStatus();
 
   const handleToggleUserStatus = async () => {
     await updateUserStatus({ id, is_active: !isActive });
   };
 
-  const handleApproveReseller = async () => {
-    await updateResellerStatus({ id, reseller_status: "APPROVED" });
+  const handleGrantMembership = async () => {
+    await updateMembershipStatus({ id, membership_status: "MEMBER" });
   };
 
-  const handleRejectReseller = async () => {
-    await updateResellerStatus({ id, reseller_status: "REJECTED" });
-  };
-
-  const isActionDisabled = isUpdatingStatus || isUpdatingReseller;
+  const isActionDisabled = isUpdatingStatus || isUpdatingMembership;
 
   return (
     <div className="space-y-4">
@@ -100,17 +95,13 @@ export function CustomerDetailHeader({
                 {name}
               </h1>
               <StatusBadge
-                status={resellerStatus}
+                status={membershipStatus}
                 size="sm"
                 neo
                 customLabel={
-                  resellerStatus === "NOT_RESELLER"
-                    ? "Pelanggan Reguler"
-                    : resellerStatus === "APPROVED"
-                      ? "Reseller Aktif"
-                      : resellerStatus === "PENDING"
-                        ? "Pengajuan Reseller"
-                        : "Reseller Ditolak"
+                  membershipStatus === "MEMBER"
+                    ? "Member Plus"
+                    : "Pelanggan Standar"
                 }
               />
               <StatusBadge
@@ -156,37 +147,21 @@ export function CustomerDetailHeader({
             </a>
           )}
 
-          {resellerStatus === "PENDING" && (
-            <>
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
-                onClick={handleApproveReseller}
-                disabled={isActionDisabled}
-              >
-                {isUpdatingReseller ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="size-4" />
-                )}
-                <span>Setujui Reseller</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 rounded-xl text-destructive hover:text-destructive border-2 border-border font-heading font-bold text-xs"
-                onClick={handleRejectReseller}
-                disabled={isActionDisabled}
-              >
-                {isUpdatingReseller ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <XCircle className="size-4" />
-                )}
-                <span>Tolak</span>
-              </Button>
-            </>
+          {membershipStatus === "NOT_MEMBER" && (
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-1.5 rounded-xl bg-primary hover:bg-primary-600 font-heading font-bold text-xs"
+              onClick={handleGrantMembership}
+              disabled={isActionDisabled}
+            >
+              {isUpdatingMembership ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="size-4" />
+              )}
+              <span>Aktifkan Member</span>
+            </Button>
           )}
 
           {isActive ? (

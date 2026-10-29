@@ -1,10 +1,22 @@
-import { mysqlTable, varchar, decimal, datetime, json, uniqueIndex } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar, decimal, datetime, json, uniqueIndex, index } from "drizzle-orm/mysql-core";
 import { orders } from "./order";
 import { sql } from "drizzle-orm";
 
 export const payments = mysqlTable("payments", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  orderId: varchar("order_id", { length: 36 }).notNull().references(() => orders.id, { onDelete: "cascade", onUpdate: "cascade" }),
+  /**
+   * FK to orders. Nullable — exactly one of order_id / membership_purchase_id
+   * must be set. The "exactly-one" invariant is enforced at every insert site
+   * in application code (MySQL CHECK constraints are loosely enforced).
+   */
+  orderId: varchar("order_id", { length: 36 }).references(() => orders.id, { onDelete: "cascade", onUpdate: "cascade" }),
+  /**
+   * FK to membership_purchase. Nullable — set when this payment is for a
+   * membership purchase rather than a product order.
+   * Declared as varchar here to avoid a circular import with membership-purchase.ts
+   * (which itself FKs back to payments). The FK constraint is in the migration SQL.
+   */
+  membershipPurchaseId: varchar("membership_purchase_id", { length: 36 }),
   transactionId: varchar("transaction_id", { length: 150 }).notNull(),
   paymentType: varchar("payment_type", { length: 50 }).notNull(),
   status: varchar("status", { length: 50 }).notNull(),
@@ -21,6 +33,7 @@ export const payments = mysqlTable("payments", {
   .notNull()
   .default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
-  orderUnique: uniqueIndex("payments_order_id_unique").on(table.orderId),
+  orderIdx: index("payments_order_id_idx").on(table.orderId),
+  membershipPurchaseIdx: index("payments_membership_purchase_id_idx").on(table.membershipPurchaseId),
   transactionUnique: uniqueIndex("payments_transaction_id_unique").on(table.transactionId),
 }));

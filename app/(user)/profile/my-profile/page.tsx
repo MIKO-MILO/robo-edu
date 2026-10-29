@@ -25,7 +25,7 @@ export default async function MyProfilePage() {
       residentialAddress: users.residentialAddress,
       avatarKey: users.avatarKey,
       role: users.role,
-      resellerStatus: users.resellerStatus,
+      membershipStatus: users.membershipStatus,
       isActive: users.isActive,
     })
     .from(users)
@@ -46,7 +46,7 @@ export default async function MyProfilePage() {
     // Avatar served through the API route so MinIO credentials stay server-side
     avatarUrl: user.avatarKey ? `/api/profile/avatar?t=${Date.now()}` : null,
     role: user.role,
-    resellerStatus: user.resellerStatus,
+    membershipStatus: user.membershipStatus,
   };
 
   return <ProfileForm initialData={profileData} />;

@@ -15,6 +15,8 @@ export * from "./shipment-tracking";
 export * from "./order";
 export * from "./order-item";
 export * from "./payment";
+export * from "./membership-purchase";
+export * from "./settings";
 export * from "./voucher";
 export * from "./voucher-usage";
 export * from "./review";

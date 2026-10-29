@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { users, userAddresses, carts, wishlists, orders, voucherUsages, reviews, complaints, emailLogs, auditLogs } from "../schema";
+import { users, userAddresses, carts, wishlists, orders, voucherUsages, reviews, complaints, emailLogs, auditLogs, membershipPurchases } from "../schema";
 
 export const usersRelations = relations(users, ({ many }) => ({
   addresses: many(userAddresses),
@@ -11,6 +11,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   complaints: many(complaints),
   emailLogs: many(emailLogs),
   auditLogs: many(auditLogs),
+  membershipPurchases: many(membershipPurchases),
 }));
 
 export const userAddressesRelations = relations(userAddresses, ({ one, many }) => ({

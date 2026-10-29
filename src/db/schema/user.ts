@@ -24,10 +24,10 @@ export const users = mysqlTable(
     /** Object key di MinIO. URL publik tidak disimpan agar akses tetap melalui aplikasi. */
     avatarKey: varchar("avatar_key", { length: 500 }),
     role: varchar("role", { length: 30 }).notNull().default("CUSTOMER"),
-    resellerStatus: varchar("reseller_status", { length: 30 })
+    membershipStatus: varchar("membership_status", { length: 30 })
       .notNull()
-      .default("NOT_RESELLER"),
-    resellerApprovedAt: datetime("reseller_approved_at"),
+      .default("NOT_MEMBER"),
+    membershipExpiresAt: datetime("membership_expires_at"),
     isActive: boolean("is_active").notNull().default(true),
     emailVerifiedAt: datetime("email_verified_at"),
     verificationToken: varchar("verification_token", { length: 255 }),

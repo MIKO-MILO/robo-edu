@@ -7,7 +7,7 @@ import type {
   ProductStatus,
   OrderStatus,
   PaymentStatus,
-  ResellerStatus,
+  MembershipStatus,
   ReviewStatus,
   ComplaintStatus,
   ShipmentStatus,
@@ -18,7 +18,7 @@ export type StatusEnum =
   | ProductStatus
   | OrderStatus
   | PaymentStatus
-  | ResellerStatus
+  | MembershipStatus
   | ReviewStatus
   | ComplaintStatus
   | ShipmentStatus
@@ -93,7 +93,11 @@ const statusMap: Record<string, StatusConfig> = {
   FAILED: { label: "Gagal", theme: "danger", dotColor: "bg-danger" },
   EXPIRED: { label: "Kedaluwarsa", theme: "muted", dotColor: "bg-muted-foreground" },
 
-  // ResellerStatus
+  // MembershipStatus
+  MEMBER: { label: "Member Plus", theme: "success", dotColor: "bg-success" },
+  NOT_MEMBER: { label: "Standar", theme: "muted", dotColor: "bg-muted-foreground" },
+
+  // Legacy ResellerStatus values (kept for backward compat with any remaining usage)
   NOT_RESELLER: { label: "Bukan Reseller", theme: "muted", dotColor: "bg-muted-foreground" },
   APPROVED: { label: "Approved", theme: "success", dotColor: "bg-success" },
   REJECTED: { label: "Ditolak", theme: "danger", dotColor: "bg-danger" },

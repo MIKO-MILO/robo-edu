@@ -1,5 +1,5 @@
 import type { UUID, ISODateString } from "./common";
-import type { UserRole, ResellerStatus } from "./enums";
+import type { UserRole, MembershipStatus } from "./enums";
 
 /**
  * user.ts
@@ -24,8 +24,8 @@ export interface User {
   tax_country?: string | null;
   avatar_url?: string | null;
   role: UserRole;
-  reseller_status: ResellerStatus;
-  reseller_approved_at: ISODateString | null;
+  membership_status: MembershipStatus;
+  membership_expires_at: ISODateString | null;
   is_active: boolean;
   last_login_at: ISODateString | null;
   created_at: ISODateString;
@@ -75,7 +75,7 @@ export interface LoginResponseData {
   access_token: string;
   refresh_token: string;
   expires_in: number; // detik
-  user: Pick<User, "id" | "name" | "role" | "reseller_status">;
+  user: Pick<User, "id" | "name" | "role" | "membership_status">;
 }
 
 /** Body — POST /users/me/addresses & PATCH /users/me/addresses/{id} */

@@ -110,7 +110,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     .where(inArray(payments.orderId, orderIds));
 
   const paymentMap: Record<string, typeof paymentRows[number]> = {};
-  for (const p of paymentRows) paymentMap[p.orderId] = p;
+  for (const p of paymentRows) if (p.orderId) paymentMap[p.orderId] = p;
 
   // ── Images ─────────────────────────────────────────────────────────────
   const firstProductIds = [

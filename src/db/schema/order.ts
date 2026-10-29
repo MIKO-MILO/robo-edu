@@ -4,6 +4,7 @@ import {
   text,
   decimal,
   datetime,
+  boolean,
   uniqueIndex,
   index,
 } from "drizzle-orm/mysql-core";
@@ -59,6 +60,12 @@ export const orders = mysqlTable(
     deliveredAt: datetime("delivered_at"),
     completedAt: datetime("completed_at"),
     cancelledAt: datetime("cancelled_at"),
+    /** Whether this order is a dropship order (sender details differ from store). */
+    isDropship: boolean("is_dropship").notNull().default(false),
+    /** Dropship sender name shown on the package label (nullable — only for dropship). */
+    senderName: varchar("sender_name", { length: 150 }),
+    /** Dropship sender phone shown on the package label (nullable — only for dropship). */
+    senderPhone: varchar("sender_phone", { length: 30 }),
     createdAt: datetime("created_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

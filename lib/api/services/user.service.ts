@@ -8,7 +8,7 @@ import type {
   UpdateProfileRequestBody,
   UpdatePasswordRequestBody,
   UpsertAddressRequestBody,
-  ResellerStatus,
+  MembershipStatus,
   OrderListItem,
   Complaint,
   Review,
@@ -25,7 +25,7 @@ import type {
 
 export interface AdminUsersQueryParams extends ListQueryParams {
   role?: string;
-  reseller_status?: string;
+  membership_status?: string;
   is_active?: boolean;
 }
 
@@ -132,13 +132,13 @@ export const userService = {
     });
   },
 
-  /** PATCH /admin/users/{id}/reseller-status - Setujui/tolak reseller status */
+  /** PATCH /admin/users/{id}/reseller-status - Update membership status */
   async updateUserResellerStatus(
     id: string,
-    reseller_status: ResellerStatus,
+    membership_status: MembershipStatus,
   ): Promise<ApiResponse<User>> {
     return http.patch<ApiResponse<User>>(`/admin/users/${id}/reseller-status`, {
-      reseller_status,
+      membership_status,
     });
   },
 
@@ -158,7 +158,7 @@ export const userService = {
       data: response.data.map((user) =>
         mapUserToCustomerRow({
           ...user,
-          reseller_status: normalizeResellerStatus(user.reseller_status),
+          membership_status: normalizeResellerStatus(user.membership_status),
         }),
       ),
       meta: response.meta,
@@ -182,7 +182,7 @@ export const userService = {
 
     const user: User = {
       ...userResp.data,
-      reseller_status: normalizeResellerStatus(userResp.data.reseller_status),
+      membership_status: normalizeResellerStatus(userResp.data.membership_status),
     };
 
     const orders: OrderListItem[] = ordersResp.data ?? [];

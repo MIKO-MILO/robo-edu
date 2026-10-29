@@ -132,20 +132,16 @@ export function CustomerTable({ data, isLoading = false }: CustomerTableProps) {
                       </div>
                     </td>
 
-                    {/* Tipe Akun / Reseller Status */}
+                    {/* Tipe Akun / Membership Status */}
                     <td className="py-3.5 px-4">
                       <StatusBadge
-                        status={customer.reseller_status}
+                        status={customer.membership_status}
                         size="sm"
                         neo
                         customLabel={
-                          customer.reseller_status === "NOT_RESELLER"
-                            ? "Pelanggan"
-                            : customer.reseller_status === "APPROVED"
-                            ? "Reseller"
-                            : customer.reseller_status === "PENDING"
-                            ? "Pengajuan"
-                            : "Ditolak"
+                          customer.membership_status === "MEMBER"
+                            ? "Member Plus"
+                            : "Standar"
                         }
                       />
                     </td>
@@ -292,17 +288,13 @@ export function CustomerTable({ data, isLoading = false }: CustomerTableProps) {
                 </div>
                 <div className="flex flex-col gap-1.5 items-end shrink-0">
                   <StatusBadge
-                    status={customer.reseller_status}
+                    status={customer.membership_status}
                     size="sm"
                     neo
                     customLabel={
-                      customer.reseller_status === "NOT_RESELLER"
-                        ? "Pelanggan"
-                        : customer.reseller_status === "APPROVED"
-                        ? "Reseller"
-                        : customer.reseller_status === "PENDING"
-                        ? "Pengajuan"
-                        : "Ditolak"
+                      customer.membership_status === "MEMBER"
+                        ? "Member Plus"
+                        : "Standar"
                     }
                   />
                   <StatusBadge

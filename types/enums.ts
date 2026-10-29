@@ -15,8 +15,15 @@
 /** Kolom `user.role`. Granular role di DB: superadmin, admin_sales, admin_laporan, customer. */
 export type UserRole = "superadmin" | "admin_sales" | "admin_laporan" | "customer";
 
-/** Kolom `user.reseller_status`. Ini TERPISAH dari `role` — jangan digabung
- * jadi satu field di UI/middleware (lihat PRD Bab 5–6). */
+/**
+ * @deprecated Sistem reseller lama. Dipertahankan karena masih dipakai di
+ * beberapa komponen frontend (checkout, customer detail) dan API admin yang
+ * belum dimigrasikan. Jangan dipakai untuk fitur baru — gunakan MembershipStatus.
+ *
+ * CATATAN: Kolom `user.reseller_status` / `user.reseller_approved_at` sudah
+ * dihapus dari DB. Field ini hanya ada di types/reseller.ts dan kode yang
+ * belum dimigrasikan.
+ */
 export type ResellerStatus = "NOT_RESELLER" | "PENDING" | "APPROVED" | "REJECTED";
 
 /**

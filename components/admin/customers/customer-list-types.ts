@@ -1,5 +1,5 @@
 import type {
-  ResellerStatus,
+  MembershipStatus,
   OrderStatus,
   PaymentStatus,
   UserRole,
@@ -9,7 +9,7 @@ import type { Complaint, Review } from "@/types";
 
 /**
  * AdminCustomerRow — DTO ringan untuk baris di tabel daftar pelanggan admin.
- * Memuat informasi penting pelanggan, tipe/status reseller, total belanja (LTV),
+ * Memuat informasi penting pelanggan, status membership, total belanja (LTV),
  * dan transaksi terakhir.
  */
 export interface AdminCustomerRow {
@@ -19,7 +19,7 @@ export interface AdminCustomerRow {
   phone: string | null;
   avatar_url?: string | null;
   role: UserRole;
-  reseller_status: ResellerStatus;
+  membership_status: MembershipStatus;
   is_active: boolean;
   total_orders: number;
   total_spent: number;
@@ -39,14 +39,12 @@ export interface CustomerStats {
 }
 
 /**
- * Filter tab opsi tipe pelanggan / reseller untuk toolbar.
+ * Filter tab opsi tipe pelanggan untuk toolbar.
  */
 export const CUSTOMER_RESELLER_TABS = [
   { key: "ALL", label: "Semua Pelanggan" },
-  { key: "CUSTOMER", label: "Pelanggan Reguler" },
-  { key: "APPROVED", label: "Reseller Aktif" },
-  { key: "PENDING", label: "Pengajuan Reseller" },
-  { key: "REJECTED", label: "Reseller Ditolak" },
+  { key: "MEMBER", label: "Member Plus" },
+  { key: "NOT_MEMBER", label: "Pelanggan Standar" },
 ] as const;
 
 /**
@@ -107,8 +105,8 @@ export interface AdminCustomerDetailData {
   tax_id?: string | null;
   tax_country?: string | null;
   role: UserRole;
-  reseller_status: ResellerStatus;
-  reseller_approved_at: string | null;
+  membership_status: MembershipStatus;
+  membership_expires_at: string | null;
   is_active: boolean;
   last_login_at: string | null;
   created_at: string;
@@ -138,15 +136,11 @@ export interface AdminCustomerDetailData {
 
 export function normalizeResellerStatus(
   value: string | null | undefined,
-): ResellerStatus {
-  if (!value) return "NOT_RESELLER";
+): MembershipStatus {
+  if (!value) return "NOT_MEMBER";
   const v = value.toUpperCase();
-  if (v === "NONE" || v === "NOT" || v === "NOT_RESELLER")
-    return "NOT_RESELLER";
-  if (v === "APPROVED" || v === "ACTIVE") return "APPROVED";
-  if (v === "PENDING" || v === "SUBMITTED") return "PENDING";
-  if (v === "REJECTED" || v === "DENIED") return "REJECTED";
-  return "NOT_RESELLER";
+  if (v === "MEMBER" || v === "APPROVED") return "MEMBER";
+  return "NOT_MEMBER";
 }
 
 export interface UserOrderSummary {
@@ -167,7 +161,7 @@ export function mapUserToCustomerRow(
     phone: user.phone,
     avatar_url: user.avatar_url ?? null,
     role: user.role,
-    reseller_status: normalizeResellerStatus(user.reseller_status),
+    membership_status: normalizeResellerStatus(user.membership_status),
     is_active: user.is_active,
     total_orders: summary?.total_orders ?? 0,
     total_spent: summary?.total_spent ?? 0,
@@ -252,8 +246,8 @@ export function mapUserAndRelationsToCustomerDetail(
     tax_id: user.tax_id ?? null,
     tax_country: user.tax_country ?? null,
     role: user.role,
-    reseller_status: normalizeResellerStatus(user.reseller_status),
-    reseller_approved_at: user.reseller_approved_at,
+    membership_status: normalizeResellerStatus(user.membership_status),
+    membership_expires_at: user.membership_expires_at,
     is_active: user.is_active,
     last_login_at: user.last_login_at,
     created_at: user.created_at,

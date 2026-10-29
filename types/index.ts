@@ -24,7 +24,7 @@ export * from "./enums";
 export * from "./common";
 export * from "./user";
 export * from "./membership";
-export * from "./reseller"; // LEGACY: sistem reseller lama; dipertahankan karena User type masih punya reseller_status
+export * from "./reseller"; // LEGACY: sistem reseller lama; dipertahankan karena beberapa komponen frontend masih menggunakannya
 export * from "./catalog";
 export * from "./cart";
 export * from "./wishlist";

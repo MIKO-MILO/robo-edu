@@ -21,7 +21,7 @@ import type { UserAddress } from "@/types/user";
 import type { CartItemDetail } from "@/types/cart";
 import type { CheckoutSummary } from "@/types/order";
 import type { ValidateVoucherResponseData } from "@/types/voucher";
-import type { ResellerStatus } from "@/types/enums";
+import type { MembershipStatus } from "@/types/enums";
 
 // ── API response shapes (camelCase from our routes) ───────────────────────────
 
@@ -106,7 +106,7 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
   const [cartItems, setCartItems] = useState<CartItemDetail[]>([]);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
-  const [resellerStatus] = useState<ResellerStatus>("NOT_RESELLER");
+  const [resellerStatus] = useState<MembershipStatus>("NOT_MEMBER");
 
   // ── UI state ──────────────────────────────────────────────────────────
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
@@ -436,7 +436,7 @@ export default function CheckoutPage() {
                   <CheckoutOrderItem
                     key={item.id}
                     item={item}
-                    resellerStatus={resellerStatus}
+                    membershipStatus={resellerStatus}
                   />
                 ))}
               </div>

@@ -6,4 +6,4 @@ export * from "./shipping";
 export * from "./voucher";
 export * from "./review";
 export * from "./complaint";
-
+export * from "./membership";

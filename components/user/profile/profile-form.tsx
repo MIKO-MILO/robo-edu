@@ -20,7 +20,7 @@ export interface ProfileData {
   residentialAddress: string;
   avatarUrl: string | null;
   role: string;
-  resellerStatus: string;
+  membershipStatus: string;
 }
 
 interface ProfileFormProps {
@@ -29,11 +29,11 @@ interface ProfileFormProps {
 
 type SaveState = "idle" | "saving" | "success" | "error";
 
-// Derive badge label from role/resellerStatus
-function badgeLabel(role: string, resellerStatus: string): string {
+// Derive badge label from role/membershipStatus
+function badgeLabel(role: string, membershipStatus: string): string {
   if (role === "ADMIN" || role === "admin") return "Admin";
-  if (resellerStatus === "APPROVED" || resellerStatus === "approved") return "Reseller";
-  return "Member";
+  if (membershipStatus === "MEMBER") return "Member Plus";
+  return "Member Standar";
 }
 
 export function ProfileForm({ initialData }: ProfileFormProps) {
@@ -180,7 +180,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
           <h2 className="font-heading text-3xl font-bold text-foreground leading-tight">
             {form.name || "—"}
           </h2>
-          <StatusBadge label={badgeLabel(initialData.role, initialData.resellerStatus)} />
+          <StatusBadge label={badgeLabel(initialData.role, initialData.membershipStatus)} />
           <p className="font-body text-sm text-muted-foreground">{initialData.email}</p>
         </div>
       </div>

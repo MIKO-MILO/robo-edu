@@ -19,7 +19,7 @@ export interface CustomerProfileCardProps {
   gender?: "MALE" | "FEMALE" | "OTHER" | null;
   taxId?: string | null;
   taxCountry?: string | null;
-  resellerApprovedAt?: string | null;
+  membershipExpiresAt?: string | null;
   createdAt: string;
   lastLoginAt: string | null;
   addresses: UserAddress[];
@@ -53,7 +53,7 @@ export function CustomerProfileCard({
   gender,
   taxId,
   taxCountry,
-  resellerApprovedAt,
+  membershipExpiresAt,
   createdAt,
   lastLoginAt,
   addresses,
@@ -196,13 +196,13 @@ export function CustomerProfileCard({
             </span>
           </div>
 
-          {resellerApprovedAt && (
+          {membershipExpiresAt && (
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1">
-                <Award className="size-3 text-purple-600" /> Reseller Disetujui:
+                <Award className="size-3 text-purple-600" /> Member berlaku s/d:
               </span>
               <span className="font-semibold text-foreground">
-                {formatDate(resellerApprovedAt)}
+                {formatDate(membershipExpiresAt)}
               </span>
             </div>
           )}

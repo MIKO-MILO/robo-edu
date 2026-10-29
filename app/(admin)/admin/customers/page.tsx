@@ -77,11 +77,7 @@ function AdminCustomersContent() {
     };
     if (searchQuery) params.search = searchQuery;
     if (resellerFilter !== "ALL") {
-      if (resellerFilter === "CUSTOMER") {
-        params.reseller_status = "NOT_RESELLER";
-      } else {
-        params.reseller_status = resellerFilter;
-      }
+      params.membership_status = resellerFilter;
     }
     if (statusFilter !== "ALL") {
       params.is_active = statusFilter === "ACTIVE";
@@ -108,9 +104,7 @@ function AdminCustomersContent() {
       }
 
       if (resellerFilter !== "ALL") {
-        if (resellerFilter === "CUSTOMER") {
-          if (customer.reseller_status !== "NOT_RESELLER") return false;
-        } else if (customer.reseller_status !== resellerFilter) {
+        if (customer.membership_status !== resellerFilter) {
           return false;
         }
       }

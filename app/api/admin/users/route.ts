@@ -28,9 +28,9 @@ function dbUserToResponse(user: UserDbRow): User {
     tax_country: user.taxIdentificationCountry ?? null,
     avatar_url: user.avatarKey ? `/api/profile/avatar?id=${user.id}` : null,
     role: user.role as User["role"],
-    reseller_status: user.resellerStatus as User["reseller_status"],
-    reseller_approved_at: user.resellerApprovedAt
-      ? new Date(user.resellerApprovedAt).toISOString()
+    membership_status: (user.membershipStatus as User["membership_status"]) ?? "NOT_MEMBER",
+    membership_expires_at: user.membershipExpiresAt
+      ? new Date(user.membershipExpiresAt).toISOString()
       : null,
     is_active: !!user.isActive,
     last_login_at: user.lastLoginAt
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
     const role = searchParams.get("role")?.trim() || "";
-    const resellerStatus = searchParams.get("reseller_status")?.trim() || "";
+    const membershipStatus = searchParams.get("membership_status")?.trim() || "";
     const isActiveParam = searchParams.get("is_active");
 
     const sort = searchParams.get("sort") || "-created_at";
@@ -102,18 +102,8 @@ export async function GET(request: NextRequest) {
       );
     }
     if (role) filters.push(eq(users.role, role));
-    if (resellerStatus) {
-      if (resellerStatus === "NOT_RESELLER") {
-        filters.push(
-          or(
-            eq(users.resellerStatus, "none"),
-            eq(users.resellerStatus, "NOT_RESELLER"),
-            eq(users.resellerStatus, "not"),
-          )!,
-        );
-      } else {
-        filters.push(eq(users.resellerStatus, resellerStatus.toLowerCase()));
-      }
+    if (membershipStatus) {
+      filters.push(eq(users.membershipStatus, membershipStatus.toUpperCase()));
     }
     if (isActiveParam !== null) {
       filters.push(eq(users.isActive, isActiveParam === "true"));

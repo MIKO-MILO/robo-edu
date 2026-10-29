@@ -1,18 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "@/lib/api/services/user.service";
-import type { ResellerStatus } from "@/types";
+import type { MembershipStatus } from "@/types";
 
-interface UpdateResellerStatusVariables {
+interface UpdateMembershipStatusVariables {
   id: string;
-  reseller_status: ResellerStatus;
+  membership_status: MembershipStatus;
 }
 
 export function useUpdateResellerStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, reseller_status }: UpdateResellerStatusVariables) =>
-      userService.updateUserResellerStatus(id, reseller_status),
+    mutationFn: ({ id, membership_status }: UpdateMembershipStatusVariables) =>
+      userService.updateUserResellerStatus(id, membership_status),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["admin", "customers"],

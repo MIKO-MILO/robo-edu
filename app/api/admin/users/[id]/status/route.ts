@@ -28,9 +28,9 @@ function dbUserToResponse(user: UserDbRow): User {
     tax_country: user.taxIdentificationCountry ?? null,
     avatar_url: user.avatarKey ? `/api/profile/avatar?id=${user.id}` : null,
     role: user.role as User["role"],
-    reseller_status: user.resellerStatus as User["reseller_status"],
-    reseller_approved_at: user.resellerApprovedAt
-      ? new Date(user.resellerApprovedAt).toISOString()
+    membership_status: (user.membershipStatus as User["membership_status"]) ?? "NOT_MEMBER",
+    membership_expires_at: user.membershipExpiresAt
+      ? new Date(user.membershipExpiresAt).toISOString()
       : null,
     is_active: !!user.isActive,
     last_login_at: user.lastLoginAt

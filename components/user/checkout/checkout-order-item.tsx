@@ -3,11 +3,11 @@
 import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CartItemDetail } from "@/types/cart";
-import type { ResellerStatus } from "@/types/enums";
+import type { MembershipStatus } from "@/types/enums";
 
 interface CheckoutOrderItemProps {
   item: CartItemDetail;
-  resellerStatus: ResellerStatus;
+  membershipStatus: MembershipStatus;
 }
 
 /** Format IDR currency */
@@ -23,13 +23,13 @@ function formatIDR(amount: number): string {
  * CheckoutOrderItem
  * Menampilkan satu baris item pesanan di section review order.
  * Data berasal dari CartItemDetail (cart.ts) yang di-fetch dari GET /cart.
- * Harga label ditentukan dari resellerStatus: APPROVED → tampilkan badge "Harga Reseller".
+ * Harga label ditentukan dari membershipStatus: MEMBER → tampilkan badge "Harga Member".
  */
 export function CheckoutOrderItem({
   item,
-  resellerStatus,
+  membershipStatus,
 }: CheckoutOrderItemProps) {
-  const isReseller = resellerStatus === "APPROVED";
+  const isMember = membershipStatus === "MEMBER";
   const thumbnailBg = "bg-accent-pink/40"; // TODO: rotate bg per item index via prop
 
   return (
@@ -83,12 +83,12 @@ export function CheckoutOrderItem({
 
       {/* Right: Price */}
       <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-border/20">
-        {isReseller && (
+        {isMember && (
           <span className="px-2 py-0.5 text-[10px] font-black rounded bg-accent-yellow text-foreground border border-border inline-block mb-1">
-            Harga Reseller
+            Harga Member
           </span>
         )}
-        {!isReseller && (
+        {!isMember && (
           <span className="px-2 py-0.5 text-[10px] font-black rounded bg-accent-green/60 text-emerald-900 border border-border inline-block mb-1">
             Harga Resmi
           </span>

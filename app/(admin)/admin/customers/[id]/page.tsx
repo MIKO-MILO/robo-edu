@@ -124,7 +124,7 @@ export default function AdminCustomerDetailPage({
         name={customer.name}
         email={customer.email}
         phone={customer.phone}
-        resellerStatus={customer.reseller_status}
+        membershipStatus={customer.membership_status}
         isActive={customer.is_active}
         createdAt={customer.created_at}
       />
@@ -210,7 +210,7 @@ export default function AdminCustomerDetailPage({
             gender={customer.gender}
             taxId={customer.tax_id}
             taxCountry={customer.tax_country}
-            resellerApprovedAt={customer.reseller_approved_at}
+            membershipExpiresAt={customer.membership_expires_at}
             createdAt={customer.created_at}
             lastLoginAt={customer.last_login_at}
             addresses={customer.addresses}
