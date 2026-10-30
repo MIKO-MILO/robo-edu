@@ -4,8 +4,8 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A customer can submit a complaint only for their own DELIVERED order items; all other cases are rejected.
-- [ ] Attachments are stored and returned.
-- [ ] `GET /api/complaints` returns only the logged-in user's complaints, with status.
+- [x] A customer can submit a complaint only for their own DELIVERED order items; all other cases are rejected.
+- [x] Attachments are stored and returned.
+- [x] `GET /api/complaints` returns only the logged-in user's complaints, with status.
