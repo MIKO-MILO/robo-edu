@@ -36,6 +36,12 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname),
       "server-only": path.resolve(__dirname, "tests/stubs/server-only.ts"),
+      // Route handlers read the session cookie through `cookies()` from
+      // `next/headers`, which throws outside a Next.js request scope. The
+      // stub backs it with a seedable in-memory store (see
+      // tests/stubs/next-headers.ts) so admin guards like `requireAdmin()` can
+      // be exercised end-to-end in tests.
+      "next/headers": path.resolve(__dirname, "tests/stubs/next-headers.ts"),
     },
   },
 });
