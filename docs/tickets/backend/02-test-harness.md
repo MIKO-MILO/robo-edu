@@ -4,9 +4,9 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `npm run test` runs vitest against a seeded test DB and exits cleanly.
-- [ ] The test DB is created/seeded deterministically and reset between runs (no leftover state).
-- [ ] At least one example test asserts both an API response and a resulting DB row.
-- [ ] Fixtures include a MEMBER user, a non-MEMBER user, and variants with and without a member price.
+- [x] `npm run test` runs vitest against a seeded test DB and exits cleanly.
+- [x] The test DB is created/seeded deterministically and reset between runs (no leftover state).
+- [x] At least one example test asserts both an API response and a resulting DB row.
+- [x] Fixtures include a MEMBER user, a non-MEMBER user, and variants with and without a member price.

@@ -13,7 +13,9 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed/products.ts",
     "db:seed:products": "tsx src/db/seed/products.ts",
-    "db:seed:admin": "tsx src/db/seed/admin.ts"
+    "db:seed:admin": "tsx src/db/seed/admin.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -53,6 +55,7 @@
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }
