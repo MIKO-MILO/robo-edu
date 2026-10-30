@@ -27,7 +27,6 @@ let _passwordHash: string | null = null;
 
 /** Stable fixture IDs tests can rely on. */
 export const FIXTURE_IDS = {
-  adminUser: "test-user-admin",
   memberUser: "test-user-member",
   regularUser: "test-user-regular",
   category: "test-cat-robot",
@@ -44,7 +43,6 @@ export const FIXTURE_IDS = {
 } as const;
 
 export const FIXTURE_EMAILS = {
-  admin: "admin.test@roboedu.test",
   member: "member.test@roboedu.test",
   regular: "regular.test@roboedu.test",
 } as const;
@@ -57,9 +55,6 @@ const SETTINGS_SEED: Array<{ key: string; value: string }> = [
   { key: "store_phone", value: "0812000000" },
   { key: "store_email", value: "store@roboedu.test" },
   { key: "store_address", value: "Jl. Test No. 1, Jakarta" },
-  { key: "shipping_min_weight", value: "1000" },
-  { key: "shipping_cost", value: "20000" },
-  { key: "shipping_default_provider", value: "J&T" },
 ];
 
 /** Far-future date used for active membership expiry. */
@@ -81,18 +76,8 @@ export async function seedFixtures(
   const memberPasswordHash = _passwordHash;
   const regularPasswordHash = _passwordHash;
 
-  // --- users: one ADMIN, one MEMBER, one NOT_MEMBER ---
+  // --- users: one MEMBER, one NOT_MEMBER ---
   await db.insert(schema.users).values([
-    {
-      id: FIXTURE_IDS.adminUser,
-      name: "Admin User",
-      email: FIXTURE_EMAILS.admin,
-      password: _passwordHash,
-      phone: "08120000003",
-      role: "admin",
-      membershipStatus: "NOT_MEMBER",
-      isActive: true,
-    },
     {
       id: FIXTURE_IDS.memberUser,
       name: "Member User",

@@ -48,40 +48,14 @@ export function verifySessionToken(token: string | undefined): SessionPayload | 
   }
 }
 
-export async function getSessionUserId(request?: Request): Promise<string | null> {
-  let token: string | undefined;
-  if (request) {
-    const cookieHeader = request.headers.get("cookie") ?? "";
-    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]*)`));
-    if (match) token = decodeURIComponent(match[1]);
-  }
-  if (!token) {
-    try {
-      const cookieStore = await cookies();
-      token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    } catch {
-      // Called outside Next.js request scope (e.g. testing)
-    }
-  }
-  return verifySessionToken(token)?.userId ?? null;
+export async function getSessionUserId() {
+  const cookieStore = await cookies();
+  return verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value)?.userId ?? null;
 }
 
-export async function getSession(request?: Request): Promise<{ userId: string; expiresAt: number } | null> {
-  let token: string | undefined;
-  if (request) {
-    const cookieHeader = request.headers.get("cookie") ?? "";
-    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]*)`));
-    if (match) token = decodeURIComponent(match[1]);
-  }
-  if (!token) {
-    try {
-      const cookieStore = await cookies();
-      token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    } catch {
-      // Called outside Next.js request scope (e.g. testing)
-    }
-  }
-  return verifySessionToken(token);
+export async function getSession(): Promise<{ userId: string; expiresAt: number } | null> {
+  const cookieStore = await cookies();
+  return verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 }
 
 export const sessionCookieOptions = {

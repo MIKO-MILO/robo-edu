@@ -20,7 +20,7 @@ services:
           "-h",
           "localhost",
           "-uroot",
-          "-p${DB_ROOT_PASSWORD}",
+          "-p${DB_ROOT_PASSWORD}"
         ]
       interval: 5s
       timeout: 5s
@@ -32,7 +32,8 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+        ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -50,7 +51,13 @@ services:
       - "${MINIO_API_PORT:-9002}:9000"
       - "${MINIO_CONSOLE_PORT:-9003}:9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:9000/minio/health/live"
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -64,7 +71,7 @@ services:
       [
         "sh",
         "-c",
-        "set -eu; npm install; npm run db:push; npm run db:seed:products; exec npm run dev -- --webpack",
+        "set -eu; npm install; npm run db:push; npm run db:seed:products; exec npm run dev -- --webpack"
       ]
     env_file:
       - .env
@@ -103,7 +110,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          'curl -fsS http://localhost:3000 >/dev/null 2>&1 || node -e "require(''http'').get(''http://localhost:3000'', function(r){process.exit(r.statusCode===200?0:1)}).on(''error'',function(){process.exit(1)})"',
+          "curl -fsS http://localhost:3000 >/dev/null 2>&1 || node -e \"require('http').get('http://localhost:3000', function(r){process.exit(r.statusCode===200?0:1)}).on('error',function(){process.exit(1)})\""
         ]
       interval: 10s
       timeout: 10s
