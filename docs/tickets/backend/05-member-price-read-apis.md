@@ -4,9 +4,9 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] MEMBERS see `member_price` on the product list and detail endpoints; guests and non-members see null/omitted.
-- [ ] Cart subtotal uses the member price for an active MEMBER; `is_member_price` per item is correct.
-- [ ] A variant with a null member price is treated as no discount (normal price) for everyone.
-- [ ] The stray `route,ts` junk file is removed.
+- [x] MEMBERS see `member_price` on the product list and detail endpoints; guests and non-members see null/omitted.
+- [x] Cart subtotal uses the member price for an active MEMBER; `is_member_price` per item is correct.
+- [x] A variant with a null member price is treated as no discount (normal price) for everyone.
+- [x] The stray `route,ts` junk file is removed.

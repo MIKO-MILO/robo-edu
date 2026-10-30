@@ -58,6 +58,26 @@ export async function getSession(): Promise<{ userId: string; expiresAt: number 
   return verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
 }
 
+/**
+ * Read the session user ID directly from a Web API `Request` object's Cookie
+ * header. Use this in route handlers that already receive a `Request` (or
+ * `NextRequest`) and want to avoid calling the Next.js `cookies()` API — which
+ * requires the Next async-context and is not available in plain-Node tests.
+ */
+export function getUserIdFromRequest(request: Request): string | null {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  // Parse a semicolon-separated cookie string; each pair is "name=value".
+  for (const part of cookieHeader.split(";")) {
+    const eqIdx = part.indexOf("=");
+    if (eqIdx === -1) continue;
+    const name = part.slice(0, eqIdx).trim();
+    if (name !== SESSION_COOKIE_NAME) continue;
+    const value = part.slice(eqIdx + 1).trim();
+    return verifySessionToken(value)?.userId ?? null;
+  }
+  return null;
+}
+
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
