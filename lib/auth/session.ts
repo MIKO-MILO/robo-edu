@@ -49,10 +49,18 @@ export function createMockSession(role: "ADMIN" | "CUSTOMER" = "ADMIN"): string 
 /**
  * Baca cookie roboedu_session dari server, decode payload, & return user session
  */
-export async function getSession(): Promise<MockSessionPayload | null> {
+export async function getSession(request?: Request): Promise<MockSessionPayload | null> {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("roboedu_session")?.value;
+    let token: string | undefined;
+    if (request) {
+      const cookieHeader = request.headers.get("cookie") ?? "";
+      const match = cookieHeader.match(/(?:^|;\s*)roboedu_session=([^;]*)/);
+      if (match) token = decodeURIComponent(match[1]);
+    }
+    if (!token) {
+      const cookieStore = await cookies();
+      token = cookieStore.get("roboedu_session")?.value;
+    }
 
     if (!token) return null;
 

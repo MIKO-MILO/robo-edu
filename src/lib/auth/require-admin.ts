@@ -70,9 +70,9 @@ export type RequireAdminResult =
  * // auth.userId tersedia bila perlu
  * ```
  */
-export async function requireAdmin(): Promise<RequireAdminResult> {
+export async function requireAdmin(request?: Request): Promise<RequireAdminResult> {
   // ── 1. Real signed session cookie ───────────────────────────────────────
-  const realUserId = await getSessionUserId();
+  const realUserId = await getSessionUserId(request);
   if (realUserId) {
     const [user] = await db
       .select({ role: users.role, isActive: users.isActive })
@@ -87,7 +87,7 @@ export async function requireAdmin(): Promise<RequireAdminResult> {
   }
 
   // ── 2. Mock token (backward compat) ────────────────────────────────────
-  const mockSession = await getMockSession();
+  const mockSession = await getMockSession(request);
   if (mockSession) {
     if (!isAdminRole(mockSession.role)) {
       return { ok: false, response: forbiddenResponse() };

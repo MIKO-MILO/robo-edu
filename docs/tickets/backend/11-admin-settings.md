@@ -4,8 +4,8 @@
 
 **Blocked by:** 01, 07
 
-**Status:** ready-for-agent
+**Status:** ready-for-review
 
-- [ ] GET returns all settings as a flat object.
-- [ ] PATCH updates only the sent keys and returns the updated state.
-- [ ] Changing `membership_plus_price` changes the price charged by the membership checkout, verified end-to-end.
+- [x] GET returns all settings as a flat object.
+- [x] PATCH updates only the sent keys and returns the updated state.
+- [x] Changing `membership_plus_price` changes the price charged by the membership checkout, verified end-to-end.
