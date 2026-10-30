@@ -27,21 +27,18 @@ import { testDb } from "@/tests/helpers/db";
 import * as schema from "@/src/db/schema";
 import {
   FIXTURE_IDS,
+  SETTINGS_SEED,
 } from "@/tests/helpers/fixtures";
 
 const ADMIN_ID = "test-admin-settings";
 const ADMIN_EMAIL = "admin.settings@roboedu.test";
 const ADMIN_PASSWORD = "Password123!";
 
-/** Settings as seeded by tests/helpers/fixtures.ts (the ticket-01 seed). */
-const SEED_SETTINGS: Record<string, string> = {
-  membership_plus_price: "150000",
-  membership_plus_duration_months: "12",
-  store_name: "RoboEdu Test Store",
-  store_phone: "0812000000",
-  store_email: "store@roboedu.test",
-  store_address: "Jl. Test No. 1, Jakarta",
-};
+/** The seed settings as a flat record, sourced from the single fixture
+ *  definition so the test stays correct if the seed changes. */
+const SEED_SETTINGS: Record<string, string> = Object.fromEntries(
+  SETTINGS_SEED.map((s) => [s.key, s.value]),
+);
 
 async function seedAdmin(overrides: Partial<typeof schema.users.$inferInsert> = {}) {
   await testDb().insert(schema.users).values({

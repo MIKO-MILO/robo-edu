@@ -47,8 +47,10 @@ export const FIXTURE_EMAILS = {
   regular: "regular.test@roboedu.test",
 } as const;
 
-/** Settings rows seeded by ticket 01 (kept here so tests can rely on them). */
-const SETTINGS_SEED: Array<{ key: string; value: string }> = [
+/** Settings rows seeded by ticket 01 (kept here so tests can rely on them).
+ *  Exported so route tests assert against the single source of truth rather
+ *  than re-declaring the seed values (which would drift if the fixture changes). */
+export const SETTINGS_SEED: Array<{ key: string; value: string }> = [
   { key: "membership_plus_price", value: "150000" },
   { key: "membership_plus_duration_months", value: "12" },
   { key: "store_name", value: "RoboEdu Test Store" },

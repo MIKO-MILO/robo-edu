@@ -23,27 +23,31 @@ export const runtime = "nodejs";
  * changes what `POST /api/checkout/membership` charges with no redeploy.
  */
 
-/** Settings whose value is free-form text. */
-const STRING_KEYS = new Set([
-  "store_name",
-  "store_phone",
-  "store_email",
-  "store_address",
-  "shipping_default_provider_id",
-]);
+/** Per-key rules. Adding a setting means adding one entry here — every check
+ *  (allowed, type, special validation) is gathered in this single map. */
+type SettingSpec = {
+  kind: "string" | "number";
+  /** Number keys only: require a positive integer (whole months). */
+  positiveInt?: boolean;
+  /** String keys only: validate as an email when non-empty. */
+  email?: boolean;
+  /** String keys only: validate as a foreign key to shipping_providers. */
+  fkProvider?: boolean;
+};
 
-/** Settings stored as a non-negative number (price in rupiah, months, grams). */
-const NUMBER_KEYS = new Set([
-  "membership_plus_price",
-  "membership_plus_duration_months",
-  "shipping_min_weight",
-  "shipping_cost",
-]);
+const SETTING_SPECS: Record<string, SettingSpec> = {
+  store_name: { kind: "string" },
+  store_phone: { kind: "string" },
+  store_email: { kind: "string", email: true },
+  store_address: { kind: "string" },
+  shipping_default_provider_id: { kind: "string", fkProvider: true },
+  membership_plus_price: { kind: "number" },
+  membership_plus_duration_months: { kind: "number", positiveInt: true },
+  shipping_min_weight: { kind: "number" },
+  shipping_cost: { kind: "number" },
+};
 
-/** Settings that must be a positive integer (whole months). */
-const POSITIVE_INT_KEYS = new Set(["membership_plus_duration_months"]);
-
-const ALLOWED_KEYS = new Set([...STRING_KEYS, ...NUMBER_KEYS]);
+const ALLOWED_KEYS = new Set(Object.keys(SETTING_SPECS));
 
 // Light email shape check — we don't aim to be a full RFC 5322 validator.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,11 +61,14 @@ async function normalizeField(
   key: string,
   raw: unknown,
 ): Promise<[string, null] | [null, string]> {
+  const spec = SETTING_SPECS[key];
+  if (!spec) return [null, `Field \`${key}\` tidak dikenal.`];
+
   if (raw === null || raw === undefined || Number.isNaN(raw)) {
     return [null, `Nilai untuk \`${key}\` tidak boleh kosong.`];
   }
 
-  if (NUMBER_KEYS.has(key)) {
+  if (spec.kind === "number") {
     const num = typeof raw === "number" ? raw : Number(String(raw).trim());
     if (!Number.isFinite(num)) {
       return [null, `\`${key}\` harus berupa angka yang valid.`];
@@ -69,10 +76,8 @@ async function normalizeField(
     if (num < 0) {
       return [null, `\`${key}\` tidak boleh negatif.`];
     }
-    if (POSITIVE_INT_KEYS.has(key)) {
-      if (!Number.isInteger(num) || num < 1) {
-        return [null, `\`${key}\` harus berupa bilangan bulat positif.`];
-      }
+    if (spec.positiveInt && (!Number.isInteger(num) || num < 1)) {
+      return [null, `\`${key}\` harus berupa bilangan bulat positif.`];
     }
     return [String(num), null];
   }
@@ -80,13 +85,13 @@ async function normalizeField(
   // String keys
   const value = typeof raw === "string" ? raw.trim() : String(raw).trim();
 
-  if (key === "store_email" && value && !EMAIL_RE.test(value)) {
+  if (spec.email && value && !EMAIL_RE.test(value)) {
     return [null, `\`${key}\` harus berupa alamat email yang valid.`];
   }
 
   // shipping_default_provider_id references shipping_providers.id. Only
   // validate the FK when a non-empty value is supplied (empty clears it).
-  if (key === "shipping_default_provider_id" && value) {
+  if (spec.fkProvider && value) {
     const [provider] = await db
       .select({ id: shippingProviders.id })
       .from(shippingProviders)
