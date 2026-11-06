@@ -4,8 +4,8 @@
 
 **Blocked by:** 01, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The list returns only MEMBERS, paginated, with `expires_at` + purchase count.
-- [ ] The detail endpoint returns the member profile and all their `membership_purchase` rows.
-- [ ] Non-members are excluded from the list.
+- [x] The list returns only MEMBERS, paginated, with `expires_at` + purchase count.
+- [x] The detail endpoint returns the member profile and all their `membership_purchase` rows.
+- [x] Non-members are excluded from the list.
