@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { productImages } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import { removeProductImage } from "@/src/lib/storage/product-images";
 
 export const runtime = "nodejs";
@@ -14,13 +14,8 @@ type RouteParams = { params: Promise<{ id: string }> };
  * Hapus gambar dari DB dan MinIO.
  */
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 

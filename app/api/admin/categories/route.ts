@@ -3,7 +3,7 @@ import { eq, like, or, desc, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "@/src/db";
 import { categories } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -12,13 +12,8 @@ export const runtime = "nodejs";
  * Query params: search, is_active, page, limit
  */
 export async function GET(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = request.nextUrl;
   const search = searchParams.get("search")?.trim() ?? "";
@@ -79,13 +74,8 @@ export async function GET(request: NextRequest) {
  * Body: { name, slug, description?, is_active? }
  */
 export async function POST(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   let body: { name?: string; slug?: string; description?: string; is_active?: boolean };
   try { body = await request.json(); } catch {

@@ -9,7 +9,7 @@ import {
   productVariants,
   productImages,
 } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -18,13 +18,8 @@ export const runtime = "nodejs";
  * Query params: search, category (slug), product_type (slug), status, page, limit
  */
 export async function GET(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = request.nextUrl;
 
@@ -173,13 +168,8 @@ export async function GET(request: NextRequest) {
  * Body: { category_id, product_type_id, name, slug, sku, description?, status? }
  */
 export async function POST(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   let body: Record<string, unknown>;
   try {

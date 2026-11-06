@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { vouchers, voucherUsages } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -36,13 +36,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 // GET /api/admin/vouchers/[id]
 // ─────────────────────────────────────────────────────────────────────────────
 export async function GET(_request: NextRequest, { params }: RouteContext) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
@@ -67,13 +62,8 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
 // Body: UpdateVoucherRequestBody (semua field opsional)
 // ─────────────────────────────────────────────────────────────────────────────
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
@@ -258,13 +248,8 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 // Hard-delete: hapus jika belum pernah dipakai sama sekali.
 // ─────────────────────────────────────────────────────────────────────────────
 export async function DELETE(_request: NextRequest, { params }: RouteContext) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
