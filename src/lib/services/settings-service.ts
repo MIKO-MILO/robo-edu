@@ -39,18 +39,28 @@ export async function getSetting(key: string): Promise<string | null> {
 }
 
 /**
- * Upsert exactly the supplied keys. Each key is written (inserted or updated) in
- * its own statement — there are only a handful of settings, so clarity beats
- * batching here, and this sidesteps the deprecated MySQL `VALUES()` function
- * that a single multi-row upsert would otherwise need.
+ * Upsert exactly the supplied keys, atomically.
+ *
+ * All keys are written inside a single `db.transaction`, so a failure on any
+ * row rolls back the whole batch — the PATCH endpoint's "returns the updated
+ * state" contract relies on this all-or-nothing behaviour (a partial multi-key
+ * write would leave the settings table inconsistent). Each key is still its own
+ * statement (only a handful of settings, so clarity beats batching, and this
+ * sidesteps the deprecated MySQL `VALUES()` function a single multi-row upsert
+ * would otherwise need).
  */
 export async function upsertSettings(
   entries: Record<string, string>,
 ): Promise<void> {
-  for (const [key, value] of Object.entries(entries)) {
-    await db
-      .insert(settings)
-      .values({ key, value })
-      .onDuplicateKeyUpdate({ set: { value } });
-  }
+  const rows = Object.entries(entries);
+  if (rows.length === 0) return;
+
+  await db.transaction(async (tx) => {
+    for (const [key, value] of rows) {
+      await tx
+        .insert(settings)
+        .values({ key, value })
+        .onDuplicateKeyUpdate({ set: { value } });
+    }
+  });
 }

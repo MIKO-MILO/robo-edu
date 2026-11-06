@@ -230,6 +230,27 @@ describe("PATCH /api/admin/settings", () => {
     expect((await res.json()).message).toContain("Provider");
   });
 
+  it("writes nothing when any field is invalid (no partial update)", async () => {
+    asAdmin();
+
+    // One valid field + one invalid FK in the same request. Every field is
+    // validated before any write, so the valid field must not persist either.
+    const res = await PATCH(
+      patchRequest({
+        store_name: "Should Not Persist",
+        shipping_default_provider_id: "no-such-provider",
+      }),
+    );
+    expect(res.status).toBe(422);
+
+    const [row] = await testDb()
+      .select({ value: schema.settings.value })
+      .from(schema.settings)
+      .where(eq(schema.settings.key, "store_name"))
+      .limit(1);
+    expect(row?.value).toBe(SEED_SETTINGS.store_name);
+  });
+
   it("accepts a real shipping provider id and stores it", async () => {
     asAdmin();
     const db = testDb();
