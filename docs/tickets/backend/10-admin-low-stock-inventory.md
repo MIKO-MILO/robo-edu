@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 07
 
-**Status:** ready-for-agent
+**Status:** done (agent)
 
-- [ ] Endpoint returns only variants at or below their `low_stock_threshold`.
-- [ ] Each row includes product name, variant name, current stock, and the threshold.
+- [x] Endpoint returns only variants at or below their `low_stock_threshold`.
+- [x] Each row includes product name, variant name, current stock, and the threshold.
