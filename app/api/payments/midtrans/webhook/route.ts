@@ -113,6 +113,29 @@ async function sendOrderConfirmationEmail(
 // ── Membership webhook branch ────────────────────────────────────────────────
 
 /**
+ * Add `months` calendar months to `date` without day-overflow.
+ *
+ * JavaScript's `Date.setMonth()` rolls over when the source day doesn't exist
+ * in the target month (e.g. Jan 31 + 1 → Mar 3 instead of Feb 28). This helper
+ * clamps to the last valid day of the target month instead.
+ *
+ * @example
+ *   addMonthsSafe(new Date("2026-01-31"), 1) → 2026-02-28  (not Mar 3)
+ *   addMonthsSafe(new Date("2026-03-31"), 1) → 2026-04-30  (not May 1)
+ *   addMonthsSafe(new Date("2026-02-28"), 12) → 2027-02-28 (normal case)
+ */
+function addMonthsSafe(date: Date, months: number): Date {
+  const result = new Date(date);
+  const targetMonth = result.getMonth() + months;
+  const targetYear = result.getFullYear() + Math.floor(targetMonth / 12);
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12; // handle negative mod
+  // Last day of the target month
+  const lastDayOfTarget = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+  result.setFullYear(targetYear, normalizedMonth, Math.min(result.getDate(), lastDayOfTarget));
+  return result;
+}
+
+/**
  * Handle a Midtrans notification whose order_id starts with "MBR-".
  *
  * On success:
@@ -190,23 +213,51 @@ async function handleMembershipWebhook(
     };
 
     if (states.payment === "PAID" && purchase.status !== "PAID") {
-      // Compute membership period: starts at payment time, ends after duration months.
       const startsAt = timestamp;
-      const endsAt = new Date(startsAt);
-      endsAt.setMonth(endsAt.getMonth() + purchase.durationMonthsSnapshot);
+
+      // Add months safely — JavaScript's setMonth() has a day-overflow bug:
+      // Jan 31 + 1 month → Mar 3 instead of Feb 28.
+      // We clamp to the last day of the target month to avoid this.
+      const endsAt = addMonthsSafe(startsAt, purchase.durationMonthsSnapshot);
 
       membershipPurchaseUpdate.paidAt = startsAt;
       membershipPurchaseUpdate.startsAt = startsAt;
       membershipPurchaseUpdate.endsAt = endsAt;
 
-      // Activate membership on the user.
+      // Activate (or extend) membership on the user.
+      // If the user is already an active MEMBER, extend from their current
+      // expiry — do NOT overwrite with a value computed from `now`, which
+      // would lose the remaining time on the current subscription.
+      const [currentUser] = await tx
+        .select({ membershipStatus: users.membershipStatus, membershipExpiresAt: users.membershipExpiresAt })
+        .from(users)
+        .where(eq(users.id, purchase.userId))
+        .limit(1);
+
+      let finalExpiresAt = endsAt;
+      if (
+        currentUser?.membershipStatus === "MEMBER" &&
+        currentUser.membershipExpiresAt &&
+        new Date(currentUser.membershipExpiresAt) > startsAt
+      ) {
+        // Active member renewing early: extend from their current expiry,
+        // not from now, so they don't lose remaining days.
+        finalExpiresAt = addMonthsSafe(
+          new Date(currentUser.membershipExpiresAt),
+          purchase.durationMonthsSnapshot,
+        );
+      }
+
       await tx
         .update(users)
         .set({
           membershipStatus: "MEMBER",
-          membershipExpiresAt: endsAt,
+          membershipExpiresAt: finalExpiresAt,
         })
         .where(eq(users.id, purchase.userId));
+
+      // Keep endsAt on the purchase in sync with what we wrote to the user.
+      membershipPurchaseUpdate.endsAt = finalExpiresAt;
     }
 
     await tx
