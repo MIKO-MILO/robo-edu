@@ -14,9 +14,13 @@
 import { beforeEach } from "vitest";
 import { loadTestEnv } from "./helpers/env";
 import { resetData } from "./helpers/db";
+import { __clearCookies } from "@/tests/stubs/next-headers";
 
 loadTestEnv();
 
 beforeEach(async () => {
+  // Reset the in-memory cookie store so no session cookie leaks between tests
+  // (it backs the `next/headers` stub the auth guards read from).
+  __clearCookies();
   await resetData();
 });

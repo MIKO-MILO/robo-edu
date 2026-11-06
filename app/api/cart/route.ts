@@ -9,7 +9,8 @@ import {
   productImages,
   users,
 } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { getSessionUserId, getUserIdFromRequest } from "@/src/lib/auth/session";
+import { isActiveMember } from "@/src/lib/auth/membership";
 import crypto from "node:crypto";
 
 export const runtime = "nodejs";
@@ -50,11 +51,22 @@ async function getOrCreateCart(userId: string) {
 
 /**
  * GET /api/cart
+ *
  * Returns the authenticated user's cart items.
+ *
+ * For active MEMBERs:
+ *   - `price` per item reflects the member (reseller) price when the variant
+ *     has one, otherwise the regular price.
+ *   - `is_member_price: true` is added to each item that uses the member price.
+ *   - `subtotal` per item and the cart-level `subtotal` are computed from the
+ *     effective price above.
+ *
+ * For guests / non-members every item uses the regular price and
+ * `is_member_price` is false.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const userId = await getSessionUserId();
+    const userId = getUserIdFromRequest(request);
     if (!userId) {
       return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
     }
@@ -63,6 +75,9 @@ export async function GET() {
     if (!userCart) {
       return NextResponse.json({ success: false, message: "Sesi tidak valid. Silakan login ulang." }, { status: 401 });
     }
+
+    // Check member status once, outside the per-item loop.
+    const memberPricing = await isActiveMember(userId);
 
     const items = await db
       .select({
@@ -74,7 +89,8 @@ export async function GET() {
         productName: products.name,
         productSlug: products.slug,
         variantName: productVariants.variantName,
-        price: sql<number>`CAST(${productVariants.price} AS DECIMAL(15,2))`,
+        price: sql<string>`CAST(${productVariants.price} AS DECIMAL(15,2))`,
+        resellerPrice: sql<string | null>`CAST(${productVariants.resellerPrice} AS DECIMAL(15,2))`,
         stock: productVariants.stock,
         imageUrl: sql<string | null>`MAX(
           CASE
@@ -99,27 +115,46 @@ export async function GET() {
         products.slug,
         productVariants.variantName,
         productVariants.price,
+        productVariants.resellerPrice,
         productVariants.stock,
         cartItems.createdAt,
       )
       .orderBy(cartItems.createdAt);
 
-    const formattedItems = items.map((item) => ({
-      id: item.id,
-      productId: item.productId,
-      variantId: item.variantId,
-      name: item.productName,
-      slug: item.productSlug,
-      variantName: item.variantName,
-      price: Number(item.price) || 0,
-      quantity: item.quantity,
-      stock: item.stock,
-      imageUrl: item.imageUrl ?? "/images/placeholder-product.jpg",
-      subtotal: (Number(item.price) || 0) * item.quantity,
-    }));
+    const formattedItems = items.map((item) => {
+      const regularPrice = Number(item.price) || 0;
+      const memberPrice =
+        item.resellerPrice !== null ? Number(item.resellerPrice) : null;
 
-    const totalItems = formattedItems.reduce((acc, curr) => acc + curr.quantity, 0);
-    const subtotal = formattedItems.reduce((acc, curr) => acc + curr.subtotal, 0);
+      // Use member price only when the caller is an active member AND this
+      // specific variant actually has a member price set.
+      const isMemberPrice = memberPricing && memberPrice !== null;
+      const effectivePrice = isMemberPrice ? memberPrice! : regularPrice;
+
+      return {
+        id: item.id,
+        productId: item.productId,
+        variantId: item.variantId,
+        name: item.productName,
+        slug: item.productSlug,
+        variantName: item.variantName,
+        price: effectivePrice,
+        quantity: item.quantity,
+        stock: item.stock,
+        imageUrl: item.imageUrl ?? "/images/placeholder-product.jpg",
+        subtotal: effectivePrice * item.quantity,
+        is_member_price: isMemberPrice,
+      };
+    });
+
+    const totalItems = formattedItems.reduce(
+      (acc, curr) => acc + curr.quantity,
+      0,
+    );
+    const subtotal = formattedItems.reduce(
+      (acc, curr) => acc + curr.subtotal,
+      0,
+    );
 
     return NextResponse.json({
       success: true,
@@ -137,7 +172,7 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getSessionUserId();
+    const userId = getUserIdFromRequest(request);
     if (!userId) {
       return NextResponse.json({ success: false, message: "Silakan login terlebih dahulu." }, { status: 401 });
     }

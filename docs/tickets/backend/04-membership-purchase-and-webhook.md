@@ -11,3 +11,13 @@
 - [ ] Duplicate webhook notifications do not double-activate membership or error (idempotent).
 - [ ] A non-member can complete the purchase and become a MEMBER without admin approval.
 - [ ] Tests cover the end-to-end flow and the idempotency case.
+
+> Note (from ticket 11): read the price + duration from the `settings` table
+> through the shared read-seam built in ticket 11
+> (`src/lib/services/settings-service.ts` — `getSetting("membership_plus_price")`
+> and `getSetting("membership_plus_duration_months")`), never a hardcoded
+> constant and never a separate direct query of the table. Landing this checkout
+> is also what completes ticket 11's acceptance criterion 3 end-to-end: after this
+> ticket, verify that `PATCH /api/admin/settings { membership_plus_price }` changes
+> what `POST /api/checkout/membership` charges, then tick ticket 11's third
+> checkbox and replace its "deferred" note.

@@ -27,6 +27,7 @@ let _passwordHash: string | null = null;
 
 /** Stable fixture IDs tests can rely on. */
 export const FIXTURE_IDS = {
+  adminUser: "test-user-admin",
   memberUser: "test-user-member",
   regularUser: "test-user-regular",
   category: "test-cat-robot",
@@ -43,12 +44,15 @@ export const FIXTURE_IDS = {
 } as const;
 
 export const FIXTURE_EMAILS = {
+  admin: "admin.test@roboedu.test",
   member: "member.test@roboedu.test",
   regular: "regular.test@roboedu.test",
 } as const;
 
-/** Settings rows seeded by ticket 01 (kept here so tests can rely on them). */
-const SETTINGS_SEED: Array<{ key: string; value: string }> = [
+/** Settings rows seeded by ticket 01 (kept here so tests can rely on them).
+ *  Exported so route tests assert against the single source of truth rather
+ *  than re-declaring the seed values (which would drift if the fixture changes). */
+export const SETTINGS_SEED: Array<{ key: string; value: string }> = [
   { key: "membership_plus_price", value: "150000" },
   { key: "membership_plus_duration_months", value: "12" },
   { key: "store_name", value: "RoboEdu Test Store" },
@@ -76,8 +80,18 @@ export async function seedFixtures(
   const memberPasswordHash = _passwordHash;
   const regularPasswordHash = _passwordHash;
 
-  // --- users: one MEMBER, one NOT_MEMBER ---
+  // --- users: one ADMIN, one MEMBER, one NOT_MEMBER ---
   await db.insert(schema.users).values([
+    {
+      id: FIXTURE_IDS.adminUser,
+      name: "Admin User",
+      email: FIXTURE_EMAILS.admin,
+      password: memberPasswordHash,
+      phone: "08120000000",
+      role: "admin",
+      membershipStatus: "NOT_MEMBER",
+      isActive: true,
+    },
     {
       id: FIXTURE_IDS.memberUser,
       name: "Member User",
