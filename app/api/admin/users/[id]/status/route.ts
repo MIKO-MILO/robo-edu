@@ -1,19 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { users } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdminFromRequest } from "@/src/lib/auth/require-admin-from-request";
+import { writeAuditLog } from "@/src/lib/audit/write-audit-log";
 import type { User } from "@/types";
 
 export const runtime = "nodejs";
-
-const ADMIN_ROLES = new Set([
-  "superadmin",
-  "admin_sales",
-  "admin_laporan",
-  "admin_gudang",
-  "admin",
-]);
 
 type UserDbRow = typeof users.$inferSelect;
 
@@ -41,44 +34,17 @@ function dbUserToResponse(user: UserDbRow): User {
   };
 }
 
-async function assertAdminOr403(): Promise<NextResponse | null> {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
-  const [currentUser] = await db
-    .select({ role: users.role, isActive: users.isActive })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  if (!currentUser || !currentUser.isActive) {
-    return NextResponse.json(
-      { success: false, message: "Sesi tidak valid." },
-      { status: 401 },
-    );
-  }
-  if (!ADMIN_ROLES.has(currentUser.role.toLowerCase())) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Anda tidak memiliki izin akses admin.",
-      },
-      { status: 403 },
-    );
-  }
-  return null;
-}
-
+/**
+ * PATCH /api/admin/users/[id]/status
+ * Body: { is_active: boolean }
+ */
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   segment: { params: Promise<{ id: string }> },
 ) {
   try {
-    const forbidden = await assertAdminOr403();
-    if (forbidden) return forbidden;
+    const auth = await requireAdminFromRequest(request);
+    if (!auth.ok) return auth.response;
 
     const { id } = await segment.params;
     const [existing] = await db
@@ -101,14 +67,28 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Request tidak valid: field `is_active` (boolean) diperlukan.",
+          message: "Request tidak valid: field `is_active` (boolean) diperlukan.",
         },
         { status: 400 },
       );
     }
 
     await db.update(users).set({ isActive: is_active }).where(eq(users.id, id));
+
+    // ── Audit log ──────────────────────────────────────────────────────────
+    await writeAuditLog({
+      actorId:    auth.userId,
+      action:     "user.status_updated",
+      targetType: "user",
+      targetId:   id,
+      description: `Status akun pengguna ${existing.email} diubah menjadi ${is_active ? "aktif" : "nonaktif"}.`,
+      metadata:   {
+        user_id:       id,
+        email:         existing.email,
+        from_is_active: existing.isActive,
+        to_is_active:   is_active,
+      },
+    });
 
     const [updated] = await db
       .select()
@@ -123,10 +103,7 @@ export async function PATCH(
   } catch (error) {
     console.error("PATCH /api/admin/users/:id/status error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message: "Gagal memperbarui status pengguna.",
-      },
+      { success: false, message: "Gagal memperbarui status pengguna." },
       { status: 500 },
     );
   }
