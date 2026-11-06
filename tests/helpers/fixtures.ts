@@ -27,6 +27,7 @@ let _passwordHash: string | null = null;
 
 /** Stable fixture IDs tests can rely on. */
 export const FIXTURE_IDS = {
+  adminUser: "test-user-admin",
   memberUser: "test-user-member",
   regularUser: "test-user-regular",
   category: "test-cat-robot",
@@ -43,6 +44,7 @@ export const FIXTURE_IDS = {
 } as const;
 
 export const FIXTURE_EMAILS = {
+  admin: "admin.test@roboedu.test",
   member: "member.test@roboedu.test",
   regular: "regular.test@roboedu.test",
 } as const;
@@ -76,8 +78,18 @@ export async function seedFixtures(
   const memberPasswordHash = _passwordHash;
   const regularPasswordHash = _passwordHash;
 
-  // --- users: one MEMBER, one NOT_MEMBER ---
+  // --- users: one ADMIN, one MEMBER, one NOT_MEMBER ---
   await db.insert(schema.users).values([
+    {
+      id: FIXTURE_IDS.adminUser,
+      name: "Admin User",
+      email: FIXTURE_EMAILS.admin,
+      password: memberPasswordHash,
+      phone: "08120000000",
+      role: "admin",
+      membershipStatus: "NOT_MEMBER",
+      isActive: true,
+    },
     {
       id: FIXTURE_IDS.memberUser,
       name: "Member User",
