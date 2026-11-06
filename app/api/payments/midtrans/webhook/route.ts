@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { orderItems, orders, payments, users } from "@/src/db/schema";
+import { membershipPurchases, orderItems, orders, payments, users } from "@/src/db/schema";
 import {
   isValidMidtransSignature,
   type MidtransNotification,
@@ -57,7 +57,6 @@ async function sendOrderConfirmationEmail(
   paidAt: Date,
 ): Promise<void> {
   try {
-    // Fetch the buyer's email
     const [user] = await db
       .select({ email: users.email, name: users.name })
       .from(users)
@@ -66,7 +65,6 @@ async function sendOrderConfirmationEmail(
 
     if (!user) return;
 
-    // Fetch order line items
     const items = await db
       .select({
         productNameSnapshot: orderItems.productNameSnapshot,
@@ -108,10 +106,119 @@ async function sendOrderConfirmationEmail(
       orderId: order.id,
     });
   } catch (err) {
-    // Non-fatal — log and continue
     console.error("[webhook] Failed to send order confirmation email:", err);
   }
 }
+
+// ── Membership webhook branch ────────────────────────────────────────────────
+
+/**
+ * Handle a Midtrans notification whose order_id starts with "MBR-".
+ *
+ * On success:
+ *   - updates `payments` row (status, transactionId, paymentType, timestamps)
+ *   - updates `membership_purchase` row (status, paidAt, startsAt, endsAt)
+ *   - sets `users.membership_status = "MEMBER"` and computes `membership_expires_at`
+ *
+ * Idempotent: if the purchase is already PAID a duplicate PAID notification is
+ * accepted silently (returns 200). A PENDING notification after PAID is discarded
+ * (no downgrade).
+ */
+async function handleMembershipWebhook(
+  body: MidtransNotification & { signature_key: string },
+): Promise<NextResponse> {
+  const [purchase] = await db
+    .select()
+    .from(membershipPurchases)
+    .where(eq(membershipPurchases.purchaseNumber, body.order_id))
+    .limit(1);
+
+  if (!purchase) {
+    return NextResponse.json(
+      { error: "Membership purchase not found" },
+      { status: 404 },
+    );
+  }
+
+  if (Number(purchase.priceSnapshot) !== Number(body.gross_amount)) {
+    return NextResponse.json(
+      { error: "Amount does not match" },
+      { status: 400 },
+    );
+  }
+
+  const states = notificationStates(body);
+  const timestamp = body.transaction_time ? new Date(body.transaction_time) : new Date();
+
+  // Idempotency guard: if already PAID, accept silently and return.
+  if (purchase.status === "PAID" && states.payment === "PAID") {
+    return NextResponse.json({ received: true });
+  }
+
+  await db.transaction(async (tx) => {
+    // Lookup the payment row via the membership_purchase_id back-link.
+    const [payment] = await tx
+      .select()
+      .from(payments)
+      .where(eq(payments.membershipPurchaseId, purchase.id))
+      .limit(1);
+
+    if (payment) {
+      // No downgrade: ignore a PENDING notification if already PAID.
+      if (payment.status === "PAID" && states.payment === "PENDING") return;
+
+      await tx
+        .update(payments)
+        .set({
+          transactionId: body.transaction_id,
+          paymentType: body.payment_type,
+          status: states.payment,
+          transactionTime: timestamp,
+          settlementTime: states.payment === "PAID" ? timestamp : null,
+          fraudStatus: body.fraud_status ?? null,
+          rawResponse: body,
+        })
+        .where(eq(payments.id, payment.id));
+    }
+
+    const membershipPurchaseUpdate: Partial<typeof membershipPurchases.$inferInsert> = {
+      status: states.payment === "PAID" ? "PAID"
+        : states.payment === "FAILED" ? "FAILED"
+        : states.payment === "EXPIRED" ? "EXPIRED"
+        : states.payment === "REFUNDED" ? "REFUNDED"
+        : "PENDING",
+    };
+
+    if (states.payment === "PAID" && purchase.status !== "PAID") {
+      // Compute membership period: starts at payment time, ends after duration months.
+      const startsAt = timestamp;
+      const endsAt = new Date(startsAt);
+      endsAt.setMonth(endsAt.getMonth() + purchase.durationMonthsSnapshot);
+
+      membershipPurchaseUpdate.paidAt = startsAt;
+      membershipPurchaseUpdate.startsAt = startsAt;
+      membershipPurchaseUpdate.endsAt = endsAt;
+
+      // Activate membership on the user.
+      await tx
+        .update(users)
+        .set({
+          membershipStatus: "MEMBER",
+          membershipExpiresAt: endsAt,
+        })
+        .where(eq(users.id, purchase.userId));
+    }
+
+    await tx
+      .update(membershipPurchases)
+      .set(membershipPurchaseUpdate)
+      .where(eq(membershipPurchases.id, purchase.id));
+  });
+
+  return NextResponse.json({ received: true });
+}
+
+// ── Main webhook handler ─────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -125,6 +232,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid Midtrans signature" }, { status: 401 });
   }
 
+  // Route to the membership branch when the order_id starts with "MBR-".
+  if (body.order_id.startsWith("MBR-")) {
+    return handleMembershipWebhook(body);
+  }
+
+  // ── Product-order branch (original logic) ──────────────────────────────
   const [order] = await db.select().from(orders).where(eq(orders.orderNumber, body.order_id)).limit(1);
   if (!order || Number(order.total) !== Number(body.gross_amount)) {
     return NextResponse.json({ error: "Order not found or amount does not match" }, { status: 404 });
@@ -133,15 +246,12 @@ export async function POST(request: Request) {
   const states = notificationStates(body);
   const timestamp = body.transaction_time ? new Date(body.transaction_time) : new Date();
 
-  // Track whether this transition actually marks the order as paid for the
-  // first time — used below to decide whether to send the confirmation email.
   let justPaid = false;
 
   await db.transaction(async (tx) => {
     const [payment] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
     if (!payment) throw new Error("Payment record not found");
 
-    // A late pending notification must never downgrade an already paid order.
     if (payment.status === "PAID" && states.payment === "PENDING") return;
 
     await tx
@@ -166,15 +276,11 @@ export async function POST(request: Request) {
       })
       .where(eq(orders.id, order.id));
 
-    // Only send once — when this notification actually transitions to PAID
-    // and the order wasn't already paid before.
     if (states.order === "PAID" && order.status !== "PAID") {
       justPaid = true;
     }
   });
 
-  // Send confirmation email outside the DB transaction so a Resend failure
-  // cannot roll back the payment status update.
   if (justPaid) {
     void sendOrderConfirmationEmail(order, timestamp);
   }
