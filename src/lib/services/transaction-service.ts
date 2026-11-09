@@ -2,7 +2,6 @@ import "server-only";
 
 import crypto from "node:crypto";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
-// `delete` used via tx.delete — no extra import needed (it's a method on the tx object)
 import { db } from "@/src/db";
 import {
   cartItems,
@@ -12,7 +11,10 @@ import {
   payments,
   productVariants,
   products,
+  shipments,
+  shippingProviders,
   userAddresses,
+  users,
   voucherUsages,
   vouchers,
 } from "@/src/db/schema";
@@ -23,8 +25,18 @@ export type CreatePaymentTransactionInput = {
   userId: string;
   addressId: string;
   shippingCost: number;
+  /** ID of the shipping provider (e.g. JNE). Required so a shipments row can
+   *  be created automatically after the order is placed. */
+  providerId: string;
   voucherCode?: string;
   notes?: string;
+  // ── Dropship ─────────────────────────────────────────────────────────────
+  /** When true the order is a dropship — senderName + senderPhone are required. */
+  isDropship?: boolean;
+  /** Sender name shown on the package label (required when isDropship = true). */
+  senderName?: string;
+  /** Sender phone shown on the package label (required when isDropship = true). */
+  senderPhone?: string;
 };
 
 export type CreatePaymentTransactionResult = {
@@ -41,7 +53,10 @@ type PricedCartItem = {
   variantId: string;
   variantName: string;
   sku: string;
+  /** Effective unit price: member price when applicable, otherwise regular price. */
   price: number;
+  /** True when the member price was used for this item. */
+  isMemberPrice: boolean;
   quantity: number;
   stock: number;
 };
@@ -78,8 +93,33 @@ function calculateDiscount(
 }
 
 /**
+ * Returns true when the user is an active MEMBER right now.
+ * Both conditions must hold:
+ *   1. membership_status = "MEMBER"
+ *   2. membership_expires_at is in the future (or the column is null, which
+ *      should not happen for a MEMBER but we guard against it defensively)
+ */
+function isActiveMember(user: {
+  membershipStatus: string;
+  membershipExpiresAt: Date | null;
+}): boolean {
+  if (user.membershipStatus !== "MEMBER") return false;
+  if (!user.membershipExpiresAt) return false;
+  return new Date(user.membershipExpiresAt) > new Date();
+}
+
+/**
  * Prices are read from the database, never trusted from the browser. Call this
  * from an authenticated checkout action after the shipping fee is calculated.
+ *
+ * Member pricing: when the calling user is an active MEMBER and a variant has a
+ * non-null `resellerPrice` (the member price column), that price is used instead
+ * of the regular `price`. Variants with a null `resellerPrice` always fall back
+ * to the regular price regardless of membership status.
+ *
+ * Shipment: a single `shipments` row with status PENDING is created atomically
+ * inside the same DB transaction as the order, so admin never needs to create
+ * shipments manually.
  */
 export async function createPaymentTransaction(
   input: CreatePaymentTransactionInput,
@@ -87,7 +127,19 @@ export async function createPaymentTransaction(
   const shippingCost = asRupiah(input.shippingCost, "Shipping cost");
   const now = new Date();
 
+  // ── Validate dropship fields up front ────────────────────────────────────
+  const isDropship = input.isDropship === true;
+  if (isDropship) {
+    if (!input.senderName?.trim()) {
+      throw new Error("Dropship orders require a sender name (senderName).");
+    }
+    if (!input.senderPhone?.trim()) {
+      throw new Error("Dropship orders require a sender phone (senderPhone).");
+    }
+  }
+
   const result = await db.transaction(async (tx) => {
+    // ── Validate address ────────────────────────────────────────────────────
     const address = await tx
       .select()
       .from(userAddresses)
@@ -100,6 +152,33 @@ export async function createPaymentTransaction(
       .limit(1);
     if (!address[0]) throw new Error("Shipping address was not found");
 
+    // ── Validate shipping provider ──────────────────────────────────────────
+    const [provider] = await tx
+      .select({ id: shippingProviders.id, name: shippingProviders.name })
+      .from(shippingProviders)
+      .where(
+        and(
+          eq(shippingProviders.id, input.providerId),
+          eq(shippingProviders.isActive, true),
+        ),
+      )
+      .limit(1);
+    if (!provider) throw new Error("Shipping provider not found or inactive");
+
+    // ── Look up user membership status ──────────────────────────────────────
+    const [user] = await tx
+      .select({
+        membershipStatus: users.membershipStatus,
+        membershipExpiresAt: users.membershipExpiresAt,
+      })
+      .from(users)
+      .where(eq(users.id, input.userId))
+      .limit(1);
+    if (!user) throw new Error("User not found");
+
+    const memberActive = isActiveMember(user);
+
+    // ── Fetch cart items with both prices ───────────────────────────────────
     const rows = await tx
       .select({
         productId: products.id,
@@ -107,7 +186,8 @@ export async function createPaymentTransaction(
         variantId: productVariants.id,
         variantName: productVariants.variantName,
         sku: productVariants.sku,
-        price: productVariants.price,
+        regularPrice: productVariants.price,
+        memberPrice: productVariants.resellerPrice, // nullable; null = no member discount
         stock: productVariants.stock,
         quantity: cartItems.quantity,
       })
@@ -126,20 +206,44 @@ export async function createPaymentTransaction(
     if (rows.length === 0)
       throw new Error("Cart is empty or contains unavailable products");
 
-    const items: PricedCartItem[] = rows.map((item) => ({
-      ...item,
-      price: asRupiah(Number(item.price), "Product price"),
-    }));
+    // ── Determine effective price per item ──────────────────────────────────
+    const items: PricedCartItem[] = rows.map((row) => {
+      // Use member price only when: user is active MEMBER AND variant has a
+      // non-null member price. Null member price = no discount for this variant.
+      const useMemberPrice =
+        memberActive &&
+        row.memberPrice !== null &&
+        row.memberPrice !== undefined;
+
+      const effectivePrice = useMemberPrice
+        ? asRupiah(Number(row.memberPrice), `Member price for ${row.sku}`)
+        : asRupiah(Number(row.regularPrice), `Regular price for ${row.sku}`);
+
+      return {
+        productId: row.productId,
+        productName: row.productName,
+        variantId: row.variantId,
+        variantName: row.variantName,
+        sku: row.sku,
+        price: effectivePrice,
+        isMemberPrice: useMemberPrice,
+        quantity: row.quantity,
+        stock: row.stock,
+      };
+    });
+
     for (const item of items) {
       if (item.quantity < 1 || item.stock < item.quantity) {
         throw new Error(`${item.productName} does not have enough stock`);
       }
     }
 
+    // ── Subtotal uses effective (member-aware) prices ───────────────────────
     const subtotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
+
     let voucher: typeof vouchers.$inferSelect | undefined;
     let discountAmount = 0;
     if (input.voucherCode?.trim()) {
@@ -173,6 +277,7 @@ export async function createPaymentTransaction(
     const number = orderNumber();
     const recipient = address[0]!;
 
+    // ── Insert order ────────────────────────────────────────────────────────
     await tx.insert(orders).values({
       id,
       orderNumber: number,
@@ -194,8 +299,12 @@ export async function createPaymentTransaction(
       shippingDistrict: recipient.district,
       shippingVillage: recipient.village ?? "",
       shippingPostalCode: recipient.postalCode ?? "",
+      isDropship,
+      senderName: isDropship ? (input.senderName?.trim() ?? null) : null,
+      senderPhone: isDropship ? (input.senderPhone?.trim() ?? null) : null,
     });
 
+    // ── Insert order items (snapshot prices at checkout time) ───────────────
     await tx.insert(orderItems).values(
       items.map((item) => ({
         id: crypto.randomUUID(),
@@ -205,12 +314,13 @@ export async function createPaymentTransaction(
         productNameSnapshot: item.productName,
         variantNameSnapshot: item.variantName,
         skuSnapshot: item.sku,
-        priceSnapshot: String(item.price),
+        priceSnapshot: String(item.price),  // effective price (member or regular)
         quantity: item.quantity,
         subtotal: String(item.price * item.quantity),
       })),
     );
 
+    // ── Insert pending payment ──────────────────────────────────────────────
     await tx.insert(payments).values({
       id: crypto.randomUUID(),
       orderId: id,
@@ -220,6 +330,17 @@ export async function createPaymentTransaction(
       paymentType: "MIDTRANS_SNAP",
       status: "PENDING",
       amount: String(total),
+    });
+
+    // ── Auto-create shipment row (status PENDING) ───────────────────────────
+    // Admin never creates shipments manually — the shipment record exists from
+    // the moment an order is placed so tracking can start immediately.
+    await tx.insert(shipments).values({
+      id: crypto.randomUUID(),
+      orderId: id,
+      shippingProviderId: provider.id,
+      service: provider.name,  // default service = provider name; admin can update
+      status: "pending",
     });
 
     if (voucher) {
@@ -236,9 +357,7 @@ export async function createPaymentTransaction(
         .where(eq(vouchers.id, voucher.id));
     }
 
-    // Hapus semua cart items setelah order berhasil dibuat.
-    // Dilakukan di dalam DB transaction yang sama agar rollback otomatis
-    // jika langkah berikutnya (Snap) gagal dan order di-cancel.
+    // ── Clear cart ──────────────────────────────────────────────────────────
     const [userCart] = await tx
       .select({ id: carts.id })
       .from(carts)
@@ -252,6 +371,7 @@ export async function createPaymentTransaction(
     return { id, number, total, items, discountAmount, shippingCost };
   });
 
+  // ── Call Midtrans Snap (outside DB transaction) ──────────────────────────
   const snap = getSnapClient();
   try {
     const baseItems = result.items.map((item) => ({
