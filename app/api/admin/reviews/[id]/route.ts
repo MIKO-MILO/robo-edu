@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { reviews } from "@/src/db/schema";
-import { getSession } from "@/lib/auth/session";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
-
-function isAdminRole(role: string) {
-  const r = role?.toLowerCase() ?? "";
-  return ["admin", "superadmin", "admin_sales", "admin_laporan"].includes(r);
-}
 
 /**
  * DELETE /api/admin/reviews/[id]
@@ -20,11 +14,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getSession();
-  if (!session || !isAdminRole(session.role)) {
-    const uid = await getSessionUserId();
-    if (!uid) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 

@@ -4,8 +4,8 @@
 
 **Blocked by:** 14, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The list is paginated and filterable by status and date.
-- [ ] The detail endpoint returns the complaint and its attachments.
-- [ ] PATCH updates status and `resolution_note`; status transitions are validated.
+- [x] The list is paginated and filterable by status and date.
+- [x] The detail endpoint returns the complaint and its attachments.
+- [x] PATCH updates status and `resolution_note`; status transitions are validated.

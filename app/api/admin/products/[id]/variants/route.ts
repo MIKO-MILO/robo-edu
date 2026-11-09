@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "@/src/db";
 import { products, productVariants } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -14,13 +14,8 @@ type RouteParams = { params: Promise<{ id: string }> };
  * Body: { variant_name, sku, price, reseller_price, stock, weight?, status? }
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id: productId } = await params;
 

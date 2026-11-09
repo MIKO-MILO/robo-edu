@@ -16,12 +16,12 @@
 | Infrastruktur | Docker + Docker Compose, VPS, nginx (reverse proxy), Let's Encrypt (SSL) |
 | Object Storage | MinIO (self-hosted) |
 | Queue & Cache | Redis + BullMQ |
-| Pembayaran | Midtrans |
+| Pembayaran | Midtrans (Core API, antarmuka pembayaran kustom) |
 | Email Service | Resend / SendGrid |
 | Ekspedisi Awal | J&T (dengan abstraksi shipping provider) |
 | Monitoring | Sentry (error tracking), UptimeRobot (uptime) |
 | Status Dokumen | Dokumen kebutuhan produk / acuan pengembangan |
-| Tanggal | Oktober 2026 (revisi membership) |
+| Tanggal | November 2026 (revisi alur pembayaran) |
  
 *Dokumen ini menjadi acuan utama dalam proses perancangan, pengembangan, pengujian, dan pengembangan lanjutan RoboEdu.*
  
@@ -43,7 +43,7 @@
 | Infrastruktur | Docker, Docker Compose, VPS, nginx, Let's Encrypt |
 | Object Storage | MinIO |
 | Queue / Background Job | Redis + BullMQ |
-| Payment Gateway | Midtrans |
+| Payment Gateway | Midtrans (Core API) |
 | Email Service | Resend / SendGrid |
 | Ekspedisi | J&T pada tahap awal, dengan desain provider abstraction agar dapat dikembangkan |
  
@@ -58,6 +58,7 @@ RoboEdu merupakan toko tunggal, sehingga seluruh produk yang tersedia berasal da
 - Robo Kit Car
 - Robo Kit Wind Mill
 - Dinamo Motor
+
 ### 2.2 Konsep Kategori Produk
  
 Kategori digunakan untuk pengelompokan utama produk, sedangkan Product Type digunakan sebagai pengelompokan tambahan yang bersifat general dan fleksibel — dapat digunakan untuk tema (Kendaraan, Hewan, Energi), tingkatan (Basic/Pro), atau pengelompokan lain sesuai kebutuhan admin. Tidak ada pemisahan tabel Product Type dan Product Theme; keduanya cukup direpresentasikan dalam satu tabel `product_type`.
@@ -70,10 +71,11 @@ Kategori digunakan untuk pengelompokan utama produk, sedangkan Product Type digu
 - Mempermudah pelanggan menemukan dan membeli produk robotika.
 - Menyediakan sistem membership berbayar bulanan (paket Plus) yang memberi harga khusus member dan akses dropship, aktif langsung setelah pembayaran tanpa proses review admin.
 - Menyediakan pengelolaan produk, stok, pesanan, customer, member, promosi, review, klaim garansi, dan laporan dalam satu sistem.
-- Menyediakan pembayaran online melalui Midtrans dengan notifikasi receipt otomatis via email.
+- Menyediakan pembayaran online melalui Midtrans Core API dengan antarmuka pembayaran kustom (pilihan metode di checkout dan halaman pembayaran per metode), serta notifikasi receipt otomatis via email.
 - Mempersiapkan sistem agar dapat menggunakan lebih dari satu penyedia ekspedisi di masa depan.
 - Mempersiapkan fondasi untuk ekspansi penjualan ke luar Indonesia.
 - Membangun infrastruktur yang portabel dan mudah di-deploy menggunakan containerization (Docker).
+
 ## 4. Pengguna Sistem
  
 | Pengguna | Deskripsi | Kebutuhan Utama |
@@ -102,6 +104,7 @@ Sistem menggunakan dua konsep yang berbeda: role (menentukan hak akses ke sistem
 | Klaim garansi | ✓ | ✓ | Tindak lanjut manual |
 | Kelola produk | — | — | ✓ |
 | Kelola stok | — | — | ✓ |
+| Proses refund | — | — | ✓ |
 | Lihat daftar & riwayat membership | — | — | ✓ (read-only) |
 | Voucher | — | — | ✓ |
 | Laporan / settings | — | — | ✓ |
@@ -123,7 +126,7 @@ Hanya tersedia satu paket berbayar.
 
 ### 6.2 Alur Membership
 
-`Customer → Membuka /reseller → Beli Paket Plus → Konfirmasi ringkasan → Midtrans → Pembayaran dikonfirmasi webhook → membership_status = MEMBER → Benefit aktif sampai membership_expires_at`
+`Customer → Membuka /reseller → Beli Paket Plus → Konfirmasi ringkasan → Pilih metode pembayaran → Halaman pembayaran (sesuai metode) → Pembayaran dikonfirmasi webhook → membership_status = MEMBER → Benefit aktif sampai membership_expires_at`
 
 Alur perpanjangan: `Member → Beli Paket Plus lagi (manual) → Webhook tervalidasi → Masa berlaku bertambah satu periode`
 
@@ -173,11 +176,13 @@ Aturan akses route:
 
 Alur utama (happy path):
 
-`Customer melihat CTA (navbar/footer/profil/halaman produk) → /reseller (baca manfaat & harga paket) → klik "Beli Membership Plus" → login bila diperlukan → layar konfirmasi (ringkasan paket, harga, durasi, serta nama/email/telepon dari profil, read-only) → bayar via Midtrans → halaman hasil pembayaran → /profile/reseller (status MEMBER dan durasi) → email receipt membership → harga member langsung aktif.`
+`Customer melihat CTA (navbar/footer/profil/halaman produk) → /reseller (baca manfaat & harga paket) → klik "Beli Membership Plus" → login bila diperlukan → layar konfirmasi (ringkasan paket, harga, durasi, serta nama/email/telepon dari profil, read-only) → pilih metode pembayaran → submit pembayaran → halaman pembayaran (instruksi sesuai metode) → halaman hasil pembayaran → /profile/reseller (status MEMBER dan durasi) → email receipt membership → harga member langsung aktif.`
 
 Rincian layar:
 
 - **Konfirmasi pembelian**: menampilkan paket Plus, harga, durasi periode, tanggal berlaku yang akan didapat, dan data akun dari profil (tanpa input tambahan).
+- **Pilih metode pembayaran**: pada layar konfirmasi, customer memilih salah satu metode yang aktif (lih. Bab 11.4) sebelum submit. Voucher tidak tersedia pada layar ini.
+- **Halaman pembayaran**: setelah submit, customer diarahkan ke halaman pembayaran sesuai metode yang dipilih, berisi nominal, QR atau kode, status, batas waktu, dan tutorial cara bayar (lih. Bab 11.5).
 - **Setelah pembayaran**: halaman hasil menampilkan status pembayaran. Status MEMBER hanya aktif setelah webhook Midtrans tervalidasi, bukan dari redirect browser.
 - **Banner/badge global**: untuk MEMBER, badge "Harga Member" tampil pada kartu produk serta ringkasan cart dan checkout.
 
@@ -185,7 +190,7 @@ Edge case:
 
 - Klik ganda saat membeli: dicegah melalui header `Idempotency-Key`.
 - Satu user hanya boleh memiliki satu pembelian membership berstatus PENDING pada satu waktu; bila sudah ada, UI mengarahkan customer untuk melanjutkan pembayaran yang ada.
-- Pembayaran gagal atau kedaluwarsa (FAILED/EXPIRED): status membership tidak berubah dan customer dapat mencoba membeli lagi.
+- Pembayaran gagal atau kedaluwarsa (FAILED/EXPIRED): status membership tidak berubah. Selama pembelian masih PENDING, customer dapat mengganti metode (percobaan pembayaran baru, lih. Bab 11.6). Setelah pembelian kedaluwarsa (EXPIRED), customer memulai pembelian baru.
 - Webhook terlambat diterima: status MEMBER aktif saat webhook tervalidasi, dan halaman `/profile/reseller` menampilkan kondisi terbaru.
 - Akun dengan `is_active = false`: pembelian ditolak dengan `403 FORBIDDEN`.
 
@@ -207,13 +212,13 @@ Halaman hanya menampilkan benefit, status, dan riwayat; tidak ada form maupun da
 | Paket | `membership_purchase.plan_name_snapshot` | Snapshot nama paket saat pembelian. |
 | Periode berlaku | `starts_at` – `ends_at` | Kosong bila pembayaran belum dikonfirmasi. |
 | Nominal | `membership_purchase.price_snapshot` | Snapshot harga saat pembelian, bukan harga paket terkini. |
-| Metode pembayaran | `payment.payment_method` | |
+| Metode pembayaran | `payment.payment_channel` | Diambil dari percobaan pembayaran yang berstatus PAID. |
 | Status | `membership_purchase.status` | Badge: PENDING, PAID, FAILED, EXPIRED, REFUNDED. |
 
 ### 6.9 Pembelian, Masa Berlaku, dan Perpanjangan
 
 - Satu pembelian memberi satu periode membership (1 bulan). Harga dan durasi periode diambil dari konfigurasi Settings dan disimpan sebagai snapshot pada `membership_purchase`.
-- Setiap pembelian dicatat pada tabel `membership_purchase` dan dibayar melalui Midtrans. Pembayarannya dicatat pada tabel `payment` yang merujuk ke `membership_purchase_id` (bukan `order_id`), sehingga pembelian membership tidak tercampur dengan pesanan barang dan laporan penjualan produk (lih. Bab 11.3).
+- Setiap pembelian dicatat pada tabel `membership_purchase` dan dibayar melalui Midtrans (Core API, lih. Bab 11). Pembayarannya dicatat pada tabel `payment` yang merujuk ke `membership_purchase_id` (bukan `order_id`), sehingga pembelian membership tidak tercampur dengan pesanan barang dan laporan penjualan produk (lih. Bab 11.3).
 - Setelah pembayaran dikonfirmasi (PAID): `user.membership_status` menjadi `MEMBER` dan `user.membership_expires_at` diperbarui ke `ends_at`.
 - **Perpanjangan bersifat manual**: member membeli paket Plus lagi. Bila dibeli saat membership masih aktif, periode baru dimulai dari `membership_expires_at` yang lama sehingga sisa masa berlaku tidak hangus. Bila membership sudah berakhir, periode baru dimulai saat pembayaran dikonfirmasi.
 - **Kedaluwarsa**: job terjadwal BullMQ (harian) mengubah user `MEMBER` dengan `membership_expires_at` terlewati menjadi `NOT_MEMBER`. Perhitungan harga di server tetap memeriksa `membership_expires_at` secara langsung, sehingga keterlambatan job tidak memberi harga member secara gratis.
@@ -269,12 +274,12 @@ Pengiriman email melalui BullMQ dan dicatat pada `email_log` (tipe `MEMBERSHIP_R
 | Cart | Menambah produk (dengan variant bila ada), mengubah jumlah, menghapus item, menghitung subtotal, dan melihat produk rekomendasi cross-selling. Struktur cart terdiri dari satu cart per user dengan banyak cart_item. |
 | Wishlist | Menyimpan produk untuk dibeli kemudian tanpa pengaturan jumlah/quantity, diakses melalui halaman terpisah maupun slide-over drawer dan floating action button. |
 | Alamat | Menambah, mengubah, menghapus, dan menentukan alamat utama. Digunakan juga oleh customer institusi. |
-| Checkout | Memilih alamat, ekspedisi, voucher, melihat ringkasan, dan melakukan pembayaran. |
-| Pembayaran | Melakukan pembayaran menggunakan Midtrans. |
+| Checkout | Memilih alamat, ekspedisi, voucher, metode pembayaran, melihat ringkasan, dan submit pembayaran. |
+| Pembayaran | Membayar melalui halaman pembayaran kustom sesuai metode yang dipilih (VA, kartu, QR/QRIS, Dana, OVO, Alfa Group, Indomaret) dengan Midtrans Core API; halaman menampilkan nominal, QR atau kode, status, batas waktu, dan tutorial cara bayar. |
 | Order Tracking | Melihat status pesanan, invoice digital, dan pelacakan kurir bertahap jika tersedia. |
 | Review | Customer yang telah membeli produk (tervalidasi melalui order item) dapat memberikan rating dan ulasan, termasuk langsung dari kartu pesanan yang berstatus `COMPLETED`. |
 | Klaim Garansi | Customer dapat mengajukan komplain terhadap produk yang telah dibeli, disertai kronologi dan lampiran foto/video. |
-| Membership | Customer membeli paket membership Plus (bayar via Midtrans) dan langsung menjadi member tanpa formulir. Member mendapatkan harga member dan akses dropship, serta dapat melihat status, durasi, dan riwayat pembelian membership di `/profile/reseller`. |
+| Membership | Customer membeli paket membership Plus (memilih metode lalu bayar via Midtrans) dan langsung menjadi member tanpa formulir. Member mendapatkan harga member dan akses dropship, serta dapat melihat status, durasi, dan riwayat pembelian membership di `/profile/reseller`. |
 | Notifikasi Email | Customer menerima email receipt otomatis setelah pembayaran berhasil dikonfirmasi. |
 | Tentang Kami | Halaman profil brand, misi edukasi robotika, dan sertifikasi keamanan anak. |
 | Kontak | Formulir masukan/pesan dan tautan media sosial resmi. |
@@ -319,6 +324,10 @@ Terdiri atas komponen: Video Demo produk bergerak, FAQ Accordion interaktif, Tes
 
 Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel keranjang belanja.
 
+**8. Halaman Pembayaran**
+
+Setelah submit pembayaran, customer diarahkan ke halaman pembayaran sesuai metode yang dipilih. Satu komponen halaman dipakai untuk order maupun pembelian membership, dengan bagian dinamis per pola metode: kode (VA, toko), QR, buka aplikasi (Dana), push ke aplikasi (OVO), dan form kartu dengan 3DS. Rincian pada Bab 11.5.
+
 ## 8. Fitur Admin
  
 | Modul | Kebutuhan |
@@ -329,14 +338,14 @@ Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel ker
 | Product Type | Mengelola pengelompokan produk secara general dan fleksibel (tema, jenis, dsb). |
 | Variant | Mengelola variant produk (mis. warna), termasuk harga dan stok per variant. |
 | Inventory | Mengelola stok/kuota produksi, penambahan/pengurangan stok, dan monitoring stok rendah. |
-| Pesanan | Melihat dan memproses pesanan, mengubah status fulfillment, dan mengelola informasi pengiriman. |
+| Pesanan | Melihat dan memproses pesanan, mengubah status fulfillment, mengelola informasi pengiriman, dan memproses refund (penuh/sebagian) beserta pilihan pengembalian kuota. |
 | Customer | Melihat, mencari, dan mengelola data customer serta histori pesanan. |
 | Membership | Melihat daftar member, detail member, riwayat pembelian membership, dan masa berlaku (read-only, tanpa persetujuan/penolakan). |
 | Voucher | Membuat dan mengelola voucher, jenis diskon, masa berlaku, dan batas penggunaan. |
 | Review | Melihat, memoderasi, menyembunyikan, atau menghapus review yang tidak sesuai. |
 | Klaim Garansi | Melihat pengajuan klaim, mengubah status, mencatat hasil tindak lanjut manual (WA/email). |
 | Laporan | Laporan revenue, pesanan, produk terlaris, kategori, dan metrik penjualan. |
-| Settings | Informasi toko, konfigurasi pembayaran, pengiriman, dan pengaturan umum, termasuk harga dan durasi paket membership Plus. |
+| Settings | Informasi toko, konfigurasi pembayaran (termasuk batas waktu order `expires_at` dan flag aktif/nonaktif tiap metode pembayaran), pengiriman, dan pengaturan umum, termasuk harga dan durasi paket membership Plus. |
  
 ## 9. Manajemen Produk
  
@@ -356,6 +365,7 @@ Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel ker
 - Gambar produk
 - Variant (opsional, mis. warna — dengan harga dan stok sendiri)
 - Spesifikasi teknis (menggunakan field standar/deskripsi pada produk, tanpa tabel spesifikasi terpisah karena spesifikasi tiap produk dapat berbeda-beda)
+
 ### 9.2 Status Produk
  
 | Status | Keterangan |
@@ -377,16 +387,21 @@ Menambahkan section cross-selling "Produk Rekomendasi" di bagian bawah tabel ker
 - Customer memilih metode/layanan pengiriman yang tersedia dari shipping provider yang aktif.
 - Customer dapat memasukkan voucher jika tersedia.
 - Sistem menghitung subtotal, ongkir, diskon, dan total pembayaran.
-- Customer mengonfirmasi pesanan.
-- Sistem membuat order dan transaksi pembayaran.
-- Customer menyelesaikan pembayaran melalui Midtrans.
+- Customer memilih metode pembayaran dari daftar metode aktif (lih. Bab 11.4). Untuk OVO, customer mengisi nomor HP OVO pada langkah ini.
+- Customer mengonfirmasi pesanan dan men-submit pembayaran.
+- Sistem membuat order (PENDING) beserta `expires_at`, mereservasi kuota (lih. Bab 14), dan membuat percobaan pembayaran, lalu melakukan charge ke Midtrans Core API sesuai metode yang dipilih. Bila kuota tidak mencukupi, submit ditolak dengan pesan jelas dan tidak ada order yang dibuat.
+- Satu user dibatasi maksimal 3 order berstatus PENDING pada satu waktu.
+- Customer diarahkan ke halaman pembayaran sesuai metode dan menyelesaikan pembayaran di sana (lih. Bab 11.5).
+
 ## 11. Pembayaran
  
-Payment Gateway yang digunakan: Midtrans.
+Payment Gateway yang digunakan: Midtrans, diintegrasikan melalui Core API dengan antarmuka pembayaran kustom milik RoboEdu (bukan popup Snap). Customer memilih metode pembayaran di RoboEdu, dan halaman pembayaran dirender oleh RoboEdu berdasarkan data dari response Midtrans.
  
 ### 11.1 Alur Pembayaran
  
-`Checkout → Membuat Order → Membuat Transaksi Midtrans → Customer Membayar → Notifikasi/Webhook Midtrans → Validasi Backend → Update Status Pembayaran dan Order → Job pengiriman email receipt dimasukkan ke antrian (BullMQ) → Email receipt terkirim ke customer.`
+`Checkout → Pilih Metode Pembayaran → Submit Pembayaran (Idempotency-Key wajib) → Membuat Order (PENDING, dengan expires_at) + reservasi kuota + percobaan pembayaran (PENDING) → Charge ke Midtrans Core API sesuai metode → Instruksi pembayaran disimpan → Redirect ke Halaman Pembayaran → Customer Membayar → Notifikasi/Webhook Midtrans → Validasi Backend → Update Status Pembayaran dan Order → Job pengiriman email receipt dimasukkan ke antrian (BullMQ) → Email receipt terkirim ke customer.`
+
+Bila charge ke Midtrans gagal saat submit, percobaan pembayaran ditandai FAILED, customer tetap berada di checkout dengan pesan galat, dan dapat memilih metode lain.
  
 ### 11.2 Status Pembayaran
  
@@ -396,22 +411,131 @@ Payment Gateway yang digunakan: Midtrans.
 | PAID | Pembayaran telah dikonfirmasi. |
 | FAILED | Pembayaran gagal. |
 | EXPIRED | Batas waktu pembayaran telah berakhir. |
-| REFUNDED | Pembayaran telah dikembalikan. |
+| REFUNDED | Pembayaran telah dikembalikan sepenuhnya. Refund sebagian dicatat pada tabel `refund` dan tidak mengubah status payment. |
  
 *Aturan penting: status pembayaran final tidak boleh hanya bergantung pada redirect browser customer. Konfirmasi pembayaran harus berasal dari mekanisme notifikasi/webhook Midtrans yang divalidasi oleh backend.*
  
 ### 11.3 Pembayaran Membership
 
-Pembelian membership menggunakan Midtrans dengan mekanisme webhook yang sama seperti pembayaran order, tetapi tidak membuat `order`.
+Pembelian membership menggunakan Midtrans dengan mekanisme webhook yang sama seperti pembayaran order, tetapi tidak membuat `order`. Metode pembayaran, halaman pembayaran, percobaan pembayaran, dan aturan refund pada Bab 11.4 sampai 11.7 berlaku sama.
 
-`Beli Paket Plus → Membuat membership_purchase (PENDING) → Membuat transaksi Midtrans (Idempotency-Key wajib) → Customer Membayar → Notifikasi/Webhook Midtrans → Validasi Backend → payment dan membership_purchase menjadi PAID → user.membership_status = MEMBER dan membership_expires_at diperbarui → Job email receipt membership dimasukkan ke antrian (BullMQ)`
+`Beli Paket Plus → Pilih metode pembayaran → Membuat membership_purchase (PENDING) dan percobaan pembayaran (PENDING) → Charge ke Midtrans Core API sesuai metode (Idempotency-Key wajib) → Halaman Pembayaran → Customer Membayar → Notifikasi/Webhook Midtrans → Validasi Backend → payment dan membership_purchase menjadi PAID → user.membership_status = MEMBER dan membership_expires_at diperbarui → Job email receipt membership dimasukkan ke antrian (BullMQ)`
 
 - Tabel `payment` merujuk ke `membership_purchase_id` (dan `order_id` dikosongkan). Tepat satu dari keduanya harus terisi.
 - Webhook membedakan jenis transaksi dari referensi yang terisi pada `payment`, lalu memperbarui order atau membership sesuai jenisnya.
-- `purchase_number` pada `membership_purchase` digunakan sebagai referensi transaksi ke Midtrans.
+- `purchase_number` pada `membership_purchase` menjadi dasar referensi transaksi ke Midtrans; setiap percobaan pembayaran memakai `midtrans_order_id` unik turunannya (lih. Bab 11.6).
 - Aturan pada Bab 11.2 berlaku sama: status final tidak boleh hanya bergantung pada redirect browser, dan status MEMBER hanya aktif setelah webhook tervalidasi.
 - Voucher tidak berlaku untuk pembelian membership.
+- Pembelian membership tidak memakai `expires_at` order dan tidak menahan kuota; aturan kedaluwarsanya mengikuti Bab 6.7 dan 11.6.
 
+### 11.4 Metode Pembayaran yang Didukung
+
+Customer memilih metode pembayaran di checkout (dan pada layar konfirmasi membership) sebelum submit. Daftar metode aktif disediakan oleh backend (`GET /payment-methods`) dengan flag aktif/nonaktif per channel, sehingga penambahan metode atau bank tidak memerlukan perubahan besar pada frontend, dan channel yang belum disetujui atau bermasalah dapat dimatikan tanpa deploy ulang.
+
+| Metode | Cakupan | Pola halaman pembayaran | Catatan |
+| --- | --- | --- | --- |
+| Virtual Account (transfer bank) | Semua bank VA yang disediakan Midtrans Core API: BCA, BNI, BRI, Permata, CIMB, dan Mandiri (Bill Payment) | Kode: nomor VA dan kode bank (Mandiri: kode perusahaan dan kode bayar) | Mandiri memakai Bill Payment (`echannel`): customer membayar dengan dua kode, bukan satu nomor VA. Danamon hanya tersedia lewat versi BI-SNAP Core API dan tidak termasuk. BSI, SeaBank, dan Saqu belum dikonfirmasi tersedia di Core API. Batas waktu bawaan 24 jam. |
+| Kartu | Kartu kredit/debit | Form kartu kustom dan verifikasi 3DS | Tokenisasi di browser lewat `midtrans.js`; data kartu tidak melewati server RoboEdu. Status `fraud_status = challenge` ditahan sebagai PENDING. |
+| GoPay QRIS | GoPay | QR | Tampil sebagai pilihan terpisah (mengikuti tampilan Snap). Pemetaan teknis ke tipe Midtrans dikonfirmasi saat implementasi. |
+| ShopeePay QRIS | ShopeePay | QR | Tampil sebagai pilihan terpisah (mengikuti tampilan Snap). Pemetaan teknis ke tipe Midtrans dikonfirmasi saat implementasi. |
+| QRIS | Aplikasi/bank apa pun yang mendukung QRIS | QR | Tampil sebagai pilihan terpisah (mengikuti tampilan Snap). Pemetaan teknis ke tipe Midtrans dikonfirmasi saat implementasi. |
+| Dana | Dana | Buka aplikasi (redirect) | |
+| OVO | OVO | Push ke aplikasi | Nomor HP OVO diisi pada langkah pilih metode. Batas waktu tetap 60 detik dan tidak dapat diubah. |
+| Alfa Group | Gerai Alfa Group: Alfamart, Alfamidi, Dan+Dan | Kode pembayaran toko | Satu kode pembayaran berlaku di seluruh gerai Alfa Group tersebut. Pemetaan teknis ke Core API (`cstore` dengan store `alfamart`) dikonfirmasi saat implementasi. |
+| Indomaret | Gerai Indomaret | Kode pembayaran toko | |
+
+Metode di luar daftar ini (mis. LinkAja, Google Pay) belum termasuk. Seluruh channel harus diaktifkan pada akun Midtrans produksi.
+
+### 11.5 Halaman Pembayaran
+
+Setelah submit, customer diarahkan ke halaman pembayaran sesuai metode yang dipilih. Satu komponen halaman dipakai untuk order dan membership; bagian instruksinya berubah sesuai pola metode.
+
+| Elemen | Keterangan |
+| --- | --- |
+| Nominal | Diambil dari `payment.amount` (bukan dari response Midtrans), dengan tombol salin. |
+| QR atau kode | Sesuai pola metode: nomor VA dan kode bank (Mandiri: kode perusahaan dan kode bayar); kode pembayaran toko; gambar QR (dengan tombol buka aplikasi di perangkat mobile bila tersedia); tombol buka aplikasi Dana; instruksi konfirmasi di aplikasi OVO; atau verifikasi 3DS untuk kartu. Dengan tombol salin untuk kode/nomor. |
+| Status pembayaran | Badge PENDING, PAID, FAILED, atau EXPIRED dari `payment.status`. |
+| Batas waktu | Hitung mundur berdasarkan `expiry_time` percobaan; untuk order, ditampilkan juga sisa waktu order (`order.expires_at`). |
+| Tutorial cara bayar | Katalog tutorial milik RoboEdu per `payment_channel` (ATM, mobile banking, internet banking, scan QR, bayar di kasir), dengan placeholder nomor dan nominal. Midtrans Core API tidak menyediakan teks panduan melalui API, sehingga konten ditulis dan dikelola oleh tim RoboEdu. |
+| Tombol "Cek Status" | Memicu rekonsiliasi status ke Midtrans (Get Transaction Status) lalu memperbarui data. |
+| Tombol "Ganti Metode" / "Coba Lagi" | Membuat percobaan pembayaran baru (lih. Bab 11.6). "Ganti Metode" tersedia selama percobaan masih PENDING; "Coba Lagi" tersedia setelah percobaan FAILED atau EXPIRED selama order belum melewati `expires_at` dan percobaan belum mencapai batas. |
+
+Perilaku halaman:
+
+- Halaman memantau status dengan polling setiap 3 sampai 5 detik dan berhenti saat status final (PAID, FAILED, EXPIRED). Polling hanya untuk tampilan; status tetap berasal dari webhook yang divalidasi backend (aturan Bab 11.2).
+- Setelah PAID, customer diarahkan ke halaman hasil pembayaran: detail order untuk pesanan, `/profile/reseller` untuk membership.
+- Instruksi disimpan sehingga halaman dapat dibuka ulang sampai batas waktu berakhir, dan hanya dapat diakses pemilik transaksi.
+- Rekonsiliasi: tombol "Cek Status" dan job BullMQ untuk pembayaran PENDING yang melewati `expiry_time` memanggil Get Transaction Status Midtrans. Untuk OVO, pengecekan dilakukan sekitar 10 detik setelah batas waktu 60 detik berakhir.
+
+### 11.6 Percobaan Pembayaran, Batas Waktu Order, dan Pembatalan Otomatis
+
+**Percobaan pembayaran**
+
+- Setiap charge ke Midtrans adalah satu percobaan pembayaran (satu baris `payment`). Satu order atau satu pembelian membership dapat memiliki beberapa percobaan, tetapi hanya satu yang berstatus PENDING pada satu waktu.
+- Setiap percobaan memakai `midtrans_order_id` yang unik (turunan `order_number` atau `purchase_number` ditambah nomor percobaan), karena Midtrans tidak menerima `order_id` yang sama untuk charge baru.
+- Saat customer mengganti metode, transaksi PENDING sebelumnya dibatalkan melalui Cancel API Midtrans sebelum charge baru dibuat, agar tidak terjadi pembayaran ganda.
+- Pembuatan percobaan pembayaran memakai header `Idempotency-Key`.
+- Maksimal 5 percobaan pembayaran per order, agar endpoint charge tidak disalahgunakan.
+- Pemrosesan webhook harus idempoten: notifikasi berulang untuk percobaan yang sudah final tidak boleh mengulang efek samping (pengurangan stok, pengiriman email, perubahan status).
+
+**Batas waktu order (`order.expires_at`)**
+
+- Batas waktu dipasang pada order, bukan pada tiap percobaan. Order memiliki `expires_at` (default 24 jam sejak dibuat, dapat diatur di Settings).
+- Percobaan yang FAILED atau EXPIRED **tidak** membatalkan order. Customer dapat membuat percobaan baru ("Coba Lagi") tanpa checkout ulang sampai `expires_at`. Ini mencakup customer OVO yang terlambat membayar dan kartu yang ditolak.
+- Batas waktu tiap percobaan tidak boleh melewati sisa waktu order. Batas waktu per metode: VA bawaan 24 jam; metode lain dapat diatur dengan custom expiry kecuali OVO (60 detik tetap), semuanya dipotong oleh sisa waktu order.
+- Setelah `expires_at` lewat dan order belum PAID, job terjadwal BullMQ mengubah order menjadi CANCELLED, membatalkan percobaan PENDING yang tersisa di Midtrans, dan mengembalikan kuota yang direservasi.
+- Untuk pembelian membership, bila tidak ada lagi percobaan berstatus PENDING karena kedaluwarsa, pembelian menjadi EXPIRED dan customer memulai pembelian baru.
+
+**Kuota dan voucher**
+
+- Kuota produksi direservasi saat order dibuat dan dikembalikan saat order CANCELLED (lih. Bab 14).
+- Voucher tidak dikonsumsi selama order PENDING; pencatatan voucher terjadi saat PAID (lih. Bab 15).
+- Maksimal 3 order PENDING per user untuk mencegah penahanan kuota dengan order palsu.
+
+**Pembayaran yang masuk setelah order dibatalkan**
+
+Uang tidak boleh hilang diam-diam. Bila webhook PAID diterima untuk order yang sudah CANCELLED, `payment` dicatat PAID, order tetap CANCELLED, dan sistem mengirim alert ke admin (Sentry/email) untuk refund manual.
+
+Usulan pemetaan status Midtrans ke status internal (divalidasi pada tahap pengujian integrasi):
+
+| `transaction_status` Midtrans | `payment.status` |
+| --- | --- |
+| pending | PENDING |
+| settlement | PAID |
+| capture dengan `fraud_status = accept` | PAID |
+| capture dengan `fraud_status = challenge` | PENDING (ditahan hingga ditinjau) |
+| deny, cancel, failure | FAILED |
+| expire | EXPIRED |
+| refund | REFUNDED |
+
+### 11.7 Refund dan Chargeback
+
+**Metode refund**
+
+| Metode | Refund |
+| --- | --- |
+| Kartu, GoPay, ShopeePay, Dana, OVO, QRIS | Dapat diproses lewat Refund API Midtrans. Batas waktu refund berbeda per metode (mis. OVO 7 hari, Dana 45 hari, GoPay 180 hari). |
+| Virtual Account, Alfa Group, Indomaret | Tidak didukung Refund API. Admin mengembalikan dana secara manual di luar sistem (transfer balik) lalu mencatat bukti transfer. |
+
+Fitur Refund API perlu diaktifkan pada akun Midtrans.
+
+**Aturan refund**
+
+- Refund dicatat sebagai catatan terpisah pada tabel `refund` (lih. Bab 25.4), bukan hanya sebagai status. Satu order dapat memiliki beberapa refund (jumlah, alasan, pemroses, metode, bukti transfer bila manual), sehingga refund sebagian tertangani.
+- Order berstatus `REFUNDED` hanya bila total refund sama dengan total yang dibayar. Selama belum penuh, status order tidak berubah dan refund sebagian terlihat pada riwayat refund order.
+- Refund hanya dapat dipicu oleh admin, tidak pernah oleh customer, dan setiap refund dicatat di `audit_log`.
+- Kuota **tidak** dikembalikan otomatis saat refund, karena barang made-by-order mungkin sudah dibuat. Admin memilih lewat checkbox "kembalikan kuota" saat memproses refund (`refund.restore_quota`).
+- Dampak refund pada membership mengikuti Bab 6.9.
+
+**Chargeback**
+
+- Chargeback hanya terjadi pada kartu dan diterima dari Midtrans melalui webhook.
+- Sistem hanya mencatat dan mengirim alert ke admin (Sentry/email), tanpa mengubah status order secara otomatis.
+- Sengketa diurus melalui dashboard Midtrans.
+
+### 11.8 Hal yang Masih Terbuka Terkait Pembayaran
+
+1. Aktivasi channel pada akun Midtrans produksi (kartu, Dana, OVO, Refund API, dan channel lain pada Bab 11.4). Ini verifikasi dengan Midtrans, bukan keputusan desain. Pengurusan dimulai paralel dengan development, dan setiap metode diuji di sandbox memakai simulator Midtrans sebelum live.
 
 ## 12. Pengiriman
  
@@ -434,20 +558,20 @@ J&T menjadi ekspedisi pada tahap awal. Sistem menggunakan tabel `shipping_provid
  
 `PENDING → PAID → PROCESSING → SHIPPED → DELIVERED → COMPLETED`
  
-Alur alternatif: `PENDING → CANCELLED` dan `PAID → REFUNDED`. Pembayaran gagal/expired ditangani pada status pembayaran.
+Alur alternatif: `PENDING → CANCELLED` dan `PAID → REFUNDED`. Kegagalan atau kedaluwarsa satu percobaan pembayaran dicatat pada status pembayaran dan tidak membatalkan order; order PENDING menjadi CANCELLED otomatis ketika `expires_at` order terlewati tanpa pembayaran (lih. Bab 11.6). Status `REFUNDED` hanya bila total refund sama dengan total pembayaran (lih. Bab 11.7).
  
 ### 13.2 Definisi Status
  
 | Status | Definisi |
 | --- | --- |
-| PENDING | Order dibuat tetapi pembayaran belum dikonfirmasi. |
+| PENDING | Order dibuat, kuota direservasi, dan pembayaran belum dikonfirmasi. |
 | PAID | Pembayaran telah berhasil dikonfirmasi. |
 | PROCESSING | Admin sedang menyiapkan pesanan. |
 | SHIPPED | Pesanan sudah dikirim dan nomor resi tersedia bila diberikan ekspedisi. |
 | DELIVERED | Pesanan telah ditandai diterima. |
 | COMPLETED | Siklus pesanan selesai. |
-| CANCELLED | Pesanan dibatalkan sesuai aturan bisnis. |
-| REFUNDED | Pesanan yang telah dibayar mendapatkan pengembalian dana. |
+| CANCELLED | Pesanan dibatalkan sesuai aturan bisnis, termasuk otomatis ketika `expires_at` terlewati tanpa pembayaran. Kuota yang direservasi dikembalikan. |
+| REFUNDED | Pesanan yang telah dibayar mendapatkan pengembalian dana penuh (total refund sama dengan total bayar). |
  
 ### 13.3 Snapshot Harga & Alamat Transaksi
  
@@ -465,7 +589,11 @@ Sebagian besar produk RoboEdu bersifat made-by-order (dibuat sesuai pesanan), se
 - Admin dapat menambah atau mengurangi stok.
 - Admin dapat melihat produk dengan stok rendah atau habis.
 - Sistem harus mencegah quantity pembelian melebihi stok/kuota tersedia.
-- Stok dikurangi setelah pembayaran berhasil dikonfirmasi.
+- **Kuota direservasi saat order dibuat**, bukan saat PAID. Pengurangan dilakukan dengan satu query atomik (`UPDATE ... SET stock = stock - n WHERE stock >= n`) agar tidak ada kondisi balapan. Bila kuota tidak mencukupi, customer langsung ditolak di checkout dengan pesan yang jelas, sehingga tidak ada kasus pembayaran masuk ketika kuota sudah habis.
+- Kuota dikembalikan otomatis saat order CANCELLED (termasuk pembatalan otomatis saat `expires_at` terlewati).
+- Kuota tidak dikembalikan otomatis saat refund; admin yang memilih lewat checkbox "kembalikan kuota" (lih. Bab 11.7).
+- Untuk mencegah penahanan kuota dengan order palsu, setiap user dibatasi maksimal 3 order PENDING (lih. Bab 11.6).
+
 *Riwayat pergerakan stok yang lebih detail (stock movement log) belum menjadi bagian MVP; direncanakan pada tahap pengembangan lanjutan. Lihat Bab 26.*
  
 ## 15. Voucher dan Promosi
@@ -483,7 +611,9 @@ Admin dapat membuat voucher dengan aturan yang dapat dikonfigurasi. Setiap pemak
 | Tanggal mulai dan berakhir | Masa berlaku voucher. |
 | Status aktif/nonaktif | Menentukan apakah voucher dapat digunakan. |
  
-*Setiap penggunaan voucher dicatat dengan detail user, order, dan nominal diskon yang didapat pada saat itu — sehingga sistem dapat menghitung jumlah pemakaian dan mencegah voucher digunakan melebihi batas.*
+*Setiap penggunaan voucher dicatat dengan detail user, order, dan nominal diskon yang didapat pada saat itu — sehingga sistem dapat menghitung jumlah pemakaian dan mencegah voucher digunakan melebihi batas. Pencatatan (`voucher_usage` dan penambahan `used_count`) dilakukan saat order berstatus PAID, bukan saat order dibuat; order yang kedaluwarsa atau dibatalkan tidak mengonsumsi voucher.*
+
+*Konsekuensi: diskon tetap diberikan pada order yang sudah dibuat, dan batas penggunaan boleh sedikit terlewati bila beberapa order PENDING memakai voucher yang sama sebelum salah satunya PAID. Hal ini diterima untuk voucher promo biasa.*
  
 ## 16. Review Produk
  
@@ -492,6 +622,7 @@ Admin dapat membuat voucher dengan aturan yang dapat dikonfigurasi. Setiap pemak
 - Review dapat terdiri dari rating dan komentar.
 - Admin dapat melakukan moderasi (menampilkan atau menyembunyikan review).
 - Rating produk dapat digunakan dalam filter dan sorting.
+
 ## 17. Klaim Garansi
  
 RoboEdu menyediakan mekanisme klaim garansi semi-manual. Customer mengajukan komplain melalui website, kemudian admin melakukan tindak lanjut secara manual di luar sistem.
@@ -506,6 +637,7 @@ RoboEdu menyediakan mekanisme klaim garansi semi-manual. Customer mengajukan kom
 - Subjek dan kronologi/deskripsi kejadian dari customer.
 - Lampiran foto dan/atau video (dapat lebih dari satu berkas per pengajuan).
 - Status pengajuan, catatan tindak lanjut (`resolution`), dan waktu penyelesaian (`resolved_at`).
+
 ## 18. Notifikasi Email
  
 Sistem mengirimkan email receipt secara otomatis kepada customer setelah pembayaran berhasil dikonfirmasi, menggunakan mekanisme antrian (queue) agar proses pengiriman tidak menghambat respons terhadap webhook Midtrans.
@@ -514,6 +646,7 @@ Sistem mengirimkan email receipt secara otomatis kepada customer setelah pembaya
 - Pengiriman dijalankan sebagai background job melalui Redis + BullMQ, dengan mekanisme retry otomatis apabila pengiriman gagal.
 - Status setiap pengiriman email (`PENDING/SENT/FAILED`) dicatat oleh sistem pada `email_log`, beserta `subject` email yang dikirim, untuk keperluan audit dan troubleshooting.
 - Selain email receipt order, sistem mengirim email terkait membership (receipt pembelian membership serta pengingat H-7 dan H-3 sebelum masa berlaku berakhir) dengan mekanisme yang sama; lihat Bab 6.12.
+
 ## 19. Infrastruktur dan Teknologi Pendukung
  
 ### 19.1 Containerization
@@ -526,26 +659,29 @@ nginx berfungsi sebagai reverse proxy yang menerima seluruh request dari interne
  
 ### 19.3 Object Storage
  
-MinIO digunakan sebagai object storage self-hosted untuk menyimpan berkas seperti gambar produk dan lampiran klaim garansi.
+MinIO digunakan sebagai object storage self-hosted untuk menyimpan berkas seperti gambar produk, lampiran klaim garansi, dan bukti transfer refund manual.
  
 ### 19.4 Queue dan Background Job
  
-Redis dan BullMQ digunakan untuk memproses tugas yang berjalan di latar belakang, seperti pengiriman email receipt dan pengingat membership, serta job terjadwal harian yang mengembalikan membership kedaluwarsa menjadi NOT_MEMBER, sehingga proses utama (mis. webhook pembayaran) dapat merespons dengan cepat tanpa menunggu tugas tersebut selesai.
+Redis dan BullMQ digunakan untuk memproses tugas yang berjalan di latar belakang, seperti pengiriman email receipt dan pengingat membership, job terjadwal harian yang mengembalikan membership kedaluwarsa menjadi NOT_MEMBER, job rekonsiliasi status pembayaran yang masih PENDING melewati `expiry_time`, serta job terjadwal pembatalan otomatis order PENDING yang melewati `expires_at` (disertai pengembalian kuota), sehingga proses utama (mis. webhook pembayaran) dapat merespons dengan cepat tanpa menunggu tugas tersebut selesai.
  
 ### 19.5 Monitoring dan Logging
  
-- Error tracking menggunakan Sentry agar tim dapat mengetahui error di production secara langsung.
+- Error tracking menggunakan Sentry agar tim dapat mengetahui error di production secara langsung. Sentry/email juga dipakai untuk alert pembayaran terlambat pada order CANCELLED dan alert chargeback.
 - Uptime monitoring menggunakan UptimeRobot.
 - Logging aplikasi menggunakan Pino dengan format terstruktur (JSON), mencakup level DEBUG, INFO, WARN, dan ERROR. Data sensitif (password, token) tidak boleh dicatat ke dalam log.
+
 ### 19.6 Backup
  
 - Database MySQL di-backup secara terjadwal menggunakan `mysqldump` melalui cron job.
 - Berkas pada MinIO direplikasi ke lokasi backup terpisah menggunakan MinIO Client (`mc mirror`).
+
 ### 19.7 Manajemen Secrets
  
-- Seluruh kredensial (database, Midtrans, email service) disimpan sebagai environment variable, tidak pernah dicatat langsung dalam kode maupun masuk ke dalam version control (Git).
+- Seluruh kredensial (database, Midtrans, email service) disimpan sebagai environment variable, tidak pernah dicatat langsung dalam kode maupun masuk ke dalam version control (Git). Midtrans Server Key hanya digunakan di backend; Client Key hanya digunakan di frontend untuk tokenisasi kartu.
 - Development menggunakan file `.env` lokal yang diisi dari template `.env.example`.
 - Production menyimpan file `.env` langsung di VPS dengan pembatasan akses (permission ketat).
+
 ### 19.8 Migration Database
  
 Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration digenerate dari perubahan schema, direview, dicatat dalam version control, dan dijalankan secara manual pada saat proses deploy — bukan berjalan otomatis di background — untuk menjaga kontrol atas perubahan struktur data di production.
@@ -554,11 +690,11 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
  
 ### 20.1 Alur Pembelian Customer
  
-`Browse Produk → Detail Produk → Add to Cart → Checkout → Alamat → Pengiriman → Voucher (opsional) → Review Order → Midtrans → Pembayaran Berhasil → Email Receipt Terkirim → Processing → Shipped → Delivered → Completed → Review`
+`Browse Produk → Detail Produk → Add to Cart → Checkout → Alamat → Pengiriman → Voucher (opsional) → Pilih Metode Pembayaran → Review Order → Submit Pembayaran (order dibuat, kuota direservasi) → Halaman Pembayaran (sesuai metode; bila gagal/kedaluwarsa, "Coba Lagi" sampai batas waktu order) → Pembayaran Berhasil → Email Receipt Terkirim → Processing → Shipped → Delivered → Completed → Review`
  
 ### 20.2 Alur Pembelian Membership
  
-`Customer → Beli Paket Plus → Bayar via Midtrans → Webhook tervalidasi → MEMBER → Customer memperoleh harga member dan akses dropship`
+`Customer → Beli Paket Plus → Pilih Metode Pembayaran → Halaman Pembayaran → Bayar via Midtrans → Webhook tervalidasi → MEMBER → Customer memperoleh harga member dan akses dropship`
  
 ### 20.3 Alur Pemrosesan Admin
  
@@ -576,6 +712,9 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 
 `Member (aktif) → Pilih produk → Cart → Checkout → Aktifkan "Kirim sebagai Dropship" → Pilih/buat alamat pembeli akhir → Pengiriman → Bayar dengan harga member → Admin memproses dan membuat resi atas nama member → Pesanan sampai ke pembeli akhir tanpa dokumen dari RoboEdu`
 
+### 20.7 Alur Refund
+
+`Admin membuka order PAID → Pilih refund penuh atau sebagian → Metode didukung Refund API: refund otomatis via Midtrans | VA/Alfa Group/Indomaret: admin transfer manual lalu unggah bukti → Admin memilih "kembalikan kuota" atau tidak → refund dicatat di tabel refund dan audit_log → Bila total refund = total bayar: order REFUNDED`
 
 ## 21. Struktur Halaman / Route
  
@@ -585,16 +724,19 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - `/product` — Katalog produk & filter
 - `/product/[slug]` — Detail produk, rincian komponen, & ulasan
 - `/cart` — Keranjang belanja & rekomendasi produk
-- `/checkout` — Alur checkout & pembayaran
+- `/checkout` — Alur checkout & pemilihan metode pembayaran
+- `/checkout/payment/[id]` — Halaman pembayaran order: nominal, QR atau kode, status, batas waktu, tutorial cara bayar (usulan route)
 - `/about` — Profil brand, nilai STEM, & sertifikasi keamanan anak
 - `/contact` — Formulir masukan & kontak media sosial
 - `/reseller` — Informasi membership & pembelian paket Plus
+- `/reseller/payment/[id]` — Halaman pembayaran membership (komponen sama dengan halaman pembayaran order; usulan route)
 - `/login` & `/register` — Halaman autentikasi
 - `/profile/my-profile` — Data akun pribadi & manajemen alamat
 - `/profile/orders` — Riwayat pesanan (dengan modal invoice, tracking, & review)
 - `/profile/orders/[id]` — Detail lengkap pesanan spesifik
 - `/profile/reseller` — Benefit, status, durasi, & riwayat pembelian membership
 - `/profile/settings` — Pengaturan preferensi akun
+
 ### 21.2 Admin
  
 - `/admin`
@@ -602,7 +744,7 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - `/admin/categories`
 - `/admin/product-types`
 - `/admin/inventory`
-- `/admin/orders`
+- `/admin/orders` — termasuk aksi refund pada detail order
 - `/admin/customers`
 - `/admin/resellers` — Daftar member & pembelian membership
 - `/admin/resellers/[id]` — Detail member (read-only)
@@ -611,6 +753,7 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - `/admin/complaints`
 - `/admin/reports`
 - `/admin/settings`
+
 ## 22. Kebutuhan Fungsional
  
 | ID | Area | Kebutuhan | Prioritas |
@@ -620,10 +763,10 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | FR-003 | Search | Customer dapat mencari produk. | WAJIB |
 | FR-004 | Filter | Customer dapat melakukan filter dan sorting. | WAJIB |
 | FR-005 | Cart | Customer dapat menambah, mengubah, dan menghapus item cart/cart_item. | WAJIB |
-| FR-006 | Checkout | Customer dapat memilih alamat, pengiriman, voucher, dan membuat order. | WAJIB |
-| FR-007 | Pembayaran | Sistem terintegrasi dengan Midtrans dan memproses notifikasi pembayaran. | WAJIB |
+| FR-006 | Checkout | Customer dapat memilih alamat, pengiriman, voucher, metode pembayaran, dan membuat order. | WAJIB |
+| FR-007 | Pembayaran | Sistem terintegrasi dengan Midtrans Core API, membuat charge sesuai metode yang dipilih, dan memproses notifikasi pembayaran secara idempoten. | WAJIB |
 | FR-008 | Pesanan | Customer dan admin dapat melihat/mengelola status order. | WAJIB |
-| FR-009 | Inventory | Admin dapat mengelola stok dan sistem mencegah stok negatif. | WAJIB |
+| FR-009 | Inventory | Admin dapat mengelola stok; sistem mereservasi kuota saat order dibuat secara atomik, mengembalikannya saat order dibatalkan, dan mencegah stok negatif. | WAJIB |
 | FR-010 | Membership | Sistem memberikan harga member kepada user berstatus MEMBER yang masa berlakunya belum berakhir. | WAJIB |
 | FR-011 | Wishlist | Customer dapat menyimpan produk untuk dibeli kemudian. | SEBAIKNYA |
 | FR-012 | Voucher | Admin dapat mengelola voucher dan sistem memvalidasinya saat checkout. | SEBAIKNYA |
@@ -642,6 +785,11 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | FR-025 | Membership | Sistem mengembalikan status ke NOT_MEMBER dan harga normal saat masa berlaku berakhir, serta mendukung perpanjangan manual. | WAJIB |
 | FR-026 | Membership | Sistem mengirim email pengingat H-7 dan H-3 sebelum membership berakhir serta email receipt pembelian membership. | SEBAIKNYA |
 | FR-027 | Dropship | Member dapat checkout dengan pengiriman langsung ke alamat pembeli akhir; invoice hanya untuk member dan pembeli akhir tidak menerima dokumen dari RoboEdu. | SEBAIKNYA |
+| FR-028 | Pembayaran | Customer dapat memilih metode pembayaran (VA, kartu, GoPay QRIS, ShopeePay QRIS, QRIS, Dana, OVO, Alfa Group, Indomaret) sebelum submit pembayaran, untuk order maupun membership. Metode aktif dikelola lewat flag di backend. | WAJIB |
+| FR-029 | Pembayaran | Sistem menampilkan halaman pembayaran sesuai metode: nominal, QR atau kode, status, batas waktu, tutorial cara bayar, dan tombol cek status. | WAJIB |
+| FR-030 | Pembayaran | Customer dapat mengganti metode atau mencoba lagi (maksimal 5 percobaan per order) tanpa checkout ulang selama `order.expires_at` belum terlewati; transaksi lama dibatalkan di Midtrans. Order otomatis CANCELLED bila `expires_at` terlewati tanpa pembayaran. | SEBAIKNYA |
+| FR-031 | Refund | Admin dapat memproses refund penuh atau sebagian (otomatis via Midtrans atau manual dengan bukti), memilih pengembalian kuota, dan setiap refund tercatat di `refund` dan `audit_log`. | SEBAIKNYA |
+| FR-032 | Pembayaran | Sistem mengirim alert ke admin untuk pembayaran yang masuk setelah order CANCELLED dan untuk chargeback kartu, tanpa mengubah order otomatis. | SEBAIKNYA |
  
 ## 23. Kebutuhan Non-Fungsional
  
@@ -649,14 +797,14 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 | --- | --- |
 | Performa | Halaman utama dan API harus dibuat efisien dan menghindari query database yang tidak diperlukan. |
 | Keamanan | Password di-hash dengan aman, otorisasi dilakukan di server, dan endpoint admin dilindungi. |
-| Pembayaran | Webhook/notification Midtrans divalidasi di backend. |
-| Integritas Data | Harga dan total transaksi disimpan sebagai snapshot pada order. |
+| Pembayaran | Webhook/notification Midtrans divalidasi di backend dan diproses secara idempoten. Data kartu tidak melewati server RoboEdu. Status pembayaran yang tertunda direkonsiliasi ke Midtrans. |
+| Integritas Data | Harga dan total transaksi disimpan sebagai snapshot pada order. Reservasi kuota dilakukan secara atomik. |
 | Masa Berlaku Membership | Status dan harga member divalidasi di server terhadap `membership_expires_at` pada setiap perhitungan harga, tidak hanya bergantung pada job penjadwal. |
 | Skalabilitas | Integrasi pembayaran dan pengiriman dibuat terpisah dari logika order utama; ekspedisi menggunakan provider abstraction. |
 | Ketersediaan | Aplikasi berjalan dalam container Docker dengan restart policy otomatis, backup terjadwal, dan monitoring uptime. |
 | Responsif | Website customer dan admin harus nyaman digunakan pada desktop, tablet, dan mobile. |
 | Maintainability | Logika bisnis, akses database, dan tampilan dipisahkan secara terstruktur. |
-| Audit | Aktivitas penting admin dan perubahan status order dapat ditelusuri melalui logging terstruktur maupun `audit_log`. |
+| Audit | Aktivitas penting admin, perubahan status order, dan refund dapat ditelusuri melalui logging terstruktur maupun `audit_log`. |
 | Observability | Error di production dapat terdeteksi melalui error tracking (Sentry) dan log terstruktur (Pino). |
  
 ## 24. Persyaratan Keamanan
@@ -665,12 +813,16 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - Role, `membership_status`, dan `membership_expires_at` harus divalidasi untuk setiap operasi yang relevan.
 - Password tidak boleh disimpan dalam bentuk plaintext.
 - Seluruh secret (Midtrans, database, email service) disimpan menggunakan environment variable, tidak masuk ke version control.
-- Endpoint webhook pembayaran harus melakukan validasi keamanan yang sesuai.
+- Endpoint webhook pembayaran harus melakukan validasi keamanan yang sesuai dan idempoten.
+- Charge ke Midtrans hanya dilakukan dari backend memakai Server Key; data kartu ditokenisasi di browser dan tidak melewati atau tersimpan di server RoboEdu.
+- Halaman pembayaran dan instruksi pembayaran hanya dapat diakses oleh pemilik transaksi.
 - Semua input dari user harus divalidasi.
 - Query database harus menggunakan mekanisme aman/parameterized melalui Drizzle ORM.
-- Perubahan harga, stok, order, pembelian dan perubahan status membership, dan status klaim garansi dicatat dalam log.
+- Perubahan harga, stok, order, refund, pembelian dan perubahan status membership, dan status klaim garansi dicatat dalam log.
+- Refund hanya dapat dipicu oleh admin yang berwenang, tidak pernah oleh customer.
 - Data pribadi customer hanya dapat diakses oleh pihak yang berwenang.
 - File `.env` pada production dibatasi aksesnya (permission ketat) dan tidak pernah di-commit ke Git.
+
 ## 25. ERD Final
  
 Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan migration database, dikelompokkan per modul, dan telah diselaraskan dengan skema aktual pada codebase (`0000_roboedu_initial_schema.sql`).
@@ -725,7 +877,6 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | reminder_h3_sent_at | TIMESTAMP, NULLABLE | Penanda pengingat H-3 sudah dikirim |
 | created_at / updated_at | TIMESTAMP | |
 
-
 ### 25.2 Modul Katalog Produk
 
 *Catatan: kolom `base_reseller_price` dan `reseller_price_override` tetap digunakan sebagai harga member (nama kolom tidak diubah agar tidak memerlukan migrasi nama kolom).*
@@ -777,7 +928,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | variant_name | VARCHAR | mis. Merah, Biru |
 | price_override | DECIMAL, NULLABLE | Harga normal khusus variant |
 | reseller_price_override | DECIMAL, NULLABLE | Harga member khusus variant |
-| stock | INT | kuota/kapasitas produksi |
+| stock | INT | kuota/kapasitas produksi; direservasi saat order dibuat (lih. Bab 14) |
 | status | ENUM | DRAFT, ACTIVE, INACTIVE, OUT_OF_STOCK |
 | created_at / updated_at | TIMESTAMP | |
  
@@ -824,7 +975,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | variant_id | FK -> product_variant, NULLABLE | |
 | created_at | TIMESTAMP | |
  
-### 25.4 Modul Order, Pembayaran & Pengiriman
+### 25.4 Modul Order, Pembayaran, Refund & Pengiriman
  
 **shipping_provider**
  
@@ -850,6 +1001,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | total | DECIMAL | |
 | voucher_code_snapshot | VARCHAR, NULLABLE | Snapshot kode voucher yang dipakai |
 | status | ENUM | PENDING, PAID, PROCESSING, SHIPPED, DELIVERED, COMPLETED, CANCELLED, REFUNDED |
+| expires_at | TIMESTAMP | Batas waktu pembayaran order (default 24 jam sejak dibuat, dari Settings). Setelah lewat dan belum PAID, order otomatis CANCELLED dan kuota dikembalikan (lih. Bab 11.6) |
 | recipient_name | VARCHAR | Snapshot nama penerima |
 | recipient_phone | VARCHAR | Snapshot nomor telepon penerima |
 | shipping_address | VARCHAR | Snapshot alamat lengkap |
@@ -877,21 +1029,47 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | subtotal | DECIMAL | |
 | created_at | TIMESTAMP | |
  
-**payment** *(Terpisah dari order untuk menangani multiple percobaan pembayaran. Dapat merujuk ke order atau ke membership_purchase; tepat satu dari `order_id` atau `membership_purchase_id` harus terisi.)*
- 
+**payment** *(Terpisah dari order. Setiap baris adalah satu percobaan pembayaran (satu charge ke Midtrans), sehingga satu order atau satu pembelian membership dapat memiliki beberapa baris payment. Dapat merujuk ke order atau ke membership_purchase; tepat satu dari `order_id` atau `membership_purchase_id` harus terisi. Hanya satu percobaan berstatus PENDING pada satu waktu untuk tiap order atau pembelian.)*
+
 | Kolom | Tipe | Keterangan |
 | --- | --- | --- |
 | id | PK | |
-| order_id | FK -> order, NULLABLE, UNIQUE | Terisi untuk pembayaran pesanan barang |
-| membership_purchase_id | FK -> membership_purchase, NULLABLE, UNIQUE | Terisi untuk pembayaran membership |
+| order_id | FK -> order, NULLABLE | Terisi untuk pembayaran pesanan barang (tidak UNIQUE) |
+| membership_purchase_id | FK -> membership_purchase, NULLABLE | Terisi untuk pembayaran membership (tidak UNIQUE) |
+| attempt_number | INT | Nomor percobaan (1, 2, ... maksimal 5 per order) untuk order atau pembelian yang sama |
+| midtrans_order_id | VARCHAR, UNIQUE | Referensi transaksi ke Midtrans per percobaan (turunan `order_number`/`purchase_number` ditambah nomor percobaan) |
 | midtrans_transaction_id | VARCHAR | |
-| payment_method | VARCHAR | |
+| payment_method | VARCHAR | Tipe pembayaran Midtrans (`payment_type`), mis. bank_transfer, echannel (Mandiri), credit_card, gopay, qris, dana, ovo, cstore |
+| payment_channel | VARCHAR | Channel spesifik, mis. bca, bni, bri, mandiri, permata, cimb, gopay, shopeepay, qris, dana, ovo, alfamart, indomaret, credit_card |
+| payment_instruction | JSON, NULLABLE | Data untuk halaman pembayaran: nomor VA dan kode bank, kode perusahaan dan kode bayar (Mandiri), kode pembayaran toko, QR, URL deeplink/redirect, URL 3DS |
+| payer_phone_number | VARCHAR, NULLABLE | Nomor HP pembayar (OVO) |
 | amount | DECIMAL | |
 | status | ENUM | PENDING, PAID, FAILED, EXPIRED, REFUNDED |
+| expiry_time | TIMESTAMP, NULLABLE | Batas waktu pembayaran percobaan ini; tidak melewati `order.expires_at` |
 | paid_at | TIMESTAMP, NULLABLE | |
 | raw_response | JSON | payload webhook Midtrans |
 | created_at / updated_at | TIMESTAMP | |
- 
+
+*Catatan: skema aktual (`0000_roboedu_initial_schema.sql`) masih memakai `payment.order_id` NOT NULL dan UNIQUE serta belum memiliki kolom `attempt_number`, `midtrans_order_id`, `payment_channel`, `payment_instruction`, `payer_phone_number`, dan `membership_purchase_id`; diperlukan migration.*
+
+**refund** *(Mencatat setiap refund, penuh maupun sebagian, sehingga satu order atau pembelian membership dapat memiliki beberapa refund — lih. Bab 11.7. Tepat satu dari `order_id` atau `membership_purchase_id` harus terisi.)*
+
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| id | PK | |
+| payment_id | FK -> payment | Percobaan pembayaran PAID yang dikembalikan |
+| order_id | FK -> order, NULLABLE | |
+| membership_purchase_id | FK -> membership_purchase, NULLABLE | |
+| amount | DECIMAL | Nominal refund; total refund tidak boleh melebihi nominal pembayaran |
+| reason | TEXT | Alasan refund |
+| method | ENUM | MIDTRANS_API, MANUAL |
+| proof_url | VARCHAR, NULLABLE | Bukti transfer untuk refund manual, disimpan di MinIO |
+| restore_quota | BOOLEAN | Pilihan admin: kuota dikembalikan atau tidak (default false) |
+| processed_by | FK -> user | Admin yang memproses refund |
+| created_at | TIMESTAMP | |
+
+*Catatan: tabel `refund` dan kolom `order.expires_at` belum ada pada skema aktual; diperlukan migration.*
+
 **shipment** *(Tabel mandiri, dipisahkan dari kolom pengiriman di `order`.)*
  
 | Kolom | Tipe | Keterangan |
@@ -1014,7 +1192,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
 | --- | --- | --- |
 | id | PK | |
 | actor_id | FK -> user | Admin yang melakukan aksi |
-| action | VARCHAR | Nama aksi yang dilakukan |
+| action | VARCHAR | Nama aksi yang dilakukan (mis. `PROCESS_REFUND`) |
 | target_type | VARCHAR | Jenis entitas target (mis. `product`, `order`) |
 | target_id | VARCHAR/UUID | ID entitas target |
 | description | TEXT, NULLABLE | Deskripsi tambahan aksi |
@@ -1025,7 +1203,7 @@ Struktur data berikut menjadi acuan final untuk pembuatan schema Drizzle ORM dan
  
 | Tahap | Ruang Lingkup |
 | --- | --- |
-| MVP / Tahap 1 | Autentikasi, homepage, katalog, search/filter, detail produk, kategori, cart & cart_item, alamat, checkout, Midtrans, email receipt otomatis, struktur pengiriman/J&T, order management, stok sederhana (kuota), customer management, pembelian membership Plus via Midtrans (tanpa formulir dan tanpa review admin), masa berlaku & perpanjangan manual, email pengingat H-7/H-3, dan harga member. |
+| MVP / Tahap 1 | Autentikasi, homepage, katalog, search/filter, detail produk, kategori, cart & cart_item, alamat, checkout dengan pilihan metode pembayaran, Midtrans Core API (halaman pembayaran kustom: VA, kartu, QRIS/QR, Dana, OVO, Alfa Group, Indomaret), reservasi kuota dan pembatalan otomatis order berbasis `expires_at`, email receipt otomatis, struktur pengiriman/J&T, order management, refund oleh admin (penuh/sebagian) dan alert chargeback, stok sederhana (kuota), customer management, pembelian membership Plus via Midtrans (tanpa formulir dan tanpa review admin), masa berlaku & perpanjangan manual, email pengingat H-7/H-3, dan harga member. |
 | Tahap 2 | Wishlist, voucher/promo, review, klaim garansi, laporan penjualan, dashboard admin yang lebih lengkap, dan dropship untuk member. |
 | Tahap 3 | Multi-ekspedisi, tingkatan paket membership, pembelian institusi/B2B lebih formal, pengiriman internasional, riwayat pergerakan stok yang lebih detail (stock movement log), analitik lanjutan, dan integrasi tambahan. |
  
@@ -1038,44 +1216,50 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 - Inisialisasi Git repository + `.gitignore` (.env, node_modules, dsb.)
 - Struktur folder project (app/, docker/, nginx/)
 - Buat `.env.example` (template kosong, tanpa credential asli)
+
 ### Tahap 1 — Infrastruktur (Docker Compose)
  
 - Buat `docker-compose.yml` dengan service: mysql, redis, minio, nginx, app
 - Pastikan seluruh container dapat berjalan dan saling terkoneksi
 - Setup nginx reverse proxy dasar (SSL menyusul via Let's Encrypt)
+
 ### Tahap 2 — Database Foundation
  
 - ERD final disepakati (lihat Bab 25)
 - Setup Drizzle ORM + koneksi ke MySQL
 - Generate & jalankan migration awal
 - Seed data dummy (admin user, kategori, produk contoh)
+
 ### Tahap 3 — Autentikasi & Otorisasi
  
 - Setup login/register, hashing password, session/JWT
 - Middleware pengecekan role (customer/admin) dan membership_status dan masa berlaku (`membership_expires_at`)
 - Uji login sebagai admin dan customer dummy
+
 ### Tahap 4 — Integrasi Eksternal
  
 - MinIO — uji upload file dummy
-- Midtrans — sandbox mode, uji transaksi hingga menerima webhook
-- Redis + BullMQ — uji job sederhana dan job terjadwal (pengingat/kedaluwarsa membership) berjalan di worker
+- Midtrans (Core API) — sandbox mode, uji charge dan webhook untuk setiap metode (VA, kartu dengan 3DS, QR, Dana, OVO, toko), termasuk skenario expire, cancel, ganti metode, coba lagi, webhook berulang, pembayaran masuk setelah order CANCELLED, refund, dan chargeback. Mulai proses aktivasi channel produksi paralel dengan coding.
+- Redis + BullMQ — uji job sederhana dan job terjadwal (pengingat/kedaluwarsa membership, pembatalan order `expires_at`) berjalan di worker
 - Email service (Resend/SendGrid) — uji kirim email dummy
+
 ### Tahap 5 — Mulai Development Frontend
  
 - Layout dasar (header, footer, navigasi) + halaman autentikasi
 - Katalog produk
 - Cart & checkout
 - Modul lain sesuai skala prioritas MVP
+
 ## 28. User Story dan Acceptance Criteria
  
 | ID | User Story | Kriteria Penerimaan |
 | --- | --- | --- |
 | US-001 | Sebagai customer, saya ingin mencari produk agar dapat menemukan produk robotika dengan cepat. | Ketika keyword dimasukkan, sistem menampilkan produk relevan dan tidak menampilkan produk nonaktif. |
 | US-002 | Sebagai customer, saya ingin menambahkan produk ke cart agar dapat membeli beberapa produk. | Jika stok/kuota mencukupi, produk, variant, dan jumlah yang benar masuk ke cart_item. |
-| US-003 | Sebagai customer, saya ingin membayar melalui Midtrans agar dapat menyelesaikan pembelian. | Jika pembayaran berhasil, webhook tervalidasi, order berubah menjadi PAID, dan email receipt terkirim. |
+| US-003 | Sebagai customer, saya ingin memilih metode pembayaran dan membayar lewat halaman pembayaran agar dapat menyelesaikan pembelian. | Customer memilih metode sebelum submit dan diarahkan ke halaman pembayaran sesuai metode. Jika pembayaran berhasil, webhook tervalidasi, order berubah menjadi PAID, dan email receipt terkirim. |
 | US-004 | Sebagai member, saya ingin mendapatkan harga khusus. | Jika `membership_status` MEMBER dan `membership_expires_at` belum terlewati, sistem menggunakan harga member pada transaksi. |
 | US-005 | Sebagai customer, saya ingin membeli membership Plus agar langsung menjadi member. | Setelah pembayaran dikonfirmasi webhook, `membership_status` menjadi MEMBER dan `membership_expires_at` terisi, tanpa formulir dan tanpa review admin. |
-| US-006 | Sebagai admin, saya ingin mengelola stok agar ketersediaan produk akurat. | Stok berkurang setelah pembayaran berhasil dan tidak boleh menjadi negatif. |
+| US-006 | Sebagai admin, saya ingin mengelola stok agar ketersediaan produk akurat. | Kuota berkurang saat order dibuat, dikembalikan saat order dibatalkan, dan tidak boleh menjadi negatif. Bila kuota tidak cukup, checkout ditolak dengan pesan jelas. |
 | US-007 | Sebagai customer, saya ingin melihat status pesanan agar dapat mengetahui proses pengiriman. | Detail order menampilkan status dan informasi resi jika tersedia. |
 | US-008 | Sebagai customer, saya ingin memberikan review setelah membeli produk. | Customer hanya dapat me-review produk yang memiliki order_item dengan status pembelian yang sah. |
 | US-009 | Sebagai customer, saya ingin mengajukan klaim garansi atas produk yang bermasalah. | Customer dapat mengisi kronologi dan mengunggah foto/video; pengajuan tersimpan dengan status OPEN. |
@@ -1085,6 +1269,10 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 | US-013 | Sebagai member, saya ingin diingatkan sebelum membership berakhir dan dapat memperpanjang. | Email pengingat dikirim H-7 dan H-3; perpanjangan manual menambah masa berlaku dari `membership_expires_at` yang lama; setelah berakhir status kembali NOT_MEMBER dan harga normal. |
 | US-014 | Sebagai admin, saya ingin melihat daftar dan detail member. | `/admin/resellers` dan `/admin/resellers/[id]` menampilkan data member dan riwayat pembelian secara read-only, tanpa aksi setuju/tolak. |
 | US-015 | Sebagai member, saya ingin memesan dengan dropship. | Order dikirim ke alamat pembeli akhir dengan nama member sebagai pengirim; invoice hanya untuk member dan pembeli akhir tidak menerima dokumen dari RoboEdu. |
+| US-016 | Sebagai customer, saya ingin melihat instruksi pembayaran yang jelas agar dapat membayar dengan benar. | Halaman pembayaran menampilkan nominal, QR atau kode, status, hitung mundur, dan tutorial cara bayar sesuai metode; status berubah otomatis saat pembayaran berhasil. |
+| US-017 | Sebagai customer, saya ingin mengganti metode pembayaran atau mencoba lagi tanpa checkout ulang. | Percobaan yang gagal atau kedaluwarsa tidak membatalkan order; customer dapat mencoba lagi (maksimal 5 percobaan) sampai `order.expires_at`. Selama percobaan PENDING, customer dapat memilih metode lain; transaksi lama dibatalkan di Midtrans. Order otomatis CANCELLED hanya setelah `expires_at` terlewati tanpa pembayaran, dan kuota dikembalikan. |
+| US-018 | Sebagai admin, saya ingin memproses refund penuh atau sebagian. | Refund tercatat di tabel `refund` dan `audit_log`; metode yang didukung diproses via Refund API Midtrans, VA/Alfa Group/Indomaret dicatat manual dengan bukti transfer; admin dapat memilih "kembalikan kuota"; order menjadi REFUNDED hanya bila total refund sama dengan total bayar. |
+| US-019 | Sebagai admin, saya ingin diberi tahu bila ada pembayaran terlambat atau chargeback. | Pembayaran masuk untuk order CANCELLED dicatat PAID tanpa mengubah order dan memunculkan alert refund manual; chargeback kartu dicatat dan di-alert tanpa mengubah order otomatis. |
  
 ## 29. Metrik Keberhasilan
  
@@ -1101,6 +1289,11 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 - Frekuensi produk stok/kuota rendah atau habis.
 - Waktu rata-rata penyelesaian klaim garansi.
 - Tingkat keberhasilan pengiriman email receipt.
+- Distribusi penggunaan metode pembayaran.
+- Persentase pembayaran kedaluwarsa per metode.
+- Persentase order yang dibatalkan otomatis karena `expires_at` terlewati.
+- Jumlah dan nominal refund, serta jumlah pembayaran terlambat dan chargeback.
+
 ## 30. Pengembangan Masa Depan
  
 - Penjualan internasional dan pengiriman lintas negara.
@@ -1113,6 +1306,7 @@ Urutan berikut disusun agar fondasi (infrastruktur, database, autentikasi, integ
 - Notifikasi WhatsApp.
 - Metode pembayaran tambahan.
 - Peningkatan observability (mis. Grafana Loki untuk log terpusat) seiring pertumbuhan skala sistem.
+
 ## 31. Catatan Pengembangan
  
 PRD ini digunakan sebagai sumber kebenaran pada level produk. ERD pada Bab 25 telah diselaraskan dengan seluruh requirement yang telah disepakati. Tahap berikutnya adalah menentukan kontrak API, struktur route, aturan validasi, desain UI, dan acceptance test.
@@ -1120,6 +1314,10 @@ PRD ini digunakan sebagai sumber kebenaran pada level produk. ERD pada Bab 25 te
 *Urutan pengembangan yang disarankan: PRD → User Flow → Business Rules → ERD Final → Setup Infrastruktur → API Specification → UI/UX → Development → Testing → Deployment.*
 
 *Revisi Oktober 2026: fitur reseller diganti menjadi membership berbayar bulanan (paket Standar dan Plus). Pengajuan reseller, formulir, dan review admin dihapus; ditambahkan pembelian membership, purchase history, pengingat masa berlaku, dan dropship. Perubahan ini perlu diselaraskan ke `api.md`, `reseller_todo.md`, dan schema database.*
+
+*Revisi November 2026: alur pembayaran diubah dari popup Snap Midtrans (checkout, submit, pilih metode di popup) menjadi antarmuka pembayaran kustom dengan Midtrans Core API (checkout, pilih metode, submit, halaman pembayaran sesuai metode). Ditambahkan daftar metode pembayaran, halaman pembayaran, percobaan pembayaran dan ganti metode, aturan refund per metode, serta perubahan tabel `payment`. Tutorial cara bayar ditulis sendiri oleh tim (tidak diambil dari Midtrans). Perubahan ini perlu diselaraskan ke `api.md`, schema database, dan `DESIGN.md`.*
+
+*Revisi November 2026 (2): kuota direservasi saat order dibuat dan dikembalikan saat order dibatalkan (Bab 14); auto-cancel berbasis `order.expires_at`, bukan kedaluwarsa satu percobaan, dengan maksimal 5 percobaan per order dan maksimal 3 order PENDING per user (Bab 11.6); pembayaran terlambat pada order CANCELLED memicu alert refund manual; refund penuh/sebagian dicatat pada tabel `refund` dan chargeback hanya di-alert (Bab 11.7); voucher tetap dikonsumsi saat PAID (Bab 15); Bab 11.8 tersisa satu butir (aktivasi channel produksi). Perubahan ini perlu diselaraskan ke `api.md` (termasuk `GET /payment-methods`, endpoint refund, dan `order.expires_at`), `types.md`, dan schema database (migration: `order.expires_at`, tabel `refund`).*
 
 ## 32. Desain Visual & Branding
 
@@ -1144,6 +1342,9 @@ Neo-brutalism ramah anak: kontras tinggi, garis border tebal `2px #3D2900`, dan 
 | Judul (heading) | `Unbounded` |
 | Teks tubuh (body) | `Outfit` |
 
+### 32.4 Halaman Pembayaran dan Ikon Metode
+
+Halaman pembayaran mengikuti gaya neo-brutalism yang sama (border `2px #3D2900`, hard shadow tanpa blur). Ikon metode pembayaran mengikuti daftar metode pada Bab 11.4: bank VA (BCA, BNI, BRI, Mandiri, Permata, CIMB), kartu, GoPay, ShopeePay, QRIS, Dana, OVO, Alfamart, dan Indomaret. Daftar ikon pada `docs/DESIGN.md` perlu disesuaikan dengan daftar ini.
+
 ---
 *RoboEdu — Dokumen Kebutuhan Produk*
- 

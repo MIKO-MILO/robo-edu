@@ -2,16 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, asc, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { reviews, users, products, orderItems } from "@/src/db/schema";
-import { getSession } from "@/lib/auth/session";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import type { ReviewStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
-
-function isAdminRole(role: string) {
-  const r = role?.toLowerCase() ?? "";
-  return ["admin", "superadmin", "admin_sales", "admin_laporan"].includes(r);
-}
 
 /**
  * GET /api/admin/reviews
@@ -25,11 +19,8 @@ function isAdminRole(role: string) {
  *   sort      = created_at_desc | created_at_asc | rating_desc | rating_asc
  */
 export async function GET(request: NextRequest) {
-  const session = await getSession();
-  if (!session || !isAdminRole(session.role)) {
-    const uid = await getSessionUserId();
-    if (!uid) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = request.nextUrl;
   const page   = Math.max(1, Number(searchParams.get("page")  ?? "1"));

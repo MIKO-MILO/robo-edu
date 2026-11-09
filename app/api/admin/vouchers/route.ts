@@ -3,7 +3,7 @@ import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import crypto from "node:crypto";
 import { db } from "@/src/db";
 import { vouchers } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -36,13 +36,8 @@ function formatVoucher(v: typeof vouchers.$inferSelect) {
 // Query params: search, is_active, page (default 1), limit (default 10, max 100)
 // ─────────────────────────────────────────────────────────────────────────────
 export async function GET(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = request.nextUrl;
   const search = searchParams.get("search")?.trim() ?? "";
@@ -109,13 +104,8 @@ export async function GET(request: NextRequest) {
 // Body: CreateVoucherRequestBody
 // ─────────────────────────────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   let body: unknown;
   try {

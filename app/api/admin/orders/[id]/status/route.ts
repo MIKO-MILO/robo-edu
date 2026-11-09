@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { orders, shipments, shippingProviders } from "@/src/db/schema";
-import { requireAdmin } from "@/src/lib/auth/require-admin";
+import { requireAdminFromRequest } from "@/src/lib/auth/require-admin-from-request";
+import { writeAuditLog } from "@/src/lib/audit/write-audit-log";
 import type { OrderStatus } from "@/types/enums";
 
 export const runtime = "nodejs";
@@ -51,7 +52,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // ── Auth ───────────────────────────────────────────────────────────────
-  const auth = await requireAdmin();
+  const auth = await requireAdminFromRequest(req);
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -204,6 +205,22 @@ export async function PATCH(
       .limit(1);
     trackingNumberOut = shipment?.trackingNumber ?? null;
   }
+
+  // ── Audit log ─────────────────────────────────────────────────────────
+  await writeAuditLog({
+    actorId:    auth.userId,
+    action:     "order.status_updated",
+    targetType: "order",
+    targetId:   id,
+    description: `Status pesanan ${order.orderNumber} diubah dari ${currentStatus} ke ${newStatus}.`,
+    metadata:   {
+      order_id:      id,
+      order_number:  order.orderNumber,
+      from_status:   currentStatus,
+      to_status:     newStatus,
+      ...(body.note ? { note: body.note } : {}),
+    },
+  });
 
   return NextResponse.json({
     success: true,

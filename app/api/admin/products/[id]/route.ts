@@ -8,7 +8,7 @@ import {
   productVariants,
   productImages,
 } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -105,13 +105,8 @@ async function buildProductDetail(productId: string) {
 // ── GET /api/admin/products/:id ────────────────────────────────────────────
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const detail = await buildProductDetail(id);
@@ -129,13 +124,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 // ── PATCH /api/admin/products/:id ──────────────────────────────────────────
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
@@ -222,13 +212,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 // ── DELETE /api/admin/products/:id ─────────────────────────────────────────
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 

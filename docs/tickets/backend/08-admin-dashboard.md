@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 02, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Endpoint returns total orders (this month + all-time), total revenue, total customers, pending order count, and 5 recent orders.
-- [ ] The numbers match the test fixture; tests assert the aggregation.
+- [x] Endpoint returns total orders (this month + all-time), total revenue, total customers, pending order count, and 5 recent orders.
+- [x] The numbers match the test fixture; tests assert the aggregation.

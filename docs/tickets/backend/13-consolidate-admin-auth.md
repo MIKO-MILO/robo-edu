@@ -4,8 +4,8 @@
 
 **Blocked by:** 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] No admin route uses inline `isAdminRole`; all go through `requireAdmin`.
-- [ ] A guard test asserts each migrated route returns 403 for non-admin / unauthenticated and works for admin.
-- [ ] The `session.role` bug is resolved (role is always read from the DB user record).
+- [x] No admin route uses inline `isAdminRole`; all go through `requireAdmin`.
+- [x] A guard test asserts each migrated route returns 403 for non-admin / unauthenticated and works for admin.
+- [x] The `session.role` bug is resolved (role is always read from the DB user record).

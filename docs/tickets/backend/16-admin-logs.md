@@ -4,8 +4,8 @@
 
 **Blocked by:** 07, 13
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Order status change, review moderation, and user update each create an `audit_logs` row with actor + target.
-- [ ] `GET /api/admin/audit-log` is paginated and filterable by action + admin user.
-- [ ] `GET /api/admin/email-log` is paginated and returns sent emails.
+- [x] Order status change, review moderation, and user update each create an `audit_logs` row with actor + target.
+- [x] `GET /api/admin/audit-log` is paginated and filterable by action + admin user.
+- [x] `GET /api/admin/email-log` is paginated and returns sent emails.

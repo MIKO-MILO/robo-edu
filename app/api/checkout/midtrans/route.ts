@@ -6,15 +6,20 @@ export const runtime = "nodejs";
 
 /**
  * POST /api/checkout/midtrans
- * Body: {
+ *
+ * Body:
  *   addressId:    string   — ID alamat pengiriman (wajib)
  *   shippingCost: number   — biaya ongkir dalam Rupiah (wajib, >= 0)
+ *   providerId:   string   — ID shipping provider (wajib)
  *   voucherCode?: string   — kode voucher (opsional)
  *   notes?:       string   — catatan pengiriman (opsional, maks 500 karakter)
- * }
+ *   isDropship?:  boolean  — apakah pesanan dropship (opsional, default false)
+ *   senderName?:  string   — nama pengirim untuk dropship (wajib jika isDropship true)
+ *   senderPhone?: string   — telepon pengirim untuk dropship (wajib jika isDropship true)
  *
- * Creates a Snap transaction, inserts order + payment rows, and returns
- * the Midtrans-hosted checkout URL for client-side redirect.
+ * Creates a Snap transaction, inserts order + order items + payment + shipment
+ * rows, and returns the Midtrans-hosted checkout URL for client-side redirect.
+ * Member pricing is applied automatically when the calling user is an active MEMBER.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -29,8 +34,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const addressId    = typeof body.addressId    === "string" ? body.addressId.trim()    : "";
     const shippingCost = typeof body.shippingCost === "number" ? Math.round(body.shippingCost) : -1;
+    const providerId   = typeof body.providerId   === "string" ? body.providerId.trim()   : "";
     const voucherCode  = typeof body.voucherCode  === "string" ? body.voucherCode.trim()  : undefined;
     const notes        = typeof body.notes        === "string" ? body.notes.trim().slice(0, 500) : undefined;
+    const isDropship   = body.isDropship === true;
+    const senderName   = typeof body.senderName   === "string" ? body.senderName.trim()   : undefined;
+    const senderPhone  = typeof body.senderPhone  === "string" ? body.senderPhone.trim()  : undefined;
 
     if (!addressId) {
       return NextResponse.json(
@@ -46,23 +55,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!providerId) {
+      return NextResponse.json(
+        { success: false, message: "Jasa pengiriman wajib dipilih." },
+        { status: 400 },
+      );
+    }
+
+    if (isDropship && !senderName) {
+      return NextResponse.json(
+        { success: false, message: "Nama pengirim wajib diisi untuk pesanan dropship." },
+        { status: 400 },
+      );
+    }
+
+    if (isDropship && !senderPhone) {
+      return NextResponse.json(
+        { success: false, message: "Telepon pengirim wajib diisi untuk pesanan dropship." },
+        { status: 400 },
+      );
+    }
+
     const transaction = await createPaymentTransaction({
       userId,
       addressId,
       shippingCost,
+      providerId,
       voucherCode: voucherCode || undefined,
       notes: notes || undefined,
+      isDropship,
+      senderName: isDropship ? senderName : undefined,
+      senderPhone: isDropship ? senderPhone : undefined,
     });
 
     return NextResponse.json({ success: true, data: transaction });
   } catch (error) {
     console.error("POST /api/checkout/midtrans error:", error);
 
-    // Petakan error dari transaction-service ke pesan yang lebih ramah pengguna
     const raw = error instanceof Error ? error.message : "";
     let userMessage = "Gagal membuat pesanan. Silakan coba lagi.";
     if (raw.includes("Shipping address was not found")) {
       userMessage = "Alamat pengiriman tidak ditemukan. Silakan pilih alamat lain.";
+    } else if (raw.includes("Shipping provider")) {
+      userMessage = "Jasa pengiriman tidak ditemukan atau tidak aktif.";
     } else if (raw.includes("Cart is empty") || raw.includes("unavailable")) {
       userMessage = "Beberapa produk di keranjang sudah tidak tersedia. Perbarui keranjang Anda.";
     } else if (raw.includes("enough stock")) {
@@ -71,6 +106,8 @@ export async function POST(request: NextRequest) {
       userMessage = "Voucher tidak lagi valid. Silakan hapus voucher dan coba lagi.";
     } else if (raw.includes("MIDTRANS") || raw.includes("Snap")) {
       userMessage = "Gagal menghubungi payment gateway. Pesanan belum dibuat — silakan coba lagi.";
+    } else if (raw.includes("Dropship")) {
+      userMessage = raw; // surface dropship validation messages directly
     }
 
     return NextResponse.json(

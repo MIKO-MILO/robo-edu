@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { orders, orderItems, payments, productImages } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -19,13 +19,8 @@ type RouteContext = { params: Promise<{ id: string }> };
  *   page   — default 1
  */
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id: customerId } = await params;
   const { searchParams } = request.nextUrl;

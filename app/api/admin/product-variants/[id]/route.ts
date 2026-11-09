@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { productVariants } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
@@ -13,13 +13,8 @@ type RouteParams = { params: Promise<{ id: string }> };
  * Body: { variant_name?, sku?, price?, reseller_price?, stock?, weight?, status? }
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
@@ -109,13 +104,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
  * DELETE /api/admin/product-variants/:id
  */
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 

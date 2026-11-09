@@ -2,18 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, asc, desc, eq, like, or, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { users } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import type { User } from "@/types";
 
 export const runtime = "nodejs";
-
-const ADMIN_ROLES = new Set([
-  "superadmin",
-  "admin_sales",
-  "admin_laporan",
-  "admin_gudang",
-  "admin",
-]);
 
 type UserDbRow = typeof users.$inferSelect;
 
@@ -41,41 +33,10 @@ function dbUserToResponse(user: UserDbRow): User {
   };
 }
 
-async function assertAdminOr403(): Promise<NextResponse | null> {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
-  const [currentUser] = await db
-    .select({ role: users.role, isActive: users.isActive })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  if (!currentUser || !currentUser.isActive) {
-    return NextResponse.json(
-      { success: false, message: "Sesi tidak valid." },
-      { status: 401 },
-    );
-  }
-  if (!ADMIN_ROLES.has(currentUser.role.toLowerCase())) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Anda tidak memiliki izin akses admin.",
-      },
-      { status: 403 },
-    );
-  }
-  return null;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const forbidden = await assertAdminOr403();
-    if (forbidden) return forbidden;
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";

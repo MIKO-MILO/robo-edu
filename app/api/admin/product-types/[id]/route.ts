@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { productTypes } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const [row] = await db.select().from(productTypes).where(eq(productTypes.id, id)).limit(1);
@@ -26,8 +26,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const [existing] = await db.select().from(productTypes).where(eq(productTypes.id, id)).limit(1);
@@ -58,8 +58,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const [existing] = await db.select({ id: productTypes.id }).from(productTypes).where(eq(productTypes.id, id)).limit(1);

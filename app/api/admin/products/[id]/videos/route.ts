@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "@/src/db";
 import { products, productVideos } from "@/src/db/schema";
-import { getSessionUserId } from "@/src/lib/auth/session";
+import { requireAdmin } from "@/src/lib/auth/require-admin";
 import { saveProductVideo } from "@/src/lib/storage/product-videos";
 
 export const runtime = "nodejs";
@@ -18,13 +18,8 @@ type RouteParams = { params: Promise<{ id: string }> };
  * Ambil semua video milik produk.
  */
 export async function GET(_req: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id: productId } = await params;
 
@@ -54,13 +49,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
  * multipart/form-data: field "file" (video), optional "title"
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    return NextResponse.json(
-      { success: false, message: "Silakan login terlebih dahulu." },
-      { status: 401 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   const { id: productId } = await params;
 
