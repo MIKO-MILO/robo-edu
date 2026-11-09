@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Admin can set a tracking number + provider when marking an order SHIPPED; the `shipments` row is updated.
-- [ ] Admin can add tracking checkpoints that the customer's tracking view surfaces.
-- [ ] The `requireAdmin(request)` helper exists at `src/lib/auth/require-admin.ts` and the orders routes use it; non-admins get 403.
-- [ ] Both mock-token (backward compat) and session-cookie auth resolve correctly through the helper.
+- [x] Admin can set a tracking number + provider when marking an order SHIPPED; the `shipments` row is updated.
+- [x] Admin can add tracking checkpoints that the customer's tracking view surfaces.
+- [x] The `requireAdmin(request)` helper exists at `src/lib/auth/require-admin.ts` and the orders routes use it; non-admins get 403.
+- [x] Both mock-token (backward compat) and session-cookie auth resolve correctly through the helper.
