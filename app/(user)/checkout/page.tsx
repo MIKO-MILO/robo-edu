@@ -300,6 +300,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           addressId: selectedAddress.id,
           shippingCost: selectedShipping.cost,
+          providerId: selectedShipping.provider_id,
           voucherCode: finalVoucherCode,
           notes: notes.trim() || undefined,
         }),
