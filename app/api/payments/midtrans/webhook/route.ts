@@ -1,24 +1,22 @@
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { membershipPurchases, orderItems, orders, payments, users } from "@/src/db/schema";
+import { membershipPurchases, orders, payments, users } from "@/src/db/schema";
 import {
   isValidMidtransSignature,
   type MidtransNotification,
 } from "@/src/lib/payments/midtrans";
-import { sendEmail } from "@/src/lib/email/send";
-import {
-  orderConfirmationEmailSubject,
-  orderConfirmationEmailHtml,
-} from "@/src/lib/email/templates/order-confirmation";
-import { getAppUrl } from "@/src/lib/email/resend";
+import { enqueueEmail } from "@/src/lib/queue/email-queue";
 
 export const runtime = "nodejs";
 
 type PaymentState = "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED";
 type OrderState = "PENDING" | "PAID" | "CANCELLED" | "REFUNDED";
 
-function notificationStates(notification: MidtransNotification): { payment: PaymentState; order: OrderState } {
+function notificationStates(notification: MidtransNotification): {
+  payment: PaymentState;
+  order: OrderState;
+} {
   switch (notification.transaction_status) {
     case "settlement":
       return { payment: "PAID", order: "PAID" };
@@ -39,113 +37,51 @@ function notificationStates(notification: MidtransNotification): { payment: Paym
   }
 }
 
-function hasNotificationShape(value: unknown): value is MidtransNotification & { signature_key: string } {
+function hasNotificationShape(
+  value: unknown,
+): value is MidtransNotification & { signature_key: string } {
   if (!value || typeof value !== "object") return false;
   const notification = value as Record<string, unknown>;
-  return ["order_id", "status_code", "gross_amount", "transaction_id", "transaction_status", "payment_type", "signature_key"].every(
-    (key) => typeof notification[key] === "string",
-  );
+  return [
+    "order_id",
+    "status_code",
+    "gross_amount",
+    "transaction_id",
+    "transaction_status",
+    "payment_type",
+    "signature_key",
+  ].every((key) => typeof notification[key] === "string");
 }
 
-/**
- * Sends the order confirmation email after a successful payment.
- * Runs after the DB transaction commits — failures are logged but never
- * propagate back to Midtrans (which would cause a retry storm).
- */
-async function sendOrderConfirmationEmail(
-  order: typeof orders.$inferSelect,
-  paidAt: Date,
-): Promise<void> {
-  try {
-    const [user] = await db
-      .select({ email: users.email, name: users.name })
-      .from(users)
-      .where(eq(users.id, order.userId))
-      .limit(1);
+// ── Safe month addition ───────────────────────────────────────────────────────
 
-    if (!user) return;
-
-    const items = await db
-      .select({
-        productNameSnapshot: orderItems.productNameSnapshot,
-        variantNameSnapshot: orderItems.variantNameSnapshot,
-        quantity: orderItems.quantity,
-        priceSnapshot: orderItems.priceSnapshot,
-        subtotal: orderItems.subtotal,
-      })
-      .from(orderItems)
-      .where(eq(orderItems.orderId, order.id));
-
-    await sendEmail({
-      to: user.email,
-      subject: orderConfirmationEmailSubject(order.orderNumber),
-      html: orderConfirmationEmailHtml({
-        recipientName: order.recipientName,
-        orderNumber: order.orderNumber,
-        orderId: order.id,
-        items: items.map((item) => ({
-          productNameSnapshot: item.productNameSnapshot,
-          variantNameSnapshot: item.variantNameSnapshot ?? "",
-          quantity: item.quantity,
-          priceSnapshot: Number(item.priceSnapshot),
-          subtotal: Number(item.subtotal),
-        })),
-        subtotal: Number(order.subtotal),
-        discountAmount: Number(order.discountAmount),
-        shippingCost: Number(order.shippingCost),
-        total: Number(order.total),
-        shippingAddress: order.shippingAddress,
-        shippingCity: order.shippingCity,
-        shippingProvince: order.shippingProvince,
-        shippingPostalCode: order.shippingPostalCode,
-        paidAt,
-        appUrl: getAppUrl(),
-      }),
-      type: "RECEIPT",
-      userId: order.userId,
-      orderId: order.id,
-    });
-  } catch (err) {
-    console.error("[webhook] Failed to send order confirmation email:", err);
-  }
-}
-
-// ── Membership webhook branch ────────────────────────────────────────────────
-
-/**
- * Add `months` calendar months to `date` without day-overflow.
- *
- * JavaScript's `Date.setMonth()` rolls over when the source day doesn't exist
- * in the target month (e.g. Jan 31 + 1 → Mar 3 instead of Feb 28). This helper
- * clamps to the last valid day of the target month instead.
- *
- * @example
- *   addMonthsSafe(new Date("2026-01-31"), 1) → 2026-02-28  (not Mar 3)
- *   addMonthsSafe(new Date("2026-03-31"), 1) → 2026-04-30  (not May 1)
- *   addMonthsSafe(new Date("2026-02-28"), 12) → 2027-02-28 (normal case)
- */
 function addMonthsSafe(date: Date, months: number): Date {
   const result = new Date(date);
   const targetMonth = result.getMonth() + months;
   const targetYear = result.getFullYear() + Math.floor(targetMonth / 12);
-  const normalizedMonth = ((targetMonth % 12) + 12) % 12; // handle negative mod
-  // Last day of the target month
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12;
   const lastDayOfTarget = new Date(targetYear, normalizedMonth + 1, 0).getDate();
-  result.setFullYear(targetYear, normalizedMonth, Math.min(result.getDate(), lastDayOfTarget));
+  result.setFullYear(
+    targetYear,
+    normalizedMonth,
+    Math.min(result.getDate(), lastDayOfTarget),
+  );
   return result;
 }
+
+// ── Membership webhook branch ─────────────────────────────────────────────────
 
 /**
  * Handle a Midtrans notification whose order_id starts with "MBR-".
  *
  * On success:
- *   - updates `payments` row (status, transactionId, paymentType, timestamps)
- *   - updates `membership_purchase` row (status, paidAt, startsAt, endsAt)
+ *   - updates `payments` row
+ *   - updates `membership_purchase` row (paidAt, startsAt, endsAt)
  *   - sets `users.membership_status = "MEMBER"` and computes `membership_expires_at`
+ *   - enqueues a `membership-receipt` email job (idempotent via jobId)
  *
- * Idempotent: if the purchase is already PAID a duplicate PAID notification is
- * accepted silently (returns 200). A PENDING notification after PAID is discarded
- * (no downgrade).
+ * Idempotent: duplicate PAID notifications are accepted silently (200).
+ * A PENDING notification after PAID is discarded (no downgrade).
  */
 async function handleMembershipWebhook(
   body: MidtransNotification & { signature_key: string },
@@ -171,15 +107,18 @@ async function handleMembershipWebhook(
   }
 
   const states = notificationStates(body);
-  const timestamp = body.transaction_time ? new Date(body.transaction_time) : new Date();
+  const timestamp = body.transaction_time
+    ? new Date(body.transaction_time)
+    : new Date();
 
-  // Idempotency guard: if already PAID, accept silently and return.
+  // Idempotency guard: already PAID + duplicate PAID → accept silently.
   if (purchase.status === "PAID" && states.payment === "PAID") {
     return NextResponse.json({ received: true });
   }
 
+  let justActivated = false;
+
   await db.transaction(async (tx) => {
-    // Lookup the payment row via the membership_purchase_id back-link.
     const [payment] = await tx
       .select()
       .from(payments)
@@ -187,7 +126,7 @@ async function handleMembershipWebhook(
       .limit(1);
 
     if (payment) {
-      // No downgrade: ignore a PENDING notification if already PAID.
+      // No downgrade.
       if (payment.status === "PAID" && states.payment === "PENDING") return;
 
       await tx
@@ -204,32 +143,34 @@ async function handleMembershipWebhook(
         .where(eq(payments.id, payment.id));
     }
 
-    const membershipPurchaseUpdate: Partial<typeof membershipPurchases.$inferInsert> = {
-      status: states.payment === "PAID" ? "PAID"
-        : states.payment === "FAILED" ? "FAILED"
-        : states.payment === "EXPIRED" ? "EXPIRED"
-        : states.payment === "REFUNDED" ? "REFUNDED"
-        : "PENDING",
+    const membershipPurchaseUpdate: Partial<
+      typeof membershipPurchases.$inferInsert
+    > = {
+      status:
+        states.payment === "PAID"
+          ? "PAID"
+          : states.payment === "FAILED"
+            ? "FAILED"
+            : states.payment === "EXPIRED"
+              ? "EXPIRED"
+              : states.payment === "REFUNDED"
+                ? "REFUNDED"
+                : "PENDING",
     };
 
     if (states.payment === "PAID" && purchase.status !== "PAID") {
       const startsAt = timestamp;
-
-      // Add months safely — JavaScript's setMonth() has a day-overflow bug:
-      // Jan 31 + 1 month → Mar 3 instead of Feb 28.
-      // We clamp to the last day of the target month to avoid this.
       const endsAt = addMonthsSafe(startsAt, purchase.durationMonthsSnapshot);
 
       membershipPurchaseUpdate.paidAt = startsAt;
       membershipPurchaseUpdate.startsAt = startsAt;
       membershipPurchaseUpdate.endsAt = endsAt;
 
-      // Activate (or extend) membership on the user.
-      // If the user is already an active MEMBER, extend from their current
-      // expiry — do NOT overwrite with a value computed from `now`, which
-      // would lose the remaining time on the current subscription.
       const [currentUser] = await tx
-        .select({ membershipStatus: users.membershipStatus, membershipExpiresAt: users.membershipExpiresAt })
+        .select({
+          membershipStatus: users.membershipStatus,
+          membershipExpiresAt: users.membershipExpiresAt,
+        })
         .from(users)
         .where(eq(users.id, purchase.userId))
         .limit(1);
@@ -240,8 +181,6 @@ async function handleMembershipWebhook(
         currentUser.membershipExpiresAt &&
         new Date(currentUser.membershipExpiresAt) > startsAt
       ) {
-        // Active member renewing early: extend from their current expiry,
-        // not from now, so they don't lose remaining days.
         finalExpiresAt = addMonthsSafe(
           new Date(currentUser.membershipExpiresAt),
           purchase.durationMonthsSnapshot,
@@ -256,8 +195,8 @@ async function handleMembershipWebhook(
         })
         .where(eq(users.id, purchase.userId));
 
-      // Keep endsAt on the purchase in sync with what we wrote to the user.
       membershipPurchaseUpdate.endsAt = finalExpiresAt;
+      justActivated = true;
     }
 
     await tx
@@ -266,10 +205,28 @@ async function handleMembershipWebhook(
       .where(eq(membershipPurchases.id, purchase.id));
   });
 
+  // ── Enqueue membership receipt email (outside DB transaction) ─────────────
+  // jobId = purchase.id so duplicate notifications never produce duplicate jobs.
+  if (justActivated) {
+    try {
+      await enqueueEmail(
+        {
+          type: "membership-receipt",
+          membershipPurchaseId: purchase.id,
+          userId: purchase.userId,
+        },
+        `membership-receipt:${purchase.id}`,
+      );
+    } catch (err) {
+      // Queue failure is non-fatal — the DB state is already correct.
+      console.error("[webhook] Failed to enqueue membership-receipt email:", err);
+    }
+  }
+
   return NextResponse.json({ received: true });
 }
 
-// ── Main webhook handler ─────────────────────────────────────────────────────
+// ── Main webhook handler ──────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -279,28 +236,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!hasNotificationShape(body) || !isValidMidtransSignature(body, body.signature_key)) {
-    return NextResponse.json({ error: "Invalid Midtrans signature" }, { status: 401 });
+  if (
+    !hasNotificationShape(body) ||
+    !isValidMidtransSignature(body, body.signature_key)
+  ) {
+    return NextResponse.json(
+      { error: "Invalid Midtrans signature" },
+      { status: 401 },
+    );
   }
 
-  // Route to the membership branch when the order_id starts with "MBR-".
+  // Route membership notifications.
   if (body.order_id.startsWith("MBR-")) {
     return handleMembershipWebhook(body);
   }
 
-  // ── Product-order branch (original logic) ──────────────────────────────
-  const [order] = await db.select().from(orders).where(eq(orders.orderNumber, body.order_id)).limit(1);
+  // ── Product-order branch ──────────────────────────────────────────────────
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.orderNumber, body.order_id))
+    .limit(1);
+
   if (!order || Number(order.total) !== Number(body.gross_amount)) {
-    return NextResponse.json({ error: "Order not found or amount does not match" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Order not found or amount does not match" },
+      { status: 404 },
+    );
   }
 
   const states = notificationStates(body);
-  const timestamp = body.transaction_time ? new Date(body.transaction_time) : new Date();
+  const timestamp = body.transaction_time
+    ? new Date(body.transaction_time)
+    : new Date();
 
   let justPaid = false;
 
   await db.transaction(async (tx) => {
-    const [payment] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
+    const [payment] = await tx
+      .select()
+      .from(payments)
+      .where(eq(payments.orderId, order.id))
+      .limit(1);
+
     if (!payment) throw new Error("Payment record not found");
 
     if (payment.status === "PAID" && states.payment === "PENDING") return;
@@ -323,7 +301,8 @@ export async function POST(request: Request) {
       .set({
         status: states.order,
         paidAt: states.order === "PAID" ? timestamp : order.paidAt,
-        cancelledAt: states.order === "CANCELLED" ? timestamp : order.cancelledAt,
+        cancelledAt:
+          states.order === "CANCELLED" ? timestamp : order.cancelledAt,
       })
       .where(eq(orders.id, order.id));
 
@@ -332,8 +311,19 @@ export async function POST(request: Request) {
     }
   });
 
+  // ── Enqueue order-receipt email (outside DB transaction) ──────────────────
+  // jobId = order.id so duplicate webhook notifications never produce
+  // duplicate emails — BullMQ deduplicates jobs with the same jobId.
   if (justPaid) {
-    void sendOrderConfirmationEmail(order, timestamp);
+    try {
+      await enqueueEmail(
+        { type: "order-receipt", orderId: order.id },
+        `order-receipt:${order.id}`,
+      );
+    } catch (err) {
+      // Queue failure is non-fatal — the DB state is already correct.
+      console.error("[webhook] Failed to enqueue order-receipt email:", err);
+    }
   }
 
   return NextResponse.json({ received: true });
