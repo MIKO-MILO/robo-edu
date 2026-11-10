@@ -1,11 +1,14 @@
 /**
- * BullMQ email worker entry point.
+ * BullMQ email worker + membership cron entry point.
  *
  * Run with:
  *   npm run worker
  *
- * This process is separate from the Next.js app server. It connects to Redis,
- * subscribes to the "email" queue, and processes jobs by calling Resend.
+ * This process is separate from the Next.js app server. It:
+ *   1. Subscribes to the "email" BullMQ queue and processes jobs.
+ *   2. Runs two daily cron jobs:
+ *      - 01:00 WIB (18:00 UTC) — expire memberships
+ *      - 08:00 WIB (01:00 UTC) — enqueue h7/h3 reminder emails
  *
  * DO NOT import anything with `import "server-only"` here — this is a plain
  * Node.js process, not a Next.js context.
@@ -15,6 +18,8 @@ import "dotenv/config";
 
 import { Worker, type Job } from "bullmq";
 import { eq } from "drizzle-orm";
+import mysql from "mysql2/promise";
+import { drizzle } from "drizzle-orm/mysql2";
 
 import {
   EMAIL_QUEUE_NAME,
@@ -30,12 +35,13 @@ import {
   membershipReceiptEmailSubject,
   membershipReceiptEmailHtml,
 } from "@/src/lib/email/templates/membership-receipt";
-
-// Import db via a worker-safe path (send-worker.ts already creates its own pool;
-// here we need direct DB access to fetch data for email templates).
-import mysql from "mysql2/promise";
-import { drizzle } from "drizzle-orm/mysql2";
+import {
+  runExpireMemberships,
+  runReminderQueue,
+} from "@/src/lib/cron/membership-cron";
 import * as schema from "@/src/db/schema";
+
+// ── DB ────────────────────────────────────────────────────────────────────────
 
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error("DATABASE_URL is not configured");
@@ -140,7 +146,6 @@ async function handleMembershipReceipt(
     return;
   }
 
-  // Get payment method from linked payment row
   const [payment] = await db
     .select({ paymentType: schema.payments.paymentType })
     .from(schema.payments)
@@ -209,7 +214,6 @@ async function handleMembershipReminder(
       ? `Membership Plus-mu berakhir 7 hari lagi ⏰`
       : `Membership Plus-mu berakhir 3 hari lagi ⚠️`;
 
-  // Minimal plain reminder — ticket 18 can replace with a richer template
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;padding:24px;">
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
@@ -225,13 +229,13 @@ async function handleMembershipReminder(
     to: user.email,
     subject,
     html,
-    type: type === "membership-reminder-h7" ? "OTHER" : "OTHER",
+    type: "OTHER",
     userId,
     orderId: null,
   });
 }
 
-// ── Worker ────────────────────────────────────────────────────────────────────
+// ── BullMQ Worker ─────────────────────────────────────────────────────────────
 
 const worker = new Worker<EmailJobData>(
   EMAIL_QUEUE_NAME,
@@ -258,7 +262,6 @@ const worker = new Worker<EmailJobData>(
         break;
 
       default: {
-        // TypeScript exhaustive check
         const exhaustive: never = data;
         console.warn(`[worker] Unknown job type:`, exhaustive);
       }
@@ -284,6 +287,58 @@ worker.on("failed", (job, err) => {
 console.log(
   `[worker] 🚀 Email worker started — listening on queue "${EMAIL_QUEUE_NAME}"`,
 );
+
+// ── Cron scheduler ────────────────────────────────────────────────────────────
+
+/**
+ * Schedule a function to run daily at a fixed UTC hour:minute.
+ *
+ * Uses only Node.js built-ins (no node-cron dependency). Calculates the
+ * milliseconds until the next occurrence and uses setTimeout recursively.
+ *
+ * @param label   Human-readable name for log messages
+ * @param utcHour Target hour in UTC (0-23)
+ * @param utcMin  Target minute in UTC (0-59)
+ * @param fn      Async function to run
+ */
+function scheduleDailyUtc(
+  label: string,
+  utcHour: number,
+  utcMin: number,
+  fn: () => Promise<unknown>,
+): void {
+  function msUntilNext(): number {
+    const now = new Date();
+    const next = new Date(now);
+    next.setUTCHours(utcHour, utcMin, 0, 0);
+    if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+    return next.getTime() - now.getTime();
+  }
+
+  function scheduleNext() {
+    const delay = msUntilNext();
+    console.log(
+      `[cron:${label}] Next run in ${Math.round(delay / 60_000)} min ` +
+        `(${new Date(Date.now() + delay).toISOString()})`,
+    );
+    setTimeout(() => {
+      console.log(`[cron:${label}] Running at ${new Date().toISOString()}`);
+      fn()
+        .catch((err: unknown) =>
+          console.error(`[cron:${label}] Error:`, err),
+        )
+        .finally(scheduleNext);
+    }, delay);
+  }
+
+  scheduleNext();
+}
+
+// Expire cron: daily at 01:00 WIB = 18:00 UTC
+scheduleDailyUtc("expire", 18, 0, () => runExpireMemberships(db));
+
+// Reminder cron: daily at 08:00 WIB = 01:00 UTC
+scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 
 // ── Graceful shutdown ─────────────────────────────────────────────────────────
 
