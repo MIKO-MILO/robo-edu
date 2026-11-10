@@ -3,6 +3,10 @@
 import { ArrowRight, ShieldCheck, Package, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CheckoutSummary } from "@/types/order";
+import {
+  CheckoutPaymentMethodSelector,
+  type SelectedPayment,
+} from "@/components/user/checkout/checkout-payment-method-selector";
 
 interface CheckoutOrderSummaryProps {
   summary: CheckoutSummary | null;
@@ -10,6 +14,9 @@ interface CheckoutOrderSummaryProps {
   voucherCode: string | null;
   isSubmitting: boolean;
   onSubmit: () => void;
+  /** Metode pembayaran yang dipilih; null = belum dipilih */
+  selectedPayment: SelectedPayment | null;
+  onPaymentChange: (selected: SelectedPayment | null) => void;
 }
 
 /** Format IDR currency */
@@ -50,7 +57,7 @@ const TRUST_BADGES = [
 
 /**
  * CheckoutOrderSummary
- * Sidebar kanan: ringkasan biaya, tombol CTA bayar, metode pembayaran, dan trust badges.
+ * Sidebar kanan: ringkasan biaya, selector metode pembayaran, tombol CTA bayar, dan trust badges.
  * - summary dari POST /checkout/summary (types/order.ts CheckoutSummary)
  * - Tombol onSubmit mengirim POST /orders (CreateOrderRequestBody)
  */
@@ -60,6 +67,8 @@ export function CheckoutOrderSummary({
   voucherCode,
   isSubmitting,
   onSubmit,
+  selectedPayment,
+  onPaymentChange,
 }: CheckoutOrderSummaryProps) {
   return (
     <div className="bg-card rounded-2xl p-6 border-2 border-border">
@@ -134,11 +143,17 @@ export function CheckoutOrderSummary({
         </div>
       </div>
 
+      {/* Payment Method Selector — tepat di bawah nominal total */}
+      <CheckoutPaymentMethodSelector
+        value={selectedPayment}
+        onChange={onPaymentChange}
+      />
+
       {/* CTA Button */}
-      <div className="mt-6">
+      <div className="mt-4">
         <Button
           onClick={onSubmit}
-          disabled={isSubmitting || !summary}
+          disabled={isSubmitting || !summary || !selectedPayment}
           variant="primary"
           neo
           className="w-full py-4 rounded-full font-heading font-black text-base flex items-center justify-center gap-3"
@@ -152,7 +167,7 @@ export function CheckoutOrderSummary({
       </div>
 
       {/* Payment Methods */}
-      <div className="mt-6 pt-5 border-t-2 border-border/15">
+      {/* <div className="mt-6 pt-5 border-t-2 border-border/15">
         <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider block mb-3 text-center">
           Didukung Pembayaran Instan &amp; Otomatis:
         </span>
@@ -166,7 +181,7 @@ export function CheckoutOrderSummary({
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Trust Badges */}
       <div className="mt-5 space-y-2.5 pt-4 border-t border-border/20 text-xs">

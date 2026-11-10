@@ -11,8 +11,8 @@ import {
     ResellerTable,
     MOCK_ADMIN_RESELLERS,
     getResellerStats,
-} from "@/components/admin/resellers";
-import type { AdminResellerRow } from "@/components/admin/resellers";
+} from "@/components/admin/membership";
+import type { AdminResellerRow } from "@/components/admin/membership";
 
 // ---------------------------------------------------------------------------
 // Inner component (needs useSearchParams — must be inside Suspense)

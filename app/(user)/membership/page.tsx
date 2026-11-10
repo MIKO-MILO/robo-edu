@@ -8,7 +8,7 @@ import {
   ResellerFaqSection,
   ResellerCtaSection,
   ResellerMembershipSection,
-} from "@/components/user/reseller";
+} from "@/components/user/membership";
 
 export const metadata: Metadata = {
   title: "Reseller | RoboEdu - Program Mitra Reseller Kit Robotika Edukasi",
