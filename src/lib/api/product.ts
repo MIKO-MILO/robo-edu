@@ -47,7 +47,14 @@ export async function getProducts(
   const query = searchParams.toString();
 
   const isServer = typeof window === "undefined";
-  const baseUrl = isServer ? "http://app:3000" : "";
+  // On the server, prefer INTERNAL_APP_URL (Docker: http://app:3000) for
+  // server-to-server fetches. Falls back to NEXT_PUBLIC_APP_URL, then
+  // localhost so plain `next dev` works without any extra config.
+  const rawBase = isServer
+    ? (process.env.INTERNAL_APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")
+    : "";
+  // Strip trailing slash so the path concat never produces double slashes.
+  const baseUrl = rawBase.replace(/\/+$/, "");
   const response = await fetch(`${baseUrl}/api/product${query ? `?${query}` : ""}`, {
     method: "GET",
     cache: "no-store",

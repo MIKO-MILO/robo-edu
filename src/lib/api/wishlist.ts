@@ -19,7 +19,8 @@ export async function getWishlist(): Promise<{ success: boolean; data: WishlistI
   }
 
   if (!response.ok) {
-    throw new Error("Gagal mengambil wishlist");
+    console.warn(`GET /api/wishlist returned ${response.status}; falling back to empty wishlist`);
+    return { success: false, data: [] as WishlistItemDetail[] };
   }
 
   return response.json();

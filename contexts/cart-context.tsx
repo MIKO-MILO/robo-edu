@@ -46,6 +46,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems(res.data.items);
         setTotalItems(res.data.totalItems);
         setSubtotal(res.data.subtotal);
+      } else {
+        // Server returned a non-success response (e.g. 5xx); keep existing state
+        // rather than wiping the cart. The warning is already logged in getCart.
       }
     } catch (error) {
       console.error("Gagal mengambil keranjang:", error);
