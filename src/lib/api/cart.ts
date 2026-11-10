@@ -40,7 +40,11 @@ export async function getCart(): Promise<{
   }
 
   if (!response.ok) {
-    throw new Error("Gagal mengambil data keranjang");
+    // Log the status for debugging but don't throw — returning an empty cart
+    // is better than crashing the UI on transient server errors (5xx) or
+    // unexpected responses.
+    console.warn(`GET /api/cart returned ${response.status}; falling back to empty cart`);
+    return { success: false, data: EMPTY_CART };
   }
 
   return response.json();
