@@ -228,6 +228,41 @@ export interface MidtransWebhookBody {
   gross_amount: string; // Midtrans kirim sebagai string, bukan number
 }
 
+// ─── Refund ──────────────────────────────────────────────────────────────────
+
+/**
+ * Metode refund yang dicatat di sistem.
+ * AUTO  = dilakukan via Refund API (Midtrans)
+ * MANUAL = transfer manual oleh admin (butuh bukti)
+ */
+export type RefundMethod = "AUTO" | "MANUAL";
+
+/**
+ * Status refund individual.
+ * PENDING  = belum diproses gateway
+ * SUCCESS  = berhasil (otomatis: konfirmasi Midtrans, manual: bukti diunggah)
+ * FAILED   = gagal di gateway
+ */
+export type RefundStatus = "PENDING" | "SUCCESS" | "FAILED";
+
+/** Satu record refund — dikembalikan API sebagai bagian dari detail order. */
+export interface Refund {
+  id: string;
+  order_id: string;
+  amount: Money;
+  reason: string;
+  method: RefundMethod;
+  status: RefundStatus;
+  /** URL bukti transfer — hanya ada untuk method=MANUAL */
+  proof_url: string | null;
+  /** Apakah kuota produksi dikembalikan */
+  restore_quota: boolean;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /** Body — POST /admin/orders/{id}/shipment (admin input data pengiriman) */
 export interface CreateShipmentRequestBody {
   shipping_provider_id: UUID;
