@@ -12,8 +12,8 @@ import {
   ResellerInfoCard,
   ResellerRejectModal,
   getMockResellerDetail,
-} from "@/components/admin/resellers";
-import type { RejectReason } from "@/components/admin/resellers";
+} from "@/components/admin/membership";
+import type { RejectReason } from "@/components/admin/membership";
 import type { ResellerStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------

@@ -90,7 +90,7 @@ export {
   MOCK_ADMIN_RESELLERS,
   getResellerStats,
   getMockResellerDetail,
-} from "./resellers";
+} from "./membership";
 export type {
   AdminResellerRow,
   ResellerStats,
@@ -105,7 +105,7 @@ export type {
   ResellerInfoCardProps,
   ResellerApprovalCardProps,
   ResellerOrdersTabProps,
-} from "./resellers";
+} from "./membership";
 export type {
   AdminComplaintRow,
   AdminComplaintDetail,

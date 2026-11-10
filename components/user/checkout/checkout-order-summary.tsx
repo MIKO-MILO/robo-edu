@@ -167,7 +167,7 @@ export function CheckoutOrderSummary({
       </div>
 
       {/* Payment Methods */}
-      <div className="mt-6 pt-5 border-t-2 border-border/15">
+      {/* <div className="mt-6 pt-5 border-t-2 border-border/15">
         <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider block mb-3 text-center">
           Didukung Pembayaran Instan &amp; Otomatis:
         </span>
@@ -181,7 +181,7 @@ export function CheckoutOrderSummary({
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Trust Badges */}
       <div className="mt-5 space-y-2.5 pt-4 border-t border-border/20 text-xs">
