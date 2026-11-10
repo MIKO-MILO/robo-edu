@@ -12,9 +12,11 @@ import {
   OrderShippingCard,
   OrderPaymentCard,
   OrderStatusDialog,
+  OrderRefundPanel,
 } from "@/components/admin/orders";
 import type { OrderLineItem, OrderPricingSummary, OrderShippingSnapshot } from "@/components/admin/orders";
 import type { OrderStatus, PaymentStatus } from "@/types/enums";
+import type { Refund } from "@/types/order";
 
 // ---------------------------------------------------------------------------
 // Types for the API response shape from GET /api/admin/orders/[id]
@@ -85,6 +87,8 @@ interface AdminOrderDetail {
       occurred_at: string;
     }>;
   } | null;
+  /** Riwayat refund — opsional, hanya ada jika backend sudah mendukung */
+  refunds?: Refund[];
 }
 
 // ---------------------------------------------------------------------------
@@ -129,6 +133,9 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   const [error, setError] = useState<string | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
+  // ── Local refunds state (optimistic — sebelum backend siap) ──────────
+  const [localRefunds, setLocalRefunds] = useState<Refund[]>([]);
+
   // ── Form tambah checkpoint tracking ──────────────────────────────────
   const [cpLocation, setCpLocation] = useState("");
   const [cpDescription, setCpDescription] = useState("");
@@ -156,6 +163,7 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
         }
         if (!ignore) {
           setOrder(json.data);
+          setLocalRefunds(json.data.refunds ?? []);
           setError(null);
         }
       } catch (err) {
@@ -180,6 +188,22 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
     setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
     // Refetch agar info resi/kurir terbaru (jika SHIPPED) ikut tampil.
     refetch();
+  };
+
+  // ── Handle refund success (optimistic update) ─────────────────────────
+  const handleRefundSuccess = (newRefund: Refund) => {
+    setLocalRefunds((prev) => [newRefund, ...prev]);
+    // Jika total refund = total payment → update status order ke REFUNDED
+    setOrder((prev) => {
+      if (!prev) return prev;
+      const paymentAmt = prev.payment?.amount ?? 0;
+      const totalRefunded =
+        [newRefund, ...localRefunds].reduce((sum, r) => sum + r.amount, 0);
+      if (totalRefunded >= paymentAmt && paymentAmt > 0) {
+        return { ...prev, status: "REFUNDED" as OrderStatus };
+      }
+      return prev;
+    });
   };
 
   // ── Tambah checkpoint tracking ────────────────────────────────────────
@@ -348,6 +372,25 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
             </span>
           )}
         </div>
+      )}
+
+      {/* Panel Refund — hanya tampil untuk status yang dapat direfund */}
+      {order.payment && (
+        <OrderRefundPanel
+          orderId={order.id}
+          orderStatus={order.status}
+          paymentAmount={order.payment.amount}
+          paymentType={order.payment.payment_type}
+          refunds={localRefunds}
+          onRefundSuccess={handleRefundSuccess}
+          onProofUploaded={(refundId, proofUrl) => {
+            setLocalRefunds((prev) =>
+              prev.map((r) =>
+                r.id === refundId ? { ...r, proof_url: proofUrl } : r,
+              ),
+            );
+          }}
+        />
       )}
 
       {/* Shipment + form tambah checkpoint — muncul bila shipment sudah ada */}
