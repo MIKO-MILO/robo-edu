@@ -16,6 +16,7 @@ import {
 import { CheckoutVoucherWidget } from "@/components/user/checkout/checkout-voucher-widget";
 import { CheckoutOrderSummary } from "@/components/user/checkout/checkout-order-summary";
 import { CheckoutAddressModal } from "@/components/user/checkout/checkout-address-modal";
+import type { SelectedPayment } from "@/components/user/checkout/checkout-payment-method-selector";
 
 import type { UserAddress } from "@/types/user";
 import type { CartItemDetail } from "@/types/cart";
@@ -115,6 +116,7 @@ export default function CheckoutPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<SelectedPayment | null>(null);
 
   // ── Idempotency key — generated once per page load ────────────────────
   const idempotencyKey = useRef(crypto.randomUUID());
@@ -257,13 +259,22 @@ export default function CheckoutPage() {
 
   // ── Submit order ──────────────────────────────────────────────────────
   async function handleSubmitOrder() {
-    // Guard: alamat dan kurir wajib dipilih
+    // Guard: alamat, kurir, dan metode pembayaran wajib dipilih
     if (!selectedAddress) {
       setSubmitError("Pilih alamat pengiriman terlebih dahulu.");
       return;
     }
     if (!selectedShipping) {
       setSubmitError("Pilih layanan kurir terlebih dahulu.");
+      return;
+    }
+    if (!selectedPayment) {
+      setSubmitError("Pilih metode pembayaran terlebih dahulu.");
+      return;
+    }
+    // Guard OVO: nomor HP wajib diisi
+    if (selectedPayment.method.channel === "ovo" && !selectedPayment.ovoPhone) {
+      setSubmitError("Masukkan nomor HP OVO terlebih dahulu.");
       return;
     }
 
@@ -302,6 +313,10 @@ export default function CheckoutPage() {
           shippingCost: selectedShipping.cost,
           voucherCode: finalVoucherCode,
           notes: notes.trim() || undefined,
+          // Metode pembayaran yang dipilih user
+          paymentMethod: selectedPayment!.method.method,
+          paymentChannel: selectedPayment!.method.channel,
+          ovoPhone: selectedPayment!.method.channel === "ovo" ? selectedPayment!.ovoPhone : undefined,
         }),
       });
 
@@ -525,6 +540,8 @@ export default function CheckoutPage() {
               voucherCode={appliedVoucher?.code ?? null}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmitOrder}
+              selectedPayment={selectedPayment}
+              onPaymentChange={setSelectedPayment}
             />
           </div>
         </div>
