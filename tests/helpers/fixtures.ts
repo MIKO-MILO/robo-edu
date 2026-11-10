@@ -36,6 +36,8 @@ export const FIXTURE_IDS = {
   variantWithMemberPrice: "test-var-with-member-price",
   variantWithoutMemberPrice: "test-var-without-member-price",
   address: "test-addr-regular",
+  memberAddress: "test-addr-member",
+  shippingProvider: "test-provider-jne",
   order: "test-order-1",
   orderItem: "test-order-item-1",
   orderPayment: "test-payment-order",
@@ -188,6 +190,29 @@ export async function seedFixtures(
     village: "Test Village",
     postalCode: "12345",
     isPrimary: true,
+  });
+
+  // --- address for the MEMBER user ---
+  await db.insert(schema.userAddresses).values({
+    id: FIXTURE_IDS.memberAddress,
+    userId: FIXTURE_IDS.memberUser,
+    label: "Rumah",
+    recipientName: "Member User",
+    phone: "08120000001",
+    address: "Jl. Member No. 1",
+    province: "DKI Jakarta",
+    city: "Jakarta Pusat",
+    district: "Gambir",
+    village: "Test Village Member",
+    postalCode: "10110",
+    isPrimary: true,
+  });
+
+  // --- shipping provider (used by checkout + shipment tests) ---
+  await db.insert(schema.shippingProviders).values({
+    id: FIXTURE_IDS.shippingProvider,
+    name: "JNE",
+    isActive: true,
   });
 
   // --- order + order item for the regular user ---

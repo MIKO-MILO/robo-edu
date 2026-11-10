@@ -6,17 +6,7 @@ import type { ApiResponse, MembershipStatusData } from "@/types";
  * ------------------------------------------------------------------
  * API client untuk endpoint membership customer.
  *
- * Endpoint yang akan tersedia saat backend siap:
- *   GET /membership/me → getMembershipStatus()
- *
- * STATUS SAAT INI: Frontend-only phase.
- * Hook (use-reseller-status.ts) masih fetch ke mock API route.
- *
- * TODO(backend): Ketika endpoint GET /membership/me tersedia:
- *   1. Update hook untuk memanggil `membershipService.getMembershipStatus()`
- *      sebagai pengganti fetch ke "/api/mock-membership-me".
- *   2. Hapus app/api/mock-membership-me/route.ts.
- *   3. Tidak ada perubahan yang diperlukan di komponen atau page.tsx.
+ * GET /membership/me   → getMembershipStatus()
  *
  * PRD Bab 6.8, 6.9 | FR-023 | US-011, US-012
  * ------------------------------------------------------------------
