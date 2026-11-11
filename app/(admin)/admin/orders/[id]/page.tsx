@@ -67,7 +67,9 @@ interface AdminOrderDetail {
   payment: {
     status: PaymentStatus;
     payment_type: string;
-    transaction_id?: string | null;
+    midtrans_transaction_id?: string | null;
+    payment_method?: string | null;
+    payment_channel?: string | null;
     amount: number;
     transaction_time: string | null;
     expiry_time: string | null;
@@ -317,12 +319,16 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
     ? {
         status:         order.payment.status as PaymentStatus,
         method:         order.payment.payment_type,
-        transaction_id: order.payment.transaction_id ?? null,
+        midtrans_transaction_id: order.payment.midtrans_transaction_id ?? null,
+        payment_method: order.payment.payment_method ?? null,
+        payment_channel: order.payment.payment_channel ?? null,
       }
     : {
         status:         "PENDING" as PaymentStatus,
         method:         "—",
-        transaction_id: null,
+        midtrans_transaction_id: null,
+        payment_method: null,
+        payment_channel: null,
       };
 
   return (

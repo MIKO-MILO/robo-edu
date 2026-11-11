@@ -66,6 +66,13 @@ export const orders = mysqlTable(
     senderName: varchar("sender_name", { length: 150 }),
     /** Dropship sender phone shown on the package label (nullable — only for dropship). */
     senderPhone: varchar("sender_phone", { length: 30 }),
+    /**
+     * When this order expires if still PENDING. Defaults to 24 hours from
+     * creation. Used by cron/expiry logic to auto-cancel unpaid orders.
+     */
+    expiresAt: datetime("expires_at")
+      .notNull()
+      .default(sql`(NOW() + INTERVAL 24 HOUR)`),
     createdAt: datetime("created_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

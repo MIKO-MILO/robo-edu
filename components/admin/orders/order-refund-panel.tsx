@@ -32,7 +32,6 @@ const MANUAL_REFUND_PAYMENT_TYPES = new Set([
   "echannel", // Mandiri ePay
   "cstore",
 ]);
-
 /** Apakah metode pembayaran memerlukan refund manual (upload bukti)? */
 function requiresManualProof(paymentType: string): boolean {
   return MANUAL_REFUND_PAYMENT_TYPES.has(paymentType.toLowerCase());
@@ -160,12 +159,12 @@ function RefundHistoryRow({ refund, orderId, onProofUploaded }: RefundHistoryRow
         <span
           className={cn(
             "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold border",
-            refund.method === "AUTO"
+            refund.method === "MIDTRANS_API"
               ? "bg-info-bg text-info border-info/30"
               : "bg-warning-bg text-warning border-warning/30",
           )}
         >
-          {refund.method === "AUTO" ? "Otomatis" : "Manual"}
+          {refund.method === "MIDTRANS_API" ? "Otomatis" : "Manual"}
         </span>
       </td>
       {/* Status */}

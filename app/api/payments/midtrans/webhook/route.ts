@@ -132,8 +132,9 @@ async function handleMembershipWebhook(
       await tx
         .update(payments)
         .set({
-          transactionId: body.transaction_id,
+          midtransTransactionId: body.transaction_id,
           paymentType: body.payment_type,
+          paymentMethod: body.payment_type,
           status: states.payment,
           transactionTime: timestamp,
           settlementTime: states.payment === "PAID" ? timestamp : null,
@@ -286,8 +287,9 @@ export async function POST(request: Request) {
     await tx
       .update(payments)
       .set({
-        transactionId: body.transaction_id,
+        midtransTransactionId: body.transaction_id,
         paymentType: body.payment_type,
+        paymentMethod: body.payment_type,
         status: states.payment,
         transactionTime: timestamp,
         settlementTime: states.payment === "PAID" ? timestamp : null,

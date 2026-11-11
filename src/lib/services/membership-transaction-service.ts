@@ -83,7 +83,8 @@ export async function createMembershipTransaction(
       id: paymentId,
       orderId: null,
       membershipPurchaseId: null, // back-filled after membership_purchase is inserted
-      transactionId: purchaseNumber, // stable placeholder; Midtrans fills it via webhook
+      midtransOrderId: purchaseNumber, // Midtrans order reference; Midtrans fills midtrans_transaction_id via webhook
+      attemptNumber: 1,
       paymentType: "MIDTRANS_SNAP",
       status: "PENDING",
       amount: String(price),

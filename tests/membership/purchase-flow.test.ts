@@ -325,7 +325,7 @@ describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
       .limit(1);
 
     expect(payment!.status).toBe("PAID");
-    expect(payment!.transactionId).toBe(txId);
+    expect(payment!.midtransTransactionId).toBe(txId);
     expect(payment!.paymentType).toBe("bank_transfer");
   });
 

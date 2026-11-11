@@ -324,9 +324,10 @@ export async function createPaymentTransaction(
     await tx.insert(payments).values({
       id: crypto.randomUUID(),
       orderId: id,
-      // Midtrans sends its transaction ID later through the webhook. The order
-      // number is a stable unique placeholder while the payment is pending.
-      transactionId: number,
+      // Midtrans order reference — the order number. Midtrans sends its
+      // transaction ID later through the webhook (midtrans_transaction_id).
+      midtransOrderId: number,
+      attemptNumber: 1,
       paymentType: "MIDTRANS_SNAP",
       status: "PENDING",
       amount: String(total),

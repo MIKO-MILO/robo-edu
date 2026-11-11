@@ -28,6 +28,24 @@ export const SETTINGS_SEED = [
   { key: "store_phone",                     value: "08119999999" },
   { key: "store_email",                     value: "hello@roboedu.id" },
   { key: "store_address",                   value: "Jakarta, Indonesia" },
+  { key: "order_expires_hours",              value: "24" },
+  {
+    key: "payment_methods_config",
+    value: JSON.stringify({
+      credit_card: true,
+      bank_transfer: true,
+      bca: true,
+      bni: true,
+      bri: true,
+      echannel: true,
+      gopay: true,
+      shopeepay: true,
+      qris: true,
+      cstore: true,
+      danamon_online: true,
+      akulaku: true,
+    }),
+  },
 ] as const;
 
 export async function seedSettings(
