@@ -30,9 +30,16 @@ import {
   QrCode,
   Landmark,
   ArrowRight,
+  RotateCcw,
+  ArrowLeftRight,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  CheckoutPaymentMethodSelector,
+  type SelectedPayment,
+} from "@/components/user/checkout/checkout-payment-method-selector";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -818,6 +825,139 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
   );
 }
 
+// ─── Change Method Modal ──────────────────────────────────────────────────────
+
+interface ChangeMethodModalProps {
+  isOpen: boolean;
+  isRetrying: boolean;
+  onClose: () => void;
+  onConfirm: (selected: SelectedPayment) => void;
+}
+
+function ChangeMethodModal({
+  isOpen,
+  isRetrying,
+  onClose,
+  onConfirm,
+}: ChangeMethodModalProps) {
+  const [selected, setSelected] = useState<SelectedPayment | null>(null);
+
+  // Reset selection every time modal opens
+  useEffect(() => {
+    if (isOpen) setSelected(null);
+  }, [isOpen]);
+
+  // Trap focus / close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Ganti Metode Pembayaran"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6 p-0"
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-foreground/40 backdrop-blur-sm animate-in fade-in duration-150"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Panel
+          – Mobile: slides up from bottom, full width, capped at 90svh
+          – Desktop: centred, capped at 36rem wide, capped at 85svh
+          The inner body gets overflow-y-auto so the whole list is scrollable
+          without clipping the dropdown inside its own scroll container.
+      */}
+      <div
+        className={cn(
+          "relative w-full sm:max-w-xl",
+          "bg-card border-2 border-foreground",
+          "rounded-t-3xl sm:rounded-2xl neo-shadow",
+          "flex flex-col",
+          "max-h-[90svh] sm:max-h-[85svh]",
+          "animate-in fade-in slide-in-from-bottom-4 duration-200",
+        )}
+      >
+        {/* Header — sticky */}
+        <div className="flex items-center justify-between gap-3 px-6 pt-6 pb-4 border-b-2 border-foreground bg-muted/30 shrink-0 rounded-t-3xl sm:rounded-t-2xl">
+          <div>
+            <h2 className="font-heading font-black text-lg text-foreground">
+              Ganti Metode Pembayaran
+            </h2>
+            <p className="font-body text-sm text-muted-foreground mt-0.5">
+              Pilih metode baru, lalu konfirmasi
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup modal"
+            className="shrink-0 w-10 h-10 rounded-full border-2 border-border flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <X className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* Body — grows with the in-flow expand list; overflow-y-auto kicks in at max-h */}
+        <div className="overflow-y-auto px-6 py-2 pb-4">
+          <CheckoutPaymentMethodSelector
+            value={selected}
+            onChange={setSelected}
+            variant="expand"
+          />
+        </div>
+
+        {/* Footer — sticky */}
+        <div className="flex gap-3 px-6 py-5 border-t-2 border-border/40 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isRetrying}
+          >
+            Batal
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            className="flex-1 gap-2"
+            disabled={!selected || isRetrying}
+            onClick={() => {
+              if (selected) onConfirm(selected);
+            }}
+          >
+            {isRetrying ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                Memproses…
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" aria-hidden="true" />
+                Konfirmasi
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function PaymentInstructionPage({
@@ -833,6 +973,13 @@ export function PaymentInstructionPage({
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Retry / change-method state ─────────────────────────────────────────
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryAttempts, setRetryAttempts] = useState(0);
+  const [maxAttemptsReached, setMaxAttemptsReached] = useState(false);
+  const [showMethodModal, setShowMethodModal] = useState(false);
+  const retryIdempotencyKey = useRef(crypto.randomUUID());
 
   // ── Redirect target after PAID ──────────────────────────────────────────
   const successRedirect =
@@ -940,6 +1087,79 @@ export function PaymentInstructionPage({
     }
   }
 
+  // ─── Handle retry / change method ──────────────────────────────────────
+  const handleRetry = useCallback(
+    async (selected: SelectedPayment) => {
+      setIsRetrying(true);
+      setShowMethodModal(false);
+      try {
+        const res = await fetch(
+          `/api/orders/${transactionId}/payment/retry`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Idempotency-Key": retryIdempotencyKey.current,
+            },
+            body: JSON.stringify({
+              paymentMethod: selected.method.method,
+              paymentChannel: selected.method.channel,
+              ovoPhone:
+                selected.method.channel === "ovo"
+                  ? selected.ovoPhone
+                  : undefined,
+            }),
+          },
+        );
+
+        const json = await res.json() as {
+          success: boolean;
+          code?: string;
+          message?: string;
+          data?: { payment: PaymentInfo };
+        };
+
+        if (res.status === 409 && json.code === "ORDER_ALREADY_PAID") {
+          setToast("Pesanan sudah dibayar.");
+          setTimeout(() => router.replace(successRedirect), 1500);
+          return;
+        }
+
+        if (!res.ok) {
+          if (json.code === "MAX_ATTEMPTS_REACHED") {
+            setMaxAttemptsReached(true);
+            setToast("Batas percobaan pembayaran telah tercapai.");
+            return;
+          }
+          throw new Error(json.message ?? "Gagal melakukan retry.");
+        }
+
+        // Success — update payment info and show success toast
+        if (json.data?.payment) {
+          setPaymentInfo(json.data.payment);
+        }
+        const newAttempts = retryAttempts + 1;
+        setRetryAttempts(newAttempts);
+        if (newAttempts >= 5) setMaxAttemptsReached(true);
+        setToast("Metode pembayaran berhasil diubah.");
+
+        // Restart polling now that payment is PENDING again
+        stopPolling();
+        pollingRef.current = setInterval(() => void fetchPaymentInfo(), 4000);
+      } catch (err) {
+        setToast(
+          err instanceof Error ? err.message : "Gagal mengubah metode. Coba lagi.",
+        );
+      } finally {
+        setIsRetrying(false);
+        // Always rotate the idempotency key after each attempt
+        retryIdempotencyKey.current = crypto.randomUUID();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [transactionId, retryAttempts, router, successRedirect],
+  );
+
   // ─── Resolve payment_instruction ────────────────────────────────────────
   // Use backend instruction if available, otherwise mock by channel
   const channel = paymentInfo?.payment_channel ?? "bank_transfer";
@@ -998,6 +1218,15 @@ export function PaymentInstructionPage({
   const paymentStatus = (paymentInfo?.status ?? "PENDING") as PaymentStatus;
   const amount = paymentInfo?.amount ?? orderInfo?.total ?? 0;
 
+  // ── Retry actions visibility ─────────────────────────────────────────────
+  // "Ganti Metode" only on PENDING; "Coba Lagi" on FAILED / EXPIRED.
+  // Both disappear once expiry_time has passed OR max 5 attempts reached.
+  const orderExpired = paymentInfo?.expiry_time
+    ? new Date(paymentInfo.expiry_time) < new Date()
+    : false;
+  const showRetryActions =
+    context === "order" && !orderExpired && !maxAttemptsReached;
+
   // ── PAID state ───────────────────────────────────────────────────────────
   if (paymentStatus === "PAID" || orderInfo?.status === "PAID") {
     return (
@@ -1033,37 +1262,90 @@ export function PaymentInstructionPage({
   if (paymentStatus === "FAILED" || paymentStatus === "EXPIRED") {
     const isExpired = paymentStatus === "EXPIRED";
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-card border-2 border-foreground rounded-3xl neo-shadow p-8 flex flex-col items-center gap-5 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-accent-peach border-2 border-foreground flex items-center justify-center">
-            {isExpired ? (
-              <AlertTriangle className="w-8 h-8 text-danger" aria-hidden="true" />
-            ) : (
-              <XCircle className="w-8 h-8 text-danger" aria-hidden="true" />
+      <>
+        <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
+          <div className="w-full max-w-md bg-card border-2 border-foreground rounded-3xl neo-shadow p-8 flex flex-col items-center gap-5 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-accent-peach border-2 border-foreground flex items-center justify-center">
+              {isExpired ? (
+                <AlertTriangle className="w-8 h-8 text-danger" aria-hidden="true" />
+              ) : (
+                <XCircle className="w-8 h-8 text-danger" aria-hidden="true" />
+              )}
+            </div>
+            <div>
+              <h1 className="font-heading font-black text-xl text-foreground">
+                {isExpired ? "Pembayaran Kadaluarsa" : "Pembayaran Gagal"}
+              </h1>
+              <p className="font-body text-sm text-muted-foreground mt-2">
+                {isExpired
+                  ? "Batas waktu pembayaran telah habis."
+                  : "Pembayaran tidak berhasil. Silakan coba metode pembayaran lain."}
+              </p>
+            </div>
+
+            {/* Max attempts message */}
+            {maxAttemptsReached && (
+              <div className="w-full flex items-start gap-2 bg-accent-peach/60 border-2 border-danger/30 rounded-xl px-4 py-3 text-left">
+                <AlertTriangle
+                  className="w-4 h-4 text-danger shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
+                <p className="font-body text-sm text-danger font-semibold">
+                  Batas percobaan pembayaran telah tercapai.
+                </p>
+              </div>
             )}
-          </div>
-          <div>
-            <h1 className="font-heading font-black text-xl text-foreground">
-              {isExpired ? "Pembayaran Kadaluarsa" : "Pembayaran Gagal"}
-            </h1>
-            <p className="font-body text-sm text-muted-foreground mt-2">
-              {isExpired
-                ? "Batas waktu pembayaran telah habis. Buat pesanan baru untuk melanjutkan."
-                : "Pembayaran tidak berhasil. Silakan coba metode pembayaran lain."}
-            </p>
-          </div>
-          <div className="flex gap-3 flex-wrap justify-center">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/profile/orders">Riwayat Pesanan</Link>
-            </Button>
-            <Button variant="primary" size="sm" asChild>
-              <Link href={context === "membership" ? "/membership" : "/product"}>
-                {context === "membership" ? "Coba Lagi" : "Belanja Lagi"}
-              </Link>
-            </Button>
+
+            <div className="flex flex-col gap-3 w-full">
+              {/* "Coba Lagi" button — only when not expired and within attempts limit */}
+              {showRetryActions && (
+                <Button
+                  variant="primary"
+                  size="default"
+                  className="w-full gap-2"
+                  onClick={() => setShowMethodModal(true)}
+                  disabled={isRetrying}
+                >
+                  {isRetrying ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                      Memproses…
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="w-4 h-4" aria-hidden="true" />
+                      Coba Lagi
+                    </>
+                  )}
+                </Button>
+              )}
+
+              <div className="flex gap-3 flex-wrap justify-center">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/profile/orders">Riwayat Pesanan</Link>
+                </Button>
+                {!showRetryActions && (
+                  <Button variant="primary" size="sm" asChild>
+                    <Link href={context === "membership" ? "/membership" : "/product"}>
+                      {context === "membership" ? "Ke Halaman Membership" : "Belanja Lagi"}
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Change Method Modal — also needed here for "Coba Lagi" flow */}
+        <ChangeMethodModal
+          isOpen={showMethodModal}
+          isRetrying={isRetrying}
+          onClose={() => setShowMethodModal(false)}
+          onConfirm={(selected) => void handleRetry(selected)}
+        />
+
+        {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
+      </>
     );
   }
 
@@ -1124,6 +1406,56 @@ export function PaymentInstructionPage({
             amount={amount}
           />
 
+          {/* Ganti Metode — only for order context, while retry is still allowed */}
+          {showRetryActions && (
+            <div className="bg-card border-2 border-foreground rounded-2xl neo-shadow overflow-hidden">
+              <div className="p-5 flex flex-col gap-3">
+                {maxAttemptsReached ? (
+                  <div className="flex items-start gap-2 bg-accent-peach/60 border-2 border-danger/30 rounded-xl px-4 py-3">
+                    <AlertTriangle
+                      className="w-4 h-4 text-danger shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
+                    <p className="font-body text-sm text-danger font-semibold">
+                      Batas percobaan pembayaran telah tercapai.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-body text-xs text-muted-foreground">
+                      Ingin menggunakan metode pembayaran yang berbeda?
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="default"
+                      className="w-full gap-2"
+                      onClick={() => setShowMethodModal(true)}
+                      disabled={isRetrying}
+                      aria-label="Ganti metode pembayaran"
+                    >
+                      {isRetrying ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                          Memproses…
+                        </>
+                      ) : (
+                        <>
+                          <ArrowLeftRight className="w-4 h-4" aria-hidden="true" />
+                          Ganti Metode Pembayaran
+                        </>
+                      )}
+                    </Button>
+                    {retryAttempts > 0 && (
+                      <p className="font-body text-[11px] text-muted-foreground text-center">
+                        Percobaan {retryAttempts} dari 5
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Check Status + Info */}
           <div className="bg-card border-2 border-foreground rounded-2xl neo-shadow overflow-hidden">
             <div className="p-5 flex flex-col gap-3">
@@ -1181,6 +1513,14 @@ export function PaymentInstructionPage({
           </div>
         </div>
       </div>
+
+      {/* Change Method Modal */}
+      <ChangeMethodModal
+        isOpen={showMethodModal}
+        isRetrying={isRetrying}
+        onClose={() => setShowMethodModal(false)}
+        onConfirm={(selected) => void handleRetry(selected)}
+      />
 
       {toast && (
         <Toast message={toast} onDismiss={() => setToast(null)} />

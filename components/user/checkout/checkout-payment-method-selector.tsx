@@ -95,11 +95,18 @@ async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
 interface CheckoutPaymentMethodSelectorProps {
   value: SelectedPayment | null;
   onChange: (selected: SelectedPayment | null) => void;
+  /**
+   * "dropdown" (default) — trigger + floating absolute list (dipakai di checkout).
+   * "expand"             — trigger + list in-flow, mendorong parent container tumbuh ke bawah (dipakai di modal).
+   * "inline"             — list langsung tampil tanpa trigger.
+   */
+  variant?: "dropdown" | "expand" | "inline";
 }
 
 export function CheckoutPaymentMethodSelector({
   value,
   onChange,
+  variant = "dropdown",
 }: CheckoutPaymentMethodSelectorProps) {
   const [methods, setMethods] = useState<PaymentMethod[]>(PAYMENT_METHODS_FALLBACK);
   const [open, setOpen] = useState(false);
@@ -111,8 +118,9 @@ export function CheckoutPaymentMethodSelector({
     fetchPaymentMethods().then(setMethods);
   }, []);
 
-  // Tutup dropdown bila klik di luar
+  // Tutup dropdown bila klik di luar (hanya untuk variant dropdown)
   useEffect(() => {
+    if (variant !== "dropdown") return;
     function handleOutsideClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false);
@@ -120,7 +128,7 @@ export function CheckoutPaymentMethodSelector({
     }
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  }, [variant]);
 
   // Sync ovoPhone ke SelectedPayment
   function handleOvoPhoneChange(phone: string) {
@@ -149,6 +157,210 @@ export function CheckoutPaymentMethodSelector({
 
   const selected = value?.method ?? null;
 
+  // ── Shared: grouped method list ──────────────────────────────────────────
+  // Dipakai baik oleh dropdown maupun inline, beda wrapper saja.
+  function MethodList({ className }: { className?: string }) {
+    return (
+      <div className={className} role="listbox" aria-label="Metode pembayaran">
+        {Object.entries(grouped).map(([group, items]) => (
+          <div key={group}>
+            {/* Group header */}
+            <div className="px-3 pt-2.5 pb-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                {group}
+              </span>
+            </div>
+            {/* Group items */}
+            {items.map((method) => (
+              <button
+                key={method.channel}
+                type="button"
+                role="option"
+                aria-selected={selected?.channel === method.channel}
+                onClick={() => selectMethod(method)}
+                className={cn(
+                  "w-full flex items-center justify-between gap-2 px-3 py-2.5",
+                  "text-sm font-semibold text-foreground text-left",
+                  "hover:bg-muted/50 transition-colors rounded-lg mx-auto",
+                  selected?.channel === method.channel && "bg-accent-soft-blue/30",
+                )}
+              >
+                <span className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={cn(
+                      "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
+                      method.bg,
+                      method.color,
+                    )}
+                  >
+                    {method.icon}
+                  </span>
+                  <span className="truncate font-body">{method.label}</span>
+                </span>
+                {selected?.channel === method.channel && (
+                  <Check className="w-4 h-4 shrink-0 text-primary" />
+                )}
+              </button>
+            ))}
+            {/* Group divider */}
+            <div className="mx-3 my-1 border-t border-border/20" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ── OVO phone input (shared) ─────────────────────────────────────────────
+  const OvoInput = selected?.channel === "ovo" ? (
+    <div className="mt-3">
+      <label
+        htmlFor="ovo-phone"
+        className="block text-xs font-bold text-foreground mb-1.5"
+      >
+        <Phone className="inline w-3 h-3 mr-1 text-purple-600" />
+        Nomor HP OVO
+      </label>
+      <input
+        id="ovo-phone"
+        type="tel"
+        inputMode="numeric"
+        maxLength={15}
+        value={ovoPhone}
+        onChange={(e) => handleOvoPhoneChange(e.target.value)}
+        placeholder="Contoh: 08123456789"
+        className={cn(
+          "w-full rounded-xl border-2 border-border px-4 py-2.5",
+          "text-sm font-semibold text-foreground placeholder:text-muted-foreground/60",
+          "focus:outline-none focus:ring-2 focus:ring-ring bg-accent-butter/20",
+        )}
+      />
+      <p className="text-[11px] text-muted-foreground mt-1">
+        Nomor ini akan digunakan untuk pembayaran via OVO.
+      </p>
+    </div>
+  ) : null;
+
+  // ── Inline variant ───────────────────────────────────────────────────────
+  if (variant === "inline") {
+    return (
+      <div className="mt-2">
+        {/* Selected summary chip — tampil setelah memilih */}
+        {selected && (
+          <div className="flex items-center gap-2.5 mb-3 px-3 py-2 rounded-xl border-2 border-primary bg-accent-soft-blue/20">
+            <span
+              className={cn(
+                "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
+                selected.bg,
+                selected.color,
+              )}
+            >
+              {selected.icon}
+            </span>
+            <span className="font-body text-sm font-semibold text-foreground truncate">
+              {selected.label}
+            </span>
+            <Check className="w-4 h-4 shrink-0 text-primary ml-auto" />
+          </div>
+        )}
+
+        {/* Label */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+            Pilih Metode
+          </span>
+          {!selected && (
+            <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+              Wajib dipilih
+            </span>
+          )}
+        </div>
+
+        {/* Always-visible scrollable list */}
+        <div className="border-2 border-border rounded-xl overflow-hidden">
+          <MethodList />
+        </div>
+
+        {OvoInput}
+      </div>
+    );
+  }
+
+  // ── Expand variant — trigger + in-flow list (mendorong modal tumbuh) ────
+  if (variant === "expand") {
+    return (
+      <div className="mt-4">
+        {/* Label */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+            Metode Pembayaran
+          </span>
+          {!selected && (
+            <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+              Wajib dipilih
+            </span>
+          )}
+        </div>
+
+        {/* Trigger */}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className={cn(
+            "w-full flex items-center justify-between gap-2",
+            "px-4 py-3 border-2 border-border bg-card",
+            "font-body text-sm font-semibold text-foreground",
+            "transition-all focus:outline-none focus:ring-2 focus:ring-ring",
+            open
+              ? "rounded-t-xl rounded-b-none border-b-2 border-b-foreground ring-2 ring-ring"
+              : "rounded-xl neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",
+          )}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          {selected ? (
+            <span className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={cn(
+                  "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
+                  selected.bg,
+                  selected.color,
+                )}
+              >
+                {selected.icon}
+              </span>
+              <span className="truncate">{selected.label}</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground font-medium">
+              Pilih metode pembayaran…
+            </span>
+          )}
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200",
+              open && "rotate-180",
+            )}
+          />
+        </button>
+
+        {/* In-flow list — tumbuh ke bawah, bukan floating */}
+        {open && (
+          <MethodList
+            className={cn(
+              "w-full",
+              "bg-card border-2 border-t-0 border-border rounded-b-xl",
+              "shadow-[2px_4px_0px_0px_#3D2900]",
+              "py-1",
+            )}
+          />
+        )}
+
+        {OvoInput}
+      </div>
+    );
+  }
+
+  // ── Dropdown variant (default) ───────────────────────────────────────────
   return (
     <div className="mt-4">
       {/* Label */}
@@ -205,96 +417,22 @@ export function CheckoutPaymentMethodSelector({
           />
         </button>
 
-        {/* Dropdown list */}
+        {/* Dropdown list — absolute, floating */}
         {open && (
-          <div
-            role="listbox"
-            aria-label="Metode pembayaran"
+          <MethodList
             className={cn(
               "absolute z-50 w-full mt-1.5",
               "bg-card border-2 border-border rounded-xl",
               "shadow-[4px_4px_0px_0px_#3D2900]",
-              "max-h-72 overflow-y-auto",
+              "max-h-[min(22rem,50svh)] overflow-y-auto",
               "py-1",
             )}
-          >
-            {Object.entries(grouped).map(([group, items]) => (
-              <div key={group}>
-                {/* Group header */}
-                <div className="px-3 pt-2 pb-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    {group}
-                  </span>
-                </div>
-                {/* Group items */}
-                {items.map((method) => (
-                  <button
-                    key={method.channel}
-                    type="button"
-                    role="option"
-                    aria-selected={selected?.channel === method.channel}
-                    onClick={() => selectMethod(method)}
-                    className={cn(
-                      "w-full flex items-center justify-between gap-2 px-3 py-2",
-                      "text-sm font-semibold text-foreground text-left",
-                      "hover:bg-muted/50 transition-colors",
-                      selected?.channel === method.channel && "bg-accent-soft-blue/30",
-                    )}
-                  >
-                    <span className="flex items-center gap-2.5 min-w-0">
-                      <span
-                        className={cn(
-                          "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
-                          method.bg,
-                          method.color,
-                        )}
-                      >
-                        {method.icon}
-                      </span>
-                      <span className="truncate font-body">{method.label}</span>
-                    </span>
-                    {selected?.channel === method.channel && (
-                      <Check className="w-3.5 h-3.5 shrink-0 text-primary" />
-                    )}
-                  </button>
-                ))}
-                {/* Group divider */}
-                <div className="mx-3 my-1 border-t border-border/20" />
-              </div>
-            ))}
-          </div>
+          />
         )}
       </div>
 
       {/* OVO phone input — muncul hanya bila OVO dipilih */}
-      {selected?.channel === "ovo" && (
-        <div className="mt-3">
-          <label
-            htmlFor="ovo-phone"
-            className="block text-xs font-bold text-foreground mb-1.5"
-          >
-            <Phone className="inline w-3 h-3 mr-1 text-purple-600" />
-            Nomor HP OVO
-          </label>
-          <input
-            id="ovo-phone"
-            type="tel"
-            inputMode="numeric"
-            maxLength={15}
-            value={ovoPhone}
-            onChange={(e) => handleOvoPhoneChange(e.target.value)}
-            placeholder="Contoh: 08123456789"
-            className={cn(
-              "w-full rounded-xl border-2 border-border px-4 py-2.5",
-              "text-sm font-semibold text-foreground placeholder:text-muted-foreground/60",
-              "focus:outline-none focus:ring-2 focus:ring-ring bg-accent-butter/20",
-            )}
-          />
-          <p className="text-[11px] text-muted-foreground mt-1">
-            Nomor ini akan digunakan untuk pembayaran via OVO.
-          </p>
-        </div>
-      )}
+      {OvoInput}
     </div>
   );
 }
