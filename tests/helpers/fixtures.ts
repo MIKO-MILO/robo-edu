@@ -61,6 +61,26 @@ export const SETTINGS_SEED: Array<{ key: string; value: string }> = [
   { key: "store_phone", value: "0812000000" },
   { key: "store_email", value: "store@roboedu.test" },
   { key: "store_address", value: "Jl. Test No. 1, Jakarta" },
+  { key: "order_expires_hours", value: "24" },
+  {
+    key: "payment_methods_config",
+    value: JSON.stringify({
+      bca_va: true,
+      bni_va: true,
+      bri_va: true,
+      mandiri_va: true,
+      permata_va: true,
+      cimb_va: true,
+      credit_card: true,
+      gopay: true,
+      shopeepay: true,
+      qris: true,
+      dana: true,
+      ovo: true,
+      alfamart: true,
+      indomaret: true,
+    }),
+  },
 ];
 
 /** Far-future date used for active membership expiry. */
@@ -117,7 +137,7 @@ export async function seedFixtures(
     },
   ]);
 
-  // --- settings (six keys from ticket 01) ---
+  // --- settings (seed keys from tickets 01 + payment/02) ---
   await db.insert(schema.settings).values(SETTINGS_SEED);
 
   // --- catalog: category -> product type -> product -> variants ---

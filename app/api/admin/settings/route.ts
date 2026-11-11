@@ -33,6 +33,8 @@ type SettingSpec = {
   email?: boolean;
   /** String keys only: validate as a foreign key to shipping_providers. */
   fkProvider?: boolean;
+  /** String keys only: validate as parseable JSON before storing. */
+  json?: boolean;
 };
 
 const SETTING_SPECS: Record<string, SettingSpec> = {
@@ -45,6 +47,8 @@ const SETTING_SPECS: Record<string, SettingSpec> = {
   membership_plus_duration_months: { kind: "number", positiveInt: true },
   shipping_min_weight: { kind: "number" },
   shipping_cost: { kind: "number" },
+  order_expires_hours: { kind: "number", positiveInt: true },
+  payment_methods_config: { kind: "string", json: true },
 };
 
 const ALLOWED_KEYS = new Set(Object.keys(SETTING_SPECS));
@@ -99,6 +103,18 @@ async function normalizeField(
       .limit(1);
     if (!provider) {
       return [null, "Provider pengiriman tidak ditemukan."];
+    }
+  }
+
+  // payment_methods_config is a JSON blob — validate it parses before storing.
+  if (spec.json && value) {
+    try {
+      const parsed = JSON.parse(value);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return [null, `\`${key}\` harus berupa JSON object yang valid.`];
+      }
+    } catch {
+      return [null, `\`${key}\` harus berupa JSON yang valid.`];
     }
   }
 
