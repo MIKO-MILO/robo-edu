@@ -97,15 +97,15 @@ export function MembershipInfoCard({
             {/* CTA */}
             <div className="flex flex-wrap gap-3">
               <Button
-                asChild
-                size="lg"
-                className="font-heading font-bold rounded-2xl bg-white text-primary hover:bg-white/90 shadow-none border-0"
-              >
-                <Link href="/reseller">
-                  <RotateCcw className="size-4" />
-                  Perpanjang Membership
-                </Link>
-              </Button>
+            asChild
+            size="lg"
+            className="font-heading font-bold rounded-2xl bg-white text-primary hover:bg-white/90 shadow-none border-0"
+          >
+            <Link href="/membership/confirm">
+              <RotateCcw className="size-4" />
+              Perpanjang Membership
+            </Link>
+          </Button>
               <Button
                 asChild
                 size="lg"

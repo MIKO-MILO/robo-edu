@@ -16,16 +16,25 @@ export const membershipService = {
   /**
    * GET /membership/me
    * Ambil status membership + seluruh riwayat pembelian milik user yang login.
-   *
-   * Backend rules:
-   *   - Wajib auth (cookie roboedu_session).
-   *   - membership_status dan membership_expires_at diambil dari kolom `user`.
-   *   - purchases: semua record `membership_purchase` milik user,
-   *     di-JOIN ke `payment` untuk mendapatkan payment_method,
-   *     diurutkan terbaru lebih dulu (ORDER BY created_at DESC).
-   *   - Array purchases kosong jika user belum pernah membeli.
    */
   async getMembershipStatus(): Promise<ApiResponse<MembershipStatusData>> {
     return http.get<ApiResponse<MembershipStatusData>>("/membership/me");
+  },
+
+  /**
+   * POST /checkout/membership
+   * Buat transaksi pembelian membership Paket Plus.
+   * Mengembalikan purchaseId + snapToken + redirectUrl + total.
+   */
+  async createCheckout(): Promise<
+    ApiResponse<{
+      purchaseId: string;
+      purchaseNumber: string;
+      snapToken: string;
+      redirectUrl: string;
+      total: number;
+    }>
+  > {
+    return http.post("/checkout/membership", { package: "PLUS" });
   },
 };

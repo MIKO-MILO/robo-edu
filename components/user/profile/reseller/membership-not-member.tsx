@@ -118,7 +118,7 @@ export function MembershipNotMember() {
             size="lg"
             className="font-heading font-bold px-10 rounded-2xl shadow-sm"
           >
-            <Link href="/reseller">
+            <Link href="/membership/confirm">
               <CrownIcon className="size-5" />
               Beli Membership Plus
             </Link>
