@@ -1,23 +1,14 @@
 /**
-<<<<<<< HEAD
- * BullMQ email worker entry point.
-=======
  * BullMQ email worker + membership cron entry point.
->>>>>>> origin/backend-membership-cron-reminders
  *
  * Run with:
  *   npm run worker
  *
-<<<<<<< HEAD
- * This process is separate from the Next.js app server. It connects to Redis,
- * subscribes to the "email" queue, and processes jobs by calling Resend.
-=======
  * This process is separate from the Next.js app server. It:
  *   1. Subscribes to the "email" BullMQ queue and processes jobs.
  *   2. Runs two daily cron jobs:
  *      - 01:00 WIB (18:00 UTC) — expire memberships
  *      - 08:00 WIB (01:00 UTC) — enqueue h7/h3 reminder emails
->>>>>>> origin/backend-membership-cron-reminders
  *
  * DO NOT import anything with `import "server-only"` here — this is a plain
  * Node.js process, not a Next.js context.
@@ -27,11 +18,8 @@ import "dotenv/config";
 
 import { Worker, type Job } from "bullmq";
 import { eq } from "drizzle-orm";
-<<<<<<< HEAD
-=======
 import mysql from "mysql2/promise";
 import { drizzle } from "drizzle-orm/mysql2";
->>>>>>> origin/backend-membership-cron-reminders
 
 import {
   EMAIL_QUEUE_NAME,
@@ -47,15 +35,6 @@ import {
   membershipReceiptEmailSubject,
   membershipReceiptEmailHtml,
 } from "@/src/lib/email/templates/membership-receipt";
-<<<<<<< HEAD
-
-// Import db via a worker-safe path (send-worker.ts already creates its own pool;
-// here we need direct DB access to fetch data for email templates).
-import mysql from "mysql2/promise";
-import { drizzle } from "drizzle-orm/mysql2";
-import * as schema from "@/src/db/schema";
-
-=======
 import {
   runExpireMemberships,
   runReminderQueue,
@@ -64,7 +43,6 @@ import * as schema from "@/src/db/schema";
 
 // ── DB ────────────────────────────────────────────────────────────────────────
 
->>>>>>> origin/backend-membership-cron-reminders
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error("DATABASE_URL is not configured");
 
@@ -168,10 +146,7 @@ async function handleMembershipReceipt(
     return;
   }
 
-<<<<<<< HEAD
   // Get payment method from linked payment row
-=======
->>>>>>> origin/backend-membership-cron-reminders
   const [payment] = await db
     .select({ paymentType: schema.payments.paymentType })
     .from(schema.payments)
@@ -240,10 +215,6 @@ async function handleMembershipReminder(
       ? `Membership Plus-mu berakhir 7 hari lagi ⏰`
       : `Membership Plus-mu berakhir 3 hari lagi ⚠️`;
 
-<<<<<<< HEAD
-  // Minimal plain reminder — ticket 18 can replace with a richer template
-=======
->>>>>>> origin/backend-membership-cron-reminders
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;padding:24px;">
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
@@ -259,21 +230,13 @@ async function handleMembershipReminder(
     to: user.email,
     subject,
     html,
-<<<<<<< HEAD
-    type: type === "membership-reminder-h7" ? "OTHER" : "OTHER",
-=======
     type: "OTHER",
->>>>>>> origin/backend-membership-cron-reminders
     userId,
     orderId: null,
   });
 }
 
-<<<<<<< HEAD
-// ── Worker ────────────────────────────────────────────────────────────────────
-=======
 // ── BullMQ Worker ─────────────────────────────────────────────────────────────
->>>>>>> origin/backend-membership-cron-reminders
 
 const worker = new Worker<EmailJobData>(
   EMAIL_QUEUE_NAME,
@@ -300,10 +263,7 @@ const worker = new Worker<EmailJobData>(
         break;
 
       default: {
-<<<<<<< HEAD
         // TypeScript exhaustive check
-=======
->>>>>>> origin/backend-membership-cron-reminders
         const exhaustive: never = data;
         console.warn(`[worker] Unknown job type:`, exhaustive);
       }
@@ -330,8 +290,6 @@ console.log(
   `[worker] 🚀 Email worker started — listening on queue "${EMAIL_QUEUE_NAME}"`,
 );
 
-<<<<<<< HEAD
-=======
 // ── Cron scheduler ────────────────────────────────────────────────────────────
 
 /**
@@ -384,7 +342,6 @@ scheduleDailyUtc("expire", 18, 0, () => runExpireMemberships(db));
 // Reminder cron: daily at 08:00 WIB = 01:00 UTC
 scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 
->>>>>>> origin/backend-membership-cron-reminders
 // ── Graceful shutdown ─────────────────────────────────────────────────────────
 
 async function shutdown(signal: string) {
