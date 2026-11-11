@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, decimal, datetime, json, uniqueIndex, index } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar, decimal, datetime, json, int, uniqueIndex, index } from "drizzle-orm/mysql-core";
 import { orders } from "./order";
 import { sql } from "drizzle-orm";
 
@@ -17,8 +17,31 @@ export const payments = mysqlTable("payments", {
    * (which itself FKs back to payments). The FK constraint is in the migration SQL.
    */
   membershipPurchaseId: varchar("membership_purchase_id", { length: 36 }),
-  transactionId: varchar("transaction_id", { length: 150 }).notNull(),
+  /**
+   * Midtrans order reference (e.g. order number "ORD-…" or purchase number "MBR-…").
+   * UNIQUE per attempt — one Midtrans order ID maps to exactly one payment attempt.
+   */
+  midtransOrderId: varchar("midtrans_order_id", { length: 150 }).notNull(),
+  /**
+   * Midtrans transaction ID — received from the Midtrans webhook. Nullable
+   * because it's unknown at insert time (the webhook fills it later).
+   */
+  midtransTransactionId: varchar("midtrans_transaction_id", { length: 150 }),
+  /**
+   * Attempt number for multi-attempt payments. Defaults to 1.
+   * A new payment attempt (retry) increments this; combined with order_id or
+   * membership_purchase_id it uniquely identifies each attempt.
+   */
+  attemptNumber: int("attempt_number").notNull().default(1),
   paymentType: varchar("payment_type", { length: 50 }).notNull(),
+  /** Actual payment method chosen by user (e.g. "bank_transfer", "gopay"). From Midtrans response. */
+  paymentMethod: varchar("payment_method", { length: 50 }),
+  /** Specific payment channel (e.g. "bca", "bni"). From Midtrans response. */
+  paymentChannel: varchar("payment_channel", { length: 50 }),
+  /** Payment instructions (VA number, biller code, etc.) from Midtrans Core API. */
+  paymentInstruction: json("payment_instruction"),
+  /** Payer phone number captured by Midtrans. */
+  payerPhoneNumber: varchar("payer_phone_number", { length: 30 }),
   status: varchar("status", { length: 50 }).notNull(),
   amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
   transactionTime: datetime("transaction_time"),
@@ -35,5 +58,8 @@ export const payments = mysqlTable("payments", {
 }, (table) => ({
   orderIdx: index("payments_order_id_idx").on(table.orderId),
   membershipPurchaseIdx: index("payments_membership_purchase_id_idx").on(table.membershipPurchaseId),
-  transactionUnique: uniqueIndex("payments_transaction_id_unique").on(table.transactionId),
+  midtransOrderIdUnique: uniqueIndex("payments_midtrans_order_id_unique").on(table.midtransOrderId),
+  // Composite indexes for multi-attempt lookup by order or membership purchase
+  orderAttemptIdx: index("payments_order_attempt_idx").on(table.orderId, table.attemptNumber),
+  membershipAttemptIdx: index("payments_membership_attempt_idx").on(table.membershipPurchaseId, table.attemptNumber),
 }));

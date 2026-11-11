@@ -99,7 +99,9 @@ export async function GET(
     .select({
       status:          payments.status,
       paymentType:     payments.paymentType,
-      transactionId:   payments.transactionId,
+      midtransTransactionId:   payments.midtransTransactionId,
+      paymentMethod:   payments.paymentMethod,
+      paymentChannel:  payments.paymentChannel,
       amount:          payments.amount,
       transactionTime: payments.transactionTime,
       expiryTime:      payments.expiryTime,
@@ -207,7 +209,9 @@ export async function GET(
         ? {
             status:           payment.status.toUpperCase() as PaymentStatus,
             payment_type:     payment.paymentType,
-            transaction_id:   payment.transactionId,
+            midtrans_transaction_id:   payment.midtransTransactionId,
+            payment_method:   payment.paymentMethod,
+            payment_channel:  payment.paymentChannel,
             amount:           Number(payment.amount),
             transaction_time: payment.transactionTime?.toISOString() ?? null,
             expiry_time:      payment.expiryTime?.toISOString()      ?? null,
