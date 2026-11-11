@@ -12,6 +12,12 @@ export type CreateMembershipTransactionInput = {
   userId: string;
   /** Plan identifier — only "PLUS" supported for now. */
   package: "PLUS";
+  /** Midtrans payment method (e.g. "bank_transfer", "gopay", "ovo"). Optional for now. */
+  paymentMethod?: string;
+  /** Midtrans payment channel (e.g. "bca_va", "gopay"). Optional for now. */
+  paymentChannel?: string;
+  /** OVO phone number — only required when paymentChannel === "ovo". */
+  payerPhoneNumber?: string;
 };
 
 export type CreateMembershipTransactionResult = {
@@ -84,7 +90,7 @@ export async function createMembershipTransaction(
       orderId: null,
       membershipPurchaseId: null, // back-filled after membership_purchase is inserted
       transactionId: purchaseNumber, // stable placeholder; Midtrans fills it via webhook
-      paymentType: "MIDTRANS_SNAP",
+      paymentType: input.paymentMethod ?? "MIDTRANS_SNAP",
       status: "PENDING",
       amount: String(price),
     });
@@ -134,6 +140,9 @@ export async function createMembershipTransaction(
         rawResponse: {
           snap_token: transaction.token,
           redirect_url: transaction.redirect_url,
+          payment_method: input.paymentMethod,
+          payment_channel: input.paymentChannel,
+          ...(input.payerPhoneNumber && { payer_phone_number: input.payerPhoneNumber }),
           created_at: new Date().toISOString(),
         },
       })

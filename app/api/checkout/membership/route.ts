@@ -49,9 +49,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Extract optional payment method fields (for future Core API support)
+    const paymentMethod = typeof body.payment_method === "string" ? body.payment_method : undefined;
+    const paymentChannel = typeof body.payment_channel === "string" ? body.payment_channel : undefined;
+    const payerPhoneNumber = typeof body.payer_phone_number === "string" ? body.payer_phone_number : undefined;
+
     const result = await createMembershipTransaction({
       userId,
       package: "PLUS",
+      paymentMethod,
+      paymentChannel,
+      payerPhoneNumber,
     });
 
     return NextResponse.json({ success: true, data: result });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Check, ArrowRight, Sparkles, Star, Heart } from "lucide-react";
 import Link from "next/link";
@@ -17,6 +18,39 @@ interface MembershipTier {
   priceColor: string;
   benefits: string[];
   isSpecial?: boolean;
+}
+
+// ── Hook: get membership status (best-effort, no auth error shown) ──
+function useMembershipCtaLabel(): {
+  label: string;
+  hasPending: boolean;
+  pendingId: string | null;
+} {
+  const [isMember, setIsMember] = useState(false);
+  const [hasPending, setHasPending] = useState(false);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/membership/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (!json?.success) return;
+        const data = json.data;
+        if (data.membership_status === "MEMBER") setIsMember(true);
+        const pending = data.purchases?.find(
+          (p: { status: string; id: string }) => p.status === "PENDING",
+        );
+        if (pending) {
+          setHasPending(true);
+          setPendingId(pending.id);
+        }
+      })
+      .catch(() => {/* unauthenticated or network error — ignore */});
+  }, []);
+
+  if (hasPending) return { label: "Lanjutkan Pembayaran", hasPending: true, pendingId };
+  if (isMember) return { label: "Perpanjang Membership", hasPending: false, pendingId: null };
+  return { label: "Beli Membership Plus", hasPending: false, pendingId: null };
 }
 
 // ── Data ───────────────────────────────────────────
@@ -59,6 +93,15 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
 
 // ── Membership Card (Transparan & Blur / Glassmorphism) ─
 function MembershipCard({ tier }: { tier: MembershipTier }) {
+  const { label: ctaLabel, hasPending, pendingId } = useMembershipCtaLabel();
+
+  // For the special tier: resolve the correct href
+  const ctaHref = tier.isSpecial
+    ? hasPending && pendingId
+      ? `/membership/payment/${pendingId}`
+      : "/membership/confirm"
+    : "/contact";
+
   return (
     <article
       className={cn(
@@ -132,7 +175,7 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
         </div>
 
         <Link
-          href="/contact"
+          href={ctaHref}
           className={cn(
             "w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95",
             tier.isSpecial
@@ -140,7 +183,7 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
               : "bg-white text-sky-700 hover:bg-sky-50 shadow-white/20"
           )}
         >
-          {tier.isSpecial ? "Gabung VIP Sekarang" : "Mulai Gratis"}
+          {tier.isSpecial ? ctaLabel : "Mulai Gratis"}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
