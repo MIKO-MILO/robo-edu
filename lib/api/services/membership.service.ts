@@ -25,8 +25,16 @@ export const membershipService = {
    * POST /checkout/membership
    * Buat transaksi pembelian membership Paket Plus.
    * Mengembalikan purchaseId + snapToken + redirectUrl + total.
+   *
+   * @param opts.paymentMethod   Midtrans payment method string (e.g. "bank_transfer")
+   * @param opts.paymentChannel  Midtrans payment channel (e.g. "bca_va")
+   * @param opts.payerPhoneNumber OVO phone number — only required when channel = "ovo"
    */
-  async createCheckout(): Promise<
+  async createCheckout(opts?: {
+    paymentMethod?: string;
+    paymentChannel?: string;
+    payerPhoneNumber?: string;
+  }): Promise<
     ApiResponse<{
       purchaseId: string;
       purchaseNumber: string;
@@ -35,6 +43,11 @@ export const membershipService = {
       total: number;
     }>
   > {
-    return http.post("/checkout/membership", { package: "PLUS" });
+    return http.post("/checkout/membership", {
+      package: "PLUS",
+      ...(opts?.paymentMethod && { payment_method: opts.paymentMethod }),
+      ...(opts?.paymentChannel && { payment_channel: opts.paymentChannel }),
+      ...(opts?.payerPhoneNumber && { payer_phone_number: opts.payerPhoneNumber }),
+    });
   },
 };

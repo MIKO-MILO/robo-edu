@@ -122,7 +122,7 @@ export default function MembershipConfirmPage() {
 
       // Auth check — redirect if not logged in
       if (meRes.status === 401) {
-        router.replace("/login?redirect=/membership/confirm");
+        router.replace("/login?redirect=/reseller");
         return;
       }
       if (!meRes.ok) throw new Error("Gagal memuat data akun.");
@@ -172,7 +172,11 @@ export default function MembershipConfirmPage() {
     setSubmitError(null);
 
     try {
-      const res = await membershipService.createCheckout();
+      const res = await membershipService.createCheckout({
+        paymentMethod: selectedPayment.method.method,
+        paymentChannel: selectedPayment.method.channel,
+        payerPhoneNumber: selectedPayment.ovoPhone,
+      });
       if (!res.success) throw new Error((res as { message?: string }).message ?? "Gagal membuat transaksi.");
       router.push(`/membership/payment/${res.data.purchaseId}`);
     } catch (err) {
