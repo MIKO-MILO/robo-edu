@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useWishlist, type WishlistProductInput } from "@/contexts/wishlist-context";
+import { useCart } from "@/contexts/cart-context";
 import { ProductCard, type ProductCardProps } from "@/components/ui/product-card";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -10,13 +11,11 @@ import { ProductCard, type ProductCardProps } from "@/components/ui/product-card
 
 interface WishlistAwareProductCardProps extends ProductCardProps {
   /**
-   * Slug produk — dibutuhkan agar WishlistItemCard bisa link ke halaman detail.
-   * Saat backend terhubung, selalu tersedia dari ProductListItem.slug.
+   * Slug produk — dibutuhkan agar card clickable ke halaman detail.
    */
   slug?: string;
   /**
    * Harga mentah (number, satuan Rupiah) — dipakai untuk wishlist item detail.
-   * Jika tidak ada (dummy data belum punya), item akan tampil dengan harga "—".
    */
   priceRaw?: number;
 }
@@ -26,15 +25,17 @@ interface WishlistAwareProductCardProps extends ProductCardProps {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Thin wrapper di atas ProductCard yang menghubungkan props isWishlisted
- * dan onWishlistClick ke WishlistContext.
+ * Integration point di atas ProductCard.
+ * Menyambungkan wishlist context & cart context ke dumb ProductCard.
  *
- * Mengikuti prinsip Separation of Concerns:
- * - ProductCard (components/ui) tetap "dumb" & reusable tanpa tahu context
- * - WishlistAwareProductCard (components/user) adalah integration point
+ * Separation of concerns:
+ * - ProductCard (components/ui) — dumb, tidak tahu context
+ * - WishlistAwareProductCard (components/user) — smart wrapper, context-aware
  *
- * Saat backend terhubung: tidak ada perubahan di sini, hanya di WishlistContext
- * service layer.
+ * Cart UX (Opsi A):
+ * - User atur quantity di stepper, lalu tekan tombol 🛒
+ * - ProductCard me-reset qty ke 1 setelah onAddToCart dipanggil
+ * - isAddingToCart=true selama request berjalan untuk disable interaksi
  */
 export function WishlistAwareProductCard({
   id,
@@ -43,11 +44,14 @@ export function WishlistAwareProductCard({
   price,
   imageUrl,
   priceRaw = 0,
-  onDetailClick,
   ...rest
 }: WishlistAwareProductCardProps) {
   const { isWishlisted, toggleItem } = useWishlist();
+  const { addToCart } = useCart();
 
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // ── Wishlist ───────────────────────────────────────────────────────────────
   const wishlisted = id ? isWishlisted(id) : false;
 
   const handleWishlistClick = useCallback(() => {
@@ -59,12 +63,25 @@ export function WishlistAwareProductCard({
       product_slug: slug ?? "",
       image_url: imageUrl ?? null,
       base_price: priceRaw,
-      // TODO(backend): ambil dari ProductListItem.in_stock saat API terhubung
-      in_stock: true,
+      in_stock: true, // TODO(backend): ambil dari ProductListItem.in_stock
     };
 
     toggleItem(input);
   }, [id, name, slug, imageUrl, priceRaw, toggleItem]);
+
+  // ── Add to Cart ────────────────────────────────────────────────────────────
+  const handleAddToCart = useCallback(
+    async (quantity: number) => {
+      if (!id) return;
+      setIsAddingToCart(true);
+      try {
+        await addToCart({ productId: id, quantity });
+      } finally {
+        setIsAddingToCart(false);
+      }
+    },
+    [id, addToCart],
+  );
 
   return (
     <ProductCard
@@ -74,8 +91,9 @@ export function WishlistAwareProductCard({
       price={price}
       imageUrl={imageUrl}
       isWishlisted={wishlisted}
+      isAddingToCart={isAddingToCart}
       onWishlistClick={handleWishlistClick}
-      onDetailClick={onDetailClick}
+      onAddToCart={handleAddToCart}
       {...rest}
     />
   );
