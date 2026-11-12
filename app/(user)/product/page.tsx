@@ -119,6 +119,7 @@ export default async function ProductsPage(props: ProductsPageProps) {
                   rating={5} // TODO(backend): Ambil dari review aggregator saat tersedia
                   reviewCount="0 ulasan" // TODO(backend): Ambil dari review count saat tersedia
                   imageUrl={product.image ?? "/images/placeholder-product.jpg"}
+                  outOfStock={product.stock === 0}
                   bgColorClass={
                     PASTEL_VARIANTS[
                       (startIndex + index) % PASTEL_VARIANTS.length
