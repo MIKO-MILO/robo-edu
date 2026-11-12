@@ -10,6 +10,10 @@ const midtransClient = require("midtrans-client") as {
   CoreApi: new (cfg: { isProduction: boolean; serverKey: string; clientKey?: string }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     charge: (payload: unknown) => Promise<any>;
+    transaction: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cancel: (orderId: string) => Promise<any>;
+    };
   };
 };
 
@@ -406,6 +410,34 @@ export async function chargeCoreApi(
 
     default:
       throw new Error(`Unsupported paymentType: ${paymentType}`);
+  }
+}
+
+// ── Core API cancel ───────────────────────────────────────────────────────────
+
+/**
+ * Cancel a pending Midtrans Core API transaction by its midtrans_order_id.
+ *
+ * Returns `true` when the cancellation succeeds or the transaction was already
+ * in a terminal state (safe to proceed). Throws only on unexpected errors.
+ */
+export async function cancelCoreApi(midtransOrderId: string): Promise<void> {
+  const coreApi = getCoreApiClient();
+  try {
+    await coreApi.transaction.cancel(midtransOrderId);
+  } catch (err: unknown) {
+    // Midtrans returns a 412 / status_code 412 when the transaction has already
+    // been settled, expired, or cancelled — safe to swallow and continue.
+    const msg = err instanceof Error ? err.message : String(err);
+    if (
+      msg.includes("412") ||
+      msg.toLowerCase().includes("already") ||
+      msg.toLowerCase().includes("denied") ||
+      msg.toLowerCase().includes("not found")
+    ) {
+      return; // already terminal — safe
+    }
+    throw err;
   }
 }
 
