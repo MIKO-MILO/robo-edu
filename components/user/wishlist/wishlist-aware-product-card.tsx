@@ -18,6 +18,11 @@ interface WishlistAwareProductCardProps extends ProductCardProps {
    * Harga mentah (number, satuan Rupiah) — dipakai untuk wishlist item detail.
    */
   priceRaw?: number;
+  /**
+   * Produk tanpa stok aktif — card ditampilkan redup dengan overlay "Stok Habis"
+   * dan semua aksi dinonaktifkan.
+   */
+  outOfStock?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,6 +49,7 @@ export function WishlistAwareProductCard({
   price,
   imageUrl,
   priceRaw = 0,
+  outOfStock,
   ...rest
 }: WishlistAwareProductCardProps) {
   const { isWishlisted, toggleItem } = useWishlist();
@@ -92,6 +98,7 @@ export function WishlistAwareProductCard({
       imageUrl={imageUrl}
       isWishlisted={wishlisted}
       isAddingToCart={isAddingToCart}
+      outOfStock={outOfStock}
       onWishlistClick={handleWishlistClick}
       onAddToCart={handleAddToCart}
       {...rest}

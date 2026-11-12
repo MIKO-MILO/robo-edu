@@ -21,6 +21,8 @@ export interface ProductCardProps {
   bgColorClass?: string;
   isWishlisted?: boolean;
   isAddingToCart?: boolean;
+  /** Jika true: tampilkan overlay "Stok Habis", disable semua aksi, card non-clickable. */
+  outOfStock?: boolean;
   onWishlistClick?: () => void;
   /**
    * Dipanggil saat user menekan tombol add-to-cart.
@@ -32,19 +34,28 @@ export interface ProductCardProps {
 /**
  * Dumb ProductCard — tidak tahu tentang context/store apapun.
  *
- * Layout:
+ * Layout normal:
  * ┌───────────────────────────┐
  * │  [Image]                  │
  * ├───────────────────────────┤
  * │  Nama Produk              │
  * │  ★ rating   Rp harga      │
  * ├───────────────────────────┤
- * │ [♡]   [−][qty][+]  [🛒]  │
+ * │ [♡]       [− qty +] [🛒] │
  * └───────────────────────────┘
  *
- * Seluruh card clickable ke halaman detail (/product/:slug).
- * Tombol-tombol bawah menggunakan stopPropagation agar tidak
- * men-trigger navigasi card.
+ * Layout out-of-stock:
+ * ┌───────────────────────────┐
+ * │  [Image grayscale]        │
+ * │  ┌─────────────────────┐  │
+ * │  │   Stok Habis        │  │  ← overlay di tengah image
+ * │  └─────────────────────┘  │
+ * ├───────────────────────────┤
+ * │  Nama Produk (muted)      │
+ * │  ★ rating   Rp harga      │
+ * ├───────────────────────────┤
+ * │ [♡ disabled] [− disabled +] [🛒 disabled] │
+ * └───────────────────────────┘
  */
 export function ProductCard({
   slug,
@@ -56,15 +67,16 @@ export function ProductCard({
   bgColorClass = "bg-accent-pink",
   isWishlisted,
   isAddingToCart = false,
+  outOfStock = false,
   onWishlistClick,
   onAddToCart,
 }: ProductCardProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
 
-  // ── Navigasi ke detail ───────────────────────────────────────────────────
+  // ── Navigasi ke detail (hanya jika stok tersedia) ───────────────────────
   const handleCardClick = () => {
-    if (slug) router.push(`/product/${slug}`);
+    if (!outOfStock && slug) router.push(`/product/${slug}`);
   };
 
   // ── Wishlist ─────────────────────────────────────────────────────────────
@@ -80,6 +92,8 @@ export function ProductCard({
     setQuantity(1);
   };
 
+  const isDisabled = outOfStock || isAddingToCart;
+
   return (
     <div
       role="article"
@@ -88,15 +102,35 @@ export function ProductCard({
         bgColorClass,
         "rounded-3xl p-3 flex flex-col gap-3",
         "border-2 border-foreground neo-shadow",
-        slug && "cursor-pointer neo-shadow-hover",
+        // Navigable hanya saat stok tersedia
+        !outOfStock && slug && "cursor-pointer neo-shadow-hover",
+        // Redup keseluruhan saat stok habis
+        outOfStock && "opacity-75",
       )}
     >
-      {/* ── Gambar Produk ───────────────────────────────────────── */}
-      <ProductImage src={imageUrl} alt={name} size="md" />
+      {/* ── Gambar Produk + Overlay Stok Habis ─────────────────── */}
+      <div className="relative">
+        <div className={cn(outOfStock && "grayscale opacity-60")}>
+          <ProductImage src={imageUrl} alt={name} size="md" />
+        </div>
+
+        {outOfStock && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-2xl">
+            <span className="bg-card/85 backdrop-blur-[2px] text-danger font-heading font-bold text-sm px-3 py-1.5 rounded-xl border border-danger/30 select-none">
+              Stok Habis
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* ── Info Produk ─────────────────────────────────────────── */}
       <div className="flex flex-col gap-1 px-1">
-        <h3 className="font-heading font-bold text-sm text-foreground leading-tight line-clamp-2">
+        <h3
+          className={cn(
+            "font-heading font-bold text-sm leading-tight line-clamp-2",
+            outOfStock ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
           {name}
         </h3>
 
@@ -107,7 +141,12 @@ export function ProductCard({
             variant="single"
             size="sm"
           />
-          <span className="font-heading font-bold text-sm text-foreground">
+          <span
+            className={cn(
+              "font-heading font-bold text-sm",
+              outOfStock ? "text-muted-foreground" : "text-foreground",
+            )}
+          >
             {price}
           </span>
         </div>
@@ -119,6 +158,7 @@ export function ProductCard({
         <WishlistButton
           isWishlisted={isWishlisted}
           onClick={handleWishlistClick}
+          disabled={isDisabled}
           variant="card"
           size="icon-sm"
         />
@@ -129,14 +169,14 @@ export function ProductCard({
             value={quantity}
             onChange={setQuantity}
             min={1}
-            disabled={isAddingToCart}
+            disabled={isDisabled}
           />
 
           <Button
             type="button"
             variant="card"
             size="icon-sm"
-            disabled={isAddingToCart}
+            disabled={isDisabled}
             onClick={handleAddToCart}
             aria-label={`Tambah ${name} ke keranjang`}
             className="shrink-0"
