@@ -4,10 +4,10 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A MEMBER's Midtrans amount uses member pricing; a non-member's uses normal pricing.
-- [ ] `providerId` and dropship fields are accepted, validated, and persisted on the order.
-- [ ] Every successful checkout creates exactly one `shipments` row with status `PENDING`.
-- [ ] Member price is null-safe (variants without a member price use normal price).
-- [ ] Tests cover member-vs-normal pricing and shipment creation.
+- [x] A MEMBER's Midtrans amount uses member pricing; a non-member's uses normal pricing.
+- [x] `providerId` and dropship fields are accepted, validated, and persisted on the order.
+- [x] Every successful checkout creates exactly one `shipments` row with status `PENDING`.
+- [x] Member price is null-safe (variants without a member price use normal price).
+- [x] Tests cover member-vs-normal pricing and shipment creation.
