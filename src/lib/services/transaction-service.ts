@@ -1,7 +1,7 @@
 import "server-only";
 
 import crypto from "node:crypto";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, count, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import {
   cartItems,
@@ -18,7 +18,10 @@ import {
   voucherUsages,
   vouchers,
 } from "@/src/db/schema";
-import { getSnapClient } from "@/src/lib/payments/midtrans";
+import { chargeCoreApi, type PaymentInstruction } from "@/src/lib/payments/midtrans";
+import { getSetting } from "@/src/lib/services/settings-service";
+
+// ── Input / output types ─────────────────────────────────────────────────────
 
 export type CreatePaymentTransactionInput = {
   /** Must come from the authenticated server session, never from a client request body. */
@@ -30,6 +33,17 @@ export type CreatePaymentTransactionInput = {
   providerId: string;
   voucherCode?: string;
   notes?: string;
+  // ── Payment method (Core API) ──────────────────────────────────────────────
+  /** Midtrans payment_type, e.g. "bank_transfer", "gopay", "echannel", "cstore" */
+  paymentMethod: string;
+  /** Channel within the method, e.g. "bca_va", "qris", "ovo", "alfamart" */
+  paymentChannel: string;
+  /** Required for OVO — the payer's registered mobile number */
+  payerPhoneNumber?: string;
+  /** Required for credit_card — the card token from Midtrans Card.js */
+  cardToken?: string;
+  /** Idempotency key from the checkout request's Idempotency-Key header */
+  idempotencyKey?: string;
   // ── Dropship ─────────────────────────────────────────────────────────────
   /** When true the order is a dropship — senderName + senderPhone are required. */
   isDropship?: boolean;
@@ -42,10 +56,15 @@ export type CreatePaymentTransactionInput = {
 export type CreatePaymentTransactionResult = {
   orderId: string;
   orderNumber: string;
-  snapToken: string;
-  redirectUrl: string;
   total: number;
+  paymentMethod: string;
+  paymentChannel: string;
+  paymentInstruction: PaymentInstruction;
+  expiryTime: string | null;
+  status: string;
 };
+
+// ── Internal helpers ─────────────────────────────────────────────────────────
 
 type PricedCartItem = {
   productId: string;
@@ -55,10 +74,8 @@ type PricedCartItem = {
   sku: string;
   /** Effective unit price: member price when applicable, otherwise regular price. */
   price: number;
-  /** True when the member price was used for this item. */
   isMemberPrice: boolean;
   quantity: number;
-  stock: number;
 };
 
 function asRupiah(value: number, label: string) {
@@ -92,13 +109,6 @@ function calculateDiscount(
   return Math.min(subtotal, base, maximum);
 }
 
-/**
- * Returns true when the user is an active MEMBER right now.
- * Both conditions must hold:
- *   1. membership_status = "MEMBER"
- *   2. membership_expires_at is in the future (or the column is null, which
- *      should not happen for a MEMBER but we guard against it defensively)
- */
 function isActiveMember(user: {
   membershipStatus: string;
   membershipExpiresAt: Date | null;
@@ -108,18 +118,23 @@ function isActiveMember(user: {
   return new Date(user.membershipExpiresAt) > new Date();
 }
 
+// ── Main service ─────────────────────────────────────────────────────────────
+
 /**
- * Prices are read from the database, never trusted from the browser. Call this
- * from an authenticated checkout action after the shipping fee is calculated.
+ * Create a Core API checkout transaction end-to-end:
  *
- * Member pricing: when the calling user is an active MEMBER and a variant has a
- * non-null `resellerPrice` (the member price column), that price is used instead
- * of the regular `price`. Variants with a null `resellerPrice` always fall back
- * to the regular price regardless of membership status.
- *
- * Shipment: a single `shipments` row with status PENDING is created atomically
- * inside the same DB transaction as the order, so admin never needs to create
- * shipments manually.
+ * 1. (Idempotency) If `idempotencyKey` already exists on an order for this
+ *    user, return the previous result — no second charge.
+ * 2. Validate address, provider, dropship fields.
+ * 3. Validate max 3 PENDING orders per user (PENDING_ORDER_LIMIT).
+ * 4. Look up membership → determine effective pricing.
+ * 5. Atomically reserve stock (UPDATE WHERE stock >= qty).
+ * 6. Build order totals (subtotal + discount + tax + shipping).
+ * 7. Insert order (expires_at from settings.order_expires_hours), order items,
+ *    pending payment (midtrans_order_id = {number}-1), shipment — all in one tx.
+ * 8. Charge Midtrans Core API outside the tx.
+ * 9. On success: update payment with instruction + channel + expiry (clamped).
+ * 10. On failure: compensate (restore stock, cancel order/payment, restore voucher).
  */
 export async function createPaymentTransaction(
   input: CreatePaymentTransactionInput,
@@ -127,7 +142,50 @@ export async function createPaymentTransaction(
   const shippingCost = asRupiah(input.shippingCost, "Shipping cost");
   const now = new Date();
 
-  // ── Validate dropship fields up front ────────────────────────────────────
+  // ── 0. Idempotency check ──────────────────────────────────────────────────
+  if (input.idempotencyKey) {
+    const [existing] = await db
+      .select({ id: orders.id, orderNumber: orders.orderNumber, total: orders.total })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.idempotencyKey, input.idempotencyKey),
+          eq(orders.userId, input.userId),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      // Fetch the latest payment for this order
+      const [existingPayment] = await db
+        .select({
+          paymentType: payments.paymentType,
+          paymentChannel: payments.paymentChannel,
+          paymentInstruction: payments.paymentInstruction,
+          expiryTime: payments.expiryTime,
+          status: payments.status,
+        })
+        .from(payments)
+        .where(eq(payments.orderId, existing.id))
+        .orderBy(sql`${payments.attemptNumber} DESC`)
+        .limit(1);
+
+      if (existingPayment?.paymentInstruction) {
+        return {
+          orderId: existing.id,
+          orderNumber: existing.orderNumber,
+          total: Number(existing.total),
+          paymentMethod: existingPayment.paymentType,
+          paymentChannel: existingPayment.paymentChannel ?? input.paymentChannel,
+          paymentInstruction: existingPayment.paymentInstruction as PaymentInstruction,
+          expiryTime: existingPayment.expiryTime?.toISOString() ?? null,
+          status: existingPayment.status,
+        };
+      }
+    }
+  }
+
+  // ── 1. Validate dropship fields ───────────────────────────────────────────
   const isDropship = input.isDropship === true;
   if (isDropship) {
     if (!input.senderName?.trim()) {
@@ -137,6 +195,18 @@ export async function createPaymentTransaction(
       throw new Error("Dropship orders require a sender phone (senderPhone).");
     }
   }
+
+  // Variables set inside the DB transaction, used outside for the Core API call
+  let txResult!: {
+    id: string;
+    number: string;
+    total: number;
+    items: PricedCartItem[];
+    discountAmount: number;
+    shippingCost: number;
+    expiresAt: Date;
+    paymentId: string;
+  };
 
   const result = await db.transaction(async (tx) => {
     // ── Validate address ────────────────────────────────────────────────────
@@ -165,11 +235,28 @@ export async function createPaymentTransaction(
       .limit(1);
     if (!provider) throw new Error("Shipping provider not found or inactive");
 
-    // ── Look up user membership status ──────────────────────────────────────
+    // ── 2. Validate max 3 PENDING orders ───────────────────────────────────
+    const [pendingCount] = await tx
+      .select({ count: count() })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.userId, input.userId),
+          eq(orders.status, "PENDING"),
+        ),
+      );
+    if ((pendingCount?.count ?? 0) >= 3) {
+      throw new Error("PENDING_ORDER_LIMIT: user already has 3 pending orders");
+    }
+
+    // ── 3. Look up user membership ──────────────────────────────────────────
     const [user] = await tx
       .select({
         membershipStatus: users.membershipStatus,
         membershipExpiresAt: users.membershipExpiresAt,
+        name: users.name,
+        email: users.email,
+        phone: users.phone,
       })
       .from(users)
       .where(eq(users.id, input.userId))
@@ -178,7 +265,7 @@ export async function createPaymentTransaction(
 
     const memberActive = isActiveMember(user);
 
-    // ── Fetch cart items with both prices ───────────────────────────────────
+    // ── 4. Fetch cart items with both prices ────────────────────────────────
     const rows = await tx
       .select({
         productId: products.id,
@@ -187,7 +274,7 @@ export async function createPaymentTransaction(
         variantName: productVariants.variantName,
         sku: productVariants.sku,
         regularPrice: productVariants.price,
-        memberPrice: productVariants.resellerPrice, // nullable; null = no member discount
+        memberPrice: productVariants.resellerPrice,
         stock: productVariants.stock,
         quantity: cartItems.quantity,
       })
@@ -206,10 +293,8 @@ export async function createPaymentTransaction(
     if (rows.length === 0)
       throw new Error("Cart is empty or contains unavailable products");
 
-    // ── Determine effective price per item ──────────────────────────────────
+    // ── 5. Determine effective prices ───────────────────────────────────────
     const items: PricedCartItem[] = rows.map((row) => {
-      // Use member price only when: user is active MEMBER AND variant has a
-      // non-null member price. Null member price = no discount for this variant.
       const useMemberPrice =
         memberActive &&
         row.memberPrice !== null &&
@@ -228,17 +313,30 @@ export async function createPaymentTransaction(
         price: effectivePrice,
         isMemberPrice: useMemberPrice,
         quantity: row.quantity,
-        stock: row.stock,
       };
     });
 
+    // ── 6. Atomically reserve stock ─────────────────────────────────────────
     for (const item of items) {
-      if (item.quantity < 1 || item.stock < item.quantity) {
-        throw new Error(`${item.productName} does not have enough stock`);
+      const qty = item.quantity;
+      if (qty < 1) throw new Error(`Invalid quantity for ${item.productName}`);
+
+      const [updateResult] = await tx.execute(
+        sql`UPDATE ${productVariants}
+            SET ${productVariants.stock} = ${productVariants.stock} - ${qty}
+            WHERE ${productVariants.id} = ${item.variantId}
+              AND ${productVariants.stock} >= ${qty}`,
+      );
+      // The result is a ResultSetHeader; affectedRows === 0 means stock was insufficient
+      const affectedRows = (updateResult as { affectedRows?: number }).affectedRows ?? 0;
+      if (affectedRows === 0) {
+        throw new Error(
+          `STOCK_INSUFFICIENT: ${item.productName} does not have enough stock`,
+        );
       }
     }
 
-    // ── Subtotal uses effective (member-aware) prices ───────────────────────
+    // ── 7. Compute totals ───────────────────────────────────────────────────
     const subtotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
@@ -270,14 +368,20 @@ export async function createPaymentTransaction(
     }
 
     const taxableAmount = subtotal - discountAmount;
-    // Pajak 8% dibulatkan ke bawah agar tidak ada selisih desimal
     const taxAmount = Math.floor(taxableAmount * 0.08);
     const total = taxableAmount + shippingCost + taxAmount;
+
+    // ── 8. expires_at from settings ─────────────────────────────────────────
+    const rawHours = await getSetting("order_expires_hours");
+    const expiryHours = rawHours ? (Number(rawHours) || 24) : 24;
+    const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
+
     const id = crypto.randomUUID();
     const number = orderNumber();
+    const paymentId = crypto.randomUUID();
     const recipient = address[0]!;
 
-    // ── Insert order ────────────────────────────────────────────────────────
+    // ── 9. Insert order ─────────────────────────────────────────────────────
     await tx.insert(orders).values({
       id,
       orderNumber: number,
@@ -302,9 +406,11 @@ export async function createPaymentTransaction(
       isDropship,
       senderName: isDropship ? (input.senderName?.trim() ?? null) : null,
       senderPhone: isDropship ? (input.senderPhone?.trim() ?? null) : null,
+      expiresAt,
+      idempotencyKey: input.idempotencyKey ?? null,
     });
 
-    // ── Insert order items (snapshot prices at checkout time) ───────────────
+    // ── 10. Insert order items ───────────────────────────────────────────────
     await tx.insert(orderItems).values(
       items.map((item) => ({
         id: crypto.randomUUID(),
@@ -314,36 +420,36 @@ export async function createPaymentTransaction(
         productNameSnapshot: item.productName,
         variantNameSnapshot: item.variantName,
         skuSnapshot: item.sku,
-        priceSnapshot: String(item.price),  // effective price (member or regular)
+        priceSnapshot: String(item.price),
         quantity: item.quantity,
         subtotal: String(item.price * item.quantity),
       })),
     );
 
-    // ── Insert pending payment ──────────────────────────────────────────────
+    // ── 11. Insert PENDING payment (midtrans_order_id = {number}-1) ─────────
+    const midtransOrderId = `${number}-1`;
     await tx.insert(payments).values({
-      id: crypto.randomUUID(),
+      id: paymentId,
       orderId: id,
-      // Midtrans order reference — the order number. Midtrans sends its
-      // transaction ID later through the webhook (midtrans_transaction_id).
-      midtransOrderId: number,
+      midtransOrderId,
       attemptNumber: 1,
-      paymentType: "MIDTRANS_SNAP",
+      paymentType: input.paymentMethod,
+      paymentChannel: input.paymentChannel,
+      payerPhoneNumber: input.payerPhoneNumber ?? null,
       status: "PENDING",
       amount: String(total),
     });
 
-    // ── Auto-create shipment row (status PENDING) ───────────────────────────
-    // Admin never creates shipments manually — the shipment record exists from
-    // the moment an order is placed so tracking can start immediately.
+    // ── 12. Insert PENDING shipment ──────────────────────────────────────────
     await tx.insert(shipments).values({
       id: crypto.randomUUID(),
       orderId: id,
       shippingProviderId: provider.id,
-      service: provider.name,  // default service = provider name; admin can update
+      service: provider.name,
       status: "pending",
     });
 
+    // ── 13. Voucher usage + clear cart ───────────────────────────────────────
     if (voucher) {
       await tx.insert(voucherUsages).values({
         id: crypto.randomUUID(),
@@ -358,7 +464,6 @@ export async function createPaymentTransaction(
         .where(eq(vouchers.id, voucher.id));
     }
 
-    // ── Clear cart ──────────────────────────────────────────────────────────
     const [userCart] = await tx
       .select({ id: carts.id })
       .from(carts)
@@ -369,152 +474,169 @@ export async function createPaymentTransaction(
       await tx.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
     }
 
-    return { id, number, total, items, discountAmount, shippingCost };
+    return {
+      id,
+      number,
+      total,
+      items,
+      discountAmount,
+      shippingCost,
+      expiresAt,
+      paymentId,
+      midtransOrderId,
+      userEmail: user.email,
+      userName: user.name,
+      userPhone: user.phone,
+      recipientPhone: recipient.phone,
+    };
   });
 
-  // ── Call Midtrans Snap (outside DB transaction) ──────────────────────────
-  const snap = getSnapClient();
+  txResult = result;
+  const { id, number, total, items, expiresAt, paymentId } = result;
+  const midtransOrderId = result.midtransOrderId;
+
+  // ── 14. Charge Midtrans Core API (outside DB tx) ──────────────────────────
+  // Build item details — if discount/tax/shipping make sum ambiguous, use aggregate
+  const baseItems = items.map((item) => ({
+    id: item.sku,
+    name: `${item.productName} - ${item.variantName}`.slice(0, 50),
+    price: item.price,
+    quantity: item.quantity,
+  }));
+
+  const subtotalFromItems = baseItems.reduce(
+    (s, it) => s + it.price * it.quantity,
+    0,
+  );
+  const discountApplied = result.discountAmount;
+  const shippingApplied = result.shippingCost;
+  const expectedBase = subtotalFromItems - discountApplied + shippingApplied;
+  const taxExpected = Math.floor(expectedBase * 0.08);
+  const computedFromParts = expectedBase + taxExpected;
+  const useAggregate =
+    discountApplied > 0 || Math.abs(computedFromParts - Number(total)) > 1;
+
+  let itemDetails: Array<{ id: string; name: string; price: number; quantity: number }>;
+  if (useAggregate) {
+    itemDetails = [{ id: "ORDER", name: "Pembayaran RoboEdu", price: total, quantity: 1 }];
+  } else {
+    const taxLine = Number(total) - expectedBase;
+    itemDetails = [...baseItems];
+    if (shippingApplied > 0) {
+      itemDetails.push({ id: "SHIPPING", name: "Biaya pengiriman", price: shippingApplied, quantity: 1 });
+    }
+    if (taxLine > 0) {
+      itemDetails.push({ id: "TAX", name: "Pajak PPN", price: taxLine, quantity: 1 });
+    }
+    const sumCheck = itemDetails.reduce((s, it) => s + it.price * it.quantity, 0);
+    if (sumCheck !== Number(total)) {
+      itemDetails = [{ id: "ORDER", name: "Pembayaran RoboEdu", price: total, quantity: 1 }];
+    }
+  }
+
+  const nameParts = result.userName.split(" ");
+  const customerDetails = {
+    first_name: nameParts[0] ?? result.userName,
+    last_name: nameParts.slice(1).join(" ") || undefined,
+    email: result.userEmail,
+    phone: result.recipientPhone || result.userPhone || undefined,
+  };
+
+  // Compute expiry as remaining minutes until order.expires_at
+  const msLeft = expiresAt.getTime() - Date.now();
+  const minutesLeft = Math.max(1, Math.floor(msLeft / 60_000));
+  const expiryParam = { duration: minutesLeft, unit: "minutes" as const };
+
   try {
-    const baseItems = result.items.map((item) => ({
-      id: item.sku,
-      name: `${item.productName} - ${item.variantName}`.slice(0, 50),
-      price: item.price,
-      quantity: item.quantity,
-    }));
-    const extras: Array<{
-      id: string;
-      name: string;
-      price: number;
-      quantity: number;
-    }> = [];
-    if (result.shippingCost > 0) {
-      extras.push({
-        id: "SHIPPING",
-        name: "Biaya pengiriman",
-        price: result.shippingCost,
-        quantity: 1,
-      });
-    }
-
-    const subtotalItems = baseItems.reduce(
-      (s, it) => s + it.price * it.quantity,
-      0,
-    );
-    const discountApplied = result.discountAmount;
-    const shippingApplied = result.shippingCost;
-    const expectedSubtotalBeforeTax =
-      subtotalItems - discountApplied + shippingApplied;
-    const taxExpected = Math.floor(expectedSubtotalBeforeTax * 0.08);
-    const computedTotalFromBranch = expectedSubtotalBeforeTax + taxExpected;
-
-    const useAggregate =
-      discountApplied > 0 ||
-      Math.abs(computedTotalFromBranch - Number(result.total)) > 1;
-
-    let itemDetails: Array<{
-      id: string;
-      name: string;
-      price: number;
-      quantity: number;
-    }>;
-    if (useAggregate) {
-      itemDetails = [
-        {
-          id: "ORDER",
-          name: "Pembayaran RoboEdu",
-          price: Number(result.total),
-          quantity: 1,
-        },
-      ];
-    } else {
-      const taxFromTotal = Number(result.total) - expectedSubtotalBeforeTax;
-      itemDetails = [...baseItems, ...extras];
-      if (taxFromTotal > 0) {
-        itemDetails.push({
-          id: "TAX",
-          name: "Pajak PPN",
-          price: taxFromTotal,
-          quantity: 1,
-        });
-      }
-    }
-
-    const sumCheck = itemDetails.reduce(
-      (s, it) => s + it.price * it.quantity,
-      0,
-    );
-    if (sumCheck !== Number(result.total)) {
-      itemDetails = [
-        {
-          id: "ORDER",
-          name: "Pembayaran RoboEdu",
-          price: Number(result.total),
-          quantity: 1,
-        },
-      ];
-    }
-
-    const transaction = await snap.createTransaction({
-      transaction_details: {
-        order_id: result.number,
-        gross_amount: Number(result.total),
-      },
-      item_details: itemDetails,
+    const charge = await chargeCoreApi({
+      paymentType: input.paymentMethod,
+      channel: input.paymentChannel,
+      midtransOrderId,
+      grossAmount: total,
+      customerDetails,
+      itemDetails,
+      payerPhoneNumber: input.payerPhoneNumber,
+      cardToken: input.cardToken,
+      expiry: expiryParam,
     });
 
-    // Simpan snap token ke rawResponse agar bisa dipakai ulang tanpa
-    // memanggil Midtrans lagi (token berlaku 24 jam).
+    // Clamp expiry: must not exceed order.expires_at
+    const rawExpiry = charge.expiryTime;
+    const clampedExpiry =
+      rawExpiry && rawExpiry < expiresAt ? rawExpiry : expiresAt;
+
+    // ── 15. Update payment with instruction + channel + expiry ────────────
     await db
       .update(payments)
       .set({
-        rawResponse: {
-          snap_token: transaction.token,
-          redirect_url: transaction.redirect_url,
-          created_at: new Date().toISOString(),
-        },
+        paymentInstruction: charge.instruction,
+        paymentChannel: input.paymentChannel,
+        payerPhoneNumber: input.payerPhoneNumber ?? null,
+        expiryTime: clampedExpiry,
+        transactionTime: now,
+        rawResponse: charge.raw,
       })
-      .where(eq(payments.orderId, result.id));
+      .where(eq(payments.id, paymentId));
 
     return {
-      orderId: result.id,
-      orderNumber: result.number,
-      snapToken: transaction.token,
-      redirectUrl: transaction.redirect_url,
-      total: result.total,
+      orderId: id,
+      orderNumber: number,
+      total,
+      paymentMethod: input.paymentMethod,
+      paymentChannel: input.paymentChannel,
+      paymentInstruction: charge.instruction,
+      expiryTime: clampedExpiry.toISOString(),
+      status: "PENDING",
     };
-  } catch (error) {
+  } catch (chargeError) {
+    // ── 16. Compensation: restore stock, cancel order, fail payment ────────
     await db.transaction(async (tx) => {
+      // Restore stock for each item
+      for (const item of txResult.items) {
+        await tx
+          .update(productVariants)
+          .set({ stock: sql`${productVariants.stock} + ${item.quantity}` })
+          .where(eq(productVariants.id, item.variantId));
+      }
+
+      // Mark payment FAILED
       await tx
         .update(payments)
         .set({
           status: "FAILED",
           rawResponse: {
-            snapError:
-              error instanceof Error ? error.message : "Unknown Snap error",
+            chargeError:
+              chargeError instanceof Error
+                ? chargeError.message
+                : "Unknown charge error",
           },
         })
-        .where(eq(payments.orderId, result.id));
+        .where(eq(payments.id, paymentId));
+
+      // Cancel order
       await tx
         .update(orders)
         .set({ status: "CANCELLED", cancelledAt: new Date() })
-        .where(eq(orders.id, result.id));
+        .where(eq(orders.id, id));
 
-      // A failed token request must not consume a limited-use voucher.
-      const [failedOrder] = await tx
+      // Restore voucher usage if any
+      const [cancelledOrder] = await tx
         .select()
         .from(orders)
-        .where(eq(orders.id, result.id))
+        .where(eq(orders.id, id))
         .limit(1);
-      if (failedOrder?.voucherId) {
-        await tx
-          .delete(voucherUsages)
-          .where(eq(voucherUsages.orderId, result.id));
+      if (cancelledOrder?.voucherId) {
+        await tx.delete(voucherUsages).where(eq(voucherUsages.orderId, id));
         await tx
           .update(vouchers)
           .set({ usedCount: sql`GREATEST(${vouchers.usedCount} - 1, 0)` })
-          .where(eq(vouchers.id, failedOrder.voucherId));
+          .where(eq(vouchers.id, cancelledOrder.voucherId));
       }
     });
-    throw error;
+
+    // Re-throw as PAYMENT_CHARGE_FAILED so the route returns 422
+    const msg =
+      chargeError instanceof Error ? chargeError.message : "Charge failed";
+    throw new Error(`PAYMENT_CHARGE_FAILED: ${msg}`);
   }
 }

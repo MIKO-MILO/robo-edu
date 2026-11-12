@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { orders, payments } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
@@ -9,11 +9,21 @@ export const runtime = "nodejs";
 /**
  * GET /api/orders/[id]/payment-info
  *
- * Mengembalikan info order + payment yang dibutuhkan halaman pembayaran
- * kustom (Core API UI). Termasuk payment_channel dari rawResponse dan
- * payment_instruction (dari Core API; placeholder ketika belum tersedia).
+ * Returns the order + the latest payment attempt for the custom payment page.
  *
- * Hanya order milik user yang login — 404 jika bukan pemilik.
+ * payment_instruction is read from the dedicated `payments.payment_instruction`
+ * column (written by checkout / retry). This survives the webhook's rawResponse
+ * overwrite because the webhook only updates rawResponse, not payment_instruction.
+ *
+ * Legacy Snap orders that lack a dedicated payment_instruction fall back to
+ * rawResponse.payment_instruction for backward-compatibility.
+ *
+ * payment_channel resolution order:
+ *   1. payments.payment_channel (dedicated column, set at checkout / retry)
+ *   2. rawResponse.payment_channel (Core API webhook field)
+ *   3. rawResponse.payment_type
+ *   4. payments.paymentType (Snap fallback)
+ *   5. "bank_transfer" (last resort)
  */
 export async function GET(
   _req: NextRequest,
@@ -36,6 +46,7 @@ export async function GET(
       orderNumber: orders.orderNumber,
       status: orders.status,
       total: orders.total,
+      expiresAt: orders.expiresAt,
       createdAt: orders.createdAt,
     })
     .from(orders)
@@ -49,35 +60,66 @@ export async function GET(
     );
   }
 
-  // Fetch payment
+  // Fetch the LATEST payment attempt for this order
   const [payment] = await db
     .select({
+      id: payments.id,
       status: payments.status,
       paymentType: payments.paymentType,
+      paymentChannel: payments.paymentChannel,
+      paymentInstruction: payments.paymentInstruction,
+      payerPhoneNumber: payments.payerPhoneNumber,
       amount: payments.amount,
       expiryTime: payments.expiryTime,
       transactionTime: payments.transactionTime,
+      attemptNumber: payments.attemptNumber,
       rawResponse: payments.rawResponse,
     })
     .from(payments)
     .where(eq(payments.orderId, id))
+    .orderBy(desc(payments.attemptNumber))
     .limit(1);
 
-  // Extract payment_channel from rawResponse if available (set by Core API webhook)
-  // or fall back to paymentType stored at checkout.
-  const raw = (payment?.rawResponse ?? {}) as Record<string, unknown>;
-  const paymentChannel =
-    typeof raw.payment_channel === "string"
-      ? raw.payment_channel
-      : typeof raw.payment_type === "string"
-        ? raw.payment_type
-        : payment?.paymentType ?? "bank_transfer";
+  if (!payment) {
+    return NextResponse.json({
+      success: true,
+      data: {
+        order: {
+          id: order.id,
+          order_number: order.orderNumber,
+          status: order.status,
+          total: Number(order.total),
+          expires_at: order.expiresAt?.toISOString() ?? null,
+          created_at: order.createdAt.toISOString(),
+        },
+        payment: null,
+      },
+    });
+  }
 
-  // payment_instruction: from Core API (not yet available, so null in mock scenario)
+  // ── Resolve payment_channel ──────────────────────────────────────────────
+  const raw = (payment.rawResponse ?? {}) as Record<string, unknown>;
+  const paymentChannel =
+    // 1. Dedicated column (Core API checkout / retry)
+    typeof payment.paymentChannel === "string" && payment.paymentChannel
+      ? payment.paymentChannel
+      // 2. Webhook writes payment_channel into rawResponse for Core API orders
+      : typeof raw.payment_channel === "string"
+        ? raw.payment_channel
+        // 3. rawResponse.payment_type (Snap / Core API)
+        : typeof raw.payment_type === "string"
+          ? raw.payment_type
+          // 4. paymentType column
+          : payment.paymentType ?? "bank_transfer";
+
+  // ── Resolve payment_instruction ──────────────────────────────────────────
+  // Dedicated column wins — it is not overwritten by the webhook.
   const paymentInstruction =
-    raw.payment_instruction != null
-      ? (raw.payment_instruction as Record<string, unknown>)
-      : null;
+    payment.paymentInstruction != null
+      ? payment.paymentInstruction
+      : raw.payment_instruction != null
+        ? (raw.payment_instruction as Record<string, unknown>)
+        : null;
 
   return NextResponse.json({
     success: true,
@@ -87,19 +129,21 @@ export async function GET(
         order_number: order.orderNumber,
         status: order.status,
         total: Number(order.total),
+        expires_at: order.expiresAt?.toISOString() ?? null,
         created_at: order.createdAt.toISOString(),
       },
-      payment: payment
-        ? {
-            status: payment.status,
-            payment_type: payment.paymentType,
-            payment_channel: paymentChannel,
-            amount: Number(payment.amount),
-            expiry_time: payment.expiryTime?.toISOString() ?? null,
-            transaction_time: payment.transactionTime?.toISOString() ?? null,
-            payment_instruction: paymentInstruction,
-          }
-        : null,
+      payment: {
+        id: payment.id,
+        status: payment.status,
+        payment_type: payment.paymentType,
+        payment_channel: paymentChannel,
+        payment_instruction: paymentInstruction,
+        payer_phone_number: payment.payerPhoneNumber ?? null,
+        amount: Number(payment.amount),
+        expiry_time: payment.expiryTime?.toISOString() ?? null,
+        transaction_time: payment.transactionTime?.toISOString() ?? null,
+        attempt_number: payment.attemptNumber,
+      },
     },
   });
 }
