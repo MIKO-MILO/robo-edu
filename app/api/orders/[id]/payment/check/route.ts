@@ -97,15 +97,19 @@ export async function POST(
   // ── No payment or already terminal → return current status ──────────────
   const currentStatus = (payment?.status ?? "PENDING") as PaymentState;
 
-  if (!payment || TERMINAL_PAYMENT_STATES.has(currentStatus)) {
-    return NextResponse.json({
+  /** Build the standard { status, payment_instruction, expiry_time } response. */
+  const statusResponse = (state: PaymentState) =>
+    NextResponse.json({
       success: true,
       data: {
-        status: currentStatus,
+        status: state,
         payment_instruction: payment?.paymentInstruction ?? null,
         expiry_time: payment?.expiryTime?.toISOString() ?? null,
       },
     });
+
+  if (!payment || TERMINAL_PAYMENT_STATES.has(currentStatus)) {
+    return statusResponse(currentStatus);
   }
 
   // ── Query Midtrans for the current transaction status ─────────────────────
@@ -114,26 +118,12 @@ export async function POST(
     midtransStatus = await getCoreApiStatus(payment.midtransOrderId);
   } catch {
     // Midtrans API error — return current status without updating DB
-    return NextResponse.json({
-      success: true,
-      data: {
-        status: currentStatus,
-        payment_instruction: payment.paymentInstruction ?? null,
-        expiry_time: payment.expiryTime?.toISOString() ?? null,
-      },
-    });
+    return statusResponse(currentStatus);
   }
 
   // Transaction not found at Midtrans — return current status
   if (!midtransStatus) {
-    return NextResponse.json({
-      success: true,
-      data: {
-        status: currentStatus,
-        payment_instruction: payment.paymentInstruction ?? null,
-        expiry_time: payment.expiryTime?.toISOString() ?? null,
-      },
-    });
+    return statusResponse(currentStatus);
   }
 
   // ── Map Midtrans status to our internal payment state ─────────────────────
@@ -150,26 +140,7 @@ export async function POST(
 
   // If Midtrans says PENDING or chargeback (null), nothing to update
   if (newState === null || newState === "PENDING") {
-    return NextResponse.json({
-      success: true,
-      data: {
-        status: currentStatus,
-        payment_instruction: payment.paymentInstruction ?? null,
-        expiry_time: payment.expiryTime?.toISOString() ?? null,
-      },
-    });
-  }
-
-  // ── Idempotency: payment already terminal in DB ──────────────────────────
-  if (TERMINAL_PAYMENT_STATES.has(currentStatus)) {
-    return NextResponse.json({
-      success: true,
-      data: {
-        status: currentStatus,
-        payment_instruction: payment.paymentInstruction ?? null,
-        expiry_time: payment.expiryTime?.toISOString() ?? null,
-      },
-    });
+    return statusResponse(currentStatus);
   }
 
   // ── Sync DB with the new state ───────────────────────────────────────────
