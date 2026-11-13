@@ -5,49 +5,17 @@ import { db } from "@/src/db";
 import { auditLogs, membershipPurchases, orders, payments, users } from "@/src/db/schema";
 import {
   isValidMidtransSignature,
+  resolvePaymentState,
+  TERMINAL_PAYMENT_STATES,
   type MidtransNotification,
+  type PaymentState,
 } from "@/src/lib/payments/midtrans";
 import { enqueueEmail } from "@/src/lib/queue/email-queue";
 import crypto from "node:crypto";
 
 export const runtime = "nodejs";
 
-// ── Status helpers ────────────────────────────────────────────────────────────
-
-type PaymentState = "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED";
-
-/** Terminal payment states — once reached, no further update is applied (idempotency). */
-const TERMINAL_PAYMENT_STATES = new Set<PaymentState>(["PAID", "FAILED", "EXPIRED", "REFUNDED"]);
-
-/**
- * Map a Midtrans `transaction_status` + optional `fraud_status` to our
- * internal payment state.
- *
- * Returns null for `chargeback` because that notification does NOT change
- * payment status — it triggers an audit log + Sentry alert only.
- */
-function resolvePaymentState(notification: MidtransNotification): PaymentState | null {
-  switch (notification.transaction_status) {
-    case "settlement":
-      return "PAID";
-    case "capture":
-      // Core API card payments: fraud_status must be "accept" to settle.
-      return notification.fraud_status === "accept" ? "PAID" : "PENDING";
-    case "expire":
-      return "EXPIRED";
-    case "cancel":
-    case "deny":
-    case "failure":
-      return "FAILED";
-    case "refund":
-    case "partial_refund":
-      return "REFUNDED";
-    case "chargeback":
-      return null; // handled separately — no status change
-    default:
-      return "PENDING";
-  }
-}
+// ── Notification shape validation ─────────────────────────────────────────────
 
 function hasNotificationShape(
   value: unknown,
@@ -148,7 +116,7 @@ async function handleMembershipWebhook(
     return NextResponse.json({ received: true });
   }
 
-  const newState = resolvePaymentState(body);
+  const newState = resolvePaymentState(body.transaction_status, body.fraud_status);
   const timestamp = body.transaction_time
     ? new Date(body.transaction_time)
     : new Date();
@@ -358,7 +326,7 @@ async function handleOrderWebhook(
     return NextResponse.json({ received: true });
   }
 
-  const newState = resolvePaymentState(body);
+  const newState = resolvePaymentState(body.transaction_status, body.fraud_status);
 
   // ── Idempotency guard: already at a terminal payment state ────────────────
   if (newState !== null && TERMINAL_PAYMENT_STATES.has(payment.status as PaymentState)) {

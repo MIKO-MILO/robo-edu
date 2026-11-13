@@ -989,12 +989,13 @@ export function PaymentInstructionPage({
 
   // ── Fetch payment info ──────────────────────────────────────────────────
   const fetchPaymentInfo = useCallback(async () => {
-    // For membership context, the payment-info endpoint will differ in the future.
-    // For now, both use the same orders endpoint (membership purchase shares the route).
+    // Order context polls the Core API payment endpoint (returns real
+    // payment_instruction from Midtrans). Membership still uses payment-info
+    // until its Core API migration is complete.
     const url =
       context === "membership"
         ? `/api/membership/payment-info/${transactionId}`
-        : `/api/orders/${transactionId}/payment-info`;
+        : `/api/orders/${transactionId}/payment`;
 
     try {
       const res = await fetch(url);
@@ -1067,7 +1068,13 @@ export function PaymentInstructionPage({
         { method: "POST" },
       );
 
-      if (res.status === 404 || res.status === 405) {
+      // Membership check endpoint doesn't exist yet — 404/405 means the
+      // feature isn't wired. For order context the endpoint exists, so a
+      // 404 means the order wasn't found (handled as a regular error below).
+      if (
+        context === "membership" &&
+        (res.status === 404 || res.status === 405)
+      ) {
         setToast("Fitur cek status belum tersedia.");
         return;
       }
@@ -1078,6 +1085,8 @@ export function PaymentInstructionPage({
         return;
       }
 
+      // Re-fetch payment info to update the UI without a page reload.
+      // The check endpoint syncs the DB, then this GET returns the fresh state.
       await fetchPaymentInfo();
       setToast("Status pembayaran diperbarui.");
     } catch {
