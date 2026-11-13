@@ -54,30 +54,35 @@ export async function GET(request: NextRequest) {
     if (productType) filters.push(eq(productTypes.slug, productType));
 
     // ─── Sorting ───────────────────────────────────────────────────────────
+    // Secondary sort: produk dengan totalStock = 0 selalu di akhir,
+    // apapun sort utama yang dipilih user (tiebreaker lintas halaman).
+    const outOfStockLast = sql`CASE WHEN COALESCE(SUM(
+      CASE WHEN ${productVariants.status} = 'active'
+      THEN ${productVariants.stock} ELSE 0 END
+    ), 0) = 0 THEN 1 ELSE 0 END`;
+
     let orderBy;
     switch (sort) {
       case "price_asc":
-        orderBy = asc(sql`MIN(${productVariants.price})`);
+        orderBy = [asc(outOfStockLast), asc(sql`MIN(${productVariants.price})`)];
         break;
       case "price_desc":
-        orderBy = desc(sql`MAX(${productVariants.price})`);
+        orderBy = [asc(outOfStockLast), desc(sql`MAX(${productVariants.price})`)];
         break;
       case "name_asc":
-        orderBy = asc(products.name);
+        orderBy = [asc(outOfStockLast), asc(products.name)];
         break;
       case "name_desc":
-        orderBy = desc(products.name);
+        orderBy = [asc(outOfStockLast), desc(products.name)];
         break;
       case "oldest":
-        orderBy = asc(products.createdAt);
+        orderBy = [asc(outOfStockLast), asc(products.createdAt)];
         break;
       case "newest":
       default:
-        orderBy = desc(products.createdAt);
+        orderBy = [asc(outOfStockLast), desc(products.createdAt)];
         break;
     }
-
-    // ─── Total count ───────────────────────────────────────────────────────
     const [totalResult] = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${products.id})` })
       .from(products)
@@ -154,7 +159,7 @@ export async function GET(request: NextRequest) {
         productTypes.name,
         productTypes.slug,
       )
-      .orderBy(orderBy)
+      .orderBy(...orderBy)
       .limit(limit)
       .offset(offset);
 

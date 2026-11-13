@@ -126,7 +126,7 @@ CREATE INDEX `refunds_processed_by_idx`           ON `refunds` (`processed_by`);
 
 INSERT INTO `settings` (`key`, `value`) VALUES
   ('order_expires_hours', '24'),
-  ('payment_methods_config', '{"credit_card":true,"bank_transfer":true,"bca":true,"bni":true,"bri":true,"echannel":true,"gopay":true,"shopeepay":true,"qris":true,"cstore":true,"danamon_online":true,"akulaku":true}')
+  ('payment_methods_config', '{"bca_va":true,"bni_va":true,"bri_va":true,"mandiri_va":true,"permata_va":true,"cimb_va":true,"credit_card":true,"gopay":true,"shopeepay":true,"qris":true,"dana":true,"ovo":true,"alfamart":true,"indomaret":true}')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
 
 SET FOREIGN_KEY_CHECKS = 1;

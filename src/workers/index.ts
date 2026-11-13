@@ -1,23 +1,17 @@
 /**
-<<<<<<< HEAD
- * BullMQ email worker entry point.
-=======
- * BullMQ email worker + membership cron entry point.
->>>>>>> origin/backend-membership-cron-reminders
+ * BullMQ email worker + order worker + membership cron entry point.
  *
  * Run with:
  *   npm run worker
  *
-<<<<<<< HEAD
- * This process is separate from the Next.js app server. It connects to Redis,
- * subscribes to the "email" queue, and processes jobs by calling Resend.
-=======
  * This process is separate from the Next.js app server. It:
- *   1. Subscribes to the "email" BullMQ queue and processes jobs.
- *   2. Runs two daily cron jobs:
+ *   1. Subscribes to the "email" BullMQ queue and processes email jobs.
+ *   2. Subscribes to the "order" BullMQ queue and processes:
+ *        - order-auto-cancel  : scheduled every 5 min, sweeps expired PENDING orders.
+ *        - payment-reconcile  : delayed per-payment job, syncs Midtrans status.
+ *   3. Runs two daily cron jobs:
  *      - 01:00 WIB (18:00 UTC) — expire memberships
  *      - 08:00 WIB (01:00 UTC) — enqueue h7/h3 reminder emails
->>>>>>> origin/backend-membership-cron-reminders
  *
  * DO NOT import anything with `import "server-only"` here — this is a plain
  * Node.js process, not a Next.js context.
@@ -27,17 +21,19 @@ import "dotenv/config";
 
 import { Worker, type Job } from "bullmq";
 import { eq } from "drizzle-orm";
-<<<<<<< HEAD
-=======
 import mysql from "mysql2/promise";
 import { drizzle } from "drizzle-orm/mysql2";
->>>>>>> origin/backend-membership-cron-reminders
 
 import {
   EMAIL_QUEUE_NAME,
   getRedisConnection,
   type EmailJobData,
 } from "@/src/lib/queue/email-queue";
+import {
+  ORDER_QUEUE_NAME,
+  registerOrderAutoCancelJob,
+  type OrderJobData,
+} from "@/src/lib/queue/order-queue";
 import { sendEmailWorker } from "@/src/lib/email/send-worker";
 import {
   orderConfirmationEmailSubject,
@@ -47,24 +43,19 @@ import {
   membershipReceiptEmailSubject,
   membershipReceiptEmailHtml,
 } from "@/src/lib/email/templates/membership-receipt";
-<<<<<<< HEAD
-
-// Import db via a worker-safe path (send-worker.ts already creates its own pool;
-// here we need direct DB access to fetch data for email templates).
-import mysql from "mysql2/promise";
-import { drizzle } from "drizzle-orm/mysql2";
-import * as schema from "@/src/db/schema";
-
-=======
 import {
   runExpireMemberships,
   runReminderQueue,
 } from "@/src/lib/cron/membership-cron";
+import { runOrderAutoCancel } from "@/src/lib/jobs/order-auto-cancel";
+import { runPaymentReconcile } from "@/src/lib/jobs/payment-reconcile";
+
+// Import db via a worker-safe path (send-worker.ts already creates its own pool;
+// here we need direct DB access to fetch data for email templates).
 import * as schema from "@/src/db/schema";
 
 // ── DB ────────────────────────────────────────────────────────────────────────
 
->>>>>>> origin/backend-membership-cron-reminders
 const DB_URL = process.env.DATABASE_URL;
 if (!DB_URL) throw new Error("DATABASE_URL is not configured");
 
@@ -168,10 +159,7 @@ async function handleMembershipReceipt(
     return;
   }
 
-<<<<<<< HEAD
   // Get payment method from linked payment row
-=======
->>>>>>> origin/backend-membership-cron-reminders
   const [payment] = await db
     .select({ paymentType: schema.payments.paymentType })
     .from(schema.payments)
@@ -240,10 +228,7 @@ async function handleMembershipReminder(
       ? `Membership Plus-mu berakhir 7 hari lagi ⏰`
       : `Membership Plus-mu berakhir 3 hari lagi ⚠️`;
 
-<<<<<<< HEAD
   // Minimal plain reminder — ticket 18 can replace with a richer template
-=======
->>>>>>> origin/backend-membership-cron-reminders
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;padding:24px;">
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
@@ -259,21 +244,13 @@ async function handleMembershipReminder(
     to: user.email,
     subject,
     html,
-<<<<<<< HEAD
-    type: type === "membership-reminder-h7" ? "OTHER" : "OTHER",
-=======
     type: "OTHER",
->>>>>>> origin/backend-membership-cron-reminders
     userId,
     orderId: null,
   });
 }
 
-<<<<<<< HEAD
-// ── Worker ────────────────────────────────────────────────────────────────────
-=======
 // ── BullMQ Worker ─────────────────────────────────────────────────────────────
->>>>>>> origin/backend-membership-cron-reminders
 
 const worker = new Worker<EmailJobData>(
   EMAIL_QUEUE_NAME,
@@ -300,10 +277,7 @@ const worker = new Worker<EmailJobData>(
         break;
 
       default: {
-<<<<<<< HEAD
         // TypeScript exhaustive check
-=======
->>>>>>> origin/backend-membership-cron-reminders
         const exhaustive: never = data;
         console.warn(`[worker] Unknown job type:`, exhaustive);
       }
@@ -330,8 +304,71 @@ console.log(
   `[worker] 🚀 Email worker started — listening on queue "${EMAIL_QUEUE_NAME}"`,
 );
 
-<<<<<<< HEAD
-=======
+// ── BullMQ Order Worker ───────────────────────────────────────────────────────
+
+const orderWorker = new Worker<OrderJobData>(
+  ORDER_QUEUE_NAME,
+  async (job: Job<OrderJobData>) => {
+    const { data } = job;
+    console.log(`[order-worker] Processing job ${job.id} type=${data.type}`);
+
+    switch (data.type) {
+      case "order-auto-cancel":
+        await runOrderAutoCancel(db);
+        break;
+
+      case "payment-reconcile":
+        await runPaymentReconcile(db, {
+          paymentId: data.paymentId,
+          midtransOrderId: data.midtransOrderId,
+          orderId: data.orderId,
+        });
+        break;
+
+      default: {
+        // TypeScript exhaustive check
+        const exhaustive: never = data;
+        console.warn(`[order-worker] Unknown job type:`, exhaustive);
+      }
+    }
+  },
+  {
+    connection: getRedisConnection(),
+    concurrency: 2,
+  },
+);
+
+orderWorker.on("completed", (job) => {
+  console.log(
+    `[order-worker] ✅ Job ${job.id} (${job.data.type}) completed`,
+  );
+});
+
+orderWorker.on("failed", (job, err) => {
+  console.error(
+    `[order-worker] ❌ Job ${job?.id} (${job?.data?.type}) failed (attempt ${job?.attemptsMade}):`,
+    err.message,
+  );
+});
+
+// Register the repeatable order-auto-cancel job (runs every 5 min).
+// BullMQ deduplicates by jobId so calling this multiple times is safe.
+registerOrderAutoCancelJob()
+  .then(() => {
+    console.log(
+      `[order-worker] 🚀 Order worker started — listening on queue "${ORDER_QUEUE_NAME}"`,
+    );
+    console.log(
+      `[order-worker] 🔁 order-auto-cancel repeatable job registered (every 5 min)`,
+    );
+  })
+  .catch((err: unknown) => {
+    console.error(
+      "[order-worker] Failed to register order-auto-cancel repeatable job:",
+      err,
+    );
+  });
+
 // ── Cron scheduler ────────────────────────────────────────────────────────────
 
 /**
@@ -384,12 +421,12 @@ scheduleDailyUtc("expire", 18, 0, () => runExpireMemberships(db));
 // Reminder cron: daily at 08:00 WIB = 01:00 UTC
 scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 
->>>>>>> origin/backend-membership-cron-reminders
 // ── Graceful shutdown ─────────────────────────────────────────────────────────
 
 async function shutdown(signal: string) {
   console.log(`[worker] ${signal} received — shutting down gracefully...`);
   await worker.close();
+  await orderWorker.close();
   await pool.end();
   console.log("[worker] Shutdown complete.");
   process.exit(0);

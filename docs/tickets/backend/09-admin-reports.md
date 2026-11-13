@@ -4,8 +4,8 @@
 
 **Blocked by:** 01, 02, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The sales report respects the date range and returns correct revenue + transaction count.
-- [ ] The top-products report ranks by units sold DESC and respects `limit` + the date range.
-- [ ] Tests assert both reports against the seeded data.
+- [x] The sales report respects the date range and returns correct revenue + transaction count.
+- [x] The top-products report ranks by units sold DESC and respects `limit` + the date range.
+- [x] Tests assert both reports against the seeded data.

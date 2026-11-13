@@ -4,13 +4,13 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `POST /api/checkout/membership` returns `snap_token`/`redirect_url` and creates a pending `membership_purchase` + `payments`; the price comes from `settings`, not code.
-- [ ] A successful `MBR-` webhook sets `membership_status = MEMBER` and a correctly computed `membership_expires_at`.
-- [ ] Duplicate webhook notifications do not double-activate membership or error (idempotent).
-- [ ] A non-member can complete the purchase and become a MEMBER without admin approval.
-- [ ] Tests cover the end-to-end flow and the idempotency case.
+- [x] `POST /api/checkout/membership` returns `snap_token`/`redirect_url` and creates a pending `membership_purchase` + `payments`; the price comes from `settings`, not code.
+- [x] A successful `MBR-` webhook sets `membership_status = MEMBER` and a correctly computed `membership_expires_at`.
+- [x] Duplicate webhook notifications do not double-activate membership or error (idempotent).
+- [x] A non-member can complete the purchase and become a MEMBER without admin approval.
+- [x] Tests cover the end-to-end flow and the idempotency case.
 
 > Note (from ticket 11): read the price + duration from the `settings` table
 > through the shared read-seam built in ticket 11
