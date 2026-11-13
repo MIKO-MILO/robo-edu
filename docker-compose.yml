@@ -117,6 +117,34 @@ services:
       retries: 20
       start_period: 90s
 
+  worker:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    command:
+      [
+        "sh",
+        "-c",
+        "npm run worker & npm run bull-board"
+      ]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "mysql://roboedu:${DB_PASSWORD}@mysql:3306/roboedu"
+      REDIS_URL: "redis://redis:6379"
+      BULL_BOARD_PORT: "3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${BULL_BOARD_PORT:-3001}:3001"
+    volumes:
+      - ./src:/app/src
+    user: "${APP_USER:-0:0}"
+
   nginx:
     image: nginx:alpine
     restart: unless-stopped
