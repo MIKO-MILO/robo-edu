@@ -15,3 +15,6 @@
 - [ ] `POST /api/membership-purchases/:id/payment/retry` dibuat: validasi purchase PENDING dan belum expired; batalkan attempt PENDING lama via `cancelCoreApi()`; charge ulang dengan `midtransOrderId = {purchaseNumber}-{N+1}`; simpan attempt baru; idempoten via `Idempotency-Key` header.
 - [ ] Halaman `/membership/payment/[purchaseId]` (konteks `"membership"`) fetch ke `GET /api/orders/:id/payment` — sesuaikan `payment-instruction-page.tsx` untuk konteks membership agar gunakan endpoint yang benar (bisa `GET /api/membership-purchases/:id/payment` atau route yang sudah ada, sesuai implementasi).
 - [ ] `POST /api/membership/payment/check/:id` dibuat: analog dengan `POST /api/orders/:id/payment/check` — panggil Midtrans status, sync ke DB, return status terbaru.
+
+
+<!-- vers lengkap dari ticket 8 -->
