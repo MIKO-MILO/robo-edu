@@ -20,6 +20,7 @@ import {
 } from "@/src/db/schema";
 import { chargeCoreApi, type PaymentInstruction } from "@/src/lib/payments/midtrans";
 import { getSetting } from "@/src/lib/services/settings-service";
+import { enqueuePaymentReconcile } from "@/src/lib/queue/order-queue";
 
 // ── Input / output types ─────────────────────────────────────────────────────
 
@@ -577,6 +578,20 @@ export async function createPaymentTransaction(
         rawResponse: charge.raw,
       })
       .where(eq(payments.id, paymentId));
+
+    // ── 16. Schedule payment-reconcile job (fires after expiry + buffer) ──
+    // Non-fatal: if Redis is down, the order-auto-cancel sweep is the fallback.
+    try {
+      await enqueuePaymentReconcile({
+        paymentId,
+        midtransOrderId,
+        orderId: id,
+        expiryTime: clampedExpiry,
+        paymentChannel: input.paymentChannel,
+      });
+    } catch (err) {
+      console.error("[checkout] Failed to enqueue payment-reconcile job:", err);
+    }
 
     return {
       orderId: id,
