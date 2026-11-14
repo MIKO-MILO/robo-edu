@@ -82,6 +82,7 @@ async function main() {
   await seedReviews();
 
   console.log("\n✅ All seeds completed successfully.");
+  process.exit(0);
 }
 
 main().catch((err) => {
