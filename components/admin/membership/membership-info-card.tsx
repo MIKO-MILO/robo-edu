@@ -8,14 +8,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface ResellerInfoCardProps {
+export interface MemberInfoCardProps {
   name: string;
   email: string;
   phone: string | null;
   createdAt: string;
   lastLoginAt: string | null;
-  resellerAppliedAt: string | null;
-  resellerApprovedAt: string | null;
+  memberAppliedAt: string | null;
+  memberApprovedAt: string | null;
   rejectionReason?: string | null;
   // Untuk phase backend: legalitas data akan datang dari API
   // Sementara disimulasikan dengan data placeholder
@@ -107,14 +107,14 @@ export function ResellerInfoCard({
   phone,
   createdAt,
   lastLoginAt,
-  resellerAppliedAt,
-  resellerApprovedAt,
+  memberAppliedAt,
+  memberApprovedAt,
   rejectionReason,
   affiliationName,
   ktpNik,
   npwpNumber,
   primaryAddress,
-}: ResellerInfoCardProps) {
+}: MemberInfoCardProps) {
   return (
     <div className="space-y-6">
       {/* ââ€?ââ€? 1. Legalitas & Alamat Pemohon ââ€?ââ€? */}
@@ -250,15 +250,15 @@ export function ResellerInfoCard({
               </li>
             )}
 
-            {/* Pengajuan reseller */}
-            {resellerAppliedAt && (
+            {/* Pengajuan membership */}
+            {memberAppliedAt && (
               <li className="relative pl-6">
                 <div className="absolute -left-[9px] top-0 size-4 rounded-full border-2 border-border bg-warning-bg" />
                 <div className="text-[10px] font-mono font-bold text-warning">
-                  {formatDateTime(resellerAppliedAt).toUpperCase()}
+                  {formatDateTime(memberAppliedAt).toUpperCase()}
                 </div>
                 <h3 className="font-heading text-xs font-bold text-foreground">
-                  Pengajuan Formulir Reseller Masuk
+                  Pengajuan Formulir Membership Masuk
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5 font-body">
                   Mengunggah berkas legalitas dan data institusi.
@@ -267,23 +267,23 @@ export function ResellerInfoCard({
             )}
 
             {/* Disetujui */}
-            {resellerApprovedAt && (
+            {memberApprovedAt && (
               <li className="relative pl-6">
                 <div className="absolute -left-[9px] top-0 size-4 rounded-full border-2 border-border bg-success" />
                 <div className="text-[10px] font-mono font-bold text-success">
-                  {formatDateTime(resellerApprovedAt).toUpperCase()}
+                  {formatDateTime(memberApprovedAt).toUpperCase()}
                 </div>
                 <h3 className="font-heading text-xs font-bold text-success">
-                  Pengajuan Reseller Disetujui
+                  Pengajuan Membership Disetujui
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5 font-body">
-                  Hak akses harga reseller_price telah aktif.
+                  Hak akses harga member telah aktif.
                 </p>
               </li>
             )}
 
             {/* Current: Menunggu keputusan (hanya jika masih PENDING) */}
-            {!resellerApprovedAt && resellerAppliedAt && !rejectionReason && (
+            {!memberApprovedAt && memberAppliedAt && !rejectionReason && (
               <li className="relative pl-6">
                 <div className="absolute -left-[9px] top-0 size-4 rounded-full border-2 border-border bg-primary animate-pulse" />
                 <div className="text-[10px] font-mono font-bold text-primary">

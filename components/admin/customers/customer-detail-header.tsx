@@ -15,7 +15,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import type { MembershipStatus } from "@/types/enums";
 import {
   useUpdateUserStatus,
-  useUpdateResellerStatus,
+  useUpdateMembershipStatus,
 } from "@/hooks/admin/customers";
 
 export interface CustomerDetailHeaderProps {
@@ -62,7 +62,7 @@ export function CustomerDetailHeader({
   const {
     mutateAsync: updateMembershipStatus,
     isPending: isUpdatingMembership,
-  } = useUpdateResellerStatus();
+  } = useUpdateMembershipStatus();
 
   const handleToggleUserStatus = async () => {
     await updateUserStatus({ id, is_active: !isActive });

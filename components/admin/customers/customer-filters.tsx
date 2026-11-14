@@ -15,10 +15,10 @@ import { CUSTOMER_RESELLER_TABS } from "./customer-list-types";
 
 export interface CustomerFiltersProps {
   searchQuery: string;
-  resellerFilter: string;
+  membershipFilter: string;
   statusFilter: string; // "ALL" | "ACTIVE" | "INACTIVE"
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onResellerFilterChange: (key: string) => void;
+  onMembershipFilterChange: (key: string) => void;
   onStatusFilterChange: (status: string) => void;
   className?: string;
 }
@@ -28,10 +28,10 @@ export interface CustomerFiltersProps {
  */
 export function CustomerFilters({
   searchQuery,
-  resellerFilter,
+  membershipFilter,
   statusFilter,
   onSearchChange,
-  onResellerFilterChange,
+  onMembershipFilterChange,
   onStatusFilterChange,
   className,
 }: CustomerFiltersProps) {
@@ -74,16 +74,16 @@ export function CustomerFilters({
         </div>
       </div>
 
-      {/* Reseller Tabs */}
+      {/* Membership Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
         {CUSTOMER_RESELLER_TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
-            onClick={() => onResellerFilterChange(tab.key)}
+            onClick={() => onMembershipFilterChange(tab.key)}
             className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all whitespace-nowrap cursor-pointer",
-              resellerFilter === tab.key
+              membershipFilter === tab.key
                 ? "bg-primary text-primary-100 border border-foreground shadow-xs"
                 : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
             )}

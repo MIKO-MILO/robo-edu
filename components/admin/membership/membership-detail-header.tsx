@@ -15,14 +15,14 @@ import { cn } from "@/lib/utils";
 import { BackButton, Button, buttonVariants } from "@/components/ui/button";
 import type { ResellerStatus } from "@/types/enums";
 
-export interface ResellerDetailHeaderProps {
+export interface MemberDetailHeaderProps {
   id: string;
   name: string;
   email: string;
   phone: string | null;
-  resellerStatus: ResellerStatus;
-  resellerAppliedAt: string | null;
-  resellerApprovedAt: string | null;
+  memberStatus: ResellerStatus;
+  memberAppliedAt: string | null;
+  memberApprovedAt: string | null;
   isActive: boolean;
   onApprove?: () => void;
   onReject?: () => void;
@@ -88,16 +88,16 @@ export function ResellerDetailHeader({
   name,
   email,
   phone,
-  resellerStatus,
-  resellerAppliedAt,
-  resellerApprovedAt,
+  memberStatus,
+  memberAppliedAt,
+  memberApprovedAt,
   isActive,
   onApprove,
   onReject,
-}: ResellerDetailHeaderProps) {
+}: MemberDetailHeaderProps) {
   const cleanPhone = phone ? phone.replace(/[^0-9]/g, "") : null;
   const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : null;
-  const statusCfg = STATUS_CONFIG[resellerStatus] ?? STATUS_CONFIG.PENDING;
+  const statusCfg = STATUS_CONFIG[memberStatus] ?? STATUS_CONFIG.PENDING;
 
   return (
     <div className="space-y-4">
@@ -190,16 +190,16 @@ export function ResellerDetailHeader({
                     {phone}
                   </span>
                 )}
-                {resellerAppliedAt && (
+                {memberAppliedAt && (
                   <span className="flex items-center gap-1.5">
                     <Calendar className="size-3.5 text-primary" />
-                    Diajukan: {formatDateTime(resellerAppliedAt)}
+                    Diajukan: {formatDateTime(memberAppliedAt)}
                   </span>
                 )}
-                {resellerApprovedAt && (
+                {memberApprovedAt && (
                   <span className="flex items-center gap-1.5 text-success">
                     <Calendar className="size-3.5" />
-                    Disetujui: {formatDateTime(resellerApprovedAt)}
+                    Disetujui: {formatDateTime(memberApprovedAt)}
                   </span>
                 )}
               </div>
@@ -222,7 +222,7 @@ export function ResellerDetailHeader({
                 WHATSAPP
               </a>
             )}
-            {resellerStatus === "PENDING" && (
+            {memberStatus === "PENDING" && (
               <>
                 <Button
                   type="button"

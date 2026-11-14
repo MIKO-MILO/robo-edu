@@ -21,11 +21,11 @@ import {
 import type { MembershipPurchase } from "@/components/admin/membership/membership-purchases-card";
 import { MembershipPurchasesCard } from "@/components/admin/membership/membership-purchases-card";
 
-// ResellerStatus is kept for the component prop interface
-type ResellerStatus = "NOT_RESELLER" | "PENDING" | "APPROVED" | "REJECTED";
+// Local type alias kept for existing UI component prop interface
+type MemberStatusCompat = "NOT_RESELLER" | "PENDING" | "APPROVED" | "REJECTED";
 
-/** Map membership_status → ResellerStatus used by existing UI components */
-function toResellerStatus(membershipStatus: string): ResellerStatus {
+/** Map membership_status → MemberStatusCompat used by existing UI components */
+function toMemberStatusCompat(membershipStatus: string): MemberStatusCompat {
   if (membershipStatus === "MEMBER") return "APPROVED";
   return "NOT_RESELLER";
 }
@@ -43,7 +43,7 @@ function AdminMemberDetailContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Optimistic status state
-  const [memberStatus, setMemberStatus] = useState<ResellerStatus>("NOT_RESELLER");
+  const [memberStatus, setMemberStatus] = useState<MemberStatusCompat>("NOT_RESELLER");
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [isActioning, setIsActioning] = useState(false);
 
@@ -58,7 +58,7 @@ function AdminMemberDetailContent() {
     fetchAdminMemberDetail(id)
       .then((res) => {
         setDetail(res.data);
-        setMemberStatus(toResellerStatus(res.data.membership_status));
+        setMemberStatus(toMemberStatusCompat(res.data.membership_status));
       })
       .catch((err: Error) => {
         if (err.message.includes("404") || err.message.toLowerCase().includes("tidak ditemukan")) {
@@ -187,9 +187,9 @@ function AdminMemberDetailContent() {
           name={detail.name}
           email={detail.email}
           phone={detail.phone}
-          resellerStatus={memberStatus}
-          resellerAppliedAt={detail.created_at}
-          resellerApprovedAt={
+          memberStatus={memberStatus}
+          memberAppliedAt={detail.created_at}
+          memberApprovedAt={
             memberStatus === "APPROVED" ? detail.membership_expires_at : null
           }
           isActive={detail.is_active}
@@ -197,7 +197,7 @@ function AdminMemberDetailContent() {
           onReject={() => setRejectModalOpen(true)}
         />
 
-        <ResellerStepper resellerStatus={memberStatus} />
+        <ResellerStepper memberStatus={memberStatus} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-7 space-y-6">
@@ -207,8 +207,8 @@ function AdminMemberDetailContent() {
               phone={detail.phone}
               createdAt={detail.created_at}
               lastLoginAt={detail.last_login_at}
-              resellerAppliedAt={detail.created_at}
-              resellerApprovedAt={
+              memberAppliedAt={detail.created_at}
+              memberApprovedAt={
                 memberStatus === "APPROVED" ? detail.membership_expires_at : null
               }
               rejectionReason={null}
@@ -224,7 +224,7 @@ function AdminMemberDetailContent() {
 
           <div className="lg:col-span-5 space-y-6">
             <ResellerApprovalCard
-              resellerStatus={memberStatus}
+              memberStatus={memberStatus}
               applicantName={detail.name}
               onApprove={handleApprove}
               onReject={() => setRejectModalOpen(true)}

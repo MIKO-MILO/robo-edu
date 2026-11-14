@@ -101,7 +101,7 @@ export function MembershipInfoCard({
                 size="lg"
                 className="font-heading font-bold rounded-2xl bg-white text-primary hover:bg-white/90 shadow-none border-0"
               >
-                <Link href="/reseller">
+                <Link href="/membership">
                   <RotateCcw className="size-4" />
                   Perpanjang Membership
                 </Link>

@@ -234,7 +234,7 @@ async function handleMembershipReminder(
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
       <p style="color:#374151;">Membership Plus kamu akan <strong>berakhir dalam ${daysLeft} hari</strong> (${expiryDate}).</p>
       <p style="color:#374151;">Perpanjang sekarang agar tidak kehilangan harga khusus member.</p>
-      <a href="${APP_URL}/profile/reseller" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px;">
+      <a href="${APP_URL}/profile/membership" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px;">
         Perpanjang Membership
       </a>
     </div>

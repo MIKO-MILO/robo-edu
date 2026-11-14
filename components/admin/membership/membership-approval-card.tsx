@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { ResellerStatus } from "@/types/enums";
 
-export interface ResellerApprovalCardProps {
-  resellerStatus: ResellerStatus;
+export interface MemberApprovalCardProps {
+  memberStatus: ResellerStatus;
   applicantName: string;
   onApprove?: () => void;
   onReject?: () => void;
@@ -24,15 +24,15 @@ export interface ResellerApprovalCardProps {
  * Aksi dicatat di audit_log â?â€ handled by backend on Phase 2.
  */
 export function ResellerApprovalCard({
-  resellerStatus,
+  memberStatus,
   applicantName,
   onApprove,
   onReject,
-}: ResellerApprovalCardProps) {
+}: MemberApprovalCardProps) {
   const [notes, setNotes] = React.useState("");
 
   // -- APPROVED state --
-  if (resellerStatus === "APPROVED") {
+  if (memberStatus === "APPROVED") {
     return (
       <div className="border border-border rounded-2xl bg-card overflow-hidden">
         <div className="p-4 border-b border-border bg-success-bg flex items-center justify-between rounded-t-2xl">
@@ -63,7 +63,7 @@ export function ResellerApprovalCard({
   }
 
   // -- REJECTED state --
-  if (resellerStatus === "REJECTED") {
+  if (memberStatus === "REJECTED") {
     return (
       <div className="border border-border rounded-2xl bg-card overflow-hidden">
         <div className="p-4 border-b border-border bg-danger-bg flex items-center justify-between rounded-t-2xl">

@@ -46,13 +46,13 @@ export { ResellerFilters } from "./membership-filters";
 export type { ResellerFiltersProps } from "./membership-filters";
 
 export { ResellerDetailHeader } from "./membership-detail-header";
-export type { ResellerDetailHeaderProps } from "./membership-detail-header";
+export type { MemberDetailHeaderProps as ResellerDetailHeaderProps } from "./membership-detail-header";
 
 export { ResellerInfoCard } from "./membership-info-card";
-export type { ResellerInfoCardProps } from "./membership-info-card";
+export type { MemberInfoCardProps as ResellerInfoCardProps } from "./membership-info-card";
 
 export { ResellerApprovalCard } from "./membership-approval-card";
-export type { ResellerApprovalCardProps } from "./membership-approval-card";
+export type { MemberApprovalCardProps as ResellerApprovalCardProps } from "./membership-approval-card";
 
 export { ResellerOrdersTab } from "./membership-orders-tab";
 export type { ResellerOrdersTabProps } from "./membership-orders-tab";

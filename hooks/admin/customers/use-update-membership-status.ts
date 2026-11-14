@@ -7,7 +7,7 @@ interface UpdateMembershipStatusVariables {
   membership_status: MembershipStatus;
 }
 
-export function useUpdateResellerStatus() {
+export function useUpdateMembershipStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({

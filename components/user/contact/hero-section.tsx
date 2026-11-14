@@ -22,7 +22,7 @@ export function ContactHeroSection() {
 
           {/* Subtitle */}
           <p className="font-body text-base sm:text-lg lg:text-xl text-foreground/85 leading-relaxed max-w-2xl">
-            Punya pertanyaan seputar kit robotika, konsultasi kebutuhan sekolah atau komunitas, atau tertarik mengajukan status Reseller? Tim kami siap melayani Anda dengan ramah dan cepat.
+            Punya pertanyaan seputar kit robotika, konsultasi kebutuhan sekolah atau komunitas, atau tertarik mengajukan membership? Tim kami siap melayani Anda dengan ramah dan cepat.
           </p>
 
           {/* Quick Info Badges */}
