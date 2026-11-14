@@ -1,24 +1,62 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, X } from "lucide-react";
+import { settingsService } from "@/lib/api/services/settings.service";
+import { toast } from "@/components/admin/use-toast";
+
+interface StoreInfoFormData {
+  name: string;
+  tagline: string;
+  address: string;
+  contact: string;
+  email: string;
+  instagram: string;
+  tiktok: string;
+  facebook: string;
+}
 
 export function StoreInfoSection() {
-  const [formData, setFormData] = useState({
-    name: "Robo-Edu Official",
-    tagline: "Robotik Edukatif untuk Generasi Penerus",
-    address: "Jl. Pendidikan No. 123, Jakarta Selatan",
-    contact: "08123456789",
-    email: "cs@roboedu.id",
-    instagram: "https://instagram.com/roboedu",
+  const [formData, setFormData] = useState<StoreInfoFormData>({
+    name: "",
+    tagline: "",
+    address: "",
+    contact: "",
+    email: "",
+    instagram: "",
     tiktok: "",
     facebook: "",
   });
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchSettings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await settingsService.getSettings();
+      const d = res.data;
+      setFormData((prev) => ({
+        ...prev,
+        name: d.store_name ?? "",
+        email: d.store_email ?? "",
+        contact: d.store_phone ?? "",
+        address: d.store_address ?? "",
+      }));
+    } catch (err) {
+      console.error("Failed to load settings:", err);
+      toast.error("Gagal memuat pengaturan toko.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -40,12 +78,40 @@ export function StoreInfoSection() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      await settingsService.patchSettings({
+        store_name: formData.name,
+        store_email: formData.email,
+        store_phone: formData.contact,
+        store_address: formData.address,
+      });
+      toast.success("Pengaturan toko berhasil disimpan.");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Gagal menyimpan pengaturan toko.";
+      toast.error("Gagal menyimpan", message);
+    } finally {
       setIsSaving(false);
-    }, 1000);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-6 animate-pulse space-y-4">
+        <div className="h-5 bg-muted rounded w-1/4" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/3" />
+              <div className="h-10 bg-muted rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm divide-y divide-border">
@@ -136,6 +202,9 @@ export function StoreInfoSection() {
       {/* Section: Media Sosial */}
       <div className="p-6">
         <h3 className="text-base font-bold text-foreground mb-5">Media Sosial</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Informasi media sosial bersifat dekoratif dan belum tersimpan ke database.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
             <label htmlFor="instagram" className="text-sm font-semibold text-foreground">Instagram</label>
