@@ -106,7 +106,7 @@ export function ResellerDetailHeader({
         <div className="flex flex-wrap items-center gap-3">
           {/* Back button â€” Neo style */}
           <BackButton
-            href="/admin/resellers"
+            href="/admin/membership"
             label="KEMBALI KE DAFTAR RESELLER"
           />
 

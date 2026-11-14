@@ -2,7 +2,7 @@ import type {
   AdminResellerRow,
   AdminResellerDetailData,
   ResellerStats,
-} from "./reseller-list-types";
+} from "./membership-list-types";
 import type { OrderStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
