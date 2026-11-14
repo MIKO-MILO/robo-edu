@@ -2,76 +2,75 @@
 
 import React from "react";
 import Image from "next/image";
-import { Sparkles } from "lucide-react";
 
 export function ResellerHeroSection() {
   return (
     /* Outer Container: Penuh kiri, kanan, atas tanpa gap */
     <div className="w-full bg-background p-0 m-0">
-      <section className="relative w-full min-h-[100vh] sm:min-h-[100vh] lg:min-h-[100vh] bg-[#97CEF9] rounded-none pt-36 sm:pt-48 lg:pt-52 pb-44 sm:pb-48 lg:pb-56 overflow-hidden flex flex-col justify-center items-center">
+      <section className="relative w-full min-h-[75vh] sm:min-h-[80vh] lg:min-h-[86vh] bg-[#97CEF9] rounded-none pt-34 sm:pt-40 lg:pt-46 pb-36 sm:pb-42 lg:pb-48 overflow-hidden flex flex-col justify-center items-center">
         
-        {/* --- KUMPULAN GAMBAR AWAN KIRI --- */}
-        <div className="absolute top-12 sm:top-16 left-0 w-56 sm:w-80 lg:w-[28rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-start">
+      {/* --- KUMPULAN GAMBAR AWAN KIRI --- */}
+        <div className="absolute top-16 sm:top-20 left-0 w-48 sm:w-72 lg:w-[26rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-start">
           {/* Awan Utama Kiri */}
           <Image
             src="/images/awan.webp"
             alt="Awan Dekorasi Kiri Atas"
-            width={600}
-            height={380}
+            width={900}
+            height={400}
             className="w-full h-auto object-contain"
             priority
           />
           {/* Awan Kedua Kiri Bawah */}
-          <div className="w-40 sm:w-56 lg:w-72 mt-1 sm:mt-3 -ml-2 sm:-ml-4 opacity-90">
+          <div className="w-36 sm:w-48 lg:w-[17rem] mt-2 sm:mt-3 -ml-2 sm:-ml-3 opacity-90">
             <Image
               src="/images/awan.webp"
               alt="Awan Dekorasi Kiri Bawah"
-              width={400}
-              height={260}
+              width={900}
+              height={400}
               className="w-full h-auto object-contain scale-x-90"
               priority
             />
           </div>
         </div>
 
-        {/* --- KUMPULAN GAMBAR AWAN KANAN --- */}
-        <div className="absolute top-12 sm:top-16 right-0 w-56 sm:w-80 lg:w-[28rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-end">
+{/* --- KUMPULAN GAMBAR AWAN KANAN --- */}
+        <div className="absolute top-16 sm:top-20 right-0 w-48 sm:w-72 lg:w-[26rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-end">
           {/* Awan Utama Kanan (Rotate/Flip) */}
           <Image
             src="/images/awan.webp"
             alt="Awan Dekorasi Kanan Atas"
             width={600}
             height={380}
-            className="w-full h-auto object-contain -scale-x-100 rotate-6"
+            className="w-full h-auto object-contain -scale-x-100"
             priority
           />
           {/* Awan Kedua Kanan Bawah */}
-          <div className="w-40 sm:w-56 lg:w-72 mt-1 sm:mt-3 -mr-2 sm:-mr-4 opacity-90">
+          <div className="w-36 sm:w-48 lg:w-[17rem] mt-2 sm:mt-3 -mr-2 sm:-mr-3 opacity-90">
             <Image
               src="/images/awan.webp"
               alt="Awan Dekorasi Kanan Bawah"
               width={400}
               height={260}
-              className="w-full h-auto object-contain -scale-x-100 -rotate-12"
+              className="w-full h-auto object-contain -scale-x-100"
               priority
             />
           </div>
         </div>
 
         {/* Lingkaran Dekoratif Transparan */}
-        <div className="absolute top-32 left-20 sm:left-32 w-10 h-10 border-2 border-white/40 rounded-full opacity-60 pointer-events-none z-0" />
-        <div className="absolute top-36 right-20 sm:right-32 w-8 h-8 bg-white/20 rounded-full opacity-60 pointer-events-none z-0" />
+        <div className="absolute top-30 left-18 sm:left-32 w-9 h-9 border-2 border-white/40 rounded-full opacity-60 pointer-events-none z-0" />
+        <div className="absolute top-34 right-18 sm:right-32 w-8 h-8 bg-white/20 rounded-full opacity-60 pointer-events-none z-0" />
 
-        {/* Main Content: Badge, Judul, Subjudul */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 gap-5 sm:gap-6 max-w-4xl lg:max-w-5xl mx-auto">
+        {/* Main Content: Judul & Subjudul */}
+        <div className="relative z-7 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 py-6 sm:py-7 gap-3 sm:gap-4 max-w-3xl lg:max-w-4xl mx-auto mt-15">
           
           {/* Main Headline */}
-          <h1 className="font-heading text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-slate-900 tracking-tight w-full pt-15">
-            Tumbuh Bersama & Raih Keuntungan Menjanjikan
+          <h1 className="font-heading text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold leading-tight text-primary-900 tracking-tight w-full pt-4">
+            Tumbuh Bersama & Raih Keuntungan
           </h1>
 
           {/* Sub-judul Singkat */}
-          <p className="font-body text-xs sm:text-sm lg:text-base text-slate-800/90 leading-relaxed max-w-xl font-medium">
+          <p className="font-body text-xs sm:text-sm lg:text-base text-primary-700/95 leading-relaxed max-w-xl font-medium">
             Jadikan bisnis kit robotika Anda lebih berkembang dengan dukungan resmi dari RoboEdu.
           </p>
 
@@ -80,7 +79,7 @@ export function ResellerHeroSection() {
         {/* Curved / Scallop Bottom Edge */}
         <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-20">
           <svg
-            className="relative block w-full h-[45px] sm:h-[60px] lg:h-[75px]"
+            className="relative block w-full h-[42px] sm:h-[56px] lg:h-[72px]"
             viewBox="0 0 1200 120"
             preserveAspectRatio="none"
           >
@@ -97,7 +96,7 @@ export function ResellerHeroSection() {
                  C1100,55 1150,55 1200,-35"
               fill="none"
               stroke="#1C6CAE"
-              strokeWidth="5"
+              strokeWidth="3.9"
               strokeLinecap="round"
             />
 
