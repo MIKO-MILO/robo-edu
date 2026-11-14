@@ -202,9 +202,6 @@ export function StoreInfoSection() {
       {/* Section: Media Sosial */}
       <div className="p-6">
         <h3 className="text-base font-bold text-foreground mb-5">Media Sosial</h3>
-        <p className="text-xs text-muted-foreground mb-4">
-          Informasi media sosial bersifat dekoratif dan belum tersimpan ke database.
-        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
             <label htmlFor="instagram" className="text-sm font-semibold text-foreground">Instagram</label>
