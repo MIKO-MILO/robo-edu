@@ -351,9 +351,6 @@ function InstructionCard({ children }: { children: React.ReactNode }) {
         <span className="font-heading font-bold text-sm text-foreground uppercase tracking-wide">
           Instruksi Pembayaran
         </span>
-        <span className="ml-auto text-xs font-body text-muted-foreground">
-          (Mock — Core API belum aktif)
-        </span>
       </div>
       <div className="p-5 flex flex-col gap-5">{children}</div>
     </div>
@@ -1093,30 +1090,44 @@ export function PaymentInstructionPage({
       setIsRetrying(true);
       setShowMethodModal(false);
       try {
-        const res = await fetch(
-          `/api/orders/${transactionId}/payment/retry`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Idempotency-Key": retryIdempotencyKey.current,
-            },
-            body: JSON.stringify({
-              paymentMethod: selected.method.method,
-              paymentChannel: selected.method.channel,
-              ovoPhone:
-                selected.method.channel === "ovo"
-                  ? selected.ovoPhone
-                  : undefined,
-            }),
+        // Route differs by context:
+        //   order      → POST /api/orders/:id/payment/retry
+        //   membership → POST /api/membership-purchases/:id/payment/retry
+        const retryUrl =
+          context === "membership"
+            ? `/api/membership-purchases/${transactionId}/payment/retry`
+            : `/api/orders/${transactionId}/payment/retry`;
+
+        const res = await fetch(retryUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": retryIdempotencyKey.current,
           },
-        );
+          body: JSON.stringify({
+            paymentMethod: selected.method.method,
+            paymentChannel: selected.method.channel,
+            // Order retry uses "ovoPhone"; membership retry uses "payerPhoneNumber"
+            ovoPhone:
+              selected.method.channel === "ovo" ? selected.ovoPhone : undefined,
+            payerPhoneNumber:
+              selected.method.channel === "ovo" ? selected.ovoPhone : undefined,
+          }),
+        });
 
         const json = await res.json() as {
           success: boolean;
           code?: string;
           message?: string;
-          data?: { payment: PaymentInfo };
+          // Order retry response
+          data?: {
+            payment?: PaymentInfo;
+            // Membership retry response (flat under data)
+            payment_instruction?: Record<string, unknown>;
+            expiry_time?: string | null;
+            status?: string;
+            amount?: number;
+          };
         };
 
         if (res.status === 409 && json.code === "ORDER_ALREADY_PAID") {
@@ -1134,10 +1145,24 @@ export function PaymentInstructionPage({
           throw new Error(json.message ?? "Gagal melakukan retry.");
         }
 
-        // Success — update payment info and show success toast
-        if (json.data?.payment) {
+        // ── Normalise retry response into PaymentInfo shape ────────────────
+        if (context === "membership" && json.data) {
+          // Membership retry returns flat data (not nested under data.payment)
+          const d = json.data;
+          setPaymentInfo((prev) => ({
+            status: (d.status ?? "PENDING") as PaymentInfo["status"],
+            payment_type: selected.method.method,
+            payment_channel: selected.method.channel,
+            amount: d.amount ?? prev?.amount ?? 0,
+            expiry_time: d.expiry_time ?? null,
+            transaction_time: new Date().toISOString(),
+            payment_instruction:
+              d.payment_instruction ?? null,
+          }));
+        } else if (json.data?.payment) {
           setPaymentInfo(json.data.payment);
         }
+
         const newAttempts = retryAttempts + 1;
         setRetryAttempts(newAttempts);
         if (newAttempts >= 5) setMaxAttemptsReached(true);
@@ -1157,7 +1182,7 @@ export function PaymentInstructionPage({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [transactionId, retryAttempts, router, successRedirect],
+    [context, transactionId, retryAttempts, router, successRedirect],
   );
 
   // ─── Resolve payment_instruction ────────────────────────────────────────

@@ -246,7 +246,7 @@ export async function seedFixtures(
     taxAmount: "0",
     shippingCost: "15000.00",
     total: "215000.00",
-    status: "pending",
+    status: "PENDING",
     recipientName: "Regular User",
     recipientPhone: "08120000002",
     shippingAddress: "Jl. Test No. 2",

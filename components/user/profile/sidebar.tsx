@@ -14,7 +14,7 @@ export default function Sidebar() {
     { href: "/profile/settings", label: "Settings", icon: Lock },
     { href: "/profile/addresses", label: "Alamat Pengiriman", icon: MapPin },
     { href: "/profile/orders", label: "Orders History", icon: ShoppingCart },
-    { href: "/profile/reseller", label: "Program Membership", icon: CrownIcon },
+    { href: "/profile/membership", label: "Program Membership", icon: CrownIcon },
     { href: "/profile/notifications", label: "Notifications", icon: Bell },
   ];
 
