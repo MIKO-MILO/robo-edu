@@ -52,9 +52,6 @@ export {
   ComplaintAttachmentGallery,
   ComplaintActionPanel,
   COMPLAINT_STATUS_TABS,
-  MOCK_ADMIN_COMPLAINTS,
-  getMockComplaintDetail,
-  getComplaintStats,
   deriveMediaType,
 } from "./complaints";
 export type {
