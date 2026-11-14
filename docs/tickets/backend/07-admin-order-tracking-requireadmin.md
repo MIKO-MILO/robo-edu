@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Admin can set a tracking number + provider when marking an order SHIPPED; the `shipments` row is updated.
 - [x] Admin can add tracking checkpoints that the customer's tracking view surfaces.

@@ -46,6 +46,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems(res.data.items);
         setTotalItems(res.data.totalItems);
         setSubtotal(res.data.subtotal);
+      } else {
+        // Server returned a non-success response (e.g. 5xx); keep existing state
+        // rather than wiping the cart. The warning is already logged in getCart.
       }
     } catch (error) {
       console.error("Gagal mengambil keranjang:", error);
@@ -75,7 +78,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return false;
       } catch (error: unknown) {
         console.error("Gagal menambah ke keranjang:", error);
-        alert(error instanceof Error ? error.message : "Gagal menambah produk ke keranjang");
+        const message = error instanceof Error ? error.message : "Gagal menambah produk ke keranjang";
+        if (message.includes("login terlebih dahulu")) {
+          window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+          return false;
+        }
+        alert(message);
         return false;
       }
     },

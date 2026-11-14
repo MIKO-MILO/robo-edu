@@ -57,3 +57,6 @@ export type {
   OrderPricingSummary,
 } from "./order-items-card";
 
+export { OrderRefundPanel } from "./order-refund-panel";
+export type { OrderRefundPanelProps } from "./order-refund-panel";
+

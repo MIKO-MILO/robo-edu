@@ -2,16 +2,7 @@
  * use-reseller-status.ts
  * ----------------------
  * Hook untuk mengambil status membership dan riwayat pembelian
- * customer yang sedang login.
- *
- * FASE SAAT INI: Frontend-only — fetch ke mock API route.
- *
- * TRANSISI KE BACKEND (saat GET /membership/me tersedia):
- *   1. Ganti blok fetch di fungsi load() dengan:
- *        const res = await membershipService.getMembershipStatus();
- *        setData(res.data);
- *   2. Hapus app/api/mock-membership-me/route.ts.
- *   3. Tidak ada perubahan yang diperlukan di komponen atau page.tsx.
+ * customer yang sedang login dari GET /api/membership/me.
  *
  * PRD Bab 6.8 | FR-023 | US-011, US-012
  */
@@ -20,6 +11,7 @@
 
 import { useState, useEffect } from "react";
 import type { MembershipStatusData } from "@/types";
+import { membershipService } from "@/lib/api/services/membership.service";
 
 // ============================================================
 // RETURN TYPE
@@ -46,13 +38,11 @@ export function useMembershipStatus(): UseMembershipStatusReturn {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO(backend): Ganti dengan membershipService.getMembershipStatus()
-      const res = await fetch("/api/mock-membership-me");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json: MembershipStatusData = await res.json();
-      setData(json);
+      const res = await membershipService.getMembershipStatus();
+      if (!res.success) throw new Error("Gagal memuat data membership.");
+      setData(res.data);
     } catch (e) {
-      setError(e as Error);
+      setError(e instanceof Error ? e : new Error("Terjadi kesalahan."));
     } finally {
       setIsLoading(false);
     }

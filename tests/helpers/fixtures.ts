@@ -36,6 +36,8 @@ export const FIXTURE_IDS = {
   variantWithMemberPrice: "test-var-with-member-price",
   variantWithoutMemberPrice: "test-var-without-member-price",
   address: "test-addr-regular",
+  memberAddress: "test-addr-member",
+  shippingProvider: "test-provider-jne",
   order: "test-order-1",
   orderItem: "test-order-item-1",
   orderPayment: "test-payment-order",
@@ -59,6 +61,26 @@ export const SETTINGS_SEED: Array<{ key: string; value: string }> = [
   { key: "store_phone", value: "0812000000" },
   { key: "store_email", value: "store@roboedu.test" },
   { key: "store_address", value: "Jl. Test No. 1, Jakarta" },
+  { key: "order_expires_hours", value: "24" },
+  {
+    key: "payment_methods_config",
+    value: JSON.stringify({
+      bca_va: true,
+      bni_va: true,
+      bri_va: true,
+      mandiri_va: true,
+      permata_va: true,
+      cimb_va: true,
+      credit_card: true,
+      gopay: true,
+      shopeepay: true,
+      qris: true,
+      dana: true,
+      ovo: true,
+      alfamart: true,
+      indomaret: true,
+    }),
+  },
 ];
 
 /** Far-future date used for active membership expiry. */
@@ -115,7 +137,7 @@ export async function seedFixtures(
     },
   ]);
 
-  // --- settings (six keys from ticket 01) ---
+  // --- settings (seed keys from tickets 01 + payment/02) ---
   await db.insert(schema.settings).values(SETTINGS_SEED);
 
   // --- catalog: category -> product type -> product -> variants ---
@@ -190,6 +212,29 @@ export async function seedFixtures(
     isPrimary: true,
   });
 
+  // --- address for the MEMBER user ---
+  await db.insert(schema.userAddresses).values({
+    id: FIXTURE_IDS.memberAddress,
+    userId: FIXTURE_IDS.memberUser,
+    label: "Rumah",
+    recipientName: "Member User",
+    phone: "08120000001",
+    address: "Jl. Member No. 1",
+    province: "DKI Jakarta",
+    city: "Jakarta Pusat",
+    district: "Gambir",
+    village: "Test Village Member",
+    postalCode: "10110",
+    isPrimary: true,
+  });
+
+  // --- shipping provider (used by checkout + shipment tests) ---
+  await db.insert(schema.shippingProviders).values({
+    id: FIXTURE_IDS.shippingProvider,
+    name: "JNE",
+    isActive: true,
+  });
+
   // --- order + order item for the regular user ---
   await db.insert(schema.orders).values({
     id: FIXTURE_IDS.order,
@@ -201,7 +246,7 @@ export async function seedFixtures(
     taxAmount: "0",
     shippingCost: "15000.00",
     total: "215000.00",
-    status: "pending",
+    status: "PENDING",
     recipientName: "Regular User",
     recipientPhone: "08120000002",
     shippingAddress: "Jl. Test No. 2",
@@ -230,8 +275,11 @@ export async function seedFixtures(
     id: FIXTURE_IDS.orderPayment,
     orderId: FIXTURE_IDS.order,
     membershipPurchaseId: null,
-    transactionId: "TEST-TX-ORDER-1",
+    midtransOrderId: "TEST-MORD-1",
+    midtransTransactionId: "TEST-TX-ORDER-1",
+    attemptNumber: 1,
     paymentType: "bank_transfer",
+    paymentMethod: "bank_transfer",
     status: "settlement",
     amount: "215000.00",
     transactionTime: new Date("2026-10-01T10:00:00Z"),
@@ -244,8 +292,11 @@ export async function seedFixtures(
     id: FIXTURE_IDS.membershipPayment,
     orderId: null,
     membershipPurchaseId: null,
-    transactionId: "TEST-TX-MBR-1",
+    midtransOrderId: "TEST-MMBR-1",
+    midtransTransactionId: "TEST-TX-MBR-1",
+    attemptNumber: 1,
     paymentType: "bank_transfer",
+    paymentMethod: "bank_transfer",
     status: "settlement",
     amount: "150000.00",
     transactionTime: new Date("2026-10-01T09:00:00Z"),

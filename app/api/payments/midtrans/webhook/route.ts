@@ -1,117 +1,445 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import * as Sentry from "@sentry/nextjs";
+import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { orderItems, orders, payments, users } from "@/src/db/schema";
+import { auditLogs, membershipPurchases, orders, payments, users } from "@/src/db/schema";
 import {
   isValidMidtransSignature,
+  resolvePaymentState,
+  TERMINAL_PAYMENT_STATES,
   type MidtransNotification,
+  type PaymentState,
 } from "@/src/lib/payments/midtrans";
-import { sendEmail } from "@/src/lib/email/send";
-import {
-  orderConfirmationEmailSubject,
-  orderConfirmationEmailHtml,
-} from "@/src/lib/email/templates/order-confirmation";
-import { getAppUrl } from "@/src/lib/email/resend";
+import { enqueueEmail } from "@/src/lib/queue/email-queue";
+import crypto from "node:crypto";
 
 export const runtime = "nodejs";
 
-type PaymentState = "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED";
-type OrderState = "PENDING" | "PAID" | "CANCELLED" | "REFUNDED";
+// ── Notification shape validation ─────────────────────────────────────────────
 
-function notificationStates(notification: MidtransNotification): { payment: PaymentState; order: OrderState } {
-  switch (notification.transaction_status) {
-    case "settlement":
-      return { payment: "PAID", order: "PAID" };
-    case "capture":
-      return notification.fraud_status === "accept"
-        ? { payment: "PAID", order: "PAID" }
-        : { payment: "PENDING", order: "PENDING" };
-    case "expire":
-      return { payment: "EXPIRED", order: "CANCELLED" };
-    case "cancel":
-    case "deny":
-      return { payment: "FAILED", order: "CANCELLED" };
-    case "refund":
-    case "partial_refund":
-      return { payment: "REFUNDED", order: "REFUNDED" };
-    default:
-      return { payment: "PENDING", order: "PENDING" };
-  }
-}
-
-function hasNotificationShape(value: unknown): value is MidtransNotification & { signature_key: string } {
+function hasNotificationShape(
+  value: unknown,
+): value is MidtransNotification & { signature_key: string } {
   if (!value || typeof value !== "object") return false;
-  const notification = value as Record<string, unknown>;
-  return ["order_id", "status_code", "gross_amount", "transaction_id", "transaction_status", "payment_type", "signature_key"].every(
-    (key) => typeof notification[key] === "string",
-  );
+  const n = value as Record<string, unknown>;
+  return [
+    "order_id",
+    "status_code",
+    "gross_amount",
+    "transaction_id",
+    "transaction_status",
+    "payment_type",
+    "signature_key",
+  ].every((key) => typeof n[key] === "string");
 }
+
+// ── Safe month addition ───────────────────────────────────────────────────────
+
+function addMonthsSafe(date: Date, months: number): Date {
+  const result = new Date(date);
+  const targetMonth = result.getMonth() + months;
+  const targetYear = result.getFullYear() + Math.floor(targetMonth / 12);
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12;
+  const lastDayOfTarget = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+  result.setFullYear(
+    targetYear,
+    normalizedMonth,
+    Math.min(result.getDate(), lastDayOfTarget),
+  );
+  return result;
+}
+
+// ── Membership webhook branch (MBR-) ─────────────────────────────────────────
 
 /**
- * Sends the order confirmation email after a successful payment.
- * Runs after the DB transaction commits — failures are logged but never
- * propagate back to Midtrans (which would cause a retry storm).
+ * Handle a Midtrans notification whose order_id starts with "MBR-".
+ *
+ * Lookup: payments.midtrans_order_id = body.order_id (unique per attempt).
+ * Idempotent: duplicate PAID notifications are accepted silently (200).
  */
-async function sendOrderConfirmationEmail(
-  order: typeof orders.$inferSelect,
-  paidAt: Date,
-): Promise<void> {
-  try {
-    // Fetch the buyer's email
-    const [user] = await db
-      .select({ email: users.email, name: users.name })
-      .from(users)
-      .where(eq(users.id, order.userId))
-      .limit(1);
+async function handleMembershipWebhook(
+  body: MidtransNotification & { signature_key: string },
+): Promise<NextResponse> {
+  // Lookup by midtrans_order_id on the payments table first (multi-attempt support).
+  const [payment] = await db
+    .select()
+    .from(payments)
+    .where(eq(payments.midtransOrderId, body.order_id))
+    .limit(1);
 
-    if (!user) return;
-
-    // Fetch order line items
-    const items = await db
-      .select({
-        productNameSnapshot: orderItems.productNameSnapshot,
-        variantNameSnapshot: orderItems.variantNameSnapshot,
-        quantity: orderItems.quantity,
-        priceSnapshot: orderItems.priceSnapshot,
-        subtotal: orderItems.subtotal,
-      })
-      .from(orderItems)
-      .where(eq(orderItems.orderId, order.id));
-
-    await sendEmail({
-      to: user.email,
-      subject: orderConfirmationEmailSubject(order.orderNumber),
-      html: orderConfirmationEmailHtml({
-        recipientName: order.recipientName,
-        orderNumber: order.orderNumber,
-        orderId: order.id,
-        items: items.map((item) => ({
-          productNameSnapshot: item.productNameSnapshot,
-          variantNameSnapshot: item.variantNameSnapshot ?? "",
-          quantity: item.quantity,
-          priceSnapshot: Number(item.priceSnapshot),
-          subtotal: Number(item.subtotal),
-        })),
-        subtotal: Number(order.subtotal),
-        discountAmount: Number(order.discountAmount),
-        shippingCost: Number(order.shippingCost),
-        total: Number(order.total),
-        shippingAddress: order.shippingAddress,
-        shippingCity: order.shippingCity,
-        shippingProvince: order.shippingProvince,
-        shippingPostalCode: order.shippingPostalCode,
-        paidAt,
-        appUrl: getAppUrl(),
-      }),
-      type: "RECEIPT",
-      userId: order.userId,
-      orderId: order.id,
-    });
-  } catch (err) {
-    // Non-fatal — log and continue
-    console.error("[webhook] Failed to send order confirmation email:", err);
+  if (!payment || !payment.membershipPurchaseId) {
+    return NextResponse.json(
+      { error: "Membership payment not found" },
+      { status: 404 },
+    );
   }
+
+  const [purchase] = await db
+    .select()
+    .from(membershipPurchases)
+    .where(eq(membershipPurchases.id, payment.membershipPurchaseId))
+    .limit(1);
+
+  if (!purchase) {
+    return NextResponse.json(
+      { error: "Membership purchase not found" },
+      { status: 404 },
+    );
+  }
+
+  if (Number(payment.amount) !== Number(body.gross_amount)) {
+    return NextResponse.json(
+      { error: "Amount does not match" },
+      { status: 400 },
+    );
+  }
+
+  // ── Chargeback branch ─────────────────────────────────────────────────────
+  if (body.transaction_status === "chargeback") {
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      actorId: null,
+      action: "payment.chargeback",
+      targetType: "payment",
+      targetId: payment.id,
+      description: `Chargeback received for membership payment ${body.order_id}`,
+      metadata: {
+        midtransOrderId: body.order_id,
+        membershipPurchaseId: purchase.id,
+        rawNotification: body,
+      },
+    });
+    Sentry.captureMessage(
+      `[Webhook] Chargeback for membership ${body.order_id} — membership_purchase_id=${purchase.id}`,
+      { level: "error", extra: { body } },
+    );
+    return NextResponse.json({ received: true });
+  }
+
+  const newState = resolvePaymentState(body.transaction_status, body.fraud_status);
+  const timestamp = body.transaction_time
+    ? new Date(body.transaction_time)
+    : new Date();
+
+  // ── Fraud challenge ───────────────────────────────────────────────────────
+  if (body.transaction_status === "capture" && body.fraud_status === "challenge") {
+    // Keep payment PENDING — do not update, just alert.
+    Sentry.captureMessage(
+      `[Webhook] Fraud challenge for membership ${body.order_id} — requires manual review`,
+      { level: "warning", extra: { body } },
+    );
+    return NextResponse.json({ received: true });
+  }
+
+  // ── Idempotency guard: already at a terminal state ────────────────────────
+  if (newState !== null && TERMINAL_PAYMENT_STATES.has(payment.status as PaymentState)) {
+    // If the incoming state matches what we already have, accept silently.
+    if (payment.status === newState) {
+      return NextResponse.json({ received: true });
+    }
+    // If the current state is terminal and the incoming is different (e.g. downgrade),
+    // also accept silently — do not regress a terminal state.
+    return NextResponse.json({ received: true });
+  }
+
+  if (newState === null) {
+    // Unknown status — accept silently.
+    return NextResponse.json({ received: true });
+  }
+
+  let justActivated = false;
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(payments)
+      .set({
+        midtransTransactionId: body.transaction_id,
+        paymentType: body.payment_type,
+        paymentMethod: body.payment_type,
+        status: newState,
+        transactionTime: timestamp,
+        settlementTime: newState === "PAID" ? timestamp : null,
+        fraudStatus: body.fraud_status ?? null,
+        rawResponse: body,
+      })
+      .where(eq(payments.id, payment.id));
+
+    const membershipPurchaseUpdate: Partial<typeof membershipPurchases.$inferInsert> = {
+      status:
+        newState === "PAID"
+          ? "PAID"
+          : newState === "FAILED"
+            ? "FAILED"
+            : newState === "EXPIRED"
+              ? "EXPIRED"
+              : newState === "REFUNDED"
+                ? "REFUNDED"
+                : "PENDING",
+    };
+
+    if (newState === "PAID" && purchase.status !== "PAID") {
+      const startsAt = timestamp;
+      const endsAt = addMonthsSafe(startsAt, purchase.durationMonthsSnapshot);
+
+      membershipPurchaseUpdate.paidAt = startsAt;
+      membershipPurchaseUpdate.startsAt = startsAt;
+      membershipPurchaseUpdate.endsAt = endsAt;
+
+      const [currentUser] = await tx
+        .select({
+          membershipStatus: users.membershipStatus,
+          membershipExpiresAt: users.membershipExpiresAt,
+        })
+        .from(users)
+        .where(eq(users.id, purchase.userId))
+        .limit(1);
+
+      let finalExpiresAt = endsAt;
+      if (
+        currentUser?.membershipStatus === "MEMBER" &&
+        currentUser.membershipExpiresAt &&
+        new Date(currentUser.membershipExpiresAt) > startsAt
+      ) {
+        finalExpiresAt = addMonthsSafe(
+          new Date(currentUser.membershipExpiresAt),
+          purchase.durationMonthsSnapshot,
+        );
+      }
+
+      await tx
+        .update(users)
+        .set({
+          membershipStatus: "MEMBER",
+          membershipExpiresAt: finalExpiresAt,
+        })
+        .where(eq(users.id, purchase.userId));
+
+      membershipPurchaseUpdate.endsAt = finalExpiresAt;
+      justActivated = true;
+    }
+
+    await tx
+      .update(membershipPurchases)
+      .set(membershipPurchaseUpdate)
+      .where(eq(membershipPurchases.id, purchase.id));
+  });
+
+  // ── Enqueue membership receipt email (outside DB tx, non-fatal) ───────────
+  // jobId = payment.id so duplicate notifications never produce duplicate jobs.
+  // BullMQ does not allow ":" in jobIds — use "-" as separator.
+  if (justActivated) {
+    try {
+      await enqueueEmail(
+        {
+          type: "membership-receipt",
+          membershipPurchaseId: purchase.id,
+          userId: purchase.userId,
+        },
+        `membership-receipt-${payment.id}`,
+      );
+    } catch (err) {
+      console.error("[webhook] Failed to enqueue membership-receipt email:", err);
+    }
+  }
+
+  return NextResponse.json({ received: true });
 }
+
+// ── Product-order webhook branch (RE-) ────────────────────────────────────────
+
+/**
+ * Handle a Midtrans notification whose order_id starts with "RE-".
+ *
+ * Ticket 05 requirements:
+ * - Lookup by payments.midtrans_order_id (not orders.order_number)
+ * - Idempotent: terminal state → accept silently
+ * - capture+challenge → keep PENDING, Sentry alert
+ * - chargeback → audit_log, Sentry alert, no order change
+ * - PAID for CANCELLED order → payment=PAID, order stays CANCELLED, Sentry alert
+ */
+async function handleOrderWebhook(
+  body: MidtransNotification & { signature_key: string },
+): Promise<NextResponse> {
+  // Lookup payment by midtrans_order_id (unique per attempt).
+  const [payment] = await db
+    .select()
+    .from(payments)
+    .where(eq(payments.midtransOrderId, body.order_id))
+    .limit(1);
+
+  if (!payment || !payment.orderId) {
+    return NextResponse.json(
+      { error: "Payment not found" },
+      { status: 404 },
+    );
+  }
+
+  // Validate amount.
+  if (Number(payment.amount) !== Number(body.gross_amount)) {
+    return NextResponse.json(
+      { error: "Amount does not match" },
+      { status: 400 },
+    );
+  }
+
+  // Load the linked order.
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, payment.orderId))
+    .limit(1);
+
+  if (!order) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  // ── Chargeback branch ─────────────────────────────────────────────────────
+  if (body.transaction_status === "chargeback") {
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      actorId: null,
+      action: "payment.chargeback",
+      targetType: "payment",
+      targetId: payment.id,
+      description: `Chargeback received for order payment ${body.order_id} (order: ${order.orderNumber})`,
+      metadata: {
+        midtransOrderId: body.order_id,
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        rawNotification: body,
+      },
+    });
+    Sentry.captureMessage(
+      `[Webhook] Chargeback for order ${order.orderNumber} (${body.order_id}) — requires admin review`,
+      { level: "error", extra: { body, orderId: order.id } },
+    );
+    return NextResponse.json({ received: true });
+  }
+
+  // ── Fraud challenge ───────────────────────────────────────────────────────
+  if (body.transaction_status === "capture" && body.fraud_status === "challenge") {
+    Sentry.captureMessage(
+      `[Webhook] Fraud challenge for order ${order.orderNumber} (${body.order_id}) — requires manual review`,
+      { level: "warning", extra: { body, orderId: order.id } },
+    );
+    // Payment remains PENDING — no DB update.
+    return NextResponse.json({ received: true });
+  }
+
+  const newState = resolvePaymentState(body.transaction_status, body.fraud_status);
+
+  // ── Idempotency guard: already at a terminal payment state ────────────────
+  if (newState !== null && TERMINAL_PAYMENT_STATES.has(payment.status as PaymentState)) {
+    return NextResponse.json({ received: true });
+  }
+
+  if (newState === null) {
+    return NextResponse.json({ received: true });
+  }
+
+  const timestamp = body.transaction_time
+    ? new Date(body.transaction_time)
+    : new Date();
+
+  const orderIsCancelled = order.status === "CANCELLED";
+
+  // ── PAID webhook for a CANCELLED order ───────────────────────────────────
+  if (newState === "PAID" && orderIsCancelled) {
+    // Set payment to PAID but do NOT touch order status.
+    await db
+      .update(payments)
+      .set({
+        midtransTransactionId: body.transaction_id,
+        paymentType: body.payment_type,
+        paymentMethod: body.payment_type,
+        status: "PAID",
+        transactionTime: timestamp,
+        settlementTime: timestamp,
+        fraudStatus: body.fraud_status ?? null,
+        rawResponse: body,
+      })
+      .where(eq(payments.id, payment.id));
+
+    Sentry.captureMessage(
+      `[Webhook] PAID received for CANCELLED order ${order.orderNumber} — manual refund required`,
+      {
+        level: "error",
+        extra: {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          paymentId: payment.id,
+          midtransOrderId: body.order_id,
+          grossAmount: body.gross_amount,
+        },
+      },
+    );
+
+    return NextResponse.json({ received: true });
+  }
+
+  let justPaid = false;
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(payments)
+      .set({
+        midtransTransactionId: body.transaction_id,
+        paymentType: body.payment_type,
+        paymentMethod: body.payment_type,
+        status: newState,
+        transactionTime: timestamp,
+        settlementTime: newState === "PAID" ? timestamp : null,
+        fraudStatus: body.fraud_status ?? null,
+        rawResponse: body,
+      })
+      .where(eq(payments.id, payment.id));
+
+    // Only advance order status if it's currently PENDING.
+    // Do not overwrite PROCESSING/SHIPPED/DELIVERED/COMPLETED/CANCELLED.
+    if (order.status === "PENDING") {
+      const newOrderStatus =
+        newState === "PAID"
+          ? "PAID"
+          : newState === "FAILED" || newState === "EXPIRED"
+            ? "CANCELLED"
+            : newState === "REFUNDED"
+              ? "REFUNDED"
+              : order.status;
+
+      await tx
+        .update(orders)
+        .set({
+          status: newOrderStatus,
+          paidAt: newState === "PAID" ? timestamp : order.paidAt,
+          cancelledAt:
+            newOrderStatus === "CANCELLED" ? timestamp : order.cancelledAt,
+        })
+        .where(eq(orders.id, order.id));
+    }
+
+    if (newState === "PAID" && order.status === "PENDING") {
+      justPaid = true;
+    }
+  });
+
+  // ── Enqueue order receipt email (outside DB tx, non-fatal) ────────────────
+  // jobId = payment.id so duplicate notifications never produce duplicate jobs.
+  // BullMQ does not allow ":" in jobIds — use "-" as separator.
+  if (justPaid) {
+    try {
+      await enqueueEmail(
+        { type: "order-receipt", orderId: order.id },
+        `order-receipt-${payment.id}`,
+      );
+    } catch (err) {
+      console.error("[webhook] Failed to enqueue order-receipt email:", err);
+    }
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+// ── Main webhook handler ──────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -121,63 +449,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!hasNotificationShape(body) || !isValidMidtransSignature(body, body.signature_key)) {
-    return NextResponse.json({ error: "Invalid Midtrans signature" }, { status: 401 });
+  if (!hasNotificationShape(body)) {
+    console.warn("[webhook] Invalid notification shape received");
+    return NextResponse.json(
+      { error: "Invalid Midtrans signature" },
+      { status: 401 },
+    );
   }
 
-  const [order] = await db.select().from(orders).where(eq(orders.orderNumber, body.order_id)).limit(1);
-  if (!order || Number(order.total) !== Number(body.gross_amount)) {
-    return NextResponse.json({ error: "Order not found or amount does not match" }, { status: 404 });
+  if (!isValidMidtransSignature(body, body.signature_key)) {
+    console.warn("[webhook] Invalid Midtrans signature for order_id:", body.order_id);
+    return NextResponse.json(
+      { error: "Invalid Midtrans signature" },
+      { status: 401 },
+    );
   }
 
-  const states = notificationStates(body);
-  const timestamp = body.transaction_time ? new Date(body.transaction_time) : new Date();
-
-  // Track whether this transition actually marks the order as paid for the
-  // first time — used below to decide whether to send the confirmation email.
-  let justPaid = false;
-
-  await db.transaction(async (tx) => {
-    const [payment] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
-    if (!payment) throw new Error("Payment record not found");
-
-    // A late pending notification must never downgrade an already paid order.
-    if (payment.status === "PAID" && states.payment === "PENDING") return;
-
-    await tx
-      .update(payments)
-      .set({
-        transactionId: body.transaction_id,
-        paymentType: body.payment_type,
-        status: states.payment,
-        transactionTime: timestamp,
-        settlementTime: states.payment === "PAID" ? timestamp : null,
-        fraudStatus: body.fraud_status ?? null,
-        rawResponse: body,
-      })
-      .where(and(eq(payments.orderId, order.id), eq(payments.id, payment.id)));
-
-    await tx
-      .update(orders)
-      .set({
-        status: states.order,
-        paidAt: states.order === "PAID" ? timestamp : order.paidAt,
-        cancelledAt: states.order === "CANCELLED" ? timestamp : order.cancelledAt,
-      })
-      .where(eq(orders.id, order.id));
-
-    // Only send once — when this notification actually transitions to PAID
-    // and the order wasn't already paid before.
-    if (states.order === "PAID" && order.status !== "PAID") {
-      justPaid = true;
-    }
-  });
-
-  // Send confirmation email outside the DB transaction so a Resend failure
-  // cannot roll back the payment status update.
-  if (justPaid) {
-    void sendOrderConfirmationEmail(order, timestamp);
+  if (body.order_id.startsWith("MBR-")) {
+    return handleMembershipWebhook(body);
   }
 
-  return NextResponse.json({ received: true });
+  // RE- prefix or any other product-order prefix.
+  return handleOrderWebhook(body);
 }

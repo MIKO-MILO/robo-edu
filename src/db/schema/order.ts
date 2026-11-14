@@ -66,6 +66,20 @@ export const orders = mysqlTable(
     senderName: varchar("sender_name", { length: 150 }),
     /** Dropship sender phone shown on the package label (nullable — only for dropship). */
     senderPhone: varchar("sender_phone", { length: 30 }),
+    /**
+     * When this order expires if still PENDING. Defaults to 24 hours from
+     * creation. Used by cron/expiry logic to auto-cancel unpaid orders.
+     */
+    expiresAt: datetime("expires_at")
+      .notNull()
+      .default(sql`(NOW() + INTERVAL 24 HOUR)`),
+    /**
+     * Idempotency key from the checkout request's `Idempotency-Key` header.
+     * Stored to allow the checkout endpoint to detect and return a previous
+     * result when the same key is re-submitted (e.g. network retry).
+     * Nullable — omitted for orders created before migration 0006.
+     */
+    idempotencyKey: varchar("idempotency_key", { length: 100 }),
     createdAt: datetime("created_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -80,5 +94,8 @@ export const orders = mysqlTable(
     userIdx: index("orders_user_id_idx").on(table.userId),
     statusIdx: index("orders_status_idx").on(table.status),
     voucherIdx: index("orders_voucher_id_idx").on(table.voucherId),
+    idempotencyKeyUnique: uniqueIndex("orders_idempotency_key_unique").on(
+      table.idempotencyKey,
+    ),
   }),
 );

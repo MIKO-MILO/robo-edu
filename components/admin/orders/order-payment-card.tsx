@@ -7,7 +7,9 @@ import type { PaymentStatus } from "@/types/enums";
 export interface OrderPaymentInfo {
   status: PaymentStatus;
   method: string;
-  transaction_id: string | null;
+  midtrans_transaction_id: string | null;
+  payment_method: string | null;
+  payment_channel: string | null;
 }
 
 export interface OrderPaymentCardProps {
@@ -32,11 +34,19 @@ export function OrderPaymentCard({ payment }: OrderPaymentCardProps) {
           <span className="text-muted-foreground">Metode</span>
           <span className="font-semibold text-foreground">{payment.method}</span>
         </div>
-        {payment.transaction_id && (
+        {payment.payment_method && payment.payment_method !== payment.method && (
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Channel</span>
+            <span className="font-semibold text-foreground">
+              {payment.payment_channel ?? payment.payment_method}
+            </span>
+          </div>
+        )}
+        {payment.midtrans_transaction_id && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground shrink-0">ID Transaksi</span>
             <span className="font-mono text-xs text-right break-all">
-              {payment.transaction_id}
+              {payment.midtrans_transaction_id}
             </span>
           </div>
         )}

@@ -72,7 +72,9 @@ export interface AdminOrderDetailData {
   payment: {
     status: PaymentStatus;
     method: string;
-    transaction_id: string | null;
+    midtrans_transaction_id: string | null;
+    payment_method: string | null;
+    payment_channel: string | null;
   };
   items: OrderLineItem[];
   pricing: OrderPricingSummary;

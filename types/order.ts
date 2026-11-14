@@ -1,5 +1,5 @@
 import type { UUID, ISODateString, Money } from "./common";
-import type { OrderStatus, PaymentStatus, ShipmentStatus } from "./enums";
+import type { OrderStatus, PaymentStatus, ShipmentStatus, RefundMethod, RefundStatus } from "./enums";
 
 /**
  * order.ts
@@ -49,6 +49,8 @@ export interface Order {
   delivered_at: ISODateString | null;
   completed_at: ISODateString | null;
   cancelled_at: ISODateString | null;
+  /** When this order expires if still PENDING. Default: 24 hours from creation. */
+  expires_at: ISODateString;
   created_at: ISODateString;
   updated_at: ISODateString;
 }
@@ -72,9 +74,25 @@ export interface OrderItem {
 
 export interface Payment {
   id: UUID;
-  order_id: UUID;
-  transaction_id: string; // ID transaksi Midtrans
-  payment_type: string; // mis. "gopay", "bank_transfer"
+  /** Nullable — exactly one of order_id / membership_purchase_id is set. */
+  order_id: UUID | null;
+  /** Set when payment is for a membership purchase. */
+  membership_purchase_id: UUID | null;
+  /** Midtrans order reference sent to Midtrans (e.g. order number, purchase number). Unique per attempt. */
+  midtrans_order_id: string;
+  /** Midtrans transaction ID — received from webhook. Null until webhook fires. */
+  midtrans_transaction_id: string | null;
+  /** Attempt number for multi-attempt payments (starts at 1). */
+  attempt_number: number;
+  payment_type: string; // mis. "MIDTRANS_SNAP", "bank_transfer"
+  /** Actual payment method chosen by user (e.g. "bank_transfer", "gopay"). From Midtrans response. */
+  payment_method: string | null;
+  /** Specific payment channel (e.g. "bca", "bni"). From Midtrans response. */
+  payment_channel: string | null;
+  /** Payment instructions (VA number, biller code, etc.) from Midtrans Core API. */
+  payment_instruction: Record<string, unknown> | null;
+  /** Payer phone number captured by Midtrans. */
+  payer_phone_number: string | null;
   status: PaymentStatus;
   amount: Money;
   transaction_time: ISODateString | null;
@@ -128,7 +146,7 @@ export interface OrderDetail extends Order {
   order_items: OrderItem[];
   payment: Pick<
     Payment,
-    "status" | "payment_type" | "amount" | "transaction_time"
+    "status" | "payment_type" | "payment_method" | "amount" | "transaction_time"
   > | null;
   shipment:
     | (Pick<
@@ -227,6 +245,37 @@ export interface MidtransWebhookBody {
   payment_type: string;
   gross_amount: string; // Midtrans kirim sebagai string, bukan number
 }
+
+// ─── Refund ──────────────────────────────────────────────────────────────────
+// RefundMethod and RefundStatus are defined in ./enums and re-exported here
+// for convenience. See enums.ts for documentation.
+
+export type { RefundMethod, RefundStatus };
+
+/** Satu record refund — dikembalikan API sebagai bagian dari detail order. */
+export interface Refund {
+  id: string;
+  /** Payment being refunded. Required. */
+  payment_id: string;
+  /** Order this refund relates to (nullable — set if payment was for an order). */
+  order_id: string | null;
+  /** Membership purchase this refund relates to (nullable). */
+  membership_purchase_id: string | null;
+  amount: Money;
+  reason: string;
+  method: RefundMethod;
+  status: RefundStatus;
+  /** URL bukti transfer — hanya ada untuk method=MANUAL */
+  proof_url: string | null;
+  /** Apakah kuota produksi dikembalikan */
+  restore_quota: boolean;
+  /** Admin user who processed this refund. */
+  processed_by: string;
+  created_at: ISODateString;
+  updated_at: ISODateString;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 /** Body — POST /admin/orders/{id}/shipment (admin input data pengiriman) */
 export interface CreateShipmentRequestBody {

@@ -59,6 +59,14 @@ export type OrderStatus =
 /** Kolom `payment.status`. Sesuai PRD 11.2. */
 export type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED";
 
+/** Kolom `refunds.method`. Cara refund diproses:
+ *  MIDTRANS_API — via Midtrans Refund API (otomatis)
+ *  MANUAL       — admin transfer manual + unggah bukti */
+export type RefundMethod = "MIDTRANS_API" | "MANUAL";
+
+/** Kolom `refunds.status`. Status refund individual. */
+export type RefundStatus = "PENDING" | "SUCCESS" | "FAILED";
+
 /** Kolom `voucher.discount_type`. */
 export type DiscountType = "PERCENTAGE" | "FIXED_AMOUNT";
 

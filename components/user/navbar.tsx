@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/product", label: "Product" },
-  { href: "/about", label: "About" },
+  { href: "/membership", label: "Membership" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -96,7 +96,7 @@ export default function Navbar() {
           className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
-            src="/assets/svg/icon-cart.svg"
+            src="/assets/svg/cart.svg"
             alt="Cart"
             width={34}
             height={34}
@@ -110,7 +110,7 @@ export default function Navbar() {
           className="transition-opacity hover:opacity-80 flex items-center"
         >
           <Image
-            src="/assets/svg/icon-user-profile.svg"
+            src="/assets/svg/profile.svg"
             alt="Profile"
             width={36}
             height={36}
