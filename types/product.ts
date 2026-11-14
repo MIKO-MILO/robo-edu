@@ -25,6 +25,10 @@ export type Product = {
   };
 
   stock: number;
+
+  // Nullable — null when the product has no published reviews yet.
+  rating_avg: number | null;
+  review_count: number | null;
 };
 
 export type ProductResponse = {
