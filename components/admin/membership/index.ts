@@ -1,21 +1,27 @@
 ﻿/**
- * Barrel exports — components/admin/resellers
+ * Barrel exports — components/admin/membership
  *
  * Import individual components dari sini:
- *   import { ResellerTable, ResellerFilters, ResellerStatsGrid } from "@/components/admin/resellers";
+ *   import { ResellerTable, ResellerFilters, ResellerStatsGrid } from "@/components/admin/membership";
  */
 
-// Types
+// Types (new API-shaped)
+export type {
+  AdminMemberRow,
+  AdminMemberStats,
+} from "./membership-list-types";
+
+// Types (legacy — kept for reference, not used by pages)
 export type {
   AdminResellerRow,
   ResellerStats,
   AdminResellerDetailData,
   ResellerOrderSummary,
   ResellerStatusTabKey,
-} from "./reseller-list-types";
-export { RESELLER_STATUS_TABS } from "./reseller-list-types";
+} from "./membership-list-types";
+export { RESELLER_STATUS_TABS } from "./membership-list-types";
 
-// Mock Data & Helpers
+// Mock Data & Helpers (kept as reference, NOT imported by pages)
 export {
   MOCK_ADMIN_RESELLERS,
   getResellerStats,
@@ -23,34 +29,34 @@ export {
 } from "./mock-data";
 
 // Atoms
-export { ResellerKpiCard } from "./reseller-kpi-card";
-export type { ResellerKpiCardProps } from "./reseller-kpi-card";
+export { ResellerKpiCard } from "./membership-kpi-card";
+export type { ResellerKpiCardProps } from "./membership-kpi-card";
 
-export { ResellerStepper } from "./reseller-stepper";
-export type { ResellerStepperProps } from "./reseller-stepper";
+export { ResellerStepper } from "./membership-stepper";
+export type { ResellerStepperProps } from "./membership-stepper";
 
-export { ResellerRejectModal } from "./reseller-reject-modal";
-export type { ResellerRejectModalProps, RejectReason } from "./reseller-reject-modal";
+export { ResellerRejectModal } from "./membership-reject-modal";
+export type { ResellerRejectModalProps, RejectReason } from "./membership-reject-modal";
 
 // Molecules
-export { ResellerStatsGrid } from "./reseller-stats";
-export type { ResellerStatsProps } from "./reseller-stats";
+export { ResellerStatsGrid } from "./membership-stats";
+export type { ResellerStatsProps } from "./membership-stats";
 
-export { ResellerFilters } from "./reseller-filters";
-export type { ResellerFiltersProps } from "./reseller-filters";
+export { ResellerFilters } from "./membership-filters";
+export type { ResellerFiltersProps } from "./membership-filters";
 
-export { ResellerDetailHeader } from "./reseller-detail-header";
-export type { ResellerDetailHeaderProps } from "./reseller-detail-header";
+export { ResellerDetailHeader } from "./membership-detail-header";
+export type { ResellerDetailHeaderProps } from "./membership-detail-header";
 
-export { ResellerInfoCard } from "./reseller-info-card";
-export type { ResellerInfoCardProps } from "./reseller-info-card";
+export { ResellerInfoCard } from "./membership-info-card";
+export type { ResellerInfoCardProps } from "./membership-info-card";
 
-export { ResellerApprovalCard } from "./reseller-approval-card";
-export type { ResellerApprovalCardProps } from "./reseller-approval-card";
+export { ResellerApprovalCard } from "./membership-approval-card";
+export type { ResellerApprovalCardProps } from "./membership-approval-card";
 
-export { ResellerOrdersTab } from "./reseller-orders-tab";
-export type { ResellerOrdersTabProps } from "./reseller-orders-tab";
+export { ResellerOrdersTab } from "./membership-orders-tab";
+export type { ResellerOrdersTabProps } from "./membership-orders-tab";
 
 // Organisms
-export { ResellerTable } from "./reseller-table";
-export type { ResellerTableProps } from "./reseller-table";
+export { ResellerTable } from "./membership-table";
+export type { ResellerTableProps } from "./membership-table";

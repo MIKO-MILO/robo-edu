@@ -91,8 +91,8 @@ const adminNavItems: NavItem[] = [
     roles: ["SUPERADMIN", "ADMIN", "ADMIN_SALES"],
   },
   {
-    title: "Resellers",
-    href: "/admin/resellers",
+    title: "Membership",
+    href: "/admin/membership",
     icon: <Award className="size-5" />,
     roles: ["SUPERADMIN", "ADMIN", "ADMIN_SALES"],
   },
