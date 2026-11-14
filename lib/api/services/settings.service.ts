@@ -6,9 +6,12 @@ import { http } from "../base-client";
  */
 export interface AdminSettings {
   store_name?: string;
+  store_tagline?: string;
+  store_logo_url?: string;
   store_phone?: string;
   store_email?: string;
   store_address?: string;
+  store_social_links?: string; // JSON: Array<{ platform: string; url: string }>
   shipping_default_provider_id?: string;
   membership_plus_price?: string;
   membership_plus_duration_months?: string;
@@ -25,9 +28,12 @@ export interface AdminSettingsResponse {
 
 export interface AdminSettingsPatchBody {
   store_name?: string;
+  store_tagline?: string;
+  store_logo_url?: string;
   store_phone?: string;
   store_email?: string;
   store_address?: string;
+  store_social_links?: string; // JSON: Array<{ platform: string; url: string }>
   shipping_default_provider_id?: string;
   membership_plus_price?: number;
   membership_plus_duration_months?: number;
