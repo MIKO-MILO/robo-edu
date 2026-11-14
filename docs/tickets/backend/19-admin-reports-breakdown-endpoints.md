@@ -4,12 +4,12 @@
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `GET /api/admin/reports/payment-methods` mengembalikan breakdown jumlah transaksi dan revenue per `payment_type` / `payment_channel` untuk range tanggal yang diberikan; hanya order dengan `paid_at IS NOT NULL` yang dihitung.
-- [ ] `GET /api/admin/reports/order-status` mengembalikan count dan total amount per status order (`PENDING`, `PAID`, `PROCESSING`, `SHIPPED`, `DELIVERED`, `COMPLETED`, `CANCELLED`, `REFUNDED`) untuk range tanggal yang diberikan.
-- [ ] `GET /api/admin/reports/category-sales` mengembalikan total unit terjual dan revenue per kategori produk (join `order_items` → `products` → `categories`) untuk range tanggal yang diberikan; hanya dari order yang sudah PAID.
-- [ ] Ketiga endpoint mendukung query params `start_date` dan `end_date`; default ke bulan berjalan jika tidak disertakan.
-- [ ] Ketiga endpoint dilindungi `requireAdmin`.
-- [ ] `growth_percentage` dihitung sebagai persentase perubahan revenue periode ini vs periode sebelumnya yang setara (mis. bulan ini vs bulan lalu); endpoint `GET /api/admin/reports/sales` diperluas untuk menyertakan field ini.
-- [ ] Halaman `/admin/reports` mengganti array hardcode dengan data dari ketiga endpoint baru; loading state ditampilkan selama fetch.
+- [x] `GET /api/admin/reports/payment-methods` mengembalikan breakdown jumlah transaksi dan revenue per `payment_type` / `payment_channel` untuk range tanggal yang diberikan; hanya order dengan `paid_at IS NOT NULL` yang dihitung.
+- [x] `GET /api/admin/reports/order-status` mengembalikan count dan total amount per status order (`PENDING`, `PAID`, `PROCESSING`, `SHIPPED`, `DELIVERED`, `COMPLETED`, `CANCELLED`, `REFUNDED`) untuk range tanggal yang diberikan.
+- [x] `GET /api/admin/reports/category-sales` mengembalikan total unit terjual dan revenue per kategori produk (join `order_items` → `products` → `categories`) untuk range tanggal yang diberikan; hanya dari order yang sudah PAID.
+- [x] Ketiga endpoint mendukung query params `start_date` dan `end_date`; default ke bulan berjalan jika tidak disertakan.
+- [x] Ketiga endpoint dilindungi `requireAdmin`.
+- [x] `growth_percentage` dihitung sebagai persentase perubahan revenue periode ini vs periode sebelumnya yang setara (mis. bulan ini vs bulan lalu); endpoint `GET /api/admin/reports/sales` diperluas untuk menyertakan field ini.
+- [x] Halaman `/admin/reports` mengganti array hardcode dengan data dari ketiga endpoint baru; loading state ditampilkan selama fetch.
