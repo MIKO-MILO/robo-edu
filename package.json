@@ -16,6 +16,7 @@
     "db:seed:admin": "tsx src/db/seed/admin.ts",
     "db:seed:shipping": "tsx src/db/seed/shipping-providers.ts",
     "db:seed:settings": "tsx src/db/seed/settings.ts",
+    "db:seed:reviews": "tsx src/db/seed/reviews.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "worker": "tsx src/workers/index.ts"

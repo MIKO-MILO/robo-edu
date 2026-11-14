@@ -13,6 +13,7 @@
  *   2. shipping         — no foreign keys
  *   3. products/catalog — depends on categories + product_types
  *   4. admin            — depends on users table
+ *   5. reviews          — depends on products, users (created by step 3 & 4)
  *
  * All individual seeders are idempotent (skip duplicates), so running
  * this more than once is safe.
@@ -24,6 +25,7 @@ import mysql from "mysql2/promise";
 
 import { seedSettings } from "./settings";
 import { seedShippingProviders } from "./shipping-providers";
+import { seedReviews } from "./reviews";
 
 // Products and admin are not yet refactored to export a function — they're
 // standalone scripts that call process.exit(). We run them as child processes
@@ -64,7 +66,7 @@ async function main() {
   console.log();
 
   // ── 4. Admin user ──────────────────────────────────────────────────────
-  console.log("--- [4/4] Admin User ---");
+  console.log("--- [4/5] Admin User ---");
   try {
     execSync("npx tsx src/db/seed/admin.ts", {
       stdio: "inherit",
@@ -74,6 +76,10 @@ async function main() {
     console.error("❌ Admin seed failed.");
     process.exit(1);
   }
+
+  // ── 5. Reviews ─────────────────────────────────────────────────────────
+  console.log("--- [5/5] Reviews ---");
+  await seedReviews();
 
   console.log("\n✅ All seeds completed successfully.");
 }
