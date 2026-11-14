@@ -12,13 +12,14 @@ import {
   CheckCircle2,
   UserCircle,
   BadgeCheck,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { ProductCard } from "@/components/ui/product-card";
 import { useWishlist } from "@/contexts/wishlist-context";
 import { useCart } from "@/contexts/cart-context";
-
 // ---------------------------------------------------------------------------
 // Type definitions — data shape real dari /api/product/[slug] (sumber: database)
 // ---------------------------------------------------------------------------
@@ -132,127 +133,6 @@ function StarRating({ rating }: { rating: number }) {
 // ---------------------------------------------------------------------------
 // Section 2 — Deskripsi Produk & Komponen
 // ---------------------------------------------------------------------------
-
-/** Heading with an arrow icon, coloured via the `accent` prop. */
-function SectionHeading({
-  children,
-  accent = "text-primary",
-}: {
-  children: React.ReactNode;
-  accent?: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <h2
-        className={`font-heading font-bold text-lg md:text-xl uppercase tracking-wide ${accent}`}
-      >
-        {children}
-      </h2>
-      <ChevronRight
-        size={16}
-        className="opacity-50 shrink-0"
-        aria-hidden="true"
-      />
-    </div>
-  );
-}
-
-/** Single key-component card: circular image + name + description. */
-function ComponentCard({ item }: { item: ProductComponent }) {
-  return (
-    <li className="flex items-center gap-4 pb-5 last:pb-0 border-b border-border-strong/20 last:border-0">
-      {/* Circular image — ProductImage handles fallback & optimisation */}
-      <ProductImage
-        src={item.imageSrc}
-        alt={item.imageAlt}
-        size="full"
-        aspectRatio="square"
-        className={`w-14 h-14 shrink-0 rounded-full border-2 border-foreground neo-shadow-icon ${item.bgClass}`}
-        sizes="56px"
-        priority={false}
-      />
-      {/* Text */}
-      <div className="flex flex-col gap-0.5">
-        <h3 className="font-body font-semibold text-xs uppercase tracking-widest text-foreground">
-          {item.name}
-        </h3>
-        <p className="font-body text-xs text-muted-foreground leading-snug">
-          {item.description}
-        </p>
-      </div>
-    </li>
-  );
-}
-
-/** Section 2: two-column layout — description left, components right. */
-function ProductInfoSection({ product }: { product: ProductDetail }) {
-  return (
-    <section
-      aria-label="Deskripsi dan Komponen Produk"
-      className="max-w-5xl mx-auto mt-16 px-4 md:px-0"
-    >
-      {/* Full-width divider */}
-      <hr className="border-2 border-foreground mb-12" />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
-        {/* ── Left: Product Description ── */}
-        <div className="flex flex-col gap-6 md:border-r-2 md:border-border-strong/20 md:pr-16 pb-10 md:pb-0 border-b-2 md:border-b-0 border-border-strong/20">
-          <SectionHeading accent="text-primary">
-            Deskripsi Produk
-          </SectionHeading>
-
-          <div className="flex flex-col gap-4">
-            {product.longDescription.map((para, i) => (
-              <p
-                key={i}
-                className="font-body text-sm text-muted-foreground leading-relaxed"
-              >
-                {para}
-              </p>
-            ))}
-          </div>
-
-          {/* Checklist highlights */}
-          <ul
-            className="flex flex-col gap-3 mt-2"
-            aria-label="Keunggulan produk"
-          >
-            {product.highlights.map((text, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <CheckCircle2
-                  size={20}
-                  className="text-primary fill-primary stroke-background shrink-0 mt-0.5"
-                  aria-hidden="true"
-                />
-                <span className="font-body text-sm text-foreground leading-snug">
-                  {text}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* ── Right: Key Components ── */}
-        <div className="flex flex-col gap-6">
-          <SectionHeading accent="text-secondary">
-            Component Pada Produk
-          </SectionHeading>
-
-          <ul className="flex flex-col gap-1" aria-label="Komponen produk">
-            {product.components.map((comp) => (
-              <ComponentCard key={comp.name} item={comp} />
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Section 3 — Ulasan Pengguna
-// ---------------------------------------------------------------------------
-
 /** Renders filled / half / empty stars for a given numeric rating */
 function ReviewStars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
@@ -303,7 +183,7 @@ function ReviewCard({ review }: { review: ProductReview }) {
       <ReviewStars rating={review.rating} />
 
       <p className="font-body text-sm text-foreground leading-relaxed grow">
-        &ldquo;{review.text}&rdquo;
+        “{review.text}”
       </p>
 
       {/* Author footer */}
@@ -333,8 +213,35 @@ function ReviewCard({ review }: { review: ProductReview }) {
   );
 }
 
-/** Section 3: Rating summary + horizontal scrollable review carousel */
-function UserReviewsSection({ product }: { product: ProductDetail }) {
+/** Single key-component card: circular image + name + description. */
+function ComponentCard({ item }: { item: ProductComponent }) {
+  return (
+    <li className="flex items-center gap-4 pb-5 last:pb-0 border-b border-border-strong/20 last:border-0">
+      <ProductImage
+        src={item.imageSrc}
+        alt={item.imageAlt}
+        size="full"
+        aspectRatio="square"
+        className={`w-14 h-14 shrink-0 rounded-full border-2 border-foreground neo-shadow-icon ${item.bgClass}`}
+        sizes="56px"
+        priority={false}
+      />
+      <div className="flex flex-col gap-0.5">
+        <h3 className="font-body font-semibold text-xs uppercase tracking-widest text-foreground">
+          {item.name}
+        </h3>
+        <p className="font-body text-xs text-muted-foreground leading-snug">
+          {item.description}
+        </p>
+      </div>
+    </li>
+  );
+}
+
+/** Product Info & Reviews Section with 3 Tabs */
+/** Product Info & Reviews Section with 3 Tabs */
+function ProductInfoSection({ product }: { product: ProductDetail }) {
+  const [activeTab, setActiveTab] = useState<"description" | "components" | "reviews">("description");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -348,92 +255,165 @@ function UserReviewsSection({ product }: { product: ProductDetail }) {
 
   return (
     <section
-      aria-label="Ulasan Pengguna"
+      aria-label="Informasi dan Ulasan Produk"
       className="max-w-5xl mx-auto mt-16 px-4 md:px-0 pb-16"
     >
-      {/* Full-width divider */}
-      <hr className="border-2 border-foreground mb-10" />
+      {/* Garis pemisah utama (Dibuat sedikit lebih tebal dengan border-t-2) */}
+      <hr className="border-t-2 border-foreground/40 mb-8" />
 
-      {/* Section header */}
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="font-heading font-bold text-lg md:text-xl uppercase tracking-wide text-primary">
-          Ulasan Pengguna
-        </h2>
-        <a
-          href="#ulasan"
-          className="font-body font-semibold text-xs uppercase tracking-widest text-primary hover:underline transition-all"
+      {/* Tabs Header (3 Tab: Deskripsi, Komponen, Ulasan) */}
+      <div className="flex items-center gap-8 mb-8 relative border-b-2 border-foreground/30 overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => setActiveTab("description")}
+          className={`pb-3 font-heading font-bold text-lg md:text-xl uppercase tracking-wide transition-colors relative shrink-0 cursor-pointer ${
+            activeTab === "description" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
         >
-          Lihat Semua Ulasan
-        </a>
+          Deskripsi Produk
+          {activeTab === "description" && (
+            <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-foreground transition-all" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("components")}
+          className={`pb-3 font-heading font-bold text-lg md:text-xl uppercase tracking-wide transition-colors relative shrink-0 cursor-pointer ${
+            activeTab === "components" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Komponen Produk
+          {activeTab === "components" && (
+            <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-foreground transition-all" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("reviews")}
+          className={`pb-3 font-heading font-bold text-lg md:text-xl uppercase tracking-wide transition-colors relative shrink-0 cursor-pointer ${
+            activeTab === "reviews" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Ulasan Pengguna
+          {activeTab === "reviews" && (
+            <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-foreground transition-all" />
+          )}
+        </button>
       </div>
 
-      {/* Rating + Carousel row */}
-      <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-start w-full">
-        {/* ── Left: Global rating summary ── */}
-        <div
-          className="flex flex-col items-center md:items-start gap-2 md:w-1/4 shrink-0"
-          aria-label={`Rating rata-rata ${product.reviewSummary.average} dari 5`}
-        >
-          <div
-            className="font-heading font-black leading-none text-primary"
-            style={{ fontSize: "72px", letterSpacing: "-0.03em" }}
-          >
-            {product.reviewSummary.average.toFixed(1).replace(".", ",")}
-            <span className="text-2xl font-bold">/5</span>
+      {/* Tab Contents */}
+      <div className="py-2">
+        {activeTab === "description" && (
+          <div className="flex flex-col gap-6 animate-fadeIn">
+            <div className="flex flex-col gap-4 max-w-3xl">
+              {product.longDescription.map((para, i) => (
+                <p
+                  key={i}
+                  className="font-body text-sm text-muted-foreground leading-relaxed"
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
+
+            <ul
+              className="flex flex-col gap-3 mt-2 max-w-3xl"
+              aria-label="Keunggulan produk"
+            >
+              {product.highlights.map((text, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <CheckCircle2
+                    size={20}
+                    className="text-primary fill-primary stroke-background shrink-0 mt-0.5"
+                    aria-hidden="true"
+                  />
+                  <span className="font-body text-sm text-foreground leading-snug">
+                    {text}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ReviewStars rating={product.reviewSummary.average} size={20} />
-          <p className="font-body text-sm text-muted-foreground">
-            Berdasarkan {product.reviewSummary.total} ulasan
-          </p>
-        </div>
+        )}
 
-        {/* ── Right: Carousel ── */}
-        <div className="relative flex items-center gap-2 flex-1 w-full min-w-0 group">
-          {/* Left nav button */}
-          <button
-            onClick={() => scroll("left")}
-            aria-label="Scroll ulasan ke kiri"
-            className="
-              absolute -left-4 z-10
-              w-10 h-10 rounded-full
-              bg-card border-2 border-foreground neo-shadow-icon
-              flex items-center justify-center
-              opacity-0 group-hover:opacity-100
-              transition-opacity hover:bg-muted
-              shrink-0
-            "
-          >
-            <ChevronLeft size={18} className="text-foreground" />
-          </button>
-
-          {/* Scrollable card track */}
-          <div
-            ref={scrollRef}
-            className="flex gap-5 overflow-x-auto pb-2 w-full snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            {product.reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
+        {activeTab === "components" && (
+          <div className="flex flex-col gap-6 animate-fadeIn max-w-xl">
+            <ul className="flex flex-col gap-4" aria-label="Komponen produk">
+              {product.components.map((comp) => (
+                <ComponentCard key={comp.name} item={comp} />
+              ))}
+            </ul>
           </div>
+        )}
 
-          {/* Right nav button */}
-          <button
-            onClick={() => scroll("right")}
-            aria-label="Scroll ulasan ke kanan"
-            className="
-              absolute -right-4 z-10
-              w-10 h-10 rounded-full
-              bg-card border-2 border-foreground neo-shadow-icon
-              flex items-center justify-center
-              opacity-0 group-hover:opacity-100
-              transition-opacity hover:bg-muted
-              shrink-0
-            "
-          >
-            <ChevronRight size={18} className="text-foreground" />
-          </button>
-        </div>
+        {activeTab === "reviews" && (
+          <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-start w-full animate-fadeIn">
+            {/* Left: Global rating summary */}
+            <div
+              className="flex flex-col items-center md:items-start gap-2 md:w-1/4 shrink-0"
+              aria-label={`Rating rata-rata ${product.reviewSummary.average} dari 5`}
+            >
+              <div
+                className="font-heading font-black leading-none text-primary"
+                style={{ fontSize: "72px", letterSpacing: "-0.03em" }}
+              >
+                {product.reviewSummary.average.toFixed(1).replace(".", ",")}
+                <span className="text-2xl font-bold">/5</span>
+              </div>
+              <ReviewStars rating={product.reviewSummary.average} size={20} />
+              <p className="font-body text-sm text-muted-foreground">
+                Berdasarkan {product.reviewSummary.total} ulasan
+              </p>
+            </div>
+
+            {/* Right: Carousel */}
+            <div className="relative flex items-center gap-2 flex-1 w-full min-w-0 group">
+              <button
+                onClick={() => scroll("left")}
+                aria-label="Scroll ulasan ke kiri"
+                className="
+                  absolute -left-4 z-10
+                  w-10 h-10 rounded-full
+                  bg-card border-2 border-foreground neo-shadow-icon
+                  flex items-center justify-center
+                  opacity-0 group-hover:opacity-100
+                  transition-opacity hover:bg-muted
+                  shrink-0
+                "
+              >
+                <ChevronLeft size={18} className="text-foreground" />
+              </button>
+
+              <div
+                ref={scrollRef}
+                className="flex gap-5 overflow-x-auto pb-2 w-full snap-x snap-mandatory"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {product.reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+
+              <button
+                onClick={() => scroll("right")}
+                aria-label="Scroll ulasan ke kanan"
+                className="
+                  absolute -right-4 z-10
+                  w-10 h-10 rounded-full
+                  bg-card border-2 border-foreground neo-shadow-icon
+                  flex items-center justify-center
+                  opacity-0 group-hover:opacity-100
+                  transition-opacity hover:bg-muted
+                  shrink-0
+                "
+              >
+                <ChevronRight size={18} className="text-foreground" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -580,20 +560,20 @@ export default function ProductDetailPage() {
       .catch(() => active && setProduct(null))
       .finally(() => active && setIsLoadingProduct(false));
 
-    // Fetch related products — ambil 8 produk, exclude current slug client-side
-    fetch(`/api/product?limit=9&sort=newest`)
+    // Fetch related products — ambil 3 produk, exclude current slug client-side
+    fetch(`/api/product?limit=4&sort=newest`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (!active || !json?.data) return;
         const filtered = (json.data as ApiProduct[]).filter(
           (p) => p.slug !== slug,
         );
-        setRelatedProducts(filtered.slice(0, 8));
+        setRelatedProducts(filtered.slice(0, 3));
       })
       .catch(() => {
         /* non-fatal */
       });
-
+      
     return () => {
       active = false;
       clearTimeout(loadingTimer);
@@ -657,111 +637,165 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <main className="w-full px-4 md:px-16 py-12 bg-background min-h-screen">
+   <main className="w-full px-4 md:px-16 pt-35 md:pt-50 pb-12 bg-background min-h-screen">
         {/* Product Grid */}
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-10 gap-10">
-          {/* Left Column: Images (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col md:flex-row gap-3">
-            {/* Thumbnail Strip */}
-            <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible shrink-0 order-2 md:order-1">
-              {/* Image thumbnails */}
-              {product.images.map((img, idx) => (
-                <button
-                  key={`img-${idx}`}
-                  onClick={() => setSelectedMedia({ type: "image", index: idx })}
-                  aria-label={`Foto produk ${idx + 1}`}
-                  className={[
-                    "w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden shrink-0 transition-all",
-                    "border-2 bg-card",
-                    selectedMedia.type === "image" && safeImageIndex === idx
-                      ? "border-foreground neo-shadow"
-                      : "border-border-strong hover:border-foreground",
-                  ].join(" ")}
-                >
-                  <ProductImage
-                    src={img.src}
-                    alt={img.alt}
-                    size="full"
-                    aspectRatio="square"
-                    className="w-full h-full rounded-md"
-                    sizes="64px"
-                    priority={false}
-                  />
-                </button>
-              ))}
-
-              {/* Video thumbnails */}
-              {product.videos.map((video, idx) => (
-                <button
-                  key={`vid-${video.id}`}
-                  onClick={() => setSelectedMedia({ type: "video", index: idx })}
-                  aria-label={video.title ?? `Video produk ${idx + 1}`}
-                  title={video.title ?? `Video ${idx + 1}`}
-                  className={[
-                    "w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden shrink-0 transition-all",
-                    "border-2 bg-muted flex items-center justify-center",
-                    selectedMedia.type === "video" && selectedMedia.index === idx
-                      ? "border-foreground neo-shadow bg-primary/10"
-                      : "border-border-strong hover:border-foreground",
-                  ].join(" ")}
-                >
-                  <PlayCircle
-                    size={24}
-                    className={
-                      selectedMedia.type === "video" && selectedMedia.index === idx
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* Main Viewer — gambar atau video */}
-            <div className="w-full aspect-square border-2 border-foreground neo-shadow rounded-2xl overflow-hidden order-1 md:order-2 bg-black/5">
+ {/* Left Column: Images & Videos (5 cols) */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            {/* Main Viewer (Kotak Besar tanpa outline & tanpa neo-shadow) */}
+            <div className="w-full aspect-square bg-card rounded-2xl overflow-hidden p-4 flex items-center justify-center">
               {selectedMedia.type === "video" && product.videos[selectedMedia.index] ? (
-                // ── Video Player ──
                 <video
                   key={product.videos[selectedMedia.index].url}
                   src={product.videos[selectedMedia.index].url}
                   controls
                   autoPlay
-                  className="w-full h-full object-contain bg-black rounded-none"
-                  aria-label={
-                    product.videos[selectedMedia.index].title ?? "Video produk"
-                  }
+                  className="w-full h-full object-contain bg-black rounded-xl"
+                  aria-label={product.videos[selectedMedia.index].title ?? "Video produk"}
                 >
                   Browser kamu tidak mendukung tag video.
                 </video>
               ) : (
-                // ── Image Viewer ──
                 <ProductImage
                   src={selectedImage.src}
                   alt={selectedImage.alt}
                   size="full"
                   aspectRatio="square"
-                  className="w-full h-full rounded-none border-0"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="w-full h-full object-contain rounded-xl border-0"
+                  sizes="(max-width: 1024px) 85vw, 40vw"
                   priority
                 />
               )}
             </div>
-          </div>
 
-          {/* Right Column: Product Info (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            {/* Header */}
-            <div>
-              {/* Rating Row */}
-              <div className="flex items-center gap-2 mb-2">
-                <StarRating rating={product.rating} />
-                <span className="text-sm font-semibold font-body text-muted-foreground underline cursor-pointer tracking-wide">
-                  {product.reviewCount} ulasan
-                </span>
+            {/* Thumbnail Strip: 3 Thumbnail di Tengah dengan Border/Outline Biru pada yang Aktif */}
+            <div className="flex items-center justify-center gap-6">
+              {/* Tombol Panah Kiri */}
+              <button
+                onClick={() => {
+                  const totalMedia = product.images.length + product.videos.length;
+                  if (totalMedia <= 1) return;
+                  const currentIndex = selectedMedia.type === "image" 
+                    ? selectedMedia.index 
+                    : product.images.length + selectedMedia.index;
+                  const prevIndex = (currentIndex - 1 + totalMedia) % totalMedia;
+                  if (prevIndex < product.images.length) {
+                    setSelectedMedia({ type: "image", index: prevIndex });
+                  } else {
+                    setSelectedMedia({ type: "video", index: prevIndex - product.images.length });
+                  }
+                }}
+                aria-label="Media sebelumnya"
+                className="p-2 text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                <ArrowLeft size={26} strokeWidth={2.5} />
+              </button>
+
+              {/* Container 3 Thumbnail */}
+              <div className="flex items-center gap-8">
+                {(() => {
+                  const allMedia = [
+                    ...product.images.map((img, i) => ({ type: "image" as const, index: i, data: img })),
+                    ...product.videos.map((vid, i) => ({ type: "video" as const, index: i, data: vid }))
+                  ];
+                  const total = allMedia.length;
+                  if (total === 0) return null;
+
+                  const currentIndex = selectedMedia.type === "image" 
+                    ? selectedMedia.index 
+                    : product.images.length + selectedMedia.index;
+
+                  const visibleItems = [
+                    allMedia[(currentIndex - 1 + total) % total],
+                    allMedia[currentIndex % total],
+                    allMedia[(currentIndex + 1) % total],
+                  ];
+
+                  return visibleItems.map((item, idx) => {
+                    const isSelected = item.type === selectedMedia.type && item.index === selectedMedia.index;
+                    const uniqueKey = `slot-${idx}-${item.type}-${item.index}`;
+
+                    if (item.type === "image") {
+                      const img = item.data as (typeof product.images)[0];
+                      return (
+                        <button
+                          key={uniqueKey}
+                          onClick={() => setSelectedMedia({ type: "image", index: item.index })}
+                          aria-label={`Foto produk ${item.index + 1}`}
+                          className={[
+                            "w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden shrink-0 transition-all bg-card",
+                            // Jika aktif diberi border tipis biru, jika tidak transparan/tanpa border
+                            isSelected
+                              ? "border-2 border-blue-500 shadow-sm scale-105"
+                              : "border border-transparent opacity-70 hover:opacity-100",
+                          ].join(" ")}
+                        >
+                          <ProductImage
+                            src={img.src}
+                            alt={img.alt}
+                            size="full"
+                            aspectRatio="square"
+                            className="w-full h-full object-cover rounded-lg"
+                            sizes="80px"
+                            priority={false}
+                          />
+                        </button>
+                      );
+                    } else {
+                      const video = item.data as (typeof product.videos)[0];
+                      return (
+                        <button
+                          key={uniqueKey}
+                          onClick={() => setSelectedMedia({ type: "video", index: item.index })}
+                          aria-label={video.title ?? `Video produk ${item.index + 1}`}
+                          title={video.title ?? `Video ${item.index + 1}`}
+                          className={[
+                            "w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden shrink-0 transition-all bg-muted flex items-center justify-center",
+                            isSelected
+                              ? "border-2 border-blue-500 shadow-sm scale-105 bg-blue-500/10"
+                              : "border border-transparent opacity-70 hover:opacity-100",
+                          ].join(" ")}
+                        >
+                          <PlayCircle
+                            size={24}
+                            className={isSelected ? "text-blue-500" : "text-muted-foreground"}
+                          />
+                        </button>
+                      );
+                    }
+                  });
+                })()}
               </div>
 
+              {/* Tombol Panah Kanan */}
+              <button
+                onClick={() => {
+                  const totalMedia = product.images.length + product.videos.length;
+                  if (totalMedia <= 1) return;
+                  const currentIndex = selectedMedia.type === "image" 
+                    ? selectedMedia.index 
+                    : product.images.length + selectedMedia.index;
+                  const nextIndex = (currentIndex + 1) % totalMedia;
+                  if (nextIndex < product.images.length) {
+                    setSelectedMedia({ type: "image", index: nextIndex });
+                  } else {
+                    setSelectedMedia({ type: "video", index: nextIndex - product.images.length });
+                  }
+                }}
+                aria-label="Media selanjutnya"
+                className="p-2 text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                <ArrowRight size={26} strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
+
+        {/* Right Column: Product Info (5 cols) */}
+          <div className="lg:col-span-5 flex flex-col">
+            {/* Header: Judul & Deskripsi (Tanpa Rating) */}
+            <div>
               {/* Product Name */}
-              <h1 className="font-heading font-bold text-2xl md:text-3xl text-foreground leading-tight mb-2">
+              <h1 className="font-heading font-bold text-2xl md:text-4xl text-foreground leading-tight mb-3 uppercase">
                 {product.name}
               </h1>
 
@@ -771,82 +805,87 @@ export default function ProductDetailPage() {
               </p>
             </div>
 
-            {/* Price */}
-            <div>
-              <span className="font-heading font-bold text-2xl md:text-3xl text-primary block leading-tight">
-                {product.price}
-              </span>
-              <span className="text-xs font-semibold font-body text-muted-foreground bg-muted px-2 py-1 rounded inline-block mt-1">
-                {product.resellerNote}
-              </span>
+            {/* Gap Lebih Jauh dari Deskripsi ke Harga */}
+            <div className="mt-28">
+              <div className="flex items-baseline gap-3">
+                <span className="font-heading font-bold text-3xl md:text-4xl text-foreground leading-tight">
+                  {product.price}
+                </span>
+                {product.resellerNote && (
+                  <span className="text-sm font-body text-muted-foreground">
+                    {product.resellerNote}
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Divider */}
-            <hr className="border-border-strong" />
-
-            {/* Actions */}
-            <div className="flex flex-col gap-4">
+            {/* Actions: Quantity & Tombol Sejajar */}
+            <div className="mt-6 flex flex-col gap-6">
               {/* Quantity Selector */}
-              <div className="flex items-center gap-4">
-                <span className="font-body font-semibold text-sm text-foreground uppercase tracking-widest">
-                  Kuantitas
+              <div className="flex flex-col gap-2">
+                <span className="font-body font-semibold text-sm text-foreground">
+                  Quantity
                 </span>
-                <div className="flex items-center border-2 border-foreground rounded-full overflow-hidden bg-card h-10 neo-shadow">
+                <div className="flex items-center gap-4">
                   <button
+                    type="button"
                     onClick={handleDecrement}
                     aria-label="Kurangi jumlah"
-                    className="px-4 h-full hover:bg-muted transition-colors flex items-center justify-center font-bold text-lg border-r-2 border-foreground cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center font-bold text-base cursor-pointer"
                   >
                     −
                   </button>
-                  <input
-                    readOnly
-                    type="number"
-                    value={quantity}
-                    aria-label="Jumlah produk"
-                    className="w-12 h-full text-center border-none outline-none font-body font-semibold text-sm p-0 m-0 bg-transparent"
-                  />
+                  <span className="font-body font-bold text-base text-foreground min-w-[1.5rem] text-center">
+                    {quantity}
+                  </span>
                   <button
+                    type="button"
                     onClick={handleIncrement}
                     aria-label="Tambah jumlah"
-                    className="px-4 h-full hover:bg-muted transition-colors flex items-center justify-center font-bold text-lg border-l-2 border-foreground cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center font-bold text-base cursor-pointer"
                   >
                     +
                   </button>
                 </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex gap-4 w-full">
-                {/* Add to Cart */}
-                <Button
-                  variant="primary"
-                  size="lg"
-                  neo
+              {/* CTA Buttons: Sejajar 1 Baris (Beli Sekarang | Tambah Ke Keranjang | Wishlist Tanpa Bayangan) */}
+              <div className="flex items-center gap-3 w-full">
+                {/* Buy Now (Hitam solid pill) */}
+                <button
+                  type="button"
+                  onClick={() => console.log("Buy now:", product.name, quantity)}
+                  className="flex-1 h-12 px-5 rounded-full bg-foreground text-background font-body font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-opacity cursor-pointer"
+                >
+                  Beli Sekarang
+                </button>
+
+                {/* Add to Cart (Outline hitam pill) */}
+                <button
+                  type="button"
                   disabled={
                     isAdding || !product.inStock || !product.defaultVariantId
                   }
-                  className="flex-1 rounded-full uppercase tracking-widest text-sm font-body font-bold"
                   onClick={handleAddToCart}
+                  className="flex-1 h-12 px-5 rounded-full bg-transparent border border-foreground text-foreground font-body font-bold text-xs uppercase tracking-wider hover:bg-foreground/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isAdding
                     ? "Menambahkan..."
                     : addedSuccess
-                      ? "✓ Berhasil Ditambahkan!"
+                      ? "✓ Ditambahkan"
                       : !product.inStock
                         ? "Stok Habis"
                         : "Tambah Ke Keranjang"}
-                </Button>
+                </button>
 
-                {/* Wishlist */}
-                <Button
-                  variant="accent-yellow"
-                  size="icon-lg"
-                  neo
+                {/* Wishlist (Bulat Kuning TANPA BAYANGAN / neo-shadow) */}
+                <button
+                  type="button"
                   aria-label={
                     isWishlisted ? "Hapus dari wishlist" : "Tambah ke wishlist"
                   }
                   onClick={handleToggleWishlist}
+                  className="w-12 h-12 rounded-full bg-[#FFE156] border border-foreground flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   <Heart
                     size={20}
@@ -856,60 +895,15 @@ export default function ProductDetailPage() {
                         : "fill-none stroke-foreground"
                     }`}
                   />
-                </Button>
+                </button>
               </div>
-
-              {/* Buy Now */}
-              <Button
-                variant="accent-pink"
-                size="lg"
-                neo
-                className="w-full rounded-full uppercase tracking-widest text-sm font-body font-bold"
-                onClick={() => console.log("Buy now:", product.name, quantity)}
-              >
-                Beli Sekarang
-              </Button>
             </div>
-
-            {/* Trust Badges */}
-            {/* <div className="flex justify-between items-center border-t-2 border-border-strong pt-6">
-            <div className="flex flex-col items-center gap-1 text-center">
-              <span className="material-symbols-outlined text-primary text-3xl">
-                local_shipping
-              </span>
-              <span className="font-body font-bold text-[10px] uppercase text-foreground">
-                Pengiriman
-                <br />
-                Gratis
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-1 text-center">
-              <span className="material-symbols-outlined text-primary text-3xl">
-                verified_user
-              </span>
-              <span className="font-body font-bold text-[10px] uppercase text-foreground">
-                Pembayaran
-                <br />
-                Aman
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-1 text-center">
-              <span className="material-symbols-outlined text-primary text-3xl">
-                autorenew
-              </span>
-              <span className="font-body font-bold text-[10px] uppercase text-foreground">
-                Retur
-                <br />
-                Mudah
-              </span>
-            </div>
-          </div> */}
           </div>
+
         </div>
         {/* ── Section 2: Deskripsi & Komponen ── */}
         <ProductInfoSection product={product} />
         {/* ── Section 3: Ulasan Pengguna ── */}
-        <UserReviewsSection product={product} />
       </main>
       {/* ── Section 4: You Might Also Like (full-bleed) ── */}
       <RelatedProductsSection products={relatedProducts} />
