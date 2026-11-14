@@ -1,224 +1,210 @@
 "use client";
 
-import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter, 
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, ShieldCheck, Box, Info } from "lucide-react";
+import { settingsService } from "@/lib/api/services/settings.service";
+import { toast } from "@/components/admin/use-toast";
+import { http } from "@/lib/api/base-client";
+import { Truck, CheckCircle2 } from "lucide-react";
+
+interface ShippingProvider {
+  provider_id: string;
+  provider_name: string;
+  service: string;
+  service_label: string;
+  badge?: string;
+  badge_variant?: string;
+  estimate?: string;
+  cost?: number;
+}
+
+interface UniqueProvider {
+  id: string;
+  name: string;
+}
+
+function dedupe(providers: ShippingProvider[]): UniqueProvider[] {
+  const seen = new Set<string>();
+  const result: UniqueProvider[] = [];
+  for (const p of providers) {
+    if (!seen.has(p.provider_id)) {
+      seen.add(p.provider_id);
+      result.push({ id: p.provider_id, name: p.provider_name });
+    }
+  }
+  return result;
+}
 
 export function ShippingSection() {
-  const [providers, setProviders] = useState([
-    { id: 1, name: "JNE", isActive: true },
-    { id: 2, name: "J&T Express", isActive: true },
-    { id: 3, name: "SiCepat", isActive: false },
-  ]);
+  const [providers, setProviders] = useState<UniqueProvider[]>([]);
+  const [defaultProviderId, setDefaultProviderId] = useState<string>("");
+  const [pendingDefault, setPendingDefault] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(null);
-  const [providerName, setProviderName] = useState("");
-  const [providerActive, setProviderActive] = useState(true);
-
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const handleOpenAdd = () => {
-    resetForm();
-    setIsEditing(false);
-    setIsDialogOpen(true);
-  };
-
-  const handleOpenEdit = (provider: any) => {
-    resetForm();
-    setIsEditing(true);
-    setCurrentId(provider.id);
-    setProviderName(provider.name);
-    setProviderActive(provider.isActive);
-    setIsDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    if (!providerName.trim()) return;
-
-    if (isEditing && currentId) {
-      setProviders((prev) =>
-        prev.map((p) =>
-          p.id === currentId ? { ...p, name: providerName, isActive: providerActive } : p
-        )
-      );
-    } else {
-      setProviders((prev) => [
-        ...prev,
-        { id: Date.now(), name: providerName, isActive: providerActive },
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [settingsRes, providersRes] = await Promise.all([
+        settingsService.getSettings(),
+        http.get<{ success: boolean; data: ShippingProvider[] }>("/api/shipping-providers"),
       ]);
+
+      const unique = dedupe(providersRes.data ?? []);
+      setProviders(unique);
+
+      const currentDefault = settingsRes.data.shipping_default_provider_id ?? "";
+      setDefaultProviderId(currentDefault);
+      setPendingDefault(currentDefault);
+    } catch (err) {
+      console.error("Failed to load shipping settings:", err);
+      toast.error("Gagal memuat pengaturan pengiriman.");
+    } finally {
+      setIsLoading(false);
     }
-    setIsDialogOpen(false);
-    resetForm();
-  };
+  }, []);
 
-  const resetForm = () => {
-    setCurrentId(null);
-    setProviderName("");
-    setProviderActive(true);
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const confirmDelete = (id: number) => {
-    setDeletingId(id);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDelete = () => {
-    if (deletingId) {
-      setProviders((prev) => prev.filter((p) => p.id !== deletingId));
+  const handleSave = async () => {
+    if (!pendingDefault) {
+      toast.error("Pilih provider default terlebih dahulu.");
+      return;
     }
-    setIsDeleteDialogOpen(false);
-    setDeletingId(null);
+    setIsSaving(true);
+    try {
+      await settingsService.patchSettings({
+        shipping_default_provider_id: pendingDefault,
+      });
+      setDefaultProviderId(pendingDefault);
+      toast.success("Provider pengiriman default berhasil disimpan.");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Gagal menyimpan pengaturan pengiriman.";
+      toast.error("Gagal menyimpan", message);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-6 animate-pulse space-y-4">
+        <div className="h-5 bg-muted rounded w-1/4" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-14 bg-muted rounded" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h2 className="text-xl font-heading font-extrabold text-foreground mb-1">Konfigurasi Pengiriman</h2>
-          <p className="text-sm text-muted-foreground">Kelola penyedia jasa ekspedisi (provider) yang tersedia saat checkout.</p>
-        </div>
-        
-        <Button onClick={handleOpenAdd} variant="primary" className="font-bold shrink-0">
-          <Plus className="size-4 mr-2" />
-          Tambah Provider
-        </Button>
+    <div className="bg-card rounded-2xl border border-border shadow-sm divide-y divide-border">
+      {/* Header */}
+      <div className="p-6">
+        <h2 className="text-xl font-heading font-extrabold text-foreground mb-1">
+          Konfigurasi Pengiriman
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Pilih provider pengiriman default yang digunakan saat checkout.
+        </p>
       </div>
 
-      {/* List Table */}
-      <div className="border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-muted-foreground uppercase bg-muted/50 font-bold border-b border-border">
-              <tr>
-                <th className="px-5 py-4 w-1/3">Nama Provider</th>
-                <th className="px-5 py-4 w-1/3">Status</th>
-                <th className="px-5 py-4 text-right w-1/3">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {providers.length > 0 ? (
-                providers.map((provider) => (
-                  <tr key={provider.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-5 py-4 font-semibold text-foreground text-base">{provider.name}</td>
-                    <td className="px-5 py-4">
-                      {provider.isActive ? (
-                        <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20 gap-1.5">
-                          Aktif
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground bg-muted/30 gap-1.5">
-                          Nonaktif
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 flex justify-end gap-2">
-                      <Button
-                        variant="accent-yellow"
-                        size="sm"
-                        onClick={() => handleOpenEdit(provider)}
-                        className="font-bold px-4 rounded-full h-9 border border-border"
-                        neo={false}
-                      >
-                        <Pencil className="size-3.5 mr-1.5" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => confirmDelete(provider.id)}
-                        className="font-bold px-4 rounded-full h-9 border border-border"
-                        neo={false}
-                      >
-                        <Trash2 className="size-3.5 mr-1.5" />
-                        Hapus
-                      </Button>
-                    </td>
+      {/* Provider list */}
+      <div className="p-6">
+        <h3 className="text-base font-bold text-foreground mb-4">Provider Aktif</h3>
+
+        {providers.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground">
+            <Truck className="size-10 mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-medium">Belum ada provider pengiriman aktif.</p>
+          </div>
+        ) : (
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-muted-foreground uppercase bg-muted/50 font-bold border-b border-border">
+                  <tr>
+                    <th className="px-5 py-4 w-12"></th>
+                    <th className="px-5 py-4">Nama Provider</th>
+                    <th className="px-5 py-4 text-right">Status</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="px-5 py-10 text-center text-muted-foreground">
-                    Belum ada provider pengiriman.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Dialog Add/Edit */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-heading font-extrabold text-foreground">
-              {isEditing ? "Edit Provider" : "Tambah Provider"}
-            </DialogTitle>
-            <DialogDescription className="text-sm">
-              {isEditing 
-                ? "Ubah informasi penyedia jasa pengiriman di bawah ini." 
-                : "Masukkan nama dan status untuk penyedia jasa pengiriman baru."}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Nama Ekspedisi</label>
-              <Input
-                value={providerName}
-                onChange={(e) => setProviderName(e.target.value)}
-                placeholder="Misal: Pos Indonesia"
-                className="h-10"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Status Provider</label>
-              <select
-                value={providerActive ? "active" : "inactive"}
-                onChange={(e) => setProviderActive(e.target.value === "active")}
-                className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:border-primary/50 font-medium transition-colors"
-              >
-                <option value="active">Aktif</option>
-                <option value="inactive">Nonaktif</option>
-              </select>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {providers.map((provider) => {
+                    const isDefault = provider.id === defaultProviderId;
+                    const isPending = provider.id === pendingDefault;
+                    return (
+                      <tr
+                        key={provider.id}
+                        className={`transition-colors cursor-pointer ${
+                          isPending
+                            ? "bg-primary/5 hover:bg-primary/10"
+                            : "hover:bg-muted/20"
+                        }`}
+                        onClick={() => setPendingDefault(provider.id)}
+                      >
+                        {/* Radio indicator */}
+                        <td className="px-5 py-4">
+                          <div
+                            className={`size-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                              isPending
+                                ? "border-primary bg-primary"
+                                : "border-muted-foreground"
+                            }`}
+                          >
+                            {isPending && (
+                              <div className="size-1.5 rounded-full bg-white" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 font-semibold text-foreground text-base">
+                          {provider.name}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          {isDefault ? (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20 gap-1.5">
+                              <CheckCircle2 className="size-3" />
+                              Default
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground bg-muted/30 gap-1.5">
+                              Aktif
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="font-bold">
-              Batal
-            </Button>
-            <Button variant="primary" onClick={handleSave} className="font-bold">
-              Simpan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        )}
 
-      <ConfirmDeleteDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        title="Hapus Provider"
-        description="Apakah Anda yakin ingin menghapus provider pengiriman ini? Tindakan ini tidak dapat dibatalkan."
-        itemName={providers.find((p) => p.id === deletingId)?.name || "Item ini"}
-        onConfirm={handleDelete}
-        confirmText="Ya, Hapus"
-        cancelText="Batal"
-      />
+        {pendingDefault !== defaultProviderId && (
+          <p className="mt-3 text-xs text-primary font-medium">
+            * Klik "Simpan" untuk menerapkan perubahan provider default.
+          </p>
+        )}
+      </div>
+
+      {/* Footer Action */}
+      <div className="p-6 flex justify-end bg-muted/20">
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          disabled={isSaving || pendingDefault === defaultProviderId}
+          className="font-bold px-6"
+        >
+          {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+        </Button>
+      </div>
     </div>
   );
 }

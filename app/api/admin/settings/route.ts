@@ -33,15 +33,20 @@ type SettingSpec = {
   email?: boolean;
   /** String keys only: validate as a foreign key to shipping_providers. */
   fkProvider?: boolean;
-  /** String keys only: validate as parseable JSON before storing. */
+  /** String keys only: validate as parseable JSON object before storing. */
   json?: boolean;
+  /** String keys only: validate as parseable JSON array before storing. */
+  jsonArray?: boolean;
 };
 
 const SETTING_SPECS: Record<string, SettingSpec> = {
   store_name: { kind: "string" },
+  store_tagline: { kind: "string" },
+  store_logo_url: { kind: "string" },
   store_phone: { kind: "string" },
   store_email: { kind: "string", email: true },
   store_address: { kind: "string" },
+  store_social_links: { kind: "string", jsonArray: true },
   shipping_default_provider_id: { kind: "string", fkProvider: true },
   membership_plus_price: { kind: "number" },
   membership_plus_duration_months: { kind: "number", positiveInt: true },
@@ -115,6 +120,18 @@ async function normalizeField(
       }
     } catch {
       return [null, `\`${key}\` harus berupa JSON yang valid.`];
+    }
+  }
+
+  // store_social_links is a JSON array blob — validate it parses as an array.
+  if (spec.jsonArray && value) {
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        return [null, `\`${key}\` harus berupa JSON array yang valid.`];
+      }
+    } catch {
+      return [null, `\`${key}\` harus berupa JSON array yang valid.`];
     }
   }
 

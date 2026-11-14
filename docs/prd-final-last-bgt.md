@@ -345,7 +345,10 @@ Setelah submit pembayaran, customer diarahkan ke halaman pembayaran sesuai metod
 | Review | Melihat, memoderasi, menyembunyikan, atau menghapus review yang tidak sesuai. |
 | Klaim Garansi | Melihat pengajuan klaim, mengubah status, mencatat hasil tindak lanjut manual (WA/email). |
 | Laporan | Laporan revenue, pesanan, produk terlaris, kategori, dan metrik penjualan. |
-| Settings | Informasi toko, konfigurasi pembayaran (termasuk batas waktu order `expires_at` dan flag aktif/nonaktif tiap metode pembayaran), pengiriman, dan pengaturan umum, termasuk harga dan durasi paket membership Plus. |
+| Settings | Informasi toko (nama, tagline, URL logo) dan pengaturan umum (`order_expires_hours`, harga & durasi paket membership Plus). |
+| Kelola Kontak | Kontak & lokasi toko (email, telepon, alamat) dan media sosial (daftar platform + link, dengan pilihan platform umum dan ikon logo masing-masing). Data ini ditampilkan di halaman Kontak dan Footer. |
+| Kelola Pembayaran | Konfigurasi Midtrans (read-only, dari env), toggle aktif/nonaktif per channel pembayaran, dan pengaturan harga & durasi paket membership Plus. |
+| Kelola Pengiriman | Daftar provider pengiriman aktif dan pemilihan provider default. |
  
 ## 9. Manajemen Produk
  
@@ -752,7 +755,10 @@ Perubahan struktur database dikelola melalui migration Drizzle ORM. Migration di
 - `/admin/reviews`
 - `/admin/complaints`
 - `/admin/reports`
-- `/admin/settings`
+- `/admin/settings` — Informasi toko (nama, tagline, logo URL) dan pengaturan umum
+- `/admin/contact` — Kontak, lokasi, dan media sosial toko
+- `/admin/payment-settings` — Konfigurasi gateway dan channel pembayaran
+- `/admin/shipping-settings` — Provider pengiriman dan provider default
 
 ## 22. Kebutuhan Fungsional
  
