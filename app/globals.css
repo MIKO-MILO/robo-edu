@@ -220,18 +220,18 @@
    ========================================== */
 
 @utility neo-shadow {
-  box-shadow: 4px 4px 0px 0px #3D2900;
+  box-shadow: none;
 }
 
 @utility neo-shadow-hover {
   &:hover {
-    box-shadow: 2px 2px 0px 0px #3D2900;
-    transform: translate(2px, 2px);
+    box-shadow: none;
+    transform: none;
   }
 }
 
 @utility neo-shadow-icon {
-  box-shadow: 2px 2px 0px 0px #3D2900;
+  box-shadow: none;
 }
 
 /* Hide scrollbar utility (keeps scrolling functionality active) */

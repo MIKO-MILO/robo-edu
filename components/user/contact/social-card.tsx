@@ -9,52 +9,42 @@ export interface SocialCardProps {
   className?: string;
 }
 
-/**
- * Atom — Kartu Media Sosial / Kontak RoboEdu (Centering & Compact Handle Style)
- * Layout:
- * 1. Atas (Center): Box Ikon Putih
- * 2. Tengah (Center): Handle / Nomor HP / Username (ukuran font lebih compact & terpusat) + Deskripsi Singkat
- * 3. Bawah (Center): Tombol Aksi Putih
- */
-export function SocialCard({
-  contact,
-  icon: Icon,
-  className,
-}: SocialCardProps) {
+/** Atom — Kartu media sosial / kontak. Flat, border-based, no shadow. */
+export function SocialCard({ contact, icon: Icon, className }: SocialCardProps) {
   return (
     <article
       className={cn(
         contact.bgColorClass,
-        "border-2 border-foreground rounded-[28px] p-5 sm:p-6",
-        "neo-shadow neo-shadow-hover",
-        "flex flex-col items-center text-center justify-between gap-4 transition-all duration-200 h-full overflow-hidden",
-        className
+        "rounded-2xl border-2 border-foreground p-5",
+        "flex flex-col items-center text-center gap-4",
+        "transition-colors duration-150",
+        className,
       )}
     >
-      {/* ── 1. Atas: Box Ikon Putih (Center) ── */}
-      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[18px] bg-card border-2 border-foreground flex items-center justify-center neo-shadow-icon shrink-0 mx-auto">
-        <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-foreground" />
+      {/* Icon box */}
+      <div className="w-12 h-12 rounded-xl bg-card border-2 border-foreground flex items-center justify-center shrink-0">
+        <Icon className="w-6 h-6 text-foreground" />
       </div>
 
-      {/* ── 2. Tengah: Handle / Nomor HP / Username & Deskripsi (Center & Compact) ── */}
-      <div className="flex flex-col items-center text-center gap-1.5 w-full my-auto">
-        <h3 className="font-heading font-bold text-base sm:text-base text-foreground text-center break-all w-full leading-tight">
+      {/* Text */}
+      <div className="flex flex-col items-center gap-1 flex-1">
+        <h3 className="font-heading font-bold text-sm text-foreground break-all leading-tight">
           {contact.handle}
         </h3>
-        <p className="font-body text-xs sm:text-sm text-foreground/90 text-center leading-snug w-full">
+        <p className="font-body text-xs text-foreground/80 leading-snug">
           {contact.description}
         </p>
       </div>
 
-      {/* ── 3. Bawah: Tombol Link Putih (Center) ── */}
+      {/* CTA */}
       <a
         href={contact.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 font-body font-bold text-xs sm:text-sm text-foreground bg-card border-2 border-foreground neo-shadow-icon hover:neo-shadow px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all active:scale-95 mx-auto mt-auto"
+        className="inline-flex items-center gap-1.5 bg-card border-2 border-foreground rounded-full px-4 py-2 font-body font-bold text-xs text-foreground hover:bg-muted transition-colors mt-auto"
       >
-        <span>{contact.actionText}</span>
-        <ExternalLink className="w-3.5 h-3.5 stroke-[2.5px]" aria-hidden="true" />
+        {contact.actionText}
+        <ExternalLink className="w-3 h-3 stroke-[2.5px]" aria-hidden />
       </a>
     </article>
   );
