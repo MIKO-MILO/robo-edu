@@ -43,10 +43,10 @@ export function ResellerCtaSection() {
               </p>
 
               <Link
-                href="/contact"
+                href="/membership/confirm"
                 className="mt-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white text-[#E8A613] hover:bg-amber-50 font-heading font-bold text-[11px] sm:text-xs transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 cursor-pointer shrink-0"
               >
-                <span>AJUKAN JADI RESELLER SEKARANG</span>
+                <span>BELI MEMBERSHIP PLUS SEKARANG</span>
                 <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
               </Link>
             </div>

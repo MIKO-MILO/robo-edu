@@ -132,7 +132,7 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
         </div>
 
         <Link
-          href="/contact"
+          href={tier.isSpecial ? "/membership/confirm" : "/contact"}
           className={cn(
             "w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95",
             tier.isSpecial
@@ -140,7 +140,7 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
               : "bg-white text-sky-700 hover:bg-sky-50 shadow-white/20"
           )}
         >
-          {tier.isSpecial ? "Gabung VIP Sekarang" : "Mulai Gratis"}
+          {tier.isSpecial ? "Beli Membership Plus" : "Mulai Gratis"}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
