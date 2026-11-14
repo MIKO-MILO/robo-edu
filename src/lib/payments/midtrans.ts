@@ -13,6 +13,8 @@ const midtransClient = require("midtrans-client") as {
     transaction: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cancel: (orderId: string) => Promise<any>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      status: (orderId: string) => Promise<any>;
     };
   };
 };
@@ -31,6 +33,54 @@ export type MidtransNotification = {
   settlement_time?: string;
   expiry_time?: string;
 };
+
+// ── Payment state mapping (shared by webhook and manual status check) ──────────
+
+export type PaymentState = "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED";
+
+/** Terminal payment states — once reached, no further update is applied (idempotency). */
+export const TERMINAL_PAYMENT_STATES = new Set<PaymentState>([
+  "PAID",
+  "FAILED",
+  "EXPIRED",
+  "REFUNDED",
+]);
+
+/**
+ * Map a Midtrans `transaction_status` + optional `fraud_status` to our
+ * internal payment state.
+ *
+ * Returns null for `chargeback` because that notification does NOT change
+ * payment status — it triggers an audit log + Sentry alert only.
+ *
+ * Shared by the webhook handler and the manual status-check endpoint so
+ * both apply identical status mapping.
+ */
+export function resolvePaymentState(
+  transactionStatus: string,
+  fraudStatus?: string,
+): PaymentState | null {
+  switch (transactionStatus) {
+    case "settlement":
+      return "PAID";
+    case "capture":
+      // Core API card payments: fraud_status must be "accept" to settle.
+      return fraudStatus === "accept" ? "PAID" : "PENDING";
+    case "expire":
+      return "EXPIRED";
+    case "cancel":
+    case "deny":
+    case "failure":
+      return "FAILED";
+    case "refund":
+    case "partial_refund":
+      return "REFUNDED";
+    case "chargeback":
+      return null; // handled separately — no status change
+    default:
+      return "PENDING";
+  }
+}
 
 // ── PaymentInstruction union ──────────────────────────────────────────────────
 // Shapes must match MockInstruction in components/user/payment/payment-instruction-page.tsx
@@ -436,6 +486,31 @@ export async function cancelCoreApi(midtransOrderId: string): Promise<void> {
       msg.toLowerCase().includes("not found")
     ) {
       return; // already terminal — safe
+    }
+    throw err;
+  }
+}
+
+// ── Core API transaction status ───────────────────────────────────────────────
+
+/**
+ * Query the Midtrans Core API for the current status of a transaction by its
+ * midtrans_order_id. Calls `GET /v2/{orderId}/status`.
+ *
+ * Returns the raw Midtrans status response, or null when the transaction is
+ * not found (Midtrans returns 404 / "not found" for unknown order IDs).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getCoreApiStatus(midtransOrderId: string): Promise<Record<string, any> | null> {
+  const coreApi = getCoreApiClient();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await coreApi.transaction.status(midtransOrderId) as Record<string, any>;
+    return res;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.toLowerCase().includes("not found") || msg.includes("404")) {
+      return null;
     }
     throw err;
   }

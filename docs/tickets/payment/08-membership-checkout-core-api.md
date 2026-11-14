@@ -14,3 +14,5 @@
 - [x] Pembelian tanpa percobaan PENDING aktif ditandai EXPIRED; GET /membership/me mencerminkan ini.
 - [x] Voucher tidak diterima di endpoint ini (validasi server-side, tolak dengan error jika dikirim).
 - [ ] Test: satu user satu PENDING membership ditegakkan; retry membership idempoten.
+
+<!-- vers lengkap di ticket 10 -->
