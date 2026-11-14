@@ -5,12 +5,21 @@ import { useRouter } from "next/navigation";
 import { Calendar, User, Eye, XCircle, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { AdminComplaintRow } from "./complaint-list-types";
 
 export interface ComplaintTableProps {
   data: AdminComplaintRow[];
   isLoading?: boolean;
+  /** Total number of complaints across all pages (from API meta.total_count) */
+  totalCount?: number;
+  /** Total number of pages (from API meta.total_pages) */
+  totalPages?: number;
+  /** Current page (1-based) */
+  currentPage?: number;
+  /** Called when user clicks a page button */
+  onPageChange?: (page: number) => void;
 }
 
 function formatDate(isoString: string): string {
@@ -29,7 +38,14 @@ const SKELETON_ROWS = 5;
  * - Loading state: skeleton rows.
  * - Empty state: icon + pesan informatif.
  */
-export function ComplaintTable({ data, isLoading = false }: ComplaintTableProps) {
+export function ComplaintTable({
+  data,
+  isLoading = false,
+  totalCount,
+  totalPages = 1,
+  currentPage = 1,
+  onPageChange,
+}: ComplaintTableProps) {
   const router = useRouter();
 
   return (
@@ -156,6 +172,22 @@ export function ComplaintTable({ data, isLoading = false }: ComplaintTableProps)
           </tbody>
         </table>
       </div>
+
+      {/* Pagination footer */}
+      {totalPages > 1 && onPageChange && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
+          {typeof totalCount === "number" && (
+            <p className="text-xs text-muted-foreground">
+              Total {totalCount} klaim
+            </p>
+          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
+      )}
     </div>
   );
 }
