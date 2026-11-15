@@ -4,11 +4,11 @@
 
 **Blocked by:** None (`GET /api/product` sudah ada)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Seksi rekomendasi di halaman `/cart` fetch produk dari `GET /api/product?limit=4&sort=newest` (atau strategi sederhana lain seperti random aktif / best seller).
-- [ ] Produk yang sudah ada di cart tidak ditampilkan di rekomendasi (filter client-side berdasarkan `productId` yang sudah ada di cart).
-- [ ] Tombol "Add to Cart" pada produk rekomendasi mengirim `variantId` yang valid ke `POST /api/cart`; jika produk memiliki lebih dari satu variant, pilih variant pertama yang aktif dan tersedia stoknya.
-- [ ] Harga ditampilkan dalam Rupiah (IDR), bukan USD.
-- [ ] Jika fetch gagal atau tidak ada produk, seksi rekomendasi disembunyikan (bukan tampilkan placeholder atau error).
-- [ ] Loading skeleton ditampilkan selama fetch berlangsung.
+- [x] Seksi rekomendasi di halaman `/cart` fetch produk dari `GET /api/product?limit=4&sort=newest` (atau strategi sederhana lain seperti random aktif / best seller).
+- [x] Produk yang sudah ada di cart tidak ditampilkan di rekomendasi (filter client-side berdasarkan `productId` yang sudah ada di cart).
+- [x] Tombol "Add to Cart" pada produk rekomendasi mengirim `variantId` yang valid ke `POST /api/cart`; jika produk memiliki lebih dari satu variant, pilih variant pertama yang aktif dan tersedia stoknya.
+- [x] Harga ditampilkan dalam Rupiah (IDR), bukan USD.
+- [x] Jika fetch gagal atau tidak ada produk, seksi rekomendasi disembunyikan (bukan tampilkan placeholder atau error).
+- [x] Loading skeleton ditampilkan selama fetch berlangsung.
