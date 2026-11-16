@@ -334,8 +334,8 @@ function ReviewCard({ review }: { review: ProductReview }) {
     <article
       className="
         min-w-[280px] md:min-w-[300px] max-w-[300px]
-        bg-card rounded-xl p-6
-        border-0 shadow-none
+        bg-background rounded-xl p-6
+        border-2 border-foreground/30 shadow-none
         flex flex-col gap-3
         snap-center
         transition-transform hover:-translate-y-0.5
@@ -415,10 +415,11 @@ function ProductInfoSection({ product }: { product: ProductDetail }) {
       aria-label="Informasi dan Ulasan Produk"
       className="max-w-5xl mx-auto mt-16 px-4 md:px-0 pb-16"
     >
-      <hr className="border-t-2 border-foreground/40 mb-8" />
+      {/* Garis Horizontal Atas diubah ke warna primary / biru */}
+      <hr className="border-t-2 border-primary/40 mb-8" />
 
       {/* Tabs Header */}
-      <div className="flex items-center gap-8 mb-8 relative border-b-2 border-foreground/30 overflow-x-auto">
+      <div className="flex items-center gap-8 mb-8 relative border-b-2 border-primary/30 overflow-x-auto">
         {(["description", "components", "reviews"] as const).map((tab) => {
           const labels = {
             description: "Deskripsi Produk",
@@ -432,12 +433,12 @@ function ProductInfoSection({ product }: { product: ProductDetail }) {
               type="button"
               onClick={() => setActiveTab(tab)}
               className={`pb-3 font-heading font-bold text-lg md:text-xl uppercase tracking-wide transition-colors relative shrink-0 cursor-pointer ${
-                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                isActive ? "text-primary-700" : "text-muted-foreground hover:text-primary"
               }`}
             >
               {labels[tab]}
               {isActive && (
-                <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-foreground transition-all" />
+                <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-primary transition-all" />
               )}
             </button>
           );
@@ -557,30 +558,30 @@ function RelatedProductsSection({ products }: { products: ApiProduct[] }) {
 
   if (products.length === 0) return null;
 
-  return (
+return (
     <section
       aria-label="Produk Yang Mungkin Kamu Suka"
-      className="w-full bg-accent-yellow py-16 px-4 md:px-16 relative overflow-hidden border-t-2 border-foreground"
+      className="w-full bg-accent-yellow/85 py-16 px-4 md:px-16 relative overflow-hidden"
     >
       <div className="max-w-5xl mx-auto">
-        {/* Section heading di kiri, SVG digeser makin ke kanan (pl-80) */}
+        {/* Section heading di kiri, SVG menyesuaikan */}
         <div className="mb-12 flex flex-col items-start w-full">
           <h2
-            className="font-heading font-black text-3xl md:text-5xl uppercase tracking-tighter text-foreground mb-0"
+            className="font-heading font-black text-2xl md:text-4xl uppercase tracking-tighter text-foreground/90 mb-0"
             style={{ letterSpacing: "-0.06em" }}
           >
             You Might Also Like...
           </h2>
           
-          {/* Container SVG: digeser makin ke kanan dengan pl-80 */}
-          <div className="w-full flex justify-center md:justify-start pl-0 md:pl-80 -mt-2">
+          {/* Container SVG */}
+          <div className="w-full flex justify-center md:justify-start pl-0 md:pl-64 -mt-2">
             <svg 
-              width="280" 
-              height="50" 
+              width="240" 
+              height="44" 
               viewBox="0 0 152 35" 
               fill="none" 
               xmlns="http://www.w3.org/2000/svg"
-              className="overflow-visible text-foreground"
+              className="overflow-visible text-foreground/90"
               aria-hidden="true"
             >
               <path 
@@ -625,22 +626,21 @@ function RelatedProductsSection({ products }: { products: ApiProduct[] }) {
         </div>
 
         {/* Footer: nav buttons */}
-        <div className="mt-10 flex justify-between items-center border-t-2 border-foreground pt-4">
-          <div className="hidden md:block h-px bg-foreground flex-1 mr-6" />
-          <div className="flex gap-3 ml-auto">
+        <div className="mt-10 flex justify-end items-center">
+          <div className="flex gap-3">
             <button
               onClick={() => scroll("left")}
               aria-label="Scroll kiri"
-              className="w-12 h-12 rounded-full border-2 border-foreground flex items-center justify-center hover:bg-foreground hover:text-accent-yellow transition-colors cursor-pointer"
+              className="w-14 h-14 rounded-full border-2 border-foreground bg-transparent text-foreground flex items-center justify-center hover:bg-foreground hover:text-accent-yellow transition-colors cursor-pointer"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </button>
             <button
               onClick={() => scroll("right")}
               aria-label="Scroll kanan"
-              className="w-12 h-12 rounded-full border-2 border-foreground flex items-center justify-center hover:bg-foreground hover:text-accent-yellow transition-colors cursor-pointer"
+              className="w-14 h-14 rounded-full border-2 border-foreground bg-transparent text-foreground flex items-center justify-center hover:bg-foreground hover:text-accent-yellow transition-colors cursor-pointer"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </button>
           </div>
         </div>
@@ -809,7 +809,6 @@ export default function ProductDetailPage() {
                 onDecrement={handleDecrement}
                 onIncrement={handleIncrement}
               />
-
               {/* CTA Buttons */}
               <div className="flex items-center gap-3 w-full">
                 <Button
@@ -826,7 +825,7 @@ export default function ProductDetailPage() {
                   variant="card"
                   size="lg"
                   neo={false}
-                  className="flex-1 rounded-full text-xs uppercase tracking-wider border border-foreground"
+                  className="flex-1 rounded-full text-xs uppercase tracking-wider bg-background border border-foreground text-foreground hover:bg-muted"
                   disabled={isAdding || !product.inStock || !product.defaultVariantId}
                   onClick={handleAddToCart}
                 >

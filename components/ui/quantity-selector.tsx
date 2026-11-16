@@ -17,7 +17,7 @@ export interface QuantitySelectorProps {
  * QuantitySelector
  * ----------------
  * Atom: tombol −/+ bulat dengan angka di tengah.
- * Tombol menggunakan rounded-full bg-foreground text-background,
+ * Tombol menggunakan rounded-full bg-primary-600 text-primary-foreground,
  * tanpa border outline / shadow — sesuai gaya halaman product detail.
  *
  * Props min/max dipakai untuk disable otomatis di batas.
@@ -46,7 +46,7 @@ export function QuantitySelector({
           onClick={onDecrement}
           disabled={value <= min}
           aria-label="Kurangi jumlah"
-          className="w-9 h-9 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-9 h-9 rounded-full bg-primary-600 text-primary-foreground hover:bg-primary-500 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Minus className="w-4 h-4 stroke-[2.5]" />
         </button>
@@ -62,7 +62,7 @@ export function QuantitySelector({
           onClick={onIncrement}
           disabled={max !== undefined && value >= max}
           aria-label="Tambah jumlah"
-          className="w-9 h-9 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-9 h-9 rounded-full bg-primary-600 text-primary-foreground hover:bg-primary-500 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
         </button>
