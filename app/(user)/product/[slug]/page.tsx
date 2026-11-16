@@ -13,13 +13,12 @@ import {
   BadgeCheck,
   ArrowLeft,
   ArrowRight,
-  Minus,
-  Plus,
 } from "lucide-react";
 import { ProductImage } from "@/components/ui/product-image";
 import { ProductCard } from "@/components/ui/product-card";
 import { WishlistButton } from "@/components/ui/wishlist-button";
 import { Button } from "@/components/ui/button";
+import { QuantitySelector } from "@/components/ui/quantity-selector";
 import { useWishlist } from "@/contexts/wishlist-context";
 import { useCart } from "@/contexts/cart-context";
 import { cn } from "@/lib/utils";
@@ -804,49 +803,32 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="mt-6 flex flex-col gap-6">
-              {/* Quantity Selector: Tombol Lingkaran Hitam */}
-              <div className="flex flex-col gap-2">
-                <span className="font-body font-semibold text-sm text-foreground">
-                  Quantity
-                </span>
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={handleDecrement}
-                    aria-label="Kurangi jumlah"
-                    className="w-9 h-9 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center cursor-pointer shadow-xs"
-                  >
-                    <Minus className="w-4 h-4 stroke-[2.5]" />
-                  </button>
-                  <span className="font-body font-bold text-base text-foreground min-w-[1.5rem] text-center select-none">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleIncrement}
-                    aria-label="Tambah jumlah"
-                    className="w-9 h-9 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center cursor-pointer shadow-xs"
-                  >
-                    <Plus className="w-4 h-4 stroke-[2.5]" />
-                  </button>
-                </div>
-              </div>
+              {/* Quantity */}
+              <QuantitySelector
+                value={quantity}
+                onDecrement={handleDecrement}
+                onIncrement={handleIncrement}
+              />
 
               {/* CTA Buttons */}
               <div className="flex items-center gap-3 w-full">
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="lg"
+                  neo={false}
+                  className="flex-1 rounded-full text-xs uppercase tracking-wider"
                   onClick={() => console.log("Buy now:", product.name, quantity)}
-                  className="flex-1 h-12 px-5 rounded-full bg-foreground text-background font-body font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-opacity cursor-pointer"
                 >
                   Beli Sekarang
-                </button>
+                </Button>
 
-                <button
-                  type="button"
+                <Button
+                  variant="card"
+                  size="lg"
+                  neo={false}
+                  className="flex-1 rounded-full text-xs uppercase tracking-wider border border-foreground"
                   disabled={isAdding || !product.inStock || !product.defaultVariantId}
                   onClick={handleAddToCart}
-                  className="flex-1 h-12 px-5 rounded-full bg-transparent border border-foreground text-foreground font-body font-bold text-xs uppercase tracking-wider hover:bg-foreground/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isAdding
                     ? "Menambahkan..."
@@ -855,13 +837,14 @@ export default function ProductDetailPage() {
                       : !product.inStock
                         ? "Stok Habis"
                         : "Tambah Ke Keranjang"}
-                </button>
+                </Button>
 
                 <WishlistButton
                   isWishlisted={isWishlisted}
                   onClick={handleToggleWishlist}
                   variant="accent-yellow"
                   size="icon-lg"
+                  neo={false}
                   className="rounded-full border border-foreground shrink-0"
                 />
               </div>
