@@ -336,7 +336,7 @@ function ReviewCard({ review }: { review: ProductReview }) {
       className="
         min-w-[280px] md:min-w-[300px] max-w-[300px]
         bg-card rounded-xl p-6
-        border-2 border-foreground neo-shadow
+        border-0 shadow-none
         flex flex-col gap-3
         snap-center
         transition-transform hover:-translate-y-0.5
@@ -348,9 +348,9 @@ function ReviewCard({ review }: { review: ProductReview }) {
         “{review.text}”
       </p>
 
-      <div className="flex items-center justify-between border-t border-border-strong/20 pt-3 mt-1">
+      <div className="flex items-center justify-between pt-3 mt-1">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full border-2 border-border-strong/30 bg-muted flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
             <UserCircle size={20} className="text-muted-foreground" />
           </div>
           <div className="flex flex-col">
