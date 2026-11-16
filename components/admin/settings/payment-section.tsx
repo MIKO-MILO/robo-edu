@@ -104,6 +104,7 @@ export function PaymentSection() {
   const [channels, setChannels] = useState<PaymentMethodsConfig>(DEFAULT_CHANNELS);
   const [membershipPrice, setMembershipPrice] = useState<string>("");
   const [membershipMonths, setMembershipMonths] = useState<string>("");
+  const [orderExpiresHours, setOrderExpiresHours] = useState<string>("24");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -139,6 +140,9 @@ export function PaymentSection() {
       if (d.membership_plus_duration_months !== undefined) {
         setMembershipMonths(d.membership_plus_duration_months);
       }
+      if (d.order_expires_hours !== undefined) {
+        setOrderExpiresHours(d.order_expires_hours);
+      }
     } catch (err) {
       console.error("Failed to load payment settings:", err);
       toast.error("Gagal memuat pengaturan pembayaran.");
@@ -159,10 +163,17 @@ export function PaymentSection() {
   };
 
   const handleSave = async () => {
+    const hours = Number(orderExpiresHours);
+    if (!Number.isInteger(hours) || hours < 1) {
+      toast.error("Validasi gagal", "Masa berlaku order harus berupa bilangan bulat positif (jam).");
+      return;
+    }
+
     setIsSaving(true);
     try {
       const body: Parameters<typeof settingsService.patchSettings>[0] = {
         payment_methods_config: JSON.stringify(channels),
+        order_expires_hours: hours,
       };
 
       if (membershipPrice !== "") {
@@ -296,6 +307,24 @@ export function PaymentSection() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Masa Berlaku Order */}
+        <div className="p-6">
+          <h3 className="text-base font-bold text-foreground mb-1">Masa Berlaku Order</h3>
+          <p className="text-xs text-muted-foreground mb-5">
+            Waktu sebelum order yang belum dibayar otomatis dibatalkan.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="1"
+              value={orderExpiresHours}
+              onChange={(e) => setOrderExpiresHours(e.target.value)}
+              className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm text-center ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+            <span className="text-sm text-muted-foreground font-medium">Jam</span>
           </div>
         </div>
 

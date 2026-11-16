@@ -3,7 +3,6 @@
 import React from "react";
 import { CreditCard } from "lucide-react";
 import { PaymentSection } from "@/components/admin/settings/payment-section";
-import { OrderExpirySection } from "@/components/admin/settings/order-expiry-section";
 
 export default function PaymentSettingsPage() {
   return (
@@ -23,11 +22,7 @@ export default function PaymentSettingsPage() {
         </div>
       </div>
 
-      {/* Payment gateway & channels */}
       <PaymentSection />
-
-      {/* Order expiry */}
-      <OrderExpirySection />
     </div>
   );
 }
