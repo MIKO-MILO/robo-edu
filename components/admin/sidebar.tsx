@@ -17,6 +17,7 @@ import {
   MessageSquareWarning,
   FileBarChart,
   Settings,
+  Phone,
   ChevronLeft,
   ChevronRight,
   Bot,
@@ -124,6 +125,12 @@ const adminNavItems: NavItem[] = [
     title: "Settings",
     href: "/admin/settings",
     icon: <Settings className="size-5" />,
+    roles: ["SUPERADMIN", "ADMIN"],
+  },
+  {
+    title: "Kelola Kontak",
+    href: "/admin/contact",
+    icon: <Phone className="size-5" />,
     roles: ["SUPERADMIN", "ADMIN"],
   },
 ];
