@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { StoreInfoSection } from "@/components/admin/settings/store-info-section";
 import { GeneralSection } from "@/components/admin/settings/general-section";
 
 export default function SettingsPage() {
@@ -14,13 +13,10 @@ export default function SettingsPage() {
             Pengaturan Sistem
           </h1>
           <p className="text-sm text-muted-foreground mt-1 font-medium">
-            Kelola identitas dan pengaturan umum toko.
+            Kelola konfigurasi umum sistem.
           </p>
         </div>
       </div>
-
-      {/* Identitas Toko */}
-      <StoreInfoSection />
 
       {/* Pengaturan Umum */}
       <GeneralSection />
