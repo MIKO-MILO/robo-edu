@@ -358,7 +358,6 @@ scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 async function shutdown(signal: string) {
   console.log(`[worker] ${signal} received — shutting down gracefully...`);
   await worker.close();
-  await orderWorker.close();
   await pool.end();
   console.log("[worker] Shutdown complete.");
   process.exit(0);

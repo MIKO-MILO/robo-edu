@@ -345,7 +345,7 @@ export function ResellerMembershipSection() {
 
         {/* Grid Cards (Card lebih lebar, jarak gap agak dempet tapi tetap proporsional dengan gap-6 sm:gap-8) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-7xl mx-auto items-stretch">
-          {MEMBERSHIP_TIERS.map((tier) => (
+          {tiers.map((tier) => (
             <MembershipCard key={tier.id} tier={tier} />
           ))}
         </div>
