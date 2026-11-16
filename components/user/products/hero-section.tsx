@@ -4,45 +4,56 @@ import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="w-full flex-grow flex flex-col md:flex-row min-h-screen">
-      {/* Left Column: Image */}
-      <div className="w-full md:w-1/2 h-[50vh] md:h-auto relative border-b-2 md:border-b-0 border-foreground">
-        <Image
-          src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=85"
-          alt="Anak-anak sedang bermain kit edukasi RoboEdu"
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover"
-        />
-      </div>
+    <div className="w-full bg-background p-0 m-0">
+      <section className="relative w-full min-h-[70vh] bg-[#97CEF9] rounded-none pt-36 sm:pt-48 lg:pt-52 pb-44 sm:pb-48 lg:pb-56 overflow-hidden flex flex-col justify-center items-center">
 
-      {/* Right Column: Polka Dot Background */}
-      <div className="w-full md:w-1/2 flex flex-col items-start justify-center p-8 md:p-16 relative md:border-l-2 border-foreground min-h-[50vh] bg-accent-soft-blue [background-image:radial-gradient(#3D2900_1.5px,transparent_0)] [background-size:24px_24px]">
-        {/* Content Box */}
-        <div className="max-w-md w-full mx-auto md:mx-0 relative z-20">
-          <span className="font-body font-semibold text-xs md:text-sm uppercase tracking-widest text-primary mb-4 block">
-            BUILD. LEARN. CREATE.
-          </span>
+        {/* Awan kiri */}
+        <div className="absolute top-12 sm:top-16 left-0 w-56 sm:w-80 lg:w-[28rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-start">
+          <Image src="/images/awan.webp" alt="" width={600} height={380} className="w-full h-auto object-contain" priority />
+          <div className="w-40 sm:w-56 lg:w-72 mt-1 sm:mt-3 -ml-2 sm:-ml-4 opacity-90">
+            <Image src="/images/awan.webp" alt="" width={400} height={260} className="w-full h-auto object-contain scale-x-90" priority />
+          </div>
+        </div>
 
-          <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl text-foreground mb-6 leading-tight">
-            Bring Your Ideas to Life!
+        {/* Awan kanan */}
+        <div className="absolute top-12 sm:top-16 right-0 w-56 sm:w-80 lg:w-[28rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-end">
+          <Image src="/images/awan.webp" alt="" width={600} height={380} className="w-full h-auto object-contain -scale-x-100 rotate-6" priority />
+          <div className="w-40 sm:w-56 lg:w-72 mt-1 sm:mt-3 -mr-2 sm:-mr-4 opacity-90">
+            <Image src="/images/awan.webp" alt="" width={400} height={260} className="w-full h-auto object-contain -scale-x-100 -rotate-12" priority />
+          </div>
+        </div>
+
+        {/* Dekoratif */}
+        <div className="absolute top-32 left-20 sm:left-32 w-10 h-10 border-2 border-white/40 rounded-full opacity-60 pointer-events-none z-0" />
+        <div className="absolute top-36 right-20 sm:right-32 w-8 h-8 bg-white/20 rounded-full opacity-60 pointer-events-none z-0" />
+
+        {/* Konten */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 gap-5 sm:gap-6 max-w-3xl mx-auto pt-10">
+          <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-slate-900 tracking-tight">
+            Bring Your Ideas<br className="hidden sm:block" />
+            <span className="text-[#1C6CAE]"> to Life!</span>
           </h1>
-
-          <p className="font-body text-base md:text-lg text-foreground/80 mb-8">
+          <p className="font-body text-xs sm:text-sm lg:text-base text-slate-800/90 leading-relaxed max-w-xl font-medium">
             Temukan berbagai kit eksperimen dan mainan edukatif yang dirancang
             untuk memicu rasa ingin tahu serta kreativitas si kecil.
           </p>
-
           <Link
             href="#katalog"
-            className="bg-[#FF5C38] text-white font-body font-bold text-sm uppercase px-8 py-4 rounded-full border-2 border-foreground neo-shadow neo-shadow-hover inline-flex items-center gap-2 active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 bg-[#1C6CAE] hover:bg-[#16588c] text-white font-heading font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full transition-all"
           >
             JELAJAHI KATALOG
-            <ArrowRight className="w-5 h-5 stroke-[3px]" />
+            <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
           </Link>
         </div>
-      </div>
-    </section>
+
+        {/* Scalloped bottom */}
+        <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-20">
+          <svg className="relative block w-full h-[45px] sm:h-[60px] lg:h-[75px]" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,-35 C50,55 100,55 150,-35 C200,55 250,55 300,-35 C350,55 400,55 450,-35 C500,55 550,55 600,-35 C650,55 700,55 750,-35 C800,55 850,55 900,-35 C950,55 1000,55 1050,-35 C1100,55 1150,55 1200,-35" fill="none" stroke="#1C6CAE" strokeWidth="5" strokeLinecap="round" />
+            <path d="M0,0 C50,90 100,90 150,0 C200,90 250,90 300,0 C350,90 400,90 450,0 C500,90 550,90 600,0 C650,90 700,90 750,0 C800,90 850,90 900,0 C950,90 1000,90 1050,0 C1100,90 1150,90 1200,0 L1200,120 L0,120 Z" fill="var(--background)" />
+          </svg>
+        </div>
+      </section>
+    </div>
   );
 }

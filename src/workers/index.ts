@@ -1,5 +1,5 @@
 /**
- * BullMQ email worker + order worker + membership cron entry point.
+ * BullMQ email worker + membership cron entry point.
  *
  * Run with:
  *   npm run worker
@@ -159,7 +159,6 @@ async function handleMembershipReceipt(
     return;
   }
 
-  // Get payment method from linked payment row
   const [payment] = await db
     .select({ paymentType: schema.payments.paymentType })
     .from(schema.payments)
@@ -228,7 +227,6 @@ async function handleMembershipReminder(
       ? `Membership Plus-mu berakhir 7 hari lagi ⏰`
       : `Membership Plus-mu berakhir 3 hari lagi ⚠️`;
 
-  // Minimal plain reminder — ticket 18 can replace with a richer template
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;padding:24px;">
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
@@ -277,7 +275,6 @@ const worker = new Worker<EmailJobData>(
         break;
 
       default: {
-        // TypeScript exhaustive check
         const exhaustive: never = data;
         console.warn(`[worker] Unknown job type:`, exhaustive);
       }
@@ -303,71 +300,6 @@ worker.on("failed", (job, err) => {
 console.log(
   `[worker] 🚀 Email worker started — listening on queue "${EMAIL_QUEUE_NAME}"`,
 );
-
-// ── BullMQ Order Worker ───────────────────────────────────────────────────────
-
-const orderWorker = new Worker<OrderJobData>(
-  ORDER_QUEUE_NAME,
-  async (job: Job<OrderJobData>) => {
-    const { data } = job;
-    console.log(`[order-worker] Processing job ${job.id} type=${data.type}`);
-
-    switch (data.type) {
-      case "order-auto-cancel":
-        await runOrderAutoCancel(db);
-        break;
-
-      case "payment-reconcile":
-        await runPaymentReconcile(db, {
-          paymentId: data.paymentId,
-          midtransOrderId: data.midtransOrderId,
-          orderId: data.orderId,
-        });
-        break;
-
-      default: {
-        // TypeScript exhaustive check
-        const exhaustive: never = data;
-        console.warn(`[order-worker] Unknown job type:`, exhaustive);
-      }
-    }
-  },
-  {
-    connection: getRedisConnection(),
-    concurrency: 2,
-  },
-);
-
-orderWorker.on("completed", (job) => {
-  console.log(
-    `[order-worker] ✅ Job ${job.id} (${job.data.type}) completed`,
-  );
-});
-
-orderWorker.on("failed", (job, err) => {
-  console.error(
-    `[order-worker] ❌ Job ${job?.id} (${job?.data?.type}) failed (attempt ${job?.attemptsMade}):`,
-    err.message,
-  );
-});
-
-// Register the repeatable order-auto-cancel job (runs every 5 min).
-// BullMQ deduplicates by jobId so calling this multiple times is safe.
-registerOrderAutoCancelJob()
-  .then(() => {
-    console.log(
-      `[order-worker] 🚀 Order worker started — listening on queue "${ORDER_QUEUE_NAME}"`,
-    );
-    console.log(
-      `[order-worker] 🔁 order-auto-cancel repeatable job registered (every 5 min)`,
-    );
-  })
-  .catch((err: unknown) => {
-    console.error(
-      "[order-worker] Failed to register order-auto-cancel repeatable job:",
-      err,
-    );
-  });
 
 // ── Cron scheduler ────────────────────────────────────────────────────────────
 
@@ -426,7 +358,6 @@ scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 async function shutdown(signal: string) {
   console.log(`[worker] ${signal} received — shutting down gracefully...`);
   await worker.close();
-  await orderWorker.close();
   await pool.end();
   console.log("[worker] Shutdown complete.");
   process.exit(0);

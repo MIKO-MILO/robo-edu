@@ -297,9 +297,30 @@
   to   { transform: translateX(-50%); }
 }
 
-.animate-marquee {
-  animation: var(--animate-marquee);
-  will-change: transform;
+/* ==========================================
+   Filter Pill Active State (catalog category filter)
+   Active pill gets a soft-blue pastel inset shadow — defined here so
+   components just call the utility class, no hardcoded values.
+   ========================================== */
+
+@utility filter-pill-active {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
+
+/* ==========================================
+   Pastel card variants (softer tones for product card rotation)
+   Lighter than the existing accent tokens so card backgrounds stay subtle.
+   ========================================== */
+
+@utility bg-pastel-pink    { background-color: #FFE4EF; }
+@utility bg-pastel-blue    { background-color: #E0F3FB; }
+@utility bg-pastel-yellow  { background-color: #FFFACC; }
+@utility bg-pastel-green   { background-color: #DFF5E1; }
+@utility bg-pastel-purple  { background-color: #EAE8FF; }
+@utility bg-pastel-orange  { background-color: #FFF0D6; }
+@utility bg-pastel-peach   { background-color: #FFE9E4; }
+@utility bg-pastel-butter  { background-color: #FDF7E3; }
 
 
