@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Check, ArrowRight, Star, Heart } from "lucide-react";
 import Link from "next/link";
@@ -18,16 +20,21 @@ interface MembershipTier {
   isSpecial?: boolean;
 }
 
+interface PlanInfo {
+  price: number;
+  duration_months: number;
+}
+
+type AuthState = "loading" | "guest" | "member" | "not_member";
+
 // ── Data ───────────────────────────────────────────
-const MEMBERSHIP_TIERS: MembershipTier[] = [
+const BASE_TIERS: Omit<MembershipTier, "price" | "pricePeriod">[] = [
   {
     id: "regular",
     tierName: "Member Reguler",
     subtitle: "Akses Standar",
     description:
       "Cocok buat kamu mitra & reseller pemula yang mau mulai kerja sama dengan santai dan mudah.",
-    price: "Gratis",
-    pricePeriod: "/ selamanya",
     priceColor: "text-amber-300",
     benefits: [
       "Harga reseller standar (diskon up to 15%)",
@@ -42,8 +49,6 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
     subtitle: "Akses Eksklusif & Penuh",
     description:
       "Pilihan terbaik buat kamu yang mau ngebut cuan dengan benefit super lengkap & prioritas utama!",
-    price: "Rp 500.000",
-    pricePeriod: "/ 6 bulan",
     priceColor: "text-amber-300",
     benefits: [
       "Harga grosir & diskon eksklusif up to 35%",
@@ -140,6 +145,54 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
 
 // ── Main Component ─────────────────────────────────
 export function ResellerMembershipSection() {
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
+  const [planError, setPlanError] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>("loading");
+
+  useEffect(() => {
+    // Fetch plan info (public, no auth needed)
+    fetch("/api/membership/plan-info", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setPlanInfo(json.data as PlanInfo);
+        } else {
+          setPlanError(true);
+        }
+      })
+      .catch(() => setPlanError(true))
+      .finally(() => setPlanLoading(false));
+
+    // Fetch membership status to determine CTA label and auth state
+    fetch("/api/membership/me", { cache: "no-store" })
+      .then((res) => {
+        if (res.status === 401) {
+          setAuthState("guest");
+          return null;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (!json) return; // was 401, already handled
+        if (json.success) {
+          setAuthState(
+            json.data.membership_status === "MEMBER" ? "member" : "not_member",
+          );
+        } else {
+          // unexpected error — treat as guest so CTA still works
+          setAuthState("guest");
+        }
+      })
+      .catch(() => setAuthState("guest"));
+  }, []);
+
+  // Build tier list — regular card keeps its static price/period
+  const tiers: MembershipTier[] = [
+    { ...BASE_TIERS[0]!, price: "Gratis", pricePeriod: "/ selamanya" },
+    { ...BASE_TIERS[1]!, price: "", pricePeriod: "" }, // price rendered by SpecialPriceBlock
+  ];
+
   return (
     <section className="relative w-full bg-[#F3EFE4] overflow-visible pt-13 sm:pt-32 flex flex-col justify-between pb-24 sm:pb-32">
       {/* Background Biru SVG Full-Width (Tanpa Lengkungan di Bawah) */}

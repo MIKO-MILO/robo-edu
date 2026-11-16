@@ -5,8 +5,11 @@
  *   npm run worker
  *
  * This process is separate from the Next.js app server. It:
- *   1. Subscribes to the "email" BullMQ queue and processes jobs.
- *   2. Runs two daily cron jobs:
+ *   1. Subscribes to the "email" BullMQ queue and processes email jobs.
+ *   2. Subscribes to the "order" BullMQ queue and processes:
+ *        - order-auto-cancel  : scheduled every 5 min, sweeps expired PENDING orders.
+ *        - payment-reconcile  : delayed per-payment job, syncs Midtrans status.
+ *   3. Runs two daily cron jobs:
  *      - 01:00 WIB (18:00 UTC) — expire memberships
  *      - 08:00 WIB (01:00 UTC) — enqueue h7/h3 reminder emails
  *
@@ -26,6 +29,11 @@ import {
   getRedisConnection,
   type EmailJobData,
 } from "@/src/lib/queue/email-queue";
+import {
+  ORDER_QUEUE_NAME,
+  registerOrderAutoCancelJob,
+  type OrderJobData,
+} from "@/src/lib/queue/order-queue";
 import { sendEmailWorker } from "@/src/lib/email/send-worker";
 import {
   orderConfirmationEmailSubject,
@@ -39,6 +47,11 @@ import {
   runExpireMemberships,
   runReminderQueue,
 } from "@/src/lib/cron/membership-cron";
+import { runOrderAutoCancel } from "@/src/lib/jobs/order-auto-cancel";
+import { runPaymentReconcile } from "@/src/lib/jobs/payment-reconcile";
+
+// Import db via a worker-safe path (send-worker.ts already creates its own pool;
+// here we need direct DB access to fetch data for email templates).
 import * as schema from "@/src/db/schema";
 
 // ── DB ────────────────────────────────────────────────────────────────────────
@@ -219,7 +232,7 @@ async function handleMembershipReminder(
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
       <p style="color:#374151;">Membership Plus kamu akan <strong>berakhir dalam ${daysLeft} hari</strong> (${expiryDate}).</p>
       <p style="color:#374151;">Perpanjang sekarang agar tidak kehilangan harga khusus member.</p>
-      <a href="${APP_URL}/profile/reseller" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px;">
+      <a href="${APP_URL}/profile/membership" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px;">
         Perpanjang Membership
       </a>
     </div>
@@ -345,6 +358,7 @@ scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 async function shutdown(signal: string) {
   console.log(`[worker] ${signal} received — shutting down gracefully...`);
   await worker.close();
+  await orderWorker.close();
   await pool.end();
   console.log("[worker] Shutdown complete.");
   process.exit(0);

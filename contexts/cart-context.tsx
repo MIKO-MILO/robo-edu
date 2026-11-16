@@ -78,7 +78,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return false;
       } catch (error: unknown) {
         console.error("Gagal menambah ke keranjang:", error);
-        alert(error instanceof Error ? error.message : "Gagal menambah produk ke keranjang");
+        const message = error instanceof Error ? error.message : "Gagal menambah produk ke keranjang";
+        if (message.includes("login terlebih dahulu")) {
+          window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+          return false;
+        }
+        alert(message);
         return false;
       }
     },

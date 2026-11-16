@@ -1,15 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { adminService } from "@/lib/api/services/admin.service";
-import type { ApiCollectionResponse, ListQueryParams } from "@/types";
+import { adminService, type SalesDateRangeParams } from "@/lib/api/services/admin.service";
+import type { ApiResponse, ListQueryParams } from "@/types";
 
 export interface TopProductReportResult {
   product_id: string;
-  name: string;
+  product_name: string;
   total_sold: number;
+  total_revenue: number;
 }
 
-export function useTopProductsReport(params?: ListQueryParams) {
-  return useQuery<ApiCollectionResponse<TopProductReportResult>, Error>({
+export interface TopProductsReportData {
+  products: TopProductReportResult[];
+}
+
+export function useTopProductsReport(
+  params?: ListQueryParams & SalesDateRangeParams
+) {
+  return useQuery<ApiResponse<TopProductsReportData>, Error>({
     queryKey: ["admin", "reports", "top-products", params],
     queryFn: () => adminService.getTopProducts(params),
     staleTime: 1000 * 60 * 5,

@@ -1,11 +1,50 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
+type AuthState = "loading" | "guest" | "member" | "not_member";
+
 export function ResellerCtaSection() {
+  const router = useRouter();
+  const [authState, setAuthState] = useState<AuthState>("loading");
+
+  useEffect(() => {
+    fetch("/api/membership/me", { cache: "no-store" })
+      .then((res) => {
+        if (res.status === 401) {
+          setAuthState("guest");
+          return null;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (!json) return;
+        if (json.success) {
+          setAuthState(
+            json.data.membership_status === "MEMBER" ? "member" : "not_member",
+          );
+        } else {
+          setAuthState("guest");
+        }
+      })
+      .catch(() => setAuthState("guest"));
+  }, []);
+
+  const ctaLabel =
+    authState === "member"
+      ? "PERPANJANG MEMBERSHIP SEKARANG"
+      : "BELI MEMBERSHIP PLUS SEKARANG";
+
+  function handleCtaClick() {
+    if (authState === "guest") {
+      router.push("/login?next=/membership");
+      return;
+    }
+    router.push("/membership/confirm");
+  }
   return (
     <section className="relative w-full bg-transparent">
       {/* Container Kotak Full-Width tanpa padding luar */}

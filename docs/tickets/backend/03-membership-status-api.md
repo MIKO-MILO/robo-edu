@@ -4,8 +4,8 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `GET /api/membership/me` returns status, expires_at, days_remaining, and purchase history for the logged-in user; returns 401 without a session.
-- [ ] The frontend membership UI reads the real endpoint; the `mock-membership-me` route is deleted and the hook updated.
-- [ ] An active MEMBER and a NOT_MEMBER both render correctly on the profile page.
+- [x] `GET /api/membership/me` returns status, expires_at, days_remaining, and purchase history for the logged-in user; returns 401 without a session.
+- [x] The frontend membership UI reads the real endpoint; the `mock-membership-me` route is deleted and the hook updated.
+- [x] An active MEMBER and a NOT_MEMBER both render correctly on the profile page.

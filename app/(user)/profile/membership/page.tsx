@@ -6,7 +6,7 @@ import {
   MembershipNotMember,
   MembershipMemberActive,
 } from "@/components/user/profile/reseller";
-import { useMembershipStatus } from "@/hooks/user/reseller";
+import { useMembershipStatus } from "@/hooks/user/membership";
 
 /**
  * /profile/reseller — Halaman Status & Riwayat Membership
