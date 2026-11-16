@@ -9,12 +9,14 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-16">
       {/* 1. Hero Section */}
       <ContactHeroSection />
 
-      {/* 2. Main 2-Column Section (Left: 4 Social Cards, Right: Message Form) */}
-      <ContactMainSection />
+      {/* 2. Main Section dengan wrapper kontainer yang rapi */}
+      <div className="container mx-auto px-4 max-w-6xl mt-8">
+        <ContactMainSection />
+      </div>
     </main>
   );
 }

@@ -16,6 +16,9 @@
   --color-primary-900: #103B5E;
   /* teks di atas primary-100, dsb */
 
+  /* Tambahkan token warna kustom untuk input */
+  --color-contact-input: #E4E4E4;
+
   /* ===== BRAND — Secondary (teks utama, heading, kontras tinggi) ===== */
   --color-secondary-100: #ECEAE6;
   --color-secondary-300: #C5BFB2;
@@ -77,6 +80,19 @@
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
   --font-body: var(--font-outfit), sans-serif;
+
+  /* ===== ACCENT — Pastel ===== */
+  --color-accent-yellow: #FFF37E;
+  --color-accent-yellow-shadow: #E0D14E; /* versi lebih tua */
+
+  --color-accent-soft-blue: #C9E9F6;
+  --color-accent-soft-blue-shadow: #9ACCE0; /* versi lebih tua */
+
+  --color-accent-green: #A9E8AE;
+  --color-accent-green-shadow: #7CC782; /* versi lebih tua */
+
+  --color-accent-pink: #FFC0DD;
+  --color-accent-pink-shadow: #E092B6; /* versi lebih tua */
 }
 
 @theme inline {
@@ -285,3 +301,5 @@
   animation: var(--animate-marquee);
   will-change: transform;
 }
+
+

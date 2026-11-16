@@ -5,6 +5,7 @@ import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 import type { ContactMessageRequestBody } from "@/types";
 
 const SUBJECT_OPTIONS = [
@@ -13,10 +14,19 @@ const SUBJECT_OPTIONS = [
   "Pengajuan Status Reseller",
   "Bantuan Garansi & Suku Cadang",
   "Lainnya",
-];
+] as const;
 
-/** Reusable form field label — DRY */
-function FieldLabel({ htmlFor, children, required }: { htmlFor: string; children: React.ReactNode; required?: boolean }) {
+const FIELD_CLASS =
+  "w-full bg-[var(--color-contact-input)] border-0 rounded-xl text-foreground font-body text-sm px-4 shadow-none placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors";
+function FieldLabel({
+  htmlFor,
+  children,
+  required,
+}: {
+  htmlFor: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) {
   return (
     <label htmlFor={htmlFor} className="font-body font-bold text-xs text-foreground">
       {children}
@@ -38,26 +48,35 @@ export function ContactForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Prefill dari data user yang login
   useEffect(() => {
-    void (async () => {
+    let isMounted = true;
+    (async () => {
       try {
         const res = await fetch("/api/auth/me");
         if (!res.ok) return;
         const json = await res.json();
-        const user = json.data;
-        if (!user) return;
+        const user = json?.data;
+        if (!user || !isMounted) return;
+
         setFormData((prev) => ({
           ...prev,
-          name:  user.name  ?? prev.name,
+          name: user.name ?? prev.name,
           email: user.email ?? prev.email,
           phone: user.phone ?? prev.phone,
         }));
-      } catch { /* tidak login — abaikan */ }
+      } catch {
+        // Pengguna tamu (tidak login)
+      }
     })();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errorMessage) setErrorMessage("");
@@ -67,9 +86,18 @@ export function ContactForm() {
     e.preventDefault();
     setErrorMessage("");
 
-    if (!formData.name.trim()) { setErrorMessage("Mohon masukkan nama lengkap Anda."); return; }
-    if (!formData.email.trim() || !formData.email.includes("@")) { setErrorMessage("Mohon masukkan alamat email yang valid."); return; }
-    if (!formData.message.trim()) { setErrorMessage("Mohon tuliskan pesan atau pertanyaan Anda."); return; }
+    if (!formData.name.trim()) {
+      setErrorMessage("Mohon masukkan nama lengkap Anda.");
+      return;
+    }
+    if (!formData.email.trim() || !formData.email.includes("@")) {
+      setErrorMessage("Mohon masukkan alamat email yang valid.");
+      return;
+    }
+    if (!formData.message.trim()) {
+      setErrorMessage("Mohon tuliskan pesan atau pertanyaan Anda.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -79,7 +107,10 @@ export function ContactForm() {
         body: JSON.stringify(formData),
       });
       const result = await res.json();
-      if (!res.ok) { setErrorMessage(result.message ?? "Gagal mengirim pesan. Silakan coba lagi."); return; }
+      if (!res.ok) {
+        setErrorMessage(result.message ?? "Gagal mengirim pesan. Silakan coba lagi.");
+        return;
+      }
       setIsSubmitted(true);
     } catch {
       setErrorMessage("Gagal mengirim pesan. Periksa koneksi internet Anda.");
@@ -89,123 +120,154 @@ export function ContactForm() {
   };
 
   const handleResetForm = () => {
-    setFormData({ name: "", email: "", phone: "", subject: SUBJECT_OPTIONS[0], message: "" });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      subject: SUBJECT_OPTIONS[0],
+      message: "",
+    });
     setIsSubmitted(false);
     setErrorMessage("");
   };
 
-  // ── Success state ────────────────────────────────────────────────
   if (isSubmitted) {
     return (
-      <div className="flex flex-col items-center text-center gap-6 py-16 px-6 border-2 border-foreground rounded-2xl bg-card">
-        <div className="w-14 h-14 rounded-2xl bg-accent-green border-2 border-foreground flex items-center justify-center">
+      <div className="flex flex-col items-center text-center gap-5 py-14 px-6 rounded-3xl bg-card shadow-xs">
+        <div className="w-14 h-14 rounded-2xl bg-accent-green flex items-center justify-center">
           <CheckCircle2 className="w-8 h-8 text-success" />
         </div>
-        <div className="flex flex-col gap-2">
-          <h3 className="font-heading font-bold text-xl text-foreground">Pesan Berhasil Dikirim!</h3>
+        <div className="flex flex-col gap-1.5">
+          <h3 className="font-heading font-bold text-xl text-foreground">
+            Pesan Berhasil Dikirim!
+          </h3>
           <p className="font-body text-sm text-muted-foreground max-w-sm">
             Tim kami akan merespons ke{" "}
-            <strong className="text-foreground">{formData.email}</strong>{" "}
-            dalam 1×24 jam.
+            <strong className="text-foreground">{formData.email}</strong> dalam 1×24 jam.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleResetForm} className="border-2 border-foreground rounded-xl font-bold text-xs">
+        <Button
+          variant="outline"
+          size="sm"
+          neo={false}
+          onClick={handleResetForm}
+          className="rounded-xl font-bold text-xs bg-muted hover:bg-muted/80"
+        >
           Kirim Pesan Lain
         </Button>
       </div>
     );
   }
 
-  // ── Form ─────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-5 w-full">
-      {/* Header */}
-      <div className="flex flex-col gap-1">
-        <span className="inline-flex w-fit items-center px-3 py-1 rounded-full border-2 border-foreground bg-accent-yellow font-body font-bold text-xs text-foreground">
-          Kirim Pesan
-        </span>
-        <h2 className="font-heading font-black text-2xl sm:text-3xl text-foreground tracking-tight">
-          Atau Kirim Pesan!
-        </h2>
-        <p className="font-body text-xs text-muted-foreground">
-          Isi formulir di bawah dan kami akan menghubungi kamu secepatnya.
-        </p>
-      </div>
-
-      {/* Error */}
       {errorMessage && (
-        <div className="bg-accent-peach border-2 border-foreground rounded-xl p-4 flex items-center gap-3 text-danger font-body text-xs font-semibold">
+        <div className="bg-accent-peach rounded-2xl p-4 flex items-center gap-3 text-danger font-body text-xs font-semibold">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {errorMessage}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Nama */}
         <div className="flex flex-col gap-1.5">
-          <FieldLabel htmlFor="contact-name" required>Nama Lengkap</FieldLabel>
+          <FieldLabel htmlFor="contact-name" required>
+            Nama Lengkap
+          </FieldLabel>
           <Input
-            id="contact-name" name="name" type="text" placeholder="Contoh: Budi Santoso"
-            value={formData.name} onChange={handleChange} required
-            className="border-2 border-foreground rounded-xl h-11 font-body text-sm bg-card focus-visible:ring-primary"
+            id="contact-name"
+            name="name"
+            type="text"
+            placeholder="Contoh: Budi Santoso"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className={cn(FIELD_CLASS, "h-11")}
           />
         </div>
 
-        {/* Email + Phone */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <FieldLabel htmlFor="contact-email" required>Email</FieldLabel>
+            <FieldLabel htmlFor="contact-email" required>
+              Email
+            </FieldLabel>
             <Input
-              id="contact-email" name="email" type="email" placeholder="budi@example.com"
-              value={formData.email} onChange={handleChange} required
-              className="border-2 border-foreground rounded-xl h-11 font-body text-sm bg-card focus-visible:ring-primary"
+              id="contact-email"
+              name="email"
+              type="email"
+              placeholder="budi@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className={cn(FIELD_CLASS, "h-11")}
             />
           </div>
           <div className="flex flex-col gap-1.5">
             <FieldLabel htmlFor="contact-phone">Nomor WhatsApp / HP</FieldLabel>
             <Input
-              id="contact-phone" name="phone" type="tel" placeholder="081234567890"
-              value={formData.phone} onChange={handleChange}
-              className="border-2 border-foreground rounded-xl h-11 font-body text-sm bg-card focus-visible:ring-primary"
+              id="contact-phone"
+              name="phone"
+              type="tel"
+              placeholder="081234567890"
+              value={formData.phone}
+              onChange={handleChange}
+              className={cn(FIELD_CLASS, "h-11")}
             />
           </div>
         </div>
 
-        {/* Subject */}
         <div className="flex flex-col gap-1.5">
-          <FieldLabel htmlFor="contact-subject" required>Topik Pertanyaan</FieldLabel>
+          <FieldLabel htmlFor="contact-subject" required>
+            Topik Pertanyaan
+          </FieldLabel>
           <select
-            id="contact-subject" name="subject"
-            value={formData.subject} onChange={handleChange}
-            className="w-full h-11 border-2 border-foreground rounded-xl bg-card text-foreground font-body text-sm px-4 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+            id="contact-subject"
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+            className={cn(FIELD_CLASS, "h-11 cursor-pointer")}
           >
-            {SUBJECT_OPTIONS.map((opt, i) => (
-              <option key={i} value={opt}>{opt}</option>
+            {SUBJECT_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
             ))}
           </select>
         </div>
 
-        {/* Message */}
         <div className="flex flex-col gap-1.5">
-          <FieldLabel htmlFor="contact-message" required>Pesan Anda</FieldLabel>
+          <FieldLabel htmlFor="contact-message" required>
+            Pesan Anda
+          </FieldLabel>
           <textarea
-            id="contact-message" name="message" rows={5}
+            id="contact-message"
+            name="message"
+            rows={5}
             placeholder="Tuliskan pertanyaan, masukan, atau detail kebutuhan pesanan Anda..."
-            value={formData.message} onChange={handleChange} required
-            className="w-full border-2 border-foreground rounded-xl bg-card text-foreground font-body text-sm p-4 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            value={formData.message}
+            onChange={handleChange}
+            required
+            className={cn(FIELD_CLASS, "p-4 resize-none")}
           />
         </div>
 
-        {/* Submit */}
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-1">
           <Button
-            type="submit" disabled={isSubmitting}
-            className="font-heading font-bold text-sm px-7 py-3 rounded-xl inline-flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary-600 border-2 border-foreground"
+            type="submit"
+            disabled={isSubmitting}
+            variant="primary"
+            neo={false}
+            className="font-heading font-bold text-sm px-7 py-3 rounded-xl inline-flex items-center gap-2"
           >
             {isSubmitting ? (
-              <><Spinner className="w-4 h-4 text-white" /><span>Mengirim...</span></>
+              <>
+                <Spinner className="w-4 h-4 text-primary-foreground" />
+                <span>Mengirim...</span>
+              </>
             ) : (
-              <><Send className="w-4 h-4" /><span>Kirim Pesan</span></>
+              <>
+                <Send className="w-4 h-4" />
+                <span>Kirim Pesan</span>
+              </>
             )}
           </Button>
         </div>
