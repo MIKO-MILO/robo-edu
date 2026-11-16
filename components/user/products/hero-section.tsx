@@ -37,13 +37,6 @@ export function HeroSection() {
             Temukan berbagai kit eksperimen dan mainan edukatif yang dirancang
             untuk memicu rasa ingin tahu serta kreativitas si kecil.
           </p>
-          <Link
-            href="#katalog"
-            className="inline-flex items-center gap-2 bg-[#1C6CAE] hover:bg-[#16588c] text-white font-heading font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full transition-all"
-          >
-            JELAJAHI KATALOG
-            <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
-          </Link>
         </div>
 
         {/* Scalloped bottom */}

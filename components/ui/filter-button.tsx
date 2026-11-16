@@ -1,16 +1,19 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-/** Pastel variants for product card background rotation. */
+/** 
+ * Varian warna pastel yang sedikit lebih pekat dari sebelumnya (pas di tengah),
+ * sepenuhnya menggunakan token global dengan opasitas dinamis tanpa hardcode.
+ */
 export const PASTEL_VARIANTS = [
-  "bg-pastel-pink",
-  "bg-pastel-blue",
-  "bg-pastel-peach",
-  "bg-pastel-green",
-  "bg-pastel-yellow",
-  "bg-pastel-orange",
-  "bg-pastel-purple",
-  "bg-pastel-butter",
+  "bg-accent-blue/40",    // Biru lembut berasa
+  "bg-accent-yellow/45",  // Kuning pastel hangat
+  "bg-accent-pink/40",    // Pink lembut manis
+  "bg-accent-purple/40",  // Ungu soft
+  "bg-accent-green/40",   // Hijau pastel segar
+  "bg-accent-orange/40",  // Orange lembut
+  "bg-accent-peach/45",   // Peach hangat
+  "bg-accent-butter",     // Butter lembut asli
 ] as const;
 
 export interface FilterButtonProps
