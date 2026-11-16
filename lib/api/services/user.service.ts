@@ -165,6 +165,27 @@ export const userService = {
     };
   },
 
+  /** GET /admin/users - Fetch ALL customers matching filters for CSV export.
+   *  Uses limit=200 (API max) and page=1 to get as many rows as possible in one request.
+   *  Returns mapped AdminCustomerRow[] without pagination meta. */
+  async getAdminCustomersForExport(
+    params?: AdminCustomersQueryParams,
+  ): Promise<AdminCustomerRow[]> {
+    const finalParams: AdminCustomersQueryParams = {
+      ...(params ?? {}),
+      role: "customer",
+      page: 1,
+      limit: 200,
+    };
+    const response = await this.getAdminUsers(finalParams);
+    return response.data.map((user) =>
+      mapUserToCustomerRow({
+        ...user,
+        membership_status: normalizeResellerStatus(user.membership_status),
+      }),
+    );
+  },
+
   /** GET /admin/users/{id} - Detail customer lengkap.
    *  Fetch orders via endpoint dedicated /admin/users/{id}/orders
    *  untuk memastikan data akurat dari DB. */

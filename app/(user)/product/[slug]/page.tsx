@@ -657,7 +657,7 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <main className="w-full px-4 md:px-16 py-12 bg-background min-h-screen">
+      <main className="w-full px-4 md:px-16 pt-36 sm:pt-40 lg:pt-44 pb-12 bg-background min-h-screen">
         {/* Product Grid */}
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-10 gap-10">
           {/* Left Column: Images (5 cols) */}

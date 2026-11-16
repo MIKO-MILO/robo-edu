@@ -18,6 +18,8 @@ import {
   FileBarChart,
   Settings,
   Phone,
+  CreditCard,
+  Truck,
   ChevronLeft,
   ChevronRight,
   Bot,
@@ -131,6 +133,18 @@ const adminNavItems: NavItem[] = [
     title: "Kelola Kontak",
     href: "/admin/contact",
     icon: <Phone className="size-5" />,
+    roles: ["SUPERADMIN", "ADMIN"],
+  },
+  {
+    title: "Kelola Pembayaran",
+    href: "/admin/payment-settings",
+    icon: <CreditCard className="size-5" />,
+    roles: ["SUPERADMIN", "ADMIN"],
+  },
+  {
+    title: "Kelola Pengiriman",
+    href: "/admin/shipping-settings",
+    icon: <Truck className="size-5" />,
     roles: ["SUPERADMIN", "ADMIN"],
   },
 ];
