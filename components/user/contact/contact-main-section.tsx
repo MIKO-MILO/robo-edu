@@ -1,7 +1,17 @@
 import { SocialSection } from "./social-section";
 import { ContactForm } from "./contact-form";
+import type { SocialMediaContact } from "@/types";
 
-export function ContactMainSection() {
+interface ContactMainSectionProps {
+  socialContacts?: SocialMediaContact[] | null;
+  contactInfo?: {
+    email: string;
+    phone: string;
+    address: string;
+  };
+}
+
+export function ContactMainSection({ socialContacts, contactInfo }: ContactMainSectionProps) {
   return (
     <section className="w-full py-12 sm:py-16 md:py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-10">
@@ -22,7 +32,7 @@ export function ContactMainSection() {
         {/* 2. GRID UTAMA DI BAWAH (Kiri: 4 Kartu Sosial, Kanan: Form Langsung Tanpa Card Putih) */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 xl:gap-16 items-start">
           {/* Kolom Kiri: 4 Kartu Sosial */}
-          <SocialSection />
+          <SocialSection items={socialContacts ?? undefined} />
           
           {/* Kolom Kanan: Langsung ContactForm tanpa background card putih */}
           <div className="w-full">

@@ -2,7 +2,7 @@
 
 **Spec:** `docs/specs/3-spec-settings-atomic.md`
 **Blocked by:** —
-**Status:** partial — admin done, user-facing pending
+**Status:** done
 
 ## What to build
 
@@ -33,7 +33,7 @@ Data disimpan via `PATCH /api/admin/settings` (key: `store_email`, `store_phone`
 
 ## Part B: Wire halaman `/contact` user ke DB
 
-**Status:** ready-for-agent
+**Status:** done
 **Blocked by:** Part A (done)
 
 ### What to build
@@ -44,10 +44,10 @@ Caranya: `app/(user)/contact/page.tsx` adalah Server Component — fetch langsun
 
 ### Acceptance criteria
 
-- [ ] `app/(user)/contact/page.tsx` fetch `store_email`, `store_phone`, `store_address`, `store_social_links` dari DB saat render (server-side, bukan client-side).
-- [ ] `SocialSection` di `components/user/contact/social-section.tsx` menerima data via props — konstanta `DEFAULT_CONTACTS` tidak lagi dipakai sebagai sumber utama; fallback ke default hanya jika DB kosong.
-- [ ] Nomor WA, email, handle sosmed yang tampil di halaman `/contact` user mencerminkan data yang admin simpan di `/admin/contact`.
-- [ ] Jika fetch gagal atau data kosong, halaman tetap render dengan fallback graceful (tidak crash).
+- [x] `app/(user)/contact/page.tsx` fetch `store_email`, `store_phone`, `store_address`, `store_social_links` dari DB saat render (server-side, bukan client-side).
+- [x] `SocialSection` di `components/user/contact/social-section.tsx` menerima data via props — konstanta `DEFAULT_CONTACTS` tidak lagi dipakai sebagai sumber utama; fallback ke default hanya jika DB kosong.
+- [x] Nomor WA, email, handle sosmed yang tampil di halaman `/contact` user mencerminkan data yang admin simpan di `/admin/contact`.
+- [x] Jika fetch gagal atau data kosong, halaman tetap render dengan fallback graceful (tidak crash).
 
 ### Notes
 
