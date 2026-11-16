@@ -2,7 +2,7 @@
 
 **Spec:** `docs/specs/3-spec-settings-atomic.md`
 **Blocked by:** —
-**Status:** ready-for-agent
+**Status:** done
 
 ## What to build
 
@@ -14,13 +14,13 @@ Data disimpan via `PATCH /api/admin/settings` (key: `store_email`, `store_phone`
 
 ## Acceptance criteria
 
-- [ ] Halaman `/admin/contact` dapat diakses dan menampilkan data dari DB saat mount (GET `/api/admin/settings`).
-- [ ] Section Kontak: field email, telepon, alamat — submit PATCH key yang relevan; toast sukses/error; button disabled saat loading.
-- [ ] Section Media Sosial: form berupa dynamic rows — tiap row punya **dropdown platform** (Instagram, TikTok, Facebook, YouTube, Twitter/X, WhatsApp, LinkedIn) + field URL. Admin bisa tambah row baru dan hapus row yang ada.
-- [ ] Dropdown platform menampilkan ikon tiap platform di sebelah nama (SVG/inline, tidak butuh CDN eksternal).
-- [ ] Submit Media Sosial menyimpan array `[{ platform, url }]` sebagai JSON ke `store_social_links`; row kosong (platform dan URL keduanya kosong) difilter sebelum dikirim.
-- [ ] Loading skeleton ditampilkan saat fetch awal.
-- [ ] Entry sidebar "Kelola Kontak" (`/admin/contact`, ikon `Phone` atau `MapPin`) ditambahkan ke `adminNavItems` di `components/admin/sidebar.tsx`, role: `SUPERADMIN`, `ADMIN`.
+- [x] Halaman `/admin/contact` dapat diakses dan menampilkan data dari DB saat mount (GET `/api/admin/settings`).
+- [x] Section Kontak: field email, telepon, alamat — submit PATCH key yang relevan; toast sukses/error; button disabled saat loading.
+- [x] Section Media Sosial: form berupa dynamic rows — tiap row punya **dropdown platform** (Instagram, TikTok, Facebook, YouTube, Twitter/X, WhatsApp, LinkedIn) + field URL. Admin bisa tambah row baru dan hapus row yang ada.
+- [x] Dropdown platform menampilkan ikon tiap platform di sebelah nama (SVG/inline, tidak butuh CDN eksternal).
+- [x] Submit Media Sosial menyimpan array `[{ platform, url }]` sebagai JSON ke `store_social_links`; row kosong (platform dan URL keduanya kosong) difilter sebelum dikirim.
+- [x] Loading skeleton ditampilkan saat fetch awal.
+- [x] Entry sidebar "Kelola Kontak" (`/admin/contact`, ikon `Phone` atau `MapPin`) ditambahkan ke `adminNavItems` di `components/admin/sidebar.tsx`, role: `SUPERADMIN`, `ADMIN`.
 
 ## Notes
 
