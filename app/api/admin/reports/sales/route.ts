@@ -71,6 +71,38 @@ export async function GET(request: NextRequest) {
     .from(orders)
     .where(dateFilter);
 
+  // ── Growth percentage (current period vs previous equivalent period) ──────
+  // The "previous equivalent period" has the same duration as the requested
+  // range, immediately preceding it. E.g. Jan 1–31 → Dec 1–31.
+  const rangeMs = toDate.getTime() - fromDate.getTime();
+  const prevEnd = new Date(fromDate.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - rangeMs);
+
+  const [prevSummary] = await db
+    .select({
+      prev_revenue: sql<string>`COALESCE(SUM(${orders.total}), 0)`,
+    })
+    .from(orders)
+    .where(
+      and(
+        isNotNull(orders.paidAt),
+        gte(orders.createdAt, prevStart),
+        lte(orders.createdAt, prevEnd),
+      ),
+    );
+
+  const currentRevenue = Number(summary.total_revenue);
+  const prevRevenue = Number(prevSummary.prev_revenue);
+  let growthPercentage: number | null = null;
+  if (prevRevenue > 0) {
+    growthPercentage =
+      Math.round(((currentRevenue - prevRevenue) / prevRevenue) * 1000) / 10;
+  } else if (currentRevenue > 0) {
+    // No previous revenue but current revenue > 0 → effectively infinite growth;
+    // represent as null so the frontend can show "N/A" or "Baru".
+    growthPercentage = null;
+  }
+
   // ── Per-day breakdown ─────────────────────────────────────────────────────
   const byDayRows = await db
     .select({
@@ -113,6 +145,7 @@ export async function GET(request: NextRequest) {
       summary: {
         total_revenue: Number(summary.total_revenue),
         transaction_count: Number(summary.transaction_count),
+        growth_percentage: growthPercentage,
       },
       by_day: byDayRows.map((r) => ({
         date: r.date,

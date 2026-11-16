@@ -10,7 +10,7 @@ import type { ContactMessageRequestBody } from "@/types";
 const SUBJECT_OPTIONS = [
   "Pertanyaan Produk & Eksperimen",
   "Pesanan Sekolah / Institusi / Komunitas",
-  "Pengajuan Status Reseller",
+  "Pengajuan Status Membership",
   "Bantuan Garansi & Suku Cadang",
   "Lainnya",
 ];

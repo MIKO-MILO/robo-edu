@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Halaman `/checkout` fetch `GET /api/membership/me` saat mount (bersamaan dengan fetch cart dan alamat) untuk mendapatkan `membership_status` user.
-- [ ] Nilai `membership_status` dari API menggantikan nilai hardcode `"NOT_MEMBER"` pada state `resellerStatus`.
-- [ ] Komponen `CheckoutOrderItem` menerima membership status yang benar dan menampilkan harga member (jika berlaku) untuk user yang aktif MEMBER.
-- [ ] Jika user belum login atau request gagal, fallback ke `"NOT_MEMBER"` tanpa error visible.
-- [ ] Harga yang ditampilkan di ringkasan checkout konsisten dengan harga yang akan dicharge server.
+- [x] Halaman `/checkout` fetch `GET /api/membership/me` saat mount (bersamaan dengan fetch cart dan alamat) untuk mendapatkan `membership_status` user.
+- [x] Nilai `membership_status` dari API menggantikan nilai hardcode `"NOT_MEMBER"` pada state `resellerStatus`.
+- [x] Komponen `CheckoutOrderItem` menerima membership status yang benar dan menampilkan harga member (jika berlaku) untuk user yang aktif MEMBER.
+- [x] Jika user belum login atau request gagal, fallback ke `"NOT_MEMBER"` tanpa error visible.
+- [x] Harga yang ditampilkan di ringkasan checkout konsisten dengan harga yang akan dicharge server.

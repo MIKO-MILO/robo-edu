@@ -17,7 +17,7 @@ const STEPS: Step[] = [
   { number: 1, label: "Akun Terdaftar", sublabel: "Langkah 1", activeAt: 2, doneBelow: 2 },
   { number: 2, label: "KTP & NPWP Diunggah", sublabel: "Langkah 2", activeAt: 2, doneBelow: 2 },
   { number: 3, label: "Review & Verifikasi", sublabel: "Tahap Saat Ini", activeAt: 2, doneBelow: 3 },
-  { number: 4, label: "Hak reseller_price", sublabel: "Keluaran PRD", activeAt: 4, doneBelow: 5 },
+  { number: 4, label: "Hak Harga Member", sublabel: "Keluaran PRD", activeAt: 4, doneBelow: 5 },
 ];
 
 /** Map ResellerStatus to step progress index */
@@ -28,7 +28,7 @@ function statusToStep(status: ResellerStatus): number {
 }
 
 export interface ResellerStepperProps {
-  resellerStatus: ResellerStatus;
+  memberStatus: ResellerStatus;
 }
 
 /**
@@ -39,9 +39,9 @@ export interface ResellerStepperProps {
  *   Step 3: Review & Verification (current for PENDING/REJECTED)
  *   Step 4: reseller_price access (done for APPROVED only)
  */
-export function ResellerStepper({ resellerStatus }: ResellerStepperProps) {
-  const currentStep = statusToStep(resellerStatus);
-  const isRejected = resellerStatus === "REJECTED";
+export function ResellerStepper({ memberStatus }: ResellerStepperProps) {
+  const currentStep = statusToStep(memberStatus);
+  const isRejected = memberStatus === "REJECTED";
 
   return (
     <div className="border border-border rounded-2xl bg-card p-4 overflow-x-auto">
@@ -49,8 +49,8 @@ export function ResellerStepper({ resellerStatus }: ResellerStepperProps) {
         {STEPS.map((step, idx) => {
           const stepNum = idx + 1;
           const isDone = stepNum < currentStep;
-          const isCurrent = stepNum === 3 && (resellerStatus === "PENDING" || isRejected);
-          const isPending = stepNum > 3 && resellerStatus !== "APPROVED";
+          const isCurrent = stepNum === 3 && (memberStatus === "PENDING" || isRejected);
+          const isPending = stepNum > 3 && memberStatus !== "APPROVED";
 
           let bgColor = "bg-muted opacity-80";
           let numberBg = "bg-card text-muted-foreground border-2 border-border";

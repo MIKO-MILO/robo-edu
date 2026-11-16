@@ -2,7 +2,7 @@ import * as React from "react";
 import { ShoppingBag, Calendar, Package } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { cn } from "@/lib/utils";
-import type { ResellerOrderSummary } from "./reseller-list-types";
+import type { ResellerOrderSummary } from "./membership-list-types";
 
 export interface ResellerOrdersTabProps {
   orders: ResellerOrderSummary[];

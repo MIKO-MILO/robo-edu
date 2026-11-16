@@ -6,14 +6,9 @@ import { Pagination } from "@/components/ui/pagination";
 import { PASTEL_VARIANTS } from "@/components/ui/filter-button";
 import CarouselLogo from "@/components/user/carousel-logo";
 import { getProducts } from "@/src/lib/api/product";
-
-const CATEGORIES = [
-  { id: "all", label: "Semua Produk" },
-  { id: "robot-kit", label: "Robot Kit" },
-  { id: "sensor", label: "Sensor" },
-  { id: "controller", label: "Controller" },
-  { id: "parts", label: "Parts" },
-];
+import { db } from "@/src/db";
+import { categories } from "@/src/db/schema";
+import { eq, asc } from "drizzle-orm";
 
 /** Format number ke Rupiah string (mis. 50000 -> "Rp50.000"). */
 function formatPrice(price: number): string {
@@ -23,6 +18,12 @@ function formatPrice(price: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
+}
+
+/** Format review count ke string tampilan. */
+function formatReviewCount(count: number | null): string {
+  if (!count) return "Belum ada ulasan";
+  return `${count} ulasan`;
 }
 
 type ProductsPageProps = {
@@ -40,6 +41,19 @@ export default async function ProductsPage(props: ProductsPageProps) {
   const currentPage = Math.max(1, Number(searchParams.page) || 1);
   const itemsPerPage = 8;
 
+  // ─── Fetch categories dari DB (hanya yang aktif) ──────────────────────────
+  const dbCategories = await db
+    .select({ id: categories.id, name: categories.name, slug: categories.slug })
+    .from(categories)
+    .where(eq(categories.isActive, true))
+    .orderBy(asc(categories.name));
+
+  const CATEGORIES = [
+    { id: "all", label: "Semua Produk" },
+    ...dbCategories.map((c) => ({ id: c.slug, label: c.name })),
+  ];
+
+  // ─── Fetch produk ─────────────────────────────────────────────────────────
   const result = await getProducts({
     page: currentPage,
     limit: itemsPerPage,
@@ -116,8 +130,8 @@ export default async function ProductsPage(props: ProductsPageProps) {
                   name={product.name}
                   price={formatPrice(product.price.min || 0)}
                   priceRaw={product.price.min || 0}
-                  rating={5} // TODO(backend): Ambil dari review aggregator saat tersedia
-                  reviewCount="0 ulasan" // TODO(backend): Ambil dari review count saat tersedia
+                  rating={product.rating_avg ?? 0}
+                  reviewCount={formatReviewCount(product.review_count)}
                   imageUrl={product.image ?? "/images/placeholder-product.jpg"}
                   outOfStock={product.stock === 0}
                   bgColorClass={

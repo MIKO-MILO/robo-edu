@@ -3,6 +3,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { membershipPurchases, users } from "@/src/db/schema";
 import { requireAdminFromRequest } from "@/src/lib/auth/require-admin-from-request";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 
@@ -110,6 +111,87 @@ export async function GET(
         status:                   p.status,
         created_at:               p.createdAt.toISOString(),
       })),
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// PATCH /api/admin/resellers/[id]
+// Body: { action: "approve" | "reject", rejection_reason?: string }
+// ---------------------------------------------------------------------------
+
+const patchBodySchema = z.object({
+  action: z.enum(["approve", "reject"]),
+  rejection_reason: z.string().optional(),
+});
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const auth = await requireAdminFromRequest(request);
+  if (!auth.ok) return auth.response;
+
+  const { id } = await params;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Request body tidak valid." },
+      { status: 400 },
+    );
+  }
+
+  const parsed = patchBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { success: false, message: "Field 'action' wajib diisi (approve / reject)." },
+      { status: 422 },
+    );
+  }
+
+  const { action, rejection_reason } = parsed.data;
+
+  // Verify user exists and is a MEMBER
+  const [user] = await db
+    .select({ id: users.id, membershipStatus: users.membershipStatus })
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+
+  if (!user || user.membershipStatus !== "MEMBER") {
+    return NextResponse.json(
+      { success: false, message: "Member tidak ditemukan." },
+      { status: 404 },
+    );
+  }
+
+  if (action === "approve") {
+    // For the membership model, MEMBER already IS the approved state.
+    // A future implementation may set an is_verified flag or audit log here.
+    // For now we confirm and return the current state.
+    return NextResponse.json({
+      success: true,
+      message: `Member ${id} telah dikonfirmasi sebagai member aktif.`,
+      data: { id, membership_status: "MEMBER" },
+    });
+  }
+
+  // action === "reject": mark as NOT_MEMBER (revoke membership)
+  await db
+    .update(users)
+    .set({ membershipStatus: "NOT_MEMBER" })
+    .where(eq(users.id, id));
+
+  return NextResponse.json({
+    success: true,
+    message: `Keanggotaan member ${id} telah dicabut.`,
+    data: {
+      id,
+      membership_status: "NOT_MEMBER",
+      rejection_reason: rejection_reason ?? null,
     },
   });
 }

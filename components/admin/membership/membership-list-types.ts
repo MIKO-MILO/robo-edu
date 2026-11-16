@@ -2,20 +2,47 @@ import type { ResellerStatus, OrderStatus } from "@/types/enums";
 import type { UserRole } from "@/types/enums";
 
 /**
- * reseller-list-types.ts
+ * membership-list-types.ts
  * ------------------------------------------------------------------
- * DTO & konstanta untuk modul Admin Resellers.
+ * DTO & konstanta untuk modul Admin Membership (halaman /admin/membership).
  *
  * Konteks domain (PRD Bab 6):
- *   - Reseller BUKAN role terpisah — tetap `customer` role, dibedakan
- *     via `reseller_status` (NOT_RESELLER / PENDING / APPROVED / REJECTED).
- *   - Halaman ini fokus pada pengajuan (PENDING) dan manajemen reseller.
+ *   - Member BUKAN role terpisah — tetap `customer` role, dibedakan
+ *     via `membership_status` (NOT_MEMBER / MEMBER).
+ *   - Halaman ini menampilkan daftar user dengan status MEMBER.
  * ------------------------------------------------------------------
  */
 
 /**
- * AdminResellerRow — DTO ringan untuk baris di tabel daftar pengajuan reseller.
- * Halaman /admin/resellers menampilkan customer yang berstatus PENDING, APPROVED, atau REJECTED.
+ * AdminMemberRow — DTO untuk baris di tabel daftar member (dari API nyata).
+ * Ini adalah shape yang dikembalikan oleh GET /api/admin/resellers.
+ */
+export interface AdminMemberRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  membership_status: string;
+  membership_expires_at: string | null;
+  is_active: boolean;
+  purchase_count: number;
+  created_at: string;
+}
+
+/**
+ * AdminMemberStats — KPI ringkasan untuk 4 KPI Cards di atas halaman list.
+ * Dihitung dari meta + filter API, bukan array lokal.
+ */
+export interface AdminMemberStats {
+  total_members: number;      // total_count dari meta API
+  active_members: number;     // is_active = true (dari data yang diload)
+  expiring_soon: number;      // expires dalam 30 hari ke depan
+  expired_members: number;    // membership_expires_at sudah lewat
+}
+
+/**
+ * @deprecated Gunakan AdminMemberRow untuk fitur baru.
+ * Dipertahankan karena masih dipakai oleh komponen lama (mock-data, tabel lama).
  */
 export interface AdminResellerRow {
   id: string;
@@ -24,7 +51,7 @@ export interface AdminResellerRow {
   phone: string | null;
   role: UserRole;
   reseller_status: ResellerStatus;
-  reseller_applied_at: string | null; // waktu pengajuan (proxy dari updated_at saat PENDING)
+  reseller_applied_at: string | null;
   reseller_approved_at: string | null;
   is_active: boolean;
   total_orders: number;
@@ -32,12 +59,12 @@ export interface AdminResellerRow {
   last_order_at: string | null;
   last_order_status?: OrderStatus | null;
   created_at: string;
-  /** Catatan penolakan admin (optional, hanya ada jika REJECTED) */
   rejection_reason?: string | null;
 }
 
 /**
  * Ringkasan statistik pengajuan reseller untuk 4 KPI Cards di atas halaman list.
+ * @deprecated Gunakan AdminMemberStats untuk fitur baru.
  */
 export interface ResellerStats {
   total_resellers: number;    // APPROVED
