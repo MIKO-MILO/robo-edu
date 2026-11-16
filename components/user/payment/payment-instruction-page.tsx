@@ -576,12 +576,18 @@ function QRLayout({
       {/* QR Image */}
       <div className="flex flex-col items-center gap-4">
         <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl border-2 border-foreground overflow-hidden neo-shadow flex items-center justify-center bg-background">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={instruction.qr_string}
-            alt={`QR Code ${channelLabel}`}
-            className="w-full h-full object-contain p-2"
-          />
+          {instruction.qr_string ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={instruction.qr_string}
+              alt={`QR Code ${channelLabel}`}
+              className="w-full h-full object-contain p-2"
+            />
+          ) : (
+            <span className="text-xs text-muted-foreground font-body text-center px-4">
+              QR Code belum tersedia
+            </span>
+          )}
         </div>
         <p className="font-body text-xs text-muted-foreground text-center">
           Buka aplikasi {channelLabel} dan scan kode QR di atas
