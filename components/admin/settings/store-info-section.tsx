@@ -3,22 +3,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
 import { settingsService } from "@/lib/api/services/settings.service";
 import { toast } from "@/components/admin/use-toast";
-
-interface SocialLink {
-  platform: string;
-  url: string;
-}
 
 interface StoreInfoFormData {
   name: string;
   tagline: string;
   logoUrl: string;
-  address: string;
-  contact: string;
-  email: string;
 }
 
 export function StoreInfoSection() {
@@ -26,13 +17,7 @@ export function StoreInfoSection() {
     name: "",
     tagline: "",
     logoUrl: "",
-    address: "",
-    contact: "",
-    email: "",
   });
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
-    { platform: "", url: "" },
-  ]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -46,21 +31,7 @@ export function StoreInfoSection() {
         name: d.store_name ?? "",
         tagline: d.store_tagline ?? "",
         logoUrl: d.store_logo_url ?? "",
-        email: d.store_email ?? "",
-        contact: d.store_phone ?? "",
-        address: d.store_address ?? "",
       });
-
-      if (d.store_social_links) {
-        try {
-          const parsed = JSON.parse(d.store_social_links) as SocialLink[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setSocialLinks(parsed);
-          }
-        } catch {
-          // ignore parse error, keep default empty row
-        }
-      }
     } catch (err) {
       console.error("Failed to load settings:", err);
       toast.error("Gagal memuat pengaturan toko.");
@@ -77,44 +48,13 @@ export function StoreInfoSection() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // ── Social links ──────────────────────────────────────────────────────────
-
-  const handleSocialChange = (
-    index: number,
-    field: keyof SocialLink,
-    value: string,
-  ) => {
-    setSocialLinks((prev) =>
-      prev.map((link, i) => (i === index ? { ...link, [field]: value } : link)),
-    );
-  };
-
-  const handleAddSocial = () => {
-    setSocialLinks((prev) => [...prev, { platform: "", url: "" }]);
-  };
-
-  const handleRemoveSocial = (index: number) => {
-    setSocialLinks((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // ── Save ──────────────────────────────────────────────────────────────────
-
   const handleSave = async () => {
-    // Filter out rows where both fields are empty
-    const filledLinks = socialLinks.filter(
-      (l) => l.platform.trim() || l.url.trim(),
-    );
-
     setIsSaving(true);
     try {
       await settingsService.patchSettings({
         store_name: formData.name,
         store_tagline: formData.tagline,
         store_logo_url: formData.logoUrl,
-        store_email: formData.email,
-        store_phone: formData.contact,
-        store_address: formData.address,
-        store_social_links: JSON.stringify(filledLinks),
       });
       toast.success("Pengaturan toko berhasil disimpan.");
     } catch (err: unknown) {
@@ -128,14 +68,12 @@ export function StoreInfoSection() {
     }
   };
 
-  // ── Loading skeleton ──────────────────────────────────────────────────────
-
   if (isLoading) {
     return (
       <div className="bg-card rounded-2xl border border-border shadow-sm p-6 animate-pulse space-y-4">
         <div className="h-5 bg-muted rounded w-1/4" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <div className="h-4 bg-muted rounded w-1/3" />
               <div className="h-10 bg-muted rounded" />
@@ -145,8 +83,6 @@ export function StoreInfoSection() {
       </div>
     );
   }
-
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm divide-y divide-border">
@@ -205,110 +141,6 @@ export function StoreInfoSection() {
               />
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Section: Kontak & Lokasi */}
-      <div className="p-6">
-        <h3 className="text-base font-bold text-foreground mb-5">
-          Kontak & Lokasi
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-semibold text-foreground">
-              Email Operasional
-            </label>
-            <Input
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="cs@tokoku.id"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="contact" className="text-sm font-semibold text-foreground">
-              WhatsApp / Telepon
-            </label>
-            <Input
-              id="contact"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              placeholder="08xxxxxxxxxx"
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <label htmlFor="address" className="text-sm font-semibold text-foreground">
-              Alamat Lengkap Toko
-              <span className="ml-2 text-xs font-normal text-muted-foreground">
-                (digunakan sebagai Origin Address pengiriman)
-              </span>
-            </label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Jl. ..., Kelurahan, Kecamatan, Kota, Kode Pos"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Section: Media Sosial */}
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h3 className="text-base font-bold text-foreground">Media Sosial</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Link ini ditampilkan di footer dan halaman kontak.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddSocial}
-            className="font-bold shrink-0"
-          >
-            <Plus className="size-3.5 mr-1.5" />
-            Tambah
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {socialLinks.map((link, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={link.platform}
-                onChange={(e) =>
-                  handleSocialChange(index, "platform", e.target.value)
-                }
-                placeholder="Platform (misal: Instagram)"
-                className="w-40 shrink-0"
-              />
-              <Input
-                value={link.url}
-                onChange={(e) =>
-                  handleSocialChange(index, "url", e.target.value)
-                }
-                placeholder="https://instagram.com/namatoko"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => handleRemoveSocial(index)}
-                disabled={socialLinks.length === 1}
-                className="shrink-0 text-muted-foreground hover:text-danger"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ))}
         </div>
       </div>
 
