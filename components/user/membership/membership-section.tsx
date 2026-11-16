@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Check, ArrowRight, Sparkles, Star, Heart } from "lucide-react";
 import Link from "next/link";
@@ -19,16 +21,21 @@ interface MembershipTier {
   isSpecial?: boolean;
 }
 
+interface PlanInfo {
+  price: number;
+  duration_months: number;
+}
+
+type AuthState = "loading" | "guest" | "member" | "not_member";
+
 // ── Data ───────────────────────────────────────────
-const MEMBERSHIP_TIERS: MembershipTier[] = [
+const BASE_TIERS: Omit<MembershipTier, "price" | "pricePeriod">[] = [
   {
     id: "regular",
     tierName: "Member Reguler",
     subtitle: "Akses Standar",
     description:
       "Cocok buat kamu mitra & reseller pemula yang mau mulai kerja sama dengan santai dan mudah.",
-    price: "Gratis",
-    pricePeriod: "/ selamanya",
     priceColor: "text-amber-300",
     benefits: [
       "Harga reseller standar (diskon up to 15%)",
@@ -44,8 +51,6 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
     subtitle: "Akses Eksklusif & Penuh",
     description:
       "Pilihan terbaik buat kamu yang mau ngebut cuan dengan benefit super lengkap & prioritas utama!",
-    price: "Rp 500.000",
-    pricePeriod: "/ 6 bulan",
     priceColor: "text-amber-300",
     benefits: [
       "Harga grosir & diskon eksklusif up to 35%",
@@ -57,8 +62,129 @@ const MEMBERSHIP_TIERS: MembershipTier[] = [
   },
 ];
 
+// ── Helpers ────────────────────────────────────────
+function formatRupiah(amount: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function computeValidUntil(durationMonths: number): Date {
+  const d = new Date();
+  d.setMonth(d.getMonth() + durationMonths);
+  return d;
+}
+
+// ── Price Block ─────────────────────────────────────
+interface PriceBlockProps {
+  planInfo: PlanInfo | null;
+  planError: boolean;
+  planLoading: boolean;
+}
+
+function SpecialPriceBlock({ planInfo, planError, planLoading }: PriceBlockProps) {
+  if (planLoading) {
+    return (
+      <div className="mb-2.5 animate-pulse">
+        <span className="text-[9px] uppercase font-bold text-sky-100/70 block mb-0.5">Biaya Paket</span>
+        <div className="h-7 w-32 bg-white/20 rounded-md mx-auto mb-1" />
+        <div className="h-3 w-20 bg-white/15 rounded mx-auto" />
+      </div>
+    );
+  }
+
+  if (planError || !planInfo) {
+    return (
+      <div className="mb-2.5 text-center">
+        <span className="text-[9px] uppercase font-bold text-sky-100/70 block mb-1">Biaya Paket</span>
+        <span className="text-sm font-bold text-amber-300">Hubungi kami</span>
+      </div>
+    );
+  }
+
+  const validUntil = computeValidUntil(planInfo.duration_months);
+
+  return (
+    <div className="mb-2.5">
+      <span className="text-[9px] uppercase font-bold text-sky-100/70 block mb-0.5 text-center">Biaya Paket</span>
+      <div className="flex items-baseline justify-center gap-1">
+        <span className="text-lg sm:text-xl font-black tracking-tight drop-shadow-sm text-amber-300">
+          {formatRupiah(planInfo.price)}
+        </span>
+        <span className="text-[11px] text-sky-100/80 font-semibold">
+          / {planInfo.duration_months} bulan
+        </span>
+      </div>
+      <p className="text-[10px] text-sky-100/60 text-center mt-1">
+        Berlaku s/d {formatDate(validUntil)}
+      </p>
+    </div>
+  );
+}
+
+// ── CTA Button ──────────────────────────────────────
+interface CtaButtonProps {
+  authState: AuthState;
+}
+
+function SpecialCtaButton({ authState }: CtaButtonProps) {
+  const router = useRouter();
+
+  const className = cn(
+    "w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95",
+    "bg-amber-400 hover:bg-amber-500 text-slate-900 shadow-amber-400/30",
+  );
+
+  if (authState === "loading") {
+    return (
+      <button disabled className={cn(className, "opacity-70 cursor-wait")}>
+        <span>Memuat...</span>
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    );
+  }
+
+  if (authState === "guest") {
+    return (
+      <button
+        onClick={() => router.push("/login?next=/membership")}
+        className={className}
+      >
+        <span>Beli Membership Plus</span>
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    );
+  }
+
+  const label = authState === "member" ? "Perpanjang Membership" : "Beli Membership Plus";
+  return (
+    <Link href="/membership/confirm" className={className}>
+      <span>{label}</span>
+      <ArrowRight className="w-4 h-4" />
+    </Link>
+  );
+}
+
 // ── Membership Card (Transparan & Blur / Glassmorphism) ─
-function MembershipCard({ tier }: { tier: MembershipTier }) {
+interface MembershipCardProps {
+  tier: MembershipTier;
+  planInfo: PlanInfo | null;
+  planError: boolean;
+  planLoading: boolean;
+  authState: AuthState;
+}
+
+function MembershipCard({ tier, planInfo, planError, planLoading, authState }: MembershipCardProps) {
   return (
     <article
       className={cn(
@@ -119,30 +245,37 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
 
       {/* Bottom Price & Action */}
       <div className="pt-3 border-t border-white/20 text-center">
-        <div className="mb-2.5">
-          <span className="text-[9px] uppercase font-bold text-sky-100/70 block mb-0.5">Biaya Paket</span>
-          <div className="flex items-baseline justify-center gap-1">
-            <span className={cn("text-lg sm:text-xl font-black tracking-tight drop-shadow-sm", tier.priceColor)}>
-              {tier.price}
-            </span>
-            <span className="text-[11px] text-sky-100/80 font-semibold">
-              {tier.pricePeriod}
-            </span>
-          </div>
-        </div>
-
-        <Link
-          href="/contact"
-          className={cn(
-            "w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95",
-            tier.isSpecial
-              ? "bg-amber-400 hover:bg-amber-500 text-slate-900 shadow-amber-400/30"
-              : "bg-white text-sky-700 hover:bg-sky-50 shadow-white/20"
-          )}
-        >
-          {tier.isSpecial ? "Gabung VIP Sekarang" : "Mulai Gratis"}
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        {tier.isSpecial ? (
+          <>
+            <SpecialPriceBlock
+              planInfo={planInfo}
+              planError={planError}
+              planLoading={planLoading}
+            />
+            <SpecialCtaButton authState={authState} />
+          </>
+        ) : (
+          <>
+            <div className="mb-2.5">
+              <span className="text-[9px] uppercase font-bold text-sky-100/70 block mb-0.5">Biaya Paket</span>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className={cn("text-lg sm:text-xl font-black tracking-tight drop-shadow-sm", tier.priceColor)}>
+                  {tier.price}
+                </span>
+                <span className="text-[11px] text-sky-100/80 font-semibold">
+                  {tier.pricePeriod}
+                </span>
+              </div>
+            </div>
+            <Link
+              href="/contact"
+              className="w-full inline-flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md hover:scale-105 active:scale-95 bg-white text-sky-700 hover:bg-sky-50 shadow-white/20"
+            >
+              Mulai Gratis
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </>
+        )}
       </div>
     </article>
   );
@@ -150,6 +283,54 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
 
 // ── Main Component ─────────────────────────────────
 export function ResellerMembershipSection() {
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
+  const [planError, setPlanError] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>("loading");
+
+  useEffect(() => {
+    // Fetch plan info (public, no auth needed)
+    fetch("/api/membership/plan-info", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setPlanInfo(json.data as PlanInfo);
+        } else {
+          setPlanError(true);
+        }
+      })
+      .catch(() => setPlanError(true))
+      .finally(() => setPlanLoading(false));
+
+    // Fetch membership status to determine CTA label and auth state
+    fetch("/api/membership/me", { cache: "no-store" })
+      .then((res) => {
+        if (res.status === 401) {
+          setAuthState("guest");
+          return null;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (!json) return; // was 401, already handled
+        if (json.success) {
+          setAuthState(
+            json.data.membership_status === "MEMBER" ? "member" : "not_member",
+          );
+        } else {
+          // unexpected error — treat as guest so CTA still works
+          setAuthState("guest");
+        }
+      })
+      .catch(() => setAuthState("guest"));
+  }, []);
+
+  // Build tier list — regular card keeps its static price/period
+  const tiers: MembershipTier[] = [
+    { ...BASE_TIERS[0]!, price: "Gratis", pricePeriod: "/ selamanya" },
+    { ...BASE_TIERS[1]!, price: "", pricePeriod: "" }, // price rendered by SpecialPriceBlock
+  ];
+
   return (
     <section className="relative w-full bg-[#F3EFE4] overflow-visible py-20 sm:py-32 min-h-[1250px] flex items-center justify-center">
       {/* Background Biru SVG Full-Width */}
@@ -229,8 +410,15 @@ export function ResellerMembershipSection() {
 
         {/* Grid Cards (Transparan & Blur) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto items-stretch">
-          {MEMBERSHIP_TIERS.map((tier) => (
-            <MembershipCard key={tier.id} tier={tier} />
+          {tiers.map((tier) => (
+            <MembershipCard
+              key={tier.id}
+              tier={tier}
+              planInfo={planInfo}
+              planError={planError}
+              planLoading={planLoading}
+              authState={authState}
+            />
           ))}
         </div>
       </div>

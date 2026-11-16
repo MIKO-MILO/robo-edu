@@ -107,7 +107,7 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
   const [cartItems, setCartItems] = useState<CartItemDetail[]>([]);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
-  const [resellerStatus] = useState<MembershipStatus>("NOT_MEMBER");
+  const [membershipStatus, setMembershipStatus] = useState<MembershipStatus>("NOT_MEMBER");
 
   // ── UI state ──────────────────────────────────────────────────────────
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
@@ -126,10 +126,11 @@ export default function CheckoutPage() {
     setPageLoading(true);
     setPageError(null);
     try {
-      const [addrRes, cartRes, shippingRes] = await Promise.all([
+      const [addrRes, cartRes, shippingRes, membershipRes] = await Promise.all([
         fetch("/api/profile/addresses"),
         fetch("/api/cart"),
         fetch("/api/shipping-providers"),
+        fetch("/api/membership/me"),
       ]);
 
       const [addrJson, cartJson, shippingJson] = await Promise.all([
@@ -137,6 +138,18 @@ export default function CheckoutPage() {
         cartRes.json(),
         shippingRes.json(),
       ]);
+
+      // Membership fetch dikonsumsi terpisah — gagal tidak menghentikan checkout
+      if (membershipRes.ok) {
+        try {
+          const membershipJson = await membershipRes.json();
+          if (membershipJson?.data?.membership_status) {
+            setMembershipStatus(membershipJson.data.membership_status as MembershipStatus);
+          }
+        } catch {
+          // JSON parse gagal — biarkan status tetap NOT_MEMBER
+        }
+      }
 
       if (!addrRes.ok) throw new Error(addrJson.message ?? "Gagal memuat alamat.");
       if (!cartRes.ok) throw new Error(cartJson.message ?? "Gagal memuat keranjang.");
@@ -452,7 +465,7 @@ export default function CheckoutPage() {
                   <CheckoutOrderItem
                     key={item.id}
                     item={item}
-                    membershipStatus={resellerStatus}
+                    membershipStatus={membershipStatus}
                   />
                 ))}
               </div>

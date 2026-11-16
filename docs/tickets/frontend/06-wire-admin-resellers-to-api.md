@@ -4,12 +4,12 @@
 
 **Blocked by:** None (backend API sudah ada)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Halaman `/admin/resellers` fetch data dari `GET /api/admin/resellers` dengan query params `search`, `status`, `page`, `limit`; tidak lagi import atau gunakan `MOCK_ADMIN_RESELLERS`.
-- [ ] Statistik KPI (total member, aktif, expired, dll) dihitung dari response API atau endpoint terpisah — bukan dari array lokal.
-- [ ] Pagination server-side menggunakan `meta.total_count` dari response API.
-- [ ] Loading state dan empty state ditampilkan dengan benar saat data sedang fetch atau kosong.
-- [ ] Halaman `/admin/resellers/[id]` fetch dari `GET /api/admin/resellers/[id]`; tidak lagi gunakan `getMockResellerDetail()`.
-- [ ] Aksi approve/reject di halaman detail memanggil `PATCH /api/admin/resellers/[id]` (endpoint sudah ada).
-- [ ] File `components/admin/membership/mock-data.ts` tidak lagi diimpor dari halaman manapun (boleh tetap ada sebagai referensi tapi tidak digunakan).
+- [x] Halaman `/admin/resellers` fetch data dari `GET /api/admin/resellers` dengan query params `search`, `status`, `page`, `limit`; tidak lagi import atau gunakan `MOCK_ADMIN_RESELLERS`.
+- [x] Statistik KPI (total member, aktif, expired, dll) dihitung dari response API atau endpoint terpisah — bukan dari array lokal.
+- [x] Pagination server-side menggunakan `meta.total_count` dari response API.
+- [x] Loading state dan empty state ditampilkan dengan benar saat data sedang fetch atau kosong.
+- [x] Halaman `/admin/resellers/[id]` fetch dari `GET /api/admin/resellers/[id]`; tidak lagi gunakan `getMockResellerDetail()`.
+- [x] Aksi approve/reject di halaman detail memanggil `PATCH /api/admin/resellers/[id]` (endpoint sudah ada).
+- [x] File `components/admin/membership/mock-data.ts` tidak lagi diimpor dari halaman manapun (boleh tetap ada sebagai referensi tapi tidak digunakan).

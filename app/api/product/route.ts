@@ -7,6 +7,7 @@ import {
   productTypes,
   productVariants,
   productImages,
+  reviews,
 } from "@/src/db/schema";
 import { getUserIdFromRequest } from "@/src/lib/auth/session";
 import { isActiveMember } from "@/src/lib/auth/membership";
@@ -138,11 +139,20 @@ export async function GET(request: NextRequest) {
           CASE WHEN ${productVariants.status} = 'active'
           THEN ${productVariants.stock} ELSE 0 END
         ), 0)`,
+
+        // ── Review aggregates (PUBLISHED only) ──────────────────────────
+        ratingAvg: sql<string | null>`ROUND(AVG(
+          CASE WHEN ${reviews.status} = 'published' THEN ${reviews.rating} END
+        ), 1)`,
+        reviewCount: sql<number>`COUNT(
+          CASE WHEN ${reviews.status} = 'published' THEN 1 END
+        )`,
       })
       .from(products)
       .innerJoin(categories, eq(products.categoryId, categories.id))
       .innerJoin(productTypes, eq(products.productTypeId, productTypes.id))
       .leftJoin(productVariants, eq(products.id, productVariants.productId))
+      .leftJoin(reviews, eq(products.id, reviews.productId))
       .where(and(...filters))
       .groupBy(
         products.id,
@@ -219,6 +229,10 @@ export async function GET(request: NextRequest) {
 
       stock: Number(product.totalStock || 0),
       image: imageMap[product.id] ?? null,
+
+      // Nullable — null means the product has no published reviews yet.
+      rating_avg: product.ratingAvg ? Number(product.ratingAvg) : null,
+      review_count: Number(product.reviewCount ?? 0),
     }));
 
     return NextResponse.json({

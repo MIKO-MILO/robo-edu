@@ -5,14 +5,14 @@ import type { CustomerStats } from "./customer-list-types";
 
 export interface CustomerStatsProps {
   stats: CustomerStats;
-  onFilterReseller?: (tab: string) => void;
+  onFilterMembership?: (tab: string) => void;
 }
 
 /**
  * Molecule — grid 4 KPI cards ringkasan data pelanggan.
  * Menerima `stats` yang sudah dihitung di parent / hook.
  */
-export function CustomerStatsGrid({ stats, onFilterReseller }: CustomerStatsProps) {
+export function CustomerStatsGrid({ stats, onFilterMembership }: CustomerStatsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       <CustomerKpiCard
@@ -20,7 +20,7 @@ export function CustomerStatsGrid({ stats, onFilterReseller }: CustomerStatsProp
         label="Total Pelanggan"
         value={stats.total_customers}
         iconColorClass="bg-primary/10 text-primary"
-        onClick={onFilterReseller ? () => onFilterReseller("ALL") : undefined}
+        onClick={onFilterMembership ? () => onFilterMembership("ALL") : undefined}
       />
       <CustomerKpiCard
         icon={<UserCheck className="size-5" />}
@@ -30,17 +30,17 @@ export function CustomerStatsGrid({ stats, onFilterReseller }: CustomerStatsProp
       />
       <CustomerKpiCard
         icon={<Award className="size-5" />}
-        label="Reseller Aktif"
+        label="Member Aktif"
         value={stats.approved_resellers}
         iconColorClass="bg-purple-500/10 text-purple-600"
-        onClick={onFilterReseller ? () => onFilterReseller("APPROVED") : undefined}
+        onClick={onFilterMembership ? () => onFilterMembership("APPROVED") : undefined}
       />
       <CustomerKpiCard
         icon={<Clock className="size-5" />}
-        label="Pengajuan Reseller"
+        label="Pengajuan Membership"
         value={stats.pending_resellers}
         iconColorClass="bg-warning/10 text-warning"
-        onClick={onFilterReseller ? () => onFilterReseller("PENDING") : undefined}
+        onClick={onFilterMembership ? () => onFilterMembership("PENDING") : undefined}
       />
     </div>
   );

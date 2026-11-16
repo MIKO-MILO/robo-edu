@@ -87,7 +87,7 @@ export function TopProductsCard({
           <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
             <PackageCheck className="size-10 mb-2 opacity-50 stroke-[1.5]" />
             <p className="font-body text-sm font-semibold">
-              Belum ada data produk terlaris
+              Belum ada data penjualan
             </p>
           </div>
         ) : (
@@ -153,7 +153,11 @@ export function TopProductsCard({
 
       {/* Footer Info */}
       <div className="pt-3 border-t border-border/15 flex items-center justify-between text-xs text-muted-foreground">
-        <span>Menampilkan 5 produk teratas</span>
+        <span>
+          {products.length > 0
+            ? `Menampilkan ${Math.min(products.length, 5)} produk teratas`
+            : "Belum ada data penjualan"}
+        </span>
         <span className="font-semibold text-primary">Diperbarui otomatis</span>
       </div>
     </div>

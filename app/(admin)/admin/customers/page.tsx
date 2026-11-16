@@ -3,7 +3,7 @@
 import React, { useMemo, useState, Suspense, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, AlertTriangle } from "lucide-react";
+import { Download, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/admin/customers";
 import type { AdminCustomerRow } from "@/components/admin/customers";
 import { useCustomers } from "@/hooks/admin/customers";
+import { userService } from "@/lib/api/services/user.service";
 import type { AdminCustomersQueryParams } from "@/lib/api/services/user.service";
 
 // ---------------------------------------------------------------------------
@@ -24,9 +25,10 @@ function AdminCustomersContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  const [isExporting, setIsExporting] = useState(false);
 
   const searchQuery = searchParams.get("search") || "";
-  const resellerFilter = searchParams.get("reseller") || "ALL";
+  const membershipFilter = searchParams.get("membership") || "ALL";
   const statusFilter = searchParams.get("status") || "ALL";
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -44,13 +46,13 @@ function AdminCustomersContent() {
     });
   };
 
-  const handleResellerFilterChange = (key: string) => {
+  const handleMembershipFilterChange = (key: string) => {
     setCurrentPage(1);
     const params = new URLSearchParams(searchParams.toString());
     if (key === "ALL") {
-      params.delete("reseller");
+      params.delete("membership");
     } else {
-      params.set("reseller", key);
+      params.set("membership", key);
     }
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`);
@@ -76,14 +78,14 @@ function AdminCustomersContent() {
       limit: 50,
     };
     if (searchQuery) params.search = searchQuery;
-    if (resellerFilter !== "ALL") {
-      params.membership_status = resellerFilter;
+    if (membershipFilter !== "ALL") {
+      params.membership_status = membershipFilter;
     }
     if (statusFilter !== "ALL") {
       params.is_active = statusFilter === "ACTIVE";
     }
     return params;
-  }, [searchQuery, resellerFilter, statusFilter]);
+  }, [searchQuery, membershipFilter, statusFilter]);
 
   const { data, isLoading, isError, error, refetch } = useCustomers(apiParams);
 
@@ -103,8 +105,8 @@ function AdminCustomersContent() {
         if (!matchesName && !matchesEmail && !matchesPhone) return false;
       }
 
-      if (resellerFilter !== "ALL") {
-        if (customer.membership_status !== resellerFilter) {
+      if (membershipFilter !== "ALL") {
+        if (customer.membership_status !== membershipFilter) {
           return false;
         }
       }
@@ -114,7 +116,7 @@ function AdminCustomersContent() {
 
       return true;
     });
-  }, [apiCustomers, searchQuery, resellerFilter, statusFilter]);
+  }, [apiCustomers, searchQuery, membershipFilter, statusFilter]);
 
 
   const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE));
@@ -126,8 +128,74 @@ function AdminCustomersContent() {
   const stats = useMemo(() => getCustomerStats(apiCustomers), [apiCustomers]);
   const totalCount = data?.meta?.total_count ?? apiCustomers.length;
 
-  const handleExport = () => {
-    alert("Data pelanggan berhasil diunduh sebagai file CSV.");
+  const handleExport = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const exportParams: AdminCustomersQueryParams = {};
+      if (searchQuery) exportParams.search = searchQuery;
+      if (membershipFilter !== "ALL") exportParams.membership_status = membershipFilter;
+      if (statusFilter !== "ALL") exportParams.is_active = statusFilter === "ACTIVE";
+
+      const rows = await userService.getAdminCustomersForExport(exportParams);
+
+      const headers = ["Nama", "Email", "Telepon", "Status", "Membership Status", "Tanggal Daftar"];
+
+      const escapeCsv = (value: string | null | undefined): string => {
+        const str = value ?? "";
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const csvRows: string[] = [headers.join(",")];
+
+      for (const row of rows) {
+        const status = row.is_active ? "Aktif" : "Nonaktif";
+        const membershipLabel =
+          row.membership_status === "MEMBER" ? "Member Plus" : "Pelanggan Standar";
+        const tanggalDaftar = row.created_at
+          ? new Date(row.created_at).toLocaleDateString("id-ID", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })
+          : "";
+
+        csvRows.push(
+          [
+            escapeCsv(row.name),
+            escapeCsv(row.email),
+            escapeCsv(row.phone),
+            escapeCsv(status),
+            escapeCsv(membershipLabel),
+            escapeCsv(tanggalDaftar),
+          ].join(","),
+        );
+      }
+
+      const csvContent = csvRows.join("\n");
+      const bom = "\uFEFF"; // UTF-8 BOM for Excel compatibility
+      const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const filename = `pelanggan-roboedu-${dateStr}.csv`;
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export CSV failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -169,7 +237,7 @@ function AdminCustomersContent() {
             </h1>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Pantau seluruh data pelanggan terdaftar, status kemitraan reseller,
+            Pantau seluruh data pelanggan terdaftar, status kemitraan membership,
             dan akumulasi nilai belanja (LTV).
           </p>
         </div>
@@ -180,10 +248,15 @@ function AdminCustomersContent() {
             variant="outline"
             size="sm"
             onClick={handleExport}
+            disabled={isExporting}
             className="gap-1.5 rounded-xl border-2 border-border font-heading font-bold text-xs"
           >
-            <Download className="size-3.5" />
-            <span>Ekspor CSV</span>
+            {isExporting ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Download className="size-3.5" />
+            )}
+            <span>{isExporting ? "Mengekspor..." : "Ekspor CSV"}</span>
           </Button>
         </div>
       </div>
@@ -191,16 +264,16 @@ function AdminCustomersContent() {
       {/* KPI Stats Grid */}
       <CustomerStatsGrid
         stats={stats}
-        onFilterReseller={handleResellerFilterChange}
+        onFilterMembership={handleMembershipFilterChange}
       />
 
       {/* Filters Toolbar */}
       <CustomerFilters
         searchQuery={searchQuery}
-        resellerFilter={resellerFilter}
+        membershipFilter={membershipFilter}
         statusFilter={statusFilter}
         onSearchChange={handleSearchChange}
-        onResellerFilterChange={handleResellerFilterChange}
+        onMembershipFilterChange={handleMembershipFilterChange}
         onStatusFilterChange={handleStatusFilterChange}
       />
 

@@ -14,13 +14,6 @@ export type {
 } from "./complaint-list-types";
 export { COMPLAINT_STATUS_TABS } from "./complaint-list-types";
 
-// Mock data helpers (hapus saat backend siap)
-export {
-  MOCK_ADMIN_COMPLAINTS,
-  getMockComplaintDetail,
-  getComplaintStats,
-} from "./mock-data";
-
 // Atoms / Molecules
 export { ComplaintStatsGrid } from "./complaint-stats";
 export type { ComplaintStatsGridProps } from "./complaint-stats";
