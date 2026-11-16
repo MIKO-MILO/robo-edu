@@ -2,7 +2,7 @@
 
 **Spec:** `docs/specs/3-spec-settings-atomic.md`
 **Blocked by:** —
-**Status:** ready-for-agent
+**Status:** done
 
 ## What to build
 
@@ -10,12 +10,12 @@ Buat halaman baru `/admin/payment-settings` dengan konten yang dipindahkan dari 
 
 ## Acceptance criteria
 
-- [ ] Halaman `/admin/payment-settings` dapat diakses dan menampilkan data dari DB saat mount.
-- [ ] Section Gateway Midtrans: status koneksi (connected/sandbox/production) ditampilkan read-only — diambil dari config atau default, bukan dari DB.
-- [ ] Section Channel Pembayaran: toggle aktif/nonaktif per channel dari `payment_methods_config`; submit PATCH; toast sukses/error; button disabled saat loading.
-- [ ] Section Harga Membership: field harga (`membership_plus_price`) dan durasi (`membership_plus_duration_months`); submit disertakan bersama channel dalam satu PATCH; perubahan langsung tercermin di halaman konfirmasi membership (backend baca dari DB at request time).
-- [ ] Loading skeleton ditampilkan saat fetch awal.
-- [ ] Entry sidebar "Kelola Pembayaran" (`/admin/payment-settings`, ikon `CreditCard`) ditambahkan ke `adminNavItems`, role: `SUPERADMIN`, `ADMIN`.
+- [x] Halaman `/admin/payment-settings` dapat diakses dan menampilkan data dari DB saat mount.
+- [x] Section Gateway Midtrans: status koneksi (connected/sandbox/production) ditampilkan read-only — diambil dari config atau default, bukan dari DB.
+- [x] Section Channel Pembayaran: toggle aktif/nonaktif per channel dari `payment_methods_config`; submit PATCH; toast sukses/error; button disabled saat loading.
+- [x] Section Harga Membership: field harga (`membership_plus_price`) dan durasi (`membership_plus_duration_months`); submit disertakan bersama channel dalam satu PATCH; perubahan langsung tercermin di halaman konfirmasi membership (backend baca dari DB at request time).
+- [x] Loading skeleton ditampilkan saat fetch awal.
+- [x] Entry sidebar "Kelola Pembayaran" (`/admin/payment-settings`, ikon `CreditCard`) ditambahkan ke `adminNavItems`, role: `SUPERADMIN`, `ADMIN`.
 
 ## Notes
 
