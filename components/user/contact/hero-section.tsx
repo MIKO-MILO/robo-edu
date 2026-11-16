@@ -40,18 +40,6 @@ export function ContactHeroSection() {
             Pertanyaan produk, konsultasi kebutuhan sekolah, atau kerja sama reseller — 
             tim kami siap merespons cepat dan ramah.
           </p>
-
-          {/* Info pills */}
-          <div className="flex flex-wrap justify-center gap-3">
-            <div className="inline-flex items-center gap-2 bg-white/80 border border-white rounded-full px-4 py-2 font-body font-bold text-xs text-slate-800">
-              <Clock className="w-3.5 h-3.5 text-[#1C6CAE] shrink-0" />
-              Senin–Sabtu, 08.00–17.00 WIB
-            </div>
-            <div className="inline-flex items-center gap-2 bg-white/80 border border-white rounded-full px-4 py-2 font-body font-bold text-xs text-slate-800">
-              <Mail className="w-3.5 h-3.5 text-[#1C6CAE] shrink-0" />
-              Balas dalam 1×24 jam
-            </div>
-          </div>
         </div>
 
         {/* ── Scalloped bottom edge (sama persis dengan hero membership) ── */}
