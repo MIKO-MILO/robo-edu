@@ -2,7 +2,7 @@
 
 **Spec:** `docs/specs/3-spec-settings-atomic.md`
 **Blocked by:** —
-**Status:** ready-for-agent
+**Status:** done
 
 ## What to build
 
@@ -10,11 +10,11 @@ Buat halaman baru `/admin/shipping-settings` dengan konten yang dipindahkan dari
 
 ## Acceptance criteria
 
-- [ ] Halaman `/admin/shipping-settings` dapat diakses dan menampilkan data dari DB saat mount.
-- [ ] Daftar provider aktif di-fetch dari `GET /api/shipping-providers`; provider default di-fetch dari `GET /api/admin/settings` (key `shipping_default_provider_id`).
-- [ ] Admin dapat memilih provider default dari daftar (radio-select); submit menyimpan ke DB via PATCH `shipping_default_provider_id`; toast sukses/error; button disabled saat loading dan saat pilihan sama dengan nilai DB.
-- [ ] Loading skeleton ditampilkan saat fetch awal.
-- [ ] Entry sidebar "Kelola Pengiriman" (`/admin/shipping-settings`, ikon `Truck`) ditambahkan ke `adminNavItems`, role: `SUPERADMIN`, `ADMIN`.
+- [x] Halaman `/admin/shipping-settings` dapat diakses dan menampilkan data dari DB saat mount.
+- [x] Daftar provider aktif di-fetch dari `GET /api/shipping-providers`; provider default di-fetch dari `GET /api/admin/settings` (key `shipping_default_provider_id`).
+- [x] Admin dapat memilih provider default dari daftar (radio-select); submit menyimpan ke DB via PATCH `shipping_default_provider_id`; toast sukses/error; button disabled saat loading dan saat pilihan sama dengan nilai DB.
+- [x] Loading skeleton ditampilkan saat fetch awal.
+- [x] Entry sidebar "Kelola Pengiriman" (`/admin/shipping-settings`, ikon `Truck`) ditambahkan ke `adminNavItems`, role: `SUPERADMIN`, `ADMIN`.
 
 ## Notes
 
