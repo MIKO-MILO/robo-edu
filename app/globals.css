@@ -49,14 +49,14 @@
   --color-success-bg: #A9E8AE;
   /* = pastel green */
   --color-warning: #736D39;
-  --color-warning-bg: #FFF37E;
   /* = pastel yellow */
+  --color-warning-bg: #FFF37E;
   --color-danger: #7A2E22;
-  --color-danger-bg: #FFAFA3;
   /* = pastel peach, dipakai buat error ringan/soft */
+  --color-danger-bg: #FFAFA3;
   --color-info: #406173;
-  --color-info-bg: #8ED8FF;
   /* = pastel blue */
+  --color-info-bg: #8ED8FF;
 
   /* ===== ACCENT — Pastel (khusus aksen komponen: badge, tag, ilustrasi, chip kategori) ===== */
   --color-accent-yellow: #FFF37E;
@@ -250,6 +250,16 @@
   box-shadow: none;
 }
 
+/* Custom Pill Shadow untuk Kategori */
+.category-shadow {
+  box-shadow: 0 4px 0 0 #F1E7DB !important;
+}
+
+.category-shadow:active {
+  box-shadow: none !important;
+  transform: translateY(2px);
+}
+
 /* Hide scrollbar utility (keeps scrolling functionality active) */
 @utility no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
@@ -326,4 +336,15 @@
   --color-accent-purple-light: #EAE4FF;
 }
 
+/* ==========================================
+   Custom Drop Shadow untuk Pill Kategori & Search
+   ========================================== */
+.category-shadow {
+  box-shadow: none !important;
+  filter: drop-shadow(0 3px 0 #F1E7DB) !important;
+}
 
+.category-shadow:active {
+  filter: none !important;
+  transform: translateY(2px);
+}
