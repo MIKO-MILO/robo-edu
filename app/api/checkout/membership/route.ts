@@ -4,6 +4,10 @@ import {
   type PendingPurchaseExistsError,
 } from "@/src/lib/services/membership-transaction-service";
 import { getSessionUserId } from "@/src/lib/auth/session";
+import {
+  assertChannelActive,
+  PaymentChannelUnavailableError,
+} from "@/src/lib/payment/payment-methods-service";
 
 export const runtime = "nodejs";
 
@@ -113,6 +117,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ── Enforce payment channel availability ──────────────────────────────
+    // Rejects channels the admin has disabled (or unknown channels) even when
+    // a client POSTs the channel directly — the admin toggle must hold.
+    await assertChannelActive(paymentChannel);
+
     // ── Create transaction ────────────────────────────────────────────────
     const result = await createMembershipTransaction({
       userId,
@@ -133,6 +142,17 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    // ── Admin-disabled / unknown payment channel ──────────────────────────
+    if (error instanceof PaymentChannelUnavailableError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Metode pembayaran tidak tersedia. Silakan pilih metode lain.",
+        },
+        { status: 422 },
+      );
+    }
+
     // ── PENDING_PURCHASE_EXISTS ───────────────────────────────────────────
     if (
       error instanceof Error &&
