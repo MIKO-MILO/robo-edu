@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import ProductCarousel from "@/components/user/landing/product-carousel";
@@ -41,7 +41,7 @@ function CurvedArrowSVG({ className = "" }: { className?: string }) {
 function SectionLabel({ text }: { text: string }) {
   return (
     <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
-      <span className="font-body text-base sm:text-lg font-bold text-[#C0392B] tracking-wide uppercase">
+      <span className="font-body text-base sm:text-lg font-bold text-promo-red tracking-wide uppercase">
         {text}
       </span>
     </div>

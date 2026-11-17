@@ -39,7 +39,7 @@ export interface TestimoniProps {
 const ACCENT_PALETTES = [
   { accentBg: "bg-accent-butter",     innerBorderColor: "border-accent-gold",   quoteColor: "text-accent-gold",   avatarBg: "bg-accent-yellow" },
   { accentBg: "bg-primary-100",       innerBorderColor: "border-primary-300",   quoteColor: "text-primary-300",   avatarBg: "bg-accent-soft-blue" },
-  { accentBg: "bg-accent-purple/30",  innerBorderColor: "border-accent-purple", quoteColor: "text-accent-purple", avatarBg: "bg-accent-purple/50" },
+  { accentBg: "bg-accent-purple-light", innerBorderColor: "border-accent-purple", quoteColor: "text-accent-purple", avatarBg: "bg-accent-purple/50" },
   { accentBg: "bg-accent-orange/40",  innerBorderColor: "border-accent-orange", quoteColor: "text-accent-orange", avatarBg: "bg-accent-orange" },
   { accentBg: "bg-accent-green/40",   innerBorderColor: "border-accent-green",  quoteColor: "text-accent-green",  avatarBg: "bg-accent-green" },
   { accentBg: "bg-accent-pink/40",    innerBorderColor: "border-accent-pink",   quoteColor: "text-accent-pink",   avatarBg: "bg-accent-pink" },
@@ -126,15 +126,15 @@ function TestimonialCard({ item }: { item: Testimonial }) {
           <div className="flex items-center gap-2.5 xs:gap-3 pt-1 mb-2 sm:mb-3">
             {/* Avatar inisial — avatar key di MinIO bersifat private, tidak bisa diakses publik */}
             <div
-              className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full ${item.avatarBg} shrink-0 flex items-center justify-center border border-[#3D2900]/10`}
+              className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full ${item.avatarBg} shrink-0 flex items-center justify-center border border-foreground/10`}
               aria-hidden="true"
             >
-              <span className="font-heading font-extrabold text-[#3D2900] text-xs xs:text-sm sm:text-base select-none">
+              <span className="font-heading font-extrabold text-foreground text-xs xs:text-sm sm:text-base select-none">
                 {item.avatarInitial}
               </span>
             </div>
             <div className="overflow-hidden">
-              <h3 className="font-heading text-xs xs:text-sm sm:text-base font-extrabold text-[#3D2900] leading-tight truncate">
+              <h3 className="font-heading text-xs xs:text-sm sm:text-base font-extrabold text-foreground leading-tight truncate">
                 {item.name}
               </h3>
             </div>
@@ -216,7 +216,7 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
  className="absolute inset-0 z-0 bg-fixed bg-cover bg-center"
  style={{ backgroundImage:"url('/images/foto3.jpg')" }}
  >
- {/* Layer overlay #2781CD dengan transparansi */}
+ {/* Layer overlay landing-blue dengan transparansi */}
  <div className="absolute inset-0 bg-landing-blue/78" />
  </div>
 
@@ -388,7 +388,7 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
  />
  </svg>
 
- {/* LAYER 3: Lengkungan Utama Paling Depan (#F3EFE4) */}
+ {/* LAYER 3: Lengkungan Utama Paling Depan (bg-background) */}
  <svg
  className="relative block w-full h-16 sm:h-24 lg:h-36 text-background z-20 overflow-visible"
  viewBox="0 0 1440 120"
