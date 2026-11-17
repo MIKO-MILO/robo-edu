@@ -4,10 +4,10 @@
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Label section di halaman Kelola Pembayaran berubah dari "Masa Berlaku Order" menjadi "Masa Berlaku Pembayaran".
-- [ ] Deskripsi di bawah label menjelaskan bahwa setting berlaku untuk semua transaksi: pembelian produk maupun membership.
-- [ ] Membership transaction service membaca `order_expires_hours` dari database saat menghitung `expires_at` transaksi membership — bukan lagi nilai hardcode 24 jam.
-- [ ] Fallback tetap 24 jam jika key `order_expires_hours` tidak ada di database.
-- [ ] Tidak ada perubahan pada nama key database, nama field di SETTING_SPECS, atau skema tabel.
+- [x] Label section di halaman Kelola Pembayaran berubah dari "Masa Berlaku Order" menjadi "Masa Berlaku Pembayaran".
+- [x] Deskripsi di bawah label menjelaskan bahwa setting berlaku untuk semua transaksi: pembelian produk maupun membership.
+- [x] Membership transaction service membaca `order_expires_hours` dari database saat menghitung `expires_at` transaksi membership — bukan lagi nilai hardcode 24 jam.
+- [x] Fallback tetap 24 jam jika key `order_expires_hours` tidak ada di database.
+- [x] Tidak ada perubahan pada nama key database, nama field di SETTING_SPECS, atau skema tabel.
