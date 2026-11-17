@@ -7,11 +7,6 @@ import { membershipPurchases, payments, users } from "@/src/db/schema";
 import { chargeCoreApi } from "@/src/lib/payments/midtrans";
 import { getSetting } from "@/src/lib/services/settings-service";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-
-/** Membership purchase expires in 24 hours by default. */
-const MEMBERSHIP_EXPIRY_HOURS = 24;
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type CreateMembershipTransactionInput = {
@@ -161,7 +156,9 @@ export async function createMembershipTransaction(
   const paymentId = crypto.randomUUID();
   const midtransOrderId = `${purchaseNumber}-1`;
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + MEMBERSHIP_EXPIRY_HOURS * 60 * 60 * 1000);
+  const rawExpiryHours = await getSetting("order_expires_hours");
+  const expiryHours = rawExpiryHours ? (Number(rawExpiryHours) || 24) : 24;
+  const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
 
   // ── Atomic DB inserts ─────────────────────────────────────────────────────
   await db.transaction(async (tx) => {
@@ -236,7 +233,7 @@ export async function createMembershipTransaction(
       customerDetails,
       itemDetails,
       payerPhoneNumber: input.payerPhoneNumber,
-      expiry: { duration: MEMBERSHIP_EXPIRY_HOURS, unit: "hour" },
+      expiry: { duration: expiryHours, unit: "hour" },
     });
 
     // Store payment_instruction in the dedicated column (survives webhook rawResponse overwrite)
@@ -315,6 +312,8 @@ export async function retryMembershipPayment(
   input: RetryMembershipPaymentInput,
 ): Promise<RetryMembershipPaymentResult> {
   const now = new Date();
+  const rawExpiryHoursRetry = await getSetting("order_expires_hours");
+  const expiryHours = rawExpiryHoursRetry ? (Number(rawExpiryHoursRetry) || 24) : 24;
 
   // ── Fetch purchase (must belong to this user) ─────────────────────────────
   const [purchase] = await db
@@ -467,10 +466,10 @@ export async function retryMembershipPayment(
       customerDetails,
       itemDetails,
       payerPhoneNumber: input.payerPhoneNumber,
-      expiry: { duration: MEMBERSHIP_EXPIRY_HOURS, unit: "hour" },
+      expiry: { duration: expiryHours, unit: "hour" },
     });
 
-    const expiresAt = new Date(now.getTime() + MEMBERSHIP_EXPIRY_HOURS * 60 * 60 * 1000);
+    const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
     const resolvedExpiry = charge.expiryTime ?? expiresAt;
 
     await db

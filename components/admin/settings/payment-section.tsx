@@ -172,7 +172,7 @@ export function PaymentSection() {
   const handleSave = async () => {
     const hours = Number(orderExpiresHours);
     if (!Number.isInteger(hours) || hours < 1) {
-      toast.error("Validasi gagal", "Masa berlaku order harus berupa bilangan bulat positif (jam).");
+      toast.error("Validasi gagal", "Masa berlaku pembayaran harus berupa bilangan bulat positif (jam).");
       return;
     }
 
@@ -332,11 +332,11 @@ export function PaymentSection() {
           </div>
         </div>
 
-        {/* Masa Berlaku Order */}
+        {/* Masa Berlaku Pembayaran */}
         <div className="p-6">
-          <h3 className="text-base font-bold text-foreground mb-1">Masa Berlaku Order</h3>
+          <h3 className="text-base font-bold text-foreground mb-1">Masa Berlaku Pembayaran</h3>
           <p className="text-xs text-muted-foreground mb-5">
-            Waktu sebelum order yang belum dibayar otomatis dibatalkan.
+            Waktu sebelum transaksi yang belum dibayar otomatis dibatalkan. Berlaku untuk pembelian produk maupun membership.
           </p>
           <div className="flex items-center gap-2">
             <input
