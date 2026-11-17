@@ -224,6 +224,11 @@ export async function createMembershipTransaction(
   ];
 
   // ── Call Midtrans Core API (outside DB transaction) ───────────────────────
+  // Send remaining minutes (not raw hours) so the Midtrans expiry window is
+  // as precise as possible — same pattern as transaction-service.ts.
+  const msLeft = expiresAt.getTime() - Date.now();
+  const minutesLeft = Math.max(1, Math.floor(msLeft / 60_000));
+
   try {
     const charge = await chargeCoreApi({
       paymentType: input.paymentMethod,
@@ -233,7 +238,7 @@ export async function createMembershipTransaction(
       customerDetails,
       itemDetails,
       payerPhoneNumber: input.payerPhoneNumber,
-      expiry: { duration: expiryHours, unit: "hour" },
+      expiry: { duration: minutesLeft, unit: "minutes" },
     });
 
     // Store payment_instruction in the dedicated column (survives webhook rawResponse overwrite)
@@ -457,6 +462,12 @@ export async function retryMembershipPayment(
   });
 
   // ── Charge Midtrans Core API ──────────────────────────────────────────────
+  // Compute expiresAt and remaining minutes before the charge call so the
+  // Midtrans expiry window is precise — same pattern as transaction-service.ts.
+  const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
+  const msLeftRetry = expiresAt.getTime() - Date.now();
+  const minutesLeftRetry = Math.max(1, Math.floor(msLeftRetry / 60_000));
+
   try {
     const charge = await chargeCoreApi({
       paymentType: input.paymentMethod,
@@ -466,10 +477,9 @@ export async function retryMembershipPayment(
       customerDetails,
       itemDetails,
       payerPhoneNumber: input.payerPhoneNumber,
-      expiry: { duration: expiryHours, unit: "hour" },
+      expiry: { duration: minutesLeftRetry, unit: "minutes" },
     });
 
-    const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
     const resolvedExpiry = (charge.expiryTime && charge.expiryTime < expiresAt) ? charge.expiryTime : expiresAt;
 
     await db
