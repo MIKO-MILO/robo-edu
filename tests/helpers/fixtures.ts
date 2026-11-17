@@ -72,8 +72,6 @@ export const SETTINGS_SEED: Array<{ key: string; value: string }> = [
       permata_va: true,
       cimb_va: true,
       credit_card: true,
-      gopay: true,
-      shopeepay: true,
       qris: true,
       dana: true,
       ovo: true,

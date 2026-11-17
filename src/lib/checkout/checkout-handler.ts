@@ -3,6 +3,10 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { createPaymentTransaction } from "@/src/lib/services/transaction-service";
 import { getSessionUserId } from "@/src/lib/auth/session";
+import {
+  assertChannelActive,
+  PaymentChannelUnavailableError,
+} from "@/src/lib/payment/payment-methods-service";
 
 /**
  * Shared handler for POST /api/checkout and POST /api/checkout/midtrans.
@@ -116,6 +120,11 @@ export async function handleCheckout(request: NextRequest): Promise<NextResponse
       );
     }
 
+    // ── Enforce payment channel availability ────────────────────────────────
+    // Rejects channels the admin has disabled (or unknown channels) even when
+    // a client POSTs the channel directly — the admin toggle must hold.
+    await assertChannelActive(paymentChannel);
+
     // ── Call service ─────────────────────────────────────────────────────────
     const transaction = await createPaymentTransaction({
       userId,
@@ -137,6 +146,17 @@ export async function handleCheckout(request: NextRequest): Promise<NextResponse
     return NextResponse.json({ success: true, data: transaction }, { status: 201 });
   } catch (error) {
     const raw = error instanceof Error ? error.message : "";
+
+    // ── Admin-disabled / unknown payment channel ──────────────────────────
+    if (error instanceof PaymentChannelUnavailableError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Metode pembayaran tidak tersedia. Silakan pilih metode lain.",
+        },
+        { status: 422 },
+      );
+    }
 
     // ── Specific 409 / 422 error codes ────────────────────────────────────
     if (raw.includes("STOCK_INSUFFICIENT")) {
