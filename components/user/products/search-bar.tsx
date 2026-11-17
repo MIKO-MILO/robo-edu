@@ -58,13 +58,6 @@ export function SearchBar({
       onSubmit={handleSubmit}
       className="flex items-center bg-card border-2 border-primary rounded-full px-5 py-2 gap-3 w-full"
     >
-      {/* Label */}
-      <span className="font-heading font-bold text-foreground text-sm sm:text-base whitespace-nowrap shrink-0">
-        {label}
-      </span>
-
-      {/* Separator */}
-      <div className="w-px h-6 bg-border-strong shrink-0" />
 
       {/* Search icon + input */}
       <div className="relative flex-1 flex items-center min-w-0">
