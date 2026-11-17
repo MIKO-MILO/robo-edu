@@ -49,6 +49,7 @@ import {
 } from "@/src/lib/cron/membership-cron";
 import { runOrderAutoCancel } from "@/src/lib/jobs/order-auto-cancel";
 import { runPaymentReconcile } from "@/src/lib/jobs/payment-reconcile";
+import { runOrderAutoConfirm } from "@/src/lib/cron/order-auto-confirm";
 
 import * as schema from "@/src/db/schema";
 
@@ -403,6 +404,10 @@ scheduleDailyUtc("expire", 18, 0, () => runExpireMemberships(db));
 
 // Reminder cron: daily at 08:00 WIB = 01:00 UTC
 scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
+
+// Auto-confirm cron: daily at 02:00 WIB = 19:00 UTC
+// Sweeps DELIVERED orders with delivered_at > 3 days ago and marks them COMPLETED.
+scheduleDailyUtc("order-auto-confirm", 19, 0, () => runOrderAutoConfirm(db));
 
 // ── Graceful shutdown ─────────────────────────────────────────────────────────
 

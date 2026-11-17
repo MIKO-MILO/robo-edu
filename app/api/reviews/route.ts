@@ -15,7 +15,7 @@ export const runtime = "nodejs";
  *
  * Validasi:
  * - order_item harus milik order milik user ini
- * - order harus berstatus DELIVERED atau COMPLETED
+ * - order harus berstatus COMPLETED (user harus konfirmasi penerimaan dulu)
  * - rating harus 1–5
  * - satu order_item hanya boleh direview sekali (UNIQUE di DB)
  * - review berstatus PUBLISHED langsung (moderasi bisa dilakukan admin)
@@ -95,11 +95,12 @@ export async function POST(request: NextRequest) {
     .where(eq(orders.id, item.orderId))
     .limit(1);
 
-  if (!order || !["DELIVERED", "COMPLETED"].includes(order.status)) {
+  if (!order || order.status !== "COMPLETED") {
     return NextResponse.json(
       {
         success: false,
-        message: "Ulasan hanya bisa diberikan setelah pesanan diterima.",
+        message:
+          "Ulasan hanya bisa diberikan setelah pesanan selesai. Konfirmasi penerimaan paket terlebih dahulu.",
       },
       { status: 409 },
     );
