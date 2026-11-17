@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from"next/image";
 
@@ -41,7 +41,7 @@ export default function Carousel() {
 
  <use
  href="#robo-wave-path-back"
- stroke="#F3C769"
+ stroke="var(--color-accent-gold)"
  strokeWidth="68"
  strokeLinecap="round"
  strokeLinejoin="round"
@@ -65,7 +65,7 @@ export default function Carousel() {
 
  <use
  href="#robo-wave-path-front"
- stroke="#F3C769"
+ stroke="var(--color-accent-gold)"
  strokeWidth="68"
  strokeLinecap="round"
  strokeLinejoin="round"

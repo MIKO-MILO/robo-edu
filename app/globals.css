@@ -297,9 +297,31 @@
   to   { transform: translateX(-50%); }
 }
 
-.animate-marquee {
-  animation: var(--animate-marquee);
-  will-change: transform;
+/* ==========================================
+   Landing Page Color Tokens
+   Warna-warna spesifik landing page yang belum ada di token utama.
+   Semua komponen landing harus pakai token ini, bukan hardcode hex.
+   ========================================== */
+
+@theme {
+  /* Biru section landing (InfoCards, InfoCardsList bg) */
+  --color-landing-blue: #2781CD;
+  /* Biru tua heading hero */
+  --color-landing-navy: #0F2C59;
+  /* Biru langit hero (sama dengan hero membership/contact) */
+  --color-landing-sky: #97CEF9;
+  /* Pink kartu promo */
+  --color-promo-pink: #E8808C;
+  /* Biru kartu promo */
+  --color-promo-blue: #6AA2B8;
+  /* Merah label tipe promo */
+  --color-promo-red: #C0392B;
+  /* Orange label kategori carousel */
+  --color-promo-orange: #B85C38;
+  /* Gold stroke/aksen gelombang */
+  --color-accent-gold: #F3C769;
+  /* Warna bintang testimoni */
+  --color-star: #FFC107;
 }
 
 
