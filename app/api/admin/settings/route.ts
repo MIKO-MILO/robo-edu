@@ -8,6 +8,7 @@ import {
   getAllSettings,
   upsertSettings,
 } from "@/src/lib/services/settings-service";
+import { KNOWN_CHANNELS } from "@/src/lib/payment/channels";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,9 @@ type SettingSpec = {
   json?: boolean;
   /** String keys only: validate as parseable JSON array before storing. */
   jsonArray?: boolean;
+  /** JSON object keys only: every key must be a known payment channel and
+   *  every value a boolean. Used for `payment_methods_config`. */
+  channels?: boolean;
 };
 
 const SETTING_SPECS: Record<string, SettingSpec> = {
@@ -53,7 +57,7 @@ const SETTING_SPECS: Record<string, SettingSpec> = {
   shipping_min_weight: { kind: "number" },
   shipping_cost: { kind: "number" },
   order_expires_hours: { kind: "number", positiveInt: true },
-  payment_methods_config: { kind: "string", json: true },
+  payment_methods_config: { kind: "string", json: true, channels: true },
 };
 
 const ALLOWED_KEYS = new Set(Object.keys(SETTING_SPECS));
@@ -120,6 +124,28 @@ async function normalizeField(
       }
     } catch {
       return [null, `\`${key}\` harus berupa JSON yang valid.`];
+    }
+  }
+
+  // payment_methods_config: every key must be a known channel and every value a
+  // boolean — keeps the config clean and rejects unknown channels (e.g.
+  // legacy gopay/shopeepay, kredivo) before they land in the DB.
+  if (spec.channels && value) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      parsed = null; // already reported by the `json` check above
+    }
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+        if (!KNOWN_CHANNELS.has(k)) {
+          return [null, `Channel \`${k}\` tidak dikenal pada \`${key}\`.`];
+        }
+        if (typeof v !== "boolean") {
+          return [null, `Nilai channel \`${k}\` pada \`${key}\` harus boolean (true/false).`];
+        }
+      }
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { FilterButton } from "@/components/ui/filter-button";
+import { cn } from "@/lib/utils";
 
 export interface Category {
   id: string;
@@ -11,11 +12,13 @@ export interface Category {
 export interface CategoryFilterListProps {
   categories: Category[];
   activeCategory: string;
+  className?: string;
 }
 
 export function CategoryFilterList({
   categories,
   activeCategory,
+  className,
 }: CategoryFilterListProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -28,7 +31,6 @@ export function CategoryFilterList({
     } else {
       params.set("category", categoryId);
     }
-    // Reset ke halaman 1 saat ganti kategori
     params.delete("page");
 
     router.push(`${pathname}?${params.toString()}`);
@@ -38,19 +40,32 @@ export function CategoryFilterList({
     <div
       role="group"
       aria-label="Filter kategori"
-      className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"
+      className={cn(
+        "flex items-center gap-3 overflow-x-auto py-3 -mx-1 px-1 no-scrollbar",
+        className
+      )}
     >
-      {categories.map((cat, index) => (
-        <FilterButton
-          key={cat.id}
-          index={index}
-          isActive={activeCategory === cat.id}
-          onClick={() => handleCategoryClick(cat.id)}
-          aria-pressed={activeCategory === cat.id}
-        >
-          {cat.label}
-        </FilterButton>
-      ))}
+      {categories.map((cat, index) => {
+        const isActive = activeCategory === cat.id;
+
+        return (
+          <FilterButton
+            key={cat.id}
+            index={index}
+            isActive={isActive}
+            onClick={() => handleCategoryClick(cat.id)}
+            aria-pressed={isActive}
+            className={cn(
+              "rounded-full px-6 py-2 font-body text-sm font-semibold whitespace-nowrap transition-all cursor-pointer category-shadow",
+              isActive
+                ? "bg-primary-100 text-primary-900 border-2 border-primary"
+                : "bg-card text-primary-900 border-2 border-primary-300 hover:border-primary/70"
+            )}
+          >
+            {cat.label}
+          </FilterButton>
+        );
+      })}
     </div>
   );
 }

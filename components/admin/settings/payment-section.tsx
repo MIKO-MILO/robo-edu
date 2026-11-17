@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { AdminToggleSwitch } from "@/components/ui/toggle-switch";
 import { settingsService } from "@/lib/api/services/settings.service";
 import { toast } from "@/components/admin/use-toast";
+import {
+  CHANNEL_CATALOG,
+  parseMethodsConfig,
+  type PaymentChannelEntry,
+} from "@/src/lib/payment/channels";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,14 +23,14 @@ export interface MidtransGatewayConfig {
   lastChecked?: string;
 }
 
-/** Shape of one channel inside `payment_methods_config` JSON blob. */
-export interface PaymentChannelConfig {
-  enabled: boolean;
-  label?: string;
-}
-
-/** Shape of the parsed `payment_methods_config` JSON blob. */
-export type PaymentMethodsConfig = Record<string, PaymentChannelConfig>;
+/**
+ * `payment_methods_config` is a flat `{ channel: boolean }` JSON blob — this
+ * matches exactly what the public `GET /api/payment-methods` endpoint reads,
+ * so an admin toggle here takes effect at checkout immediately. The set of
+ * toggleable channels is driven by the shared `CHANNEL_CATALOG` (single source
+ * of truth); keys not in the catalog are never written or shown.
+ */
+type PaymentMethodsConfig = Record<string, boolean>;
 
 /** Default Midtrans display — read from env at boot, never editable from the UI. */
 const DEFAULT_GATEWAY_CONFIG: MidtransGatewayConfig = {
@@ -36,14 +41,29 @@ const DEFAULT_GATEWAY_CONFIG: MidtransGatewayConfig = {
   lastChecked: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WIB",
 };
 
-/** Default channels shown when the DB has no config yet. */
-const DEFAULT_CHANNELS: PaymentMethodsConfig = {
-  bank_transfer: { enabled: true, label: "Transfer Bank (VA)" },
-  gopay: { enabled: true, label: "GoPay" },
-  qris: { enabled: true, label: "QRIS" },
-  credit_card: { enabled: false, label: "Kartu Kredit" },
-  shopeepay: { enabled: false, label: "ShopeePay" },
-};
+/**
+ * Catalog channels grouped by `group` for display, in catalog order.
+ * Computed once from the canonical catalog so new channels appear here
+ * automatically.
+ */
+const CHANNELS_BY_GROUP: Array<{ group: string; items: PaymentChannelEntry[] }> =
+  (() => {
+    const order: string[] = [];
+    const map: Record<string, PaymentChannelEntry[]> = {};
+    for (const entry of CHANNEL_CATALOG) {
+      if (!map[entry.group]) {
+        map[entry.group] = [];
+        order.push(entry.group);
+      }
+      map[entry.group].push(entry);
+    }
+    return order.map((group) => ({ group, items: map[group] }));
+  })();
+
+/** Every catalog channel defaults to active until the config says otherwise. */
+function defaultChannels(): PaymentMethodsConfig {
+  return Object.fromEntries(CHANNEL_CATALOG.map((c) => [c.channel, true]));
+}
 
 // ── Atom sub-components ──────────────────────────────────────────────────────
 
@@ -101,7 +121,7 @@ function EnvironmentModeBadge({ mode }: { mode: "sandbox" | "production" }) {
 
 export function PaymentSection() {
   const [gatewayConfig] = useState<MidtransGatewayConfig>(DEFAULT_GATEWAY_CONFIG);
-  const [channels, setChannels] = useState<PaymentMethodsConfig>(DEFAULT_CHANNELS);
+  const [channels, setChannels] = useState<PaymentMethodsConfig>(defaultChannels);
   const [membershipPrice, setMembershipPrice] = useState<string>("");
   const [membershipMonths, setMembershipMonths] = useState<string>("");
   const [orderExpiresHours, setOrderExpiresHours] = useState<string>("24");
@@ -114,25 +134,15 @@ export function PaymentSection() {
       const res = await settingsService.getSettings();
       const d = res.data;
 
-      // Parse payment_methods_config JSON blob
-      if (d.payment_methods_config) {
-        try {
-          const parsed = JSON.parse(d.payment_methods_config) as PaymentMethodsConfig;
-          // Merge with defaults so new channels always appear
-          const merged: PaymentMethodsConfig = { ...DEFAULT_CHANNELS };
-          for (const key of Object.keys(DEFAULT_CHANNELS)) {
-            if (parsed[key] !== undefined) {
-              merged[key] = {
-                ...DEFAULT_CHANNELS[key],
-                ...parsed[key],
-              };
-            }
-          }
-          setChannels(merged);
-        } catch {
-          // Ignore JSON parse errors — use defaults
-        }
+      // Parse payment_methods_config (flat { channel: boolean }). Channels not
+      // present in the config default to active. Unknown channels are dropped
+      // by parseMethodsConfig so they can never reappear here.
+      const parsed = parseMethodsConfig(d.payment_methods_config);
+      const next = defaultChannels();
+      for (const entry of CHANNEL_CATALOG) {
+        next[entry.channel] = parsed[entry.channel] ?? true;
       }
+      setChannels(next);
 
       if (d.membership_plus_price !== undefined) {
         setMembershipPrice(d.membership_plus_price);
@@ -155,11 +165,8 @@ export function PaymentSection() {
     fetchSettings();
   }, [fetchSettings]);
 
-  const handleToggleChannel = (key: string, enabled: boolean) => {
-    setChannels((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], enabled },
-    }));
+  const handleToggleChannel = (channel: string, enabled: boolean) => {
+    setChannels((prev) => ({ ...prev, [channel]: enabled }));
   };
 
   const handleSave = async () => {
@@ -172,6 +179,8 @@ export function PaymentSection() {
     setIsSaving(true);
     try {
       const body: Parameters<typeof settingsService.patchSettings>[0] = {
+        // Write the flat-boolean blob — exactly the shape the public endpoint
+        // reads, so toggles here take effect at checkout immediately.
         payment_methods_config: JSON.stringify(channels),
         order_expires_hours: hours,
       };
@@ -249,29 +258,42 @@ export function PaymentSection() {
         </div>
       </div>
 
-      {/* Payment channels toggle */}
+      {/* Payment channels toggle — per channel, grouped */}
       <div className="bg-card rounded-2xl border border-border shadow-sm divide-y divide-border">
         <div className="p-6">
           <h3 className="text-base font-bold text-foreground mb-1">Metode Pembayaran</h3>
           <p className="text-xs text-muted-foreground mb-5">
-            Aktifkan atau nonaktifkan channel pembayaran yang tersedia saat checkout.
+            Aktifkan atau nonaktifkan channel pembayaran yang tersedia saat checkout dan
+            pembelian membership. Perubahan langsung berlaku tanpa deploy ulang.
           </p>
-          <div className="space-y-0 divide-y divide-border border border-border rounded-xl overflow-hidden">
-            {Object.entries(channels).map(([key, cfg]) => (
-              <div
-                key={key}
-                className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted/30 transition-colors"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    {cfg.label ?? key}
-                  </p>
+
+          <div className="space-y-5">
+            {CHANNELS_BY_GROUP.map(({ group, items }) => (
+              <div key={group}>
+                {/* Group header */}
+                <div className="px-1 mb-2">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    {group}
+                  </span>
                 </div>
-                <div className="shrink-0">
-                  <AdminToggleSwitch
-                    checked={cfg.enabled}
-                    onChange={(checked) => handleToggleChannel(key, checked)}
-                  />
+                {/* Channels in this group */}
+                <div className="divide-y divide-border border border-border rounded-xl overflow-hidden">
+                  {items.map((entry) => (
+                    <div
+                      key={entry.channel}
+                      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground">{entry.label}</p>
+                      </div>
+                      <div className="shrink-0">
+                        <AdminToggleSwitch
+                          checked={channels[entry.channel] ?? true}
+                          onChange={(checked) => handleToggleChannel(entry.channel, checked)}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

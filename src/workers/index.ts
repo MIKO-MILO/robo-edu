@@ -50,8 +50,6 @@ import {
 import { runOrderAutoCancel } from "@/src/lib/jobs/order-auto-cancel";
 import { runPaymentReconcile } from "@/src/lib/jobs/payment-reconcile";
 
-// Import db via a worker-safe path (send-worker.ts already creates its own pool;
-// here we need direct DB access to fetch data for email templates).
 import * as schema from "@/src/db/schema";
 
 // ── DB ────────────────────────────────────────────────────────────────────────
@@ -228,7 +226,6 @@ async function handleMembershipReminder(
       ? `Membership Plus-mu berakhir 7 hari lagi ⏰`
       : `Membership Plus-mu berakhir 3 hari lagi ⚠️`;
 
-  // Minimal plain reminder — ticket 18 can replace with a richer template
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;padding:24px;">
       <h2 style="color:#111827;">Halo ${firstName}!</h2>
@@ -250,7 +247,7 @@ async function handleMembershipReminder(
   });
 }
 
-// ── BullMQ Worker ─────────────────────────────────────────────────────────────
+// ── BullMQ Email Worker ───────────────────────────────────────────────────────
 
 const worker = new Worker<EmailJobData>(
   EMAIL_QUEUE_NAME,
@@ -352,7 +349,6 @@ orderWorker.on("failed", (job, err) => {
 });
 
 // Register the repeatable order-auto-cancel job (runs every 5 min).
-// BullMQ deduplicates by jobId so calling this multiple times is safe.
 registerOrderAutoCancelJob()
   .then(() => {
     console.log(
@@ -371,17 +367,6 @@ registerOrderAutoCancelJob()
 
 // ── Cron scheduler ────────────────────────────────────────────────────────────
 
-/**
- * Schedule a function to run daily at a fixed UTC hour:minute.
- *
- * Uses only Node.js built-ins (no node-cron dependency). Calculates the
- * milliseconds until the next occurrence and uses setTimeout recursively.
- *
- * @param label   Human-readable name for log messages
- * @param utcHour Target hour in UTC (0-23)
- * @param utcMin  Target minute in UTC (0-59)
- * @param fn      Async function to run
- */
 function scheduleDailyUtc(
   label: string,
   utcHour: number,

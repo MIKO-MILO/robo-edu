@@ -64,7 +64,6 @@ function AccordionItem({
   const buttonId = useId();
 
   return (
-    /* Outline / border dibuat lebih tipis dengan opacity / ketebalan yang lebih ringan */
     <div className="bg-white rounded-xl border border-[#1C6CAE]/30 overflow-hidden transition-all duration-200 shadow-sm">
       <button
         id={buttonId}
@@ -131,10 +130,10 @@ export function ResellerFaqSection() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-8 sm:pt-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-24 items-start">
 
-          {/* Left: Header Column */}
-          <div className="lg:col-span-5 text-left lg:pt-4 mb-6 lg:mb-0">
+          {/* Left: Header Column (TETAP, jangan diubah) */}
+          <div className="lg:col-span-5 lg:-ml-12 text-left lg:pt-4 mb-6 lg:mb-0">
             {/* Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1C6CAE]/10 text-[#1C6CAE] font-medium text-xs mb-4 backdrop-blur-sm border border-[#1C6CAE]/20">
               <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
@@ -150,9 +149,9 @@ export function ResellerFaqSection() {
               lengkap mengenai pendaftaran, harga, garansi, dan dukungan di sini.
             </p>
 
-            {/* Arrow illustration - Ukuran sedikit diperbesar */}
+            {/* Arrow illustration */}
             <div className="pt-8 hidden lg:flex justify-start">
-              <div className="w-56 sm:w-64 h-auto translate-x-6">
+              <div className="w-56 sm:w-64 h-auto -translate-x-2">
                 <Image
                   src="/images/arrow2.webp"
                   alt="Panah penunjuk"
@@ -164,8 +163,8 @@ export function ResellerFaqSection() {
             </div>
           </div>
 
-          {/* Right: Accordion List */}
-          <div className="lg:col-span-7 space-y-3">
+          {/* Right: Accordion List (Digeser dikit lagi ke kanan pakai lg:-mr-16) */}
+          <div className="lg:col-span-7 lg:-mr-16 space-y-3">
             {RESELLER_FAQS.map((item, index) => (
               <AccordionItem
                 key={item.id}
