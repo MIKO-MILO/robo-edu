@@ -4,9 +4,9 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `npm run worker` starts the BullMQ worker and processes email jobs.
-- [ ] The webhook enqueues email jobs instead of sending synchronously; webhook response time no longer depends on Resend.
-- [ ] Duplicate webhook notifications don't produce duplicate emails (job idempotency).
-- [ ] `REDIS_URL` is documented in `.env.example`.
+- [x] `npm run worker` starts the BullMQ worker and processes email jobs.
+- [x] The webhook enqueues email jobs instead of sending synchronously; webhook response time no longer depends on Resend.
+- [x] Duplicate webhook notifications don't produce duplicate emails (job idempotency).
+- [x] `REDIS_URL` is documented in `.env.example`.

@@ -2,7 +2,7 @@
  * Behavior tests for ticket 06: Member price in checkout + auto-shipment + dropship.
  *
  * Tests call the real route handler (POST /api/checkout/midtrans) against the
- * real test database. Midtrans Snap is mocked so no outbound calls are made.
+ * real test database. Midtrans Core API is mocked so no outbound calls are made.
  *
  * Covered criteria:
  *   1. MEMBER's Midtrans amount uses member pricing; non-member uses normal pricing.
@@ -23,16 +23,17 @@ import { testDb } from "@/tests/helpers/db";
 import * as schema from "@/src/db/schema";
 import { FIXTURE_IDS } from "@/tests/helpers/fixtures";
 
-// ── Midtrans mock ────────────────────────────────────────────────────────────
+// ── Midtrans Core API mock ───────────────────────────────────────────────────
+// Replace chargeCoreApi so tests never make real outbound requests.
 vi.mock("@/src/lib/payments/midtrans", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/src/lib/payments/midtrans")>();
   return {
     ...original,
-    getSnapClient: () => ({
-      createTransaction: vi.fn().mockResolvedValue({
-        token: "test-snap-token",
-        redirect_url: "https://app.sandbox.midtrans.com/test",
-      }),
+    chargeCoreApi: vi.fn().mockResolvedValue({
+      instruction: { type: "va", bank_code: "BCA", va_number: "1234567890123" },
+      expiryTime: new Date(Date.now() + 3600 * 1000),
+      transactionStatus: "pending",
+      raw: { transaction_status: "pending" },
     }),
   };
 });
@@ -46,7 +47,10 @@ function asUser(userId: string) {
 function checkoutRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest("http://localhost/api/checkout/midtrans", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "idempotency-key": crypto.randomUUID(),
+    },
     body: JSON.stringify(body),
   });
 }
@@ -57,6 +61,8 @@ function baseBody(addressId = FIXTURE_IDS.address): Record<string, unknown> {
     addressId,
     shippingCost: 15000,
     providerId: FIXTURE_IDS.shippingProvider,
+    paymentMethod: "bank_transfer",
+    paymentChannel: "bca_va",
   };
 }
 
@@ -134,7 +140,7 @@ describe("POST /api/checkout/midtrans — member pricing", () => {
     asUser(FIXTURE_IDS.regularUser);
 
     const res = await checkout(checkoutRequest(baseBody()));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const json = await res.json();
     expect(json.success).toBe(true);
 
@@ -156,7 +162,7 @@ describe("POST /api/checkout/midtrans — member pricing", () => {
     asUser(FIXTURE_IDS.memberUser);
 
     const res = await checkout(checkoutRequest({ ...baseBody(), addressId: FIXTURE_IDS.memberAddress }));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const json = await res.json();
     expect(json.success).toBe(true);
 
@@ -178,7 +184,7 @@ describe("POST /api/checkout/midtrans — member pricing", () => {
     asUser(FIXTURE_IDS.memberUser);
 
     const res = await checkout(checkoutRequest({ ...baseBody(), addressId: FIXTURE_IDS.memberAddress }));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const json = await res.json();
 
     const [item] = await testDb()
@@ -197,7 +203,7 @@ describe("POST /api/checkout/midtrans — member pricing", () => {
     asUser(FIXTURE_IDS.memberUser);
 
     const res = await checkout(checkoutRequest({ ...baseBody(), addressId: FIXTURE_IDS.memberAddress }));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const json = await res.json();
 
     const items = await testDb()
@@ -219,7 +225,7 @@ describe("POST /api/checkout/midtrans — auto shipment creation", () => {
     asUser(FIXTURE_IDS.regularUser);
 
     const res = await checkout(checkoutRequest(baseBody()));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const { data } = await res.json();
 
     const shipmentRows = await testDb()
@@ -262,7 +268,7 @@ describe("POST /api/checkout/midtrans — dropship", () => {
       senderName: "Toko Robotik ABC",
       senderPhone: "081234567890",
     }));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const { data } = await res.json();
 
     const [order] = await testDb()
@@ -281,7 +287,7 @@ describe("POST /api/checkout/midtrans — dropship", () => {
     asUser(FIXTURE_IDS.regularUser);
 
     const res = await checkout(checkoutRequest(baseBody()));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const { data } = await res.json();
 
     const [order] = await testDb()

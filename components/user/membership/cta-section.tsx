@@ -1,11 +1,50 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
+type AuthState = "loading" | "guest" | "member" | "not_member";
+
 export function ResellerCtaSection() {
+  const router = useRouter();
+  const [authState, setAuthState] = useState<AuthState>("loading");
+
+  useEffect(() => {
+    fetch("/api/membership/me", { cache: "no-store" })
+      .then((res) => {
+        if (res.status === 401) {
+          setAuthState("guest");
+          return null;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (!json) return;
+        if (json.success) {
+          setAuthState(
+            json.data.membership_status === "MEMBER" ? "member" : "not_member",
+          );
+        } else {
+          setAuthState("guest");
+        }
+      })
+      .catch(() => setAuthState("guest"));
+  }, []);
+
+  const ctaLabel =
+    authState === "member"
+      ? "PERPANJANG MEMBERSHIP SEKARANG"
+      : "BELI MEMBERSHIP PLUS SEKARANG";
+
+  function handleCtaClick() {
+    if (authState === "guest") {
+      router.push("/login?next=/membership");
+      return;
+    }
+    router.push("/membership/confirm");
+  }
   return (
     <section className="relative w-full bg-transparent">
       {/* Container Kotak Full-Width tanpa padding luar */}
@@ -39,15 +78,14 @@ export function ResellerCtaSection() {
                 Cetak generasi inventor masa depan dengan penyediaan produk robotika berkualitas tinggi, dukungan kurikulum STEM, dan keuntungan menarik untuk mitra resmi.
               </p>
 
-              <div className="pt-2">
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#1C6CAE] hover:bg-[#16588c] text-white font-heading font-bold text-xs sm:text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                >
-                  <span>AJUKAN JADI RESELLER SEKARANG</span>
-                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                </Link>
-              </div>
+              <button
+                onClick={handleCtaClick}
+                disabled={authState === "loading"}
+                className="mt-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white text-[#E8A613] hover:bg-amber-50 font-heading font-bold text-[11px] sm:text-xs transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 cursor-pointer shrink-0 disabled:opacity-70 disabled:cursor-wait"
+              >
+                <span>{authState === "loading" ? "Memuat..." : ctaLabel}</span>
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+              </button>
             </div>
 
             {/* Area Kanan: Gambar Maskot / Robot (Ukuran Besar) */}

@@ -16,6 +16,7 @@
     "db:seed:admin": "tsx src/db/seed/admin.ts",
     "db:seed:shipping": "tsx src/db/seed/shipping-providers.ts",
     "db:seed:settings": "tsx src/db/seed/settings.ts",
+    "db:seed:reviews": "tsx src/db/seed/reviews.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "worker": "tsx src/workers/index.ts"
@@ -30,7 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
+    "drizzle-orm": "^0.44.2",
     "ioredis": "^6.0.0",
     "lucide-react": "^1.33.0",
     "midtrans-client": "^1.4.3",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from"next/image";
 import { Bot, Sparkles, Smile, Cpu } from"lucide-react";
@@ -27,13 +27,13 @@ export default function MaskotProduct() {
 
  {/* Right Column: Mascot Details */}
  <div className="lg:col-span-7 space-y-6">
- <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFF6A0] text-foreground font-bold text-xs sm:text-sm">
- <Bot className="w-4 h-4 text-[#18598D]" />
+ <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-yellow text-foreground font-bold text-xs sm:text-sm">
+ <Bot className="w-4 h-4 text-[var(--color-primary-700)]" />
  <span>Teman Setia Belajar Coding</span>
  </div>
 
  <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
- Berkenalan dengan <span className="text-[#FFF6A0]">RoboBot</span>, Maskot Pintar RoboEdu!
+ Berkenalan dengan <span className="text-accent-yellow">RoboBot</span>, Maskot Pintar RoboEdu!
  </h2>
 
  <p className="font-body text-sm sm:text-base text-white/85 leading-relaxed">
@@ -43,7 +43,7 @@ export default function MaskotProduct() {
  {/* Feature Cards */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
  <div className="bg-white/10 p-4 rounded-2xl border border-white/15 backdrop-blur-sm">
- <div className="w-9 h-9 rounded-xl bg-[#FFF6A0] text-foreground flex items-center justify-center mb-3">
+ <div className="w-9 h-9 rounded-xl bg-accent-yellow text-foreground flex items-center justify-center mb-3">
  <Smile className="w-5 h-5" />
  </div>
  <h4 className="font-bold text-base text-white">Ekspresi Emosi Lucu</h4>
@@ -51,7 +51,7 @@ export default function MaskotProduct() {
  </div>
 
  <div className="bg-white/10 p-4 rounded-2xl border border-white/15 backdrop-blur-sm">
- <div className="w-9 h-9 rounded-xl bg-[#FFF6A0] text-foreground flex items-center justify-center mb-3">
+ <div className="w-9 h-9 rounded-xl bg-accent-yellow text-foreground flex items-center justify-center mb-3">
  <Cpu className="w-5 h-5" />
  </div>
  <h4 className="font-bold text-base text-white">Suara Bahasa Indonesia</h4>

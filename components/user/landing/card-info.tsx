@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from"next/image";
 import Link from"next/link";
@@ -40,7 +40,7 @@ export default function ICardsInfo({
  features = defaultFeatures,
 }: CardsInfoProps) {
  return (
- <section className="relative bg-[#2781CD] mt-12 sm:mt-6 lg:mt-8 pt-4 pb-8 sm:pb-8">
+ <section className="relative bg-landing-blue mt-12 sm:mt-6 lg:mt-8 pt-4 pb-8 sm:pb-8">
  
  {/* Cloud Bumps Divider */}
  <div className="absolute top-0 left-0 right-0 w-full -translate-y-[99%] overflow-visible leading-none z-30 pointer-events-none">
@@ -59,7 +59,7 @@ export default function ICardsInfo({
  C 240 105, 305 105, 325 160 
  C 355 55, 480 55, 500 140 
  L 500 280 Z"
- fill="#2781CD"
+ fill="var(--color-landing-blue)"
  />
  <g stroke="rgba(255, 255, 255, 0.85)" strokeWidth="2" strokeLinecap="round" fill="none">
  {/* Lengkungan 1: Kiri */}
@@ -89,7 +89,7 @@ export default function ICardsInfo({
  >
  <path
  d="M 0 280 L 0 150 C 15 20, 185 20, 215 160 C 235 90, 345 90, 365 165 C 380 135, 410 135, 425 170 C 455 100, 560 100, 580 168 C 620 5, 930 5, 960 160 C 995 15, 1260 15, 1285 170 C 1315 80, 1420 70, 1440 140 L 1440 280 Z"
- fill="#2781CD"
+ fill="var(--color-landing-blue)"
  />
  <g stroke="rgba(255, 255, 255, 0.85)" strokeWidth="2" strokeLinecap="round" fill="none">
  <g transform="translate(20, 78) scale(1.2)">
@@ -170,7 +170,7 @@ export default function ICardsInfo({
 
  {/* RIGHT COLUMN */}
  <div className="lg:col-span-6 flex flex-col items-center lg:items-start space-y-3 sm:space-y-4 lg:space-y-4 xl:space-y-6 text-center lg:text-left">
- <span className="inline-flex items-center px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#FAEE7C] text-foreground text-[11px] xs:text-xs sm:text-sm font-extrabold tracking-wide uppercase">
+ <span className="inline-flex items-center px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-accent-yellow text-foreground text-[11px] xs:text-xs sm:text-sm font-extrabold tracking-wide uppercase">
  {badgeCategory}
  </span>
 
@@ -184,7 +184,7 @@ export default function ICardsInfo({
 
  <div className="absolute -bottom-1 sm:-bottom-2 left-1/2 -translate-x-1/2 lg:translate-x-0 lg:left-0 w-full max-w-[140px] xs:max-w-[180px] sm:max-w-[220px] xl:max-w-[260px] pointer-events-none z-0 translate-y-2 sm:translate-y-3">
  <svg width="400" height="100" viewBox="0 0 400 100" className="w-full h-auto">
- <path d="M 30,50 Q 200,25 370,40" stroke="#F2E583" strokeWidth="7" fill="none" strokeLinecap="round" />
+ <path d="M 30,50 Q 200,25 370,40" stroke="var(--color-accent-yellow)" strokeWidth="7" fill="none" strokeLinecap="round" />
  </svg>
  </div>
  </div>

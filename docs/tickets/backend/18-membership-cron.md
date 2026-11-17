@@ -4,8 +4,8 @@
 
 **Blocked by:** 04, 17, 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The expire cron flips expired MEMBERS to `NOT_MEMBER` (unit-tested with a past-expiry user).
-- [ ] The reminder cron enqueues h7 and h3 emails exactly once each (guarded by the `sent_at` stamps).
-- [ ] Cron jobs run on the configured schedule from the worker process.
+- [x] The expire cron flips expired MEMBERS to `NOT_MEMBER` (unit-tested with a past-expiry user).
+- [x] The reminder cron enqueues h7 and h3 emails exactly once each (guarded by the `sent_at` stamps).
+- [x] Cron jobs run on the configured schedule from the worker process.

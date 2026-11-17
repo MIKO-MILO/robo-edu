@@ -4,15 +4,16 @@
 
 **Blocked by:** 01, 07
 
-**Status:** in-progress (agent)
+**Status:** done
 
 - [x] GET returns all settings as a flat object.
 - [x] PATCH updates only the sent keys and returns the updated state.
-- [ ] Changing `membership_plus_price` changes the price charged by the membership checkout, verified end-to-end.
+- [x] Changing `membership_plus_price` changes the price charged by the membership checkout, verified end-to-end.
 
-> Note: criterion 3 is verified at the shared settings read-seam
-> (`src/lib/services/settings-service.ts`): PATCH updates the `settings` row
-> and a subsequent `getSetting("membership_plus_price")` returns the new value
-> immediately (no redeploy). The literal end-to-end through
-> `POST /api/checkout/membership` completes when ticket 04 lands the checkout,
-> which reads the price from this same `getSetting` (never hardcoded).
+> Note: criterion 3 verified end-to-end. `POST /api/checkout/membership` reads
+> the price via `getSetting("membership_plus_price")`
+> (`src/lib/services/settings-service.ts`), and
+> `tests/membership/purchase-flow.test.ts` ("price comes from settings —
+> changing membership_plus_price changes what is charged") asserts that
+> PATCH-ing the setting to 299000 makes the checkout charge 299000 with no
+> redeploy.

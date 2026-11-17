@@ -108,7 +108,7 @@ export function membershipReceiptEmailHtml(
       "Nikmati harga member eksklusif di semua produk robotika dan edukasi RoboEdu. " +
         "Cek status membership-mu kapan saja di halaman profil.",
     )}
-    ${emailButton("Lihat Status Membership", `${data.appUrl}/profile/reseller`)}
+    ${emailButton("Lihat Status Membership", `${data.appUrl}/profile/membership`)}
   `;
 
   return baseTemplate(

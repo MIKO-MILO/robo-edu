@@ -351,9 +351,6 @@ function InstructionCard({ children }: { children: React.ReactNode }) {
         <span className="font-heading font-bold text-sm text-foreground uppercase tracking-wide">
           Instruksi Pembayaran
         </span>
-        <span className="ml-auto text-xs font-body text-muted-foreground">
-          (Mock — Core API belum aktif)
-        </span>
       </div>
       <div className="p-5 flex flex-col gap-5">{children}</div>
     </div>
@@ -579,12 +576,18 @@ function QRLayout({
       {/* QR Image */}
       <div className="flex flex-col items-center gap-4">
         <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl border-2 border-foreground overflow-hidden neo-shadow flex items-center justify-center bg-background">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={instruction.qr_string}
-            alt={`QR Code ${channelLabel}`}
-            className="w-full h-full object-contain p-2"
-          />
+          {instruction.qr_string ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={instruction.qr_string}
+              alt={`QR Code ${channelLabel}`}
+              className="w-full h-full object-contain p-2"
+            />
+          ) : (
+            <span className="text-xs text-muted-foreground font-body text-center px-4">
+              QR Code belum tersedia
+            </span>
+          )}
         </div>
         <p className="font-body text-xs text-muted-foreground text-center">
           Buka aplikasi {channelLabel} dan scan kode QR di atas
@@ -989,12 +992,13 @@ export function PaymentInstructionPage({
 
   // ── Fetch payment info ──────────────────────────────────────────────────
   const fetchPaymentInfo = useCallback(async () => {
-    // For membership context, the payment-info endpoint will differ in the future.
-    // For now, both use the same orders endpoint (membership purchase shares the route).
+    // Order context polls the Core API payment endpoint (returns real
+    // payment_instruction from Midtrans). Membership still uses payment-info
+    // until its Core API migration is complete.
     const url =
       context === "membership"
         ? `/api/membership/payment-info/${transactionId}`
-        : `/api/orders/${transactionId}/payment-info`;
+        : `/api/orders/${transactionId}/payment`;
 
     try {
       const res = await fetch(url);
@@ -1067,7 +1071,13 @@ export function PaymentInstructionPage({
         { method: "POST" },
       );
 
-      if (res.status === 404 || res.status === 405) {
+      // Membership check endpoint doesn't exist yet — 404/405 means the
+      // feature isn't wired. For order context the endpoint exists, so a
+      // 404 means the order wasn't found (handled as a regular error below).
+      if (
+        context === "membership" &&
+        (res.status === 404 || res.status === 405)
+      ) {
         setToast("Fitur cek status belum tersedia.");
         return;
       }
@@ -1078,6 +1088,8 @@ export function PaymentInstructionPage({
         return;
       }
 
+      // Re-fetch payment info to update the UI without a page reload.
+      // The check endpoint syncs the DB, then this GET returns the fresh state.
       await fetchPaymentInfo();
       setToast("Status pembayaran diperbarui.");
     } catch {
@@ -1093,30 +1105,44 @@ export function PaymentInstructionPage({
       setIsRetrying(true);
       setShowMethodModal(false);
       try {
-        const res = await fetch(
-          `/api/orders/${transactionId}/payment/retry`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Idempotency-Key": retryIdempotencyKey.current,
-            },
-            body: JSON.stringify({
-              paymentMethod: selected.method.method,
-              paymentChannel: selected.method.channel,
-              ovoPhone:
-                selected.method.channel === "ovo"
-                  ? selected.ovoPhone
-                  : undefined,
-            }),
+        // Route differs by context:
+        //   order      → POST /api/orders/:id/payment/retry
+        //   membership → POST /api/membership-purchases/:id/payment/retry
+        const retryUrl =
+          context === "membership"
+            ? `/api/membership-purchases/${transactionId}/payment/retry`
+            : `/api/orders/${transactionId}/payment/retry`;
+
+        const res = await fetch(retryUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": retryIdempotencyKey.current,
           },
-        );
+          body: JSON.stringify({
+            paymentMethod: selected.method.method,
+            paymentChannel: selected.method.channel,
+            // Order retry uses "ovoPhone"; membership retry uses "payerPhoneNumber"
+            ovoPhone:
+              selected.method.channel === "ovo" ? selected.ovoPhone : undefined,
+            payerPhoneNumber:
+              selected.method.channel === "ovo" ? selected.ovoPhone : undefined,
+          }),
+        });
 
         const json = await res.json() as {
           success: boolean;
           code?: string;
           message?: string;
-          data?: { payment: PaymentInfo };
+          // Order retry response
+          data?: {
+            payment?: PaymentInfo;
+            // Membership retry response (flat under data)
+            payment_instruction?: Record<string, unknown>;
+            expiry_time?: string | null;
+            status?: string;
+            amount?: number;
+          };
         };
 
         if (res.status === 409 && json.code === "ORDER_ALREADY_PAID") {
@@ -1134,10 +1160,24 @@ export function PaymentInstructionPage({
           throw new Error(json.message ?? "Gagal melakukan retry.");
         }
 
-        // Success — update payment info and show success toast
-        if (json.data?.payment) {
+        // ── Normalise retry response into PaymentInfo shape ────────────────
+        if (context === "membership" && json.data) {
+          // Membership retry returns flat data (not nested under data.payment)
+          const d = json.data;
+          setPaymentInfo((prev) => ({
+            status: (d.status ?? "PENDING") as PaymentInfo["status"],
+            payment_type: selected.method.method,
+            payment_channel: selected.method.channel,
+            amount: d.amount ?? prev?.amount ?? 0,
+            expiry_time: d.expiry_time ?? null,
+            transaction_time: new Date().toISOString(),
+            payment_instruction:
+              d.payment_instruction ?? null,
+          }));
+        } else if (json.data?.payment) {
           setPaymentInfo(json.data.payment);
         }
+
         const newAttempts = retryAttempts + 1;
         setRetryAttempts(newAttempts);
         if (newAttempts >= 5) setMaxAttemptsReached(true);
@@ -1157,7 +1197,7 @@ export function PaymentInstructionPage({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [transactionId, retryAttempts, router, successRedirect],
+    [context, transactionId, retryAttempts, router, successRedirect],
   );
 
   // ─── Resolve payment_instruction ────────────────────────────────────────

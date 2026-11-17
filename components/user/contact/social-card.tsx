@@ -1,61 +1,94 @@
+"use client";
+
 import React from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, MessageCircle, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SocialMediaContact } from "@/types";
 
 export interface SocialCardProps {
   contact: SocialMediaContact;
-  icon: React.ComponentType<{ className?: string }>;
   className?: string;
 }
 
-/**
- * Atom — Kartu Media Sosial / Kontak RoboEdu (Centering & Compact Handle Style)
- * Layout:
- * 1. Atas (Center): Box Ikon Putih
- * 2. Tengah (Center): Handle / Nomor HP / Username (ukuran font lebih compact & terpusat) + Deskripsi Singkat
- * 3. Bawah (Center): Tombol Aksi Putih
- */
-export function SocialCard({
-  contact,
-  icon: Icon,
-  className,
-}: SocialCardProps) {
+const SHADOW_COLOR_MAP: Record<string, string> = {
+  "bg-accent-green": "shadow-[0_6px_0_0_var(--color-accent-green-shadow)]",
+  "bg-accent-soft-blue": "shadow-[0_6px_0_0_var(--color-accent-soft-blue-shadow)]",
+  "bg-accent-pink": "shadow-[0_6px_0_0_var(--color-accent-pink-shadow)]",
+  "bg-accent-yellow": "shadow-[0_6px_0_0_var(--color-accent-yellow-shadow)]",
+};
+
+// SVG kustom untuk Instagram & YouTube agar aman dan tidak bergantung pada versi Lucide
+const InstagramIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
+
+const YoutubeIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.56 49.56 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+    <path d="m10 15 5-3-5-3z" />
+  </svg>
+);
+
+function PlatformIcon({ iconName, className }: { iconName: string; className?: string }) {
+  switch (iconName) {
+    case "message-circle":
+      return <MessageCircle className={className} />;
+    case "mail":
+      return <Mail className={className} />;
+    case "instagram":
+      return <InstagramIcon className={className} />;
+    case "youtube":
+      return <YoutubeIcon className={className} />;
+    default:
+      return <MessageCircle className={className} />;
+  }
+}
+
+export function SocialCard({ contact, className }: SocialCardProps) {
+  const bottomShadowClass =
+    SHADOW_COLOR_MAP[contact.bgColorClass] ?? "shadow-[0_6px_0_0_rgba(61,41,0,0.12)]";
+
   return (
     <article
       className={cn(
         contact.bgColorClass,
-        "border-2 border-foreground rounded-[28px] p-5 sm:p-6",
-        "neo-shadow neo-shadow-hover",
-        "flex flex-col items-center text-center justify-between gap-4 transition-all duration-200 h-full overflow-hidden",
+        bottomShadowClass,
+        "rounded-3xl p-5 border-0",
+        "flex flex-col items-center text-center gap-4",
+        "transition-transform hover:-translate-y-1 duration-200",
         className
       )}
     >
-      {/* ── 1. Atas: Box Ikon Putih (Center) ── */}
-      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[18px] bg-card border-2 border-foreground flex items-center justify-center neo-shadow-icon shrink-0 mx-auto">
-        <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-foreground" />
+      <div className="w-12 h-12 rounded-2xl bg-card shadow-xs flex items-center justify-center shrink-0">
+        <PlatformIcon iconName={contact.iconName} className="w-6 h-6 text-foreground" />
       </div>
 
-      {/* ── 2. Tengah: Handle / Nomor HP / Username & Deskripsi (Center & Compact) ── */}
-      <div className="flex flex-col items-center text-center gap-1.5 w-full my-auto">
-        <h3 className="font-heading font-bold text-base sm:text-base text-foreground text-center break-all w-full leading-tight">
+      <div className="flex flex-col items-center gap-1 flex-1">
+        <h3 className="font-heading font-bold text-sm text-foreground break-all leading-tight">
           {contact.handle}
         </h3>
-        <p className="font-body text-xs sm:text-sm text-foreground/90 text-center leading-snug w-full">
+        <p className="font-body text-xs text-foreground/80 leading-snug">
           {contact.description}
         </p>
       </div>
 
-      {/* ── 3. Bawah: Tombol Link Putih (Center) ── */}
-      <a
-        href={contact.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 font-body font-bold text-xs sm:text-sm text-foreground bg-card border-2 border-foreground neo-shadow-icon hover:neo-shadow px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all active:scale-95 mx-auto mt-auto"
+      <Button
+        asChild
+        variant="card"
+        size="sm"
+        neo={false}
+        className="rounded-full px-4 py-2 font-body font-bold text-xs bg-card text-foreground hover:bg-muted shadow-xs mt-auto"
       >
-        <span>{contact.actionText}</span>
-        <ExternalLink className="w-3.5 h-3.5 stroke-[2.5px]" aria-hidden="true" />
-      </a>
+        <a href={contact.href} target="_blank" rel="noopener noreferrer">
+          {contact.actionText}
+          <ExternalLink className="w-3 h-3 stroke-[2.5px] ml-1.5" aria-hidden />
+        </a>
+      </Button>
     </article>
   );
 }

@@ -79,6 +79,74 @@ export interface SalesReportPoint {
   total_revenue: Money;
 }
 
+/** Response summary — GET /admin/reports/sales (extended with growth_percentage) */
+export interface SalesReportSummary {
+  total_revenue: Money;
+  transaction_count: number;
+  growth_percentage: number | null;
+}
+
+/** Full response data — GET /admin/reports/sales */
+export interface SalesReportData {
+  summary: SalesReportSummary;
+  by_day: Array<{ date: string; revenue: Money; transaction_count: number }>;
+  by_week: Array<{ week: string; revenue: Money; transaction_count: number }>;
+  by_month: Array<{ month: string; revenue: Money; transaction_count: number }>;
+}
+
+/** Response item — GET /admin/reports/payment-methods */
+export interface PaymentMethodReportItem {
+  payment_type: string;
+  payment_channel: string | null;
+  transaction_count: number;
+  total_revenue: Money;
+  percentage: number;
+}
+
+/** Response data — GET /admin/reports/payment-methods */
+export interface PaymentMethodReportData {
+  methods: PaymentMethodReportItem[];
+  summary: {
+    total_transactions: number;
+    total_revenue: Money;
+  };
+}
+
+/** Response item — GET /admin/reports/order-status */
+export interface OrderStatusReportItem {
+  status: string;
+  count: number;
+  total_amount: Money;
+  percentage: number;
+}
+
+/** Response data — GET /admin/reports/order-status */
+export interface OrderStatusReportData {
+  statuses: OrderStatusReportItem[];
+  summary: {
+    total_orders: number;
+    total_amount: Money;
+  };
+}
+
+/** Response item — GET /admin/reports/category-sales */
+export interface CategorySalesReportDataItem {
+  category_id: UUID;
+  category_name: string;
+  total_sold: number;
+  total_revenue: Money;
+  percentage: number;
+}
+
+/** Response data — GET /admin/reports/category-sales */
+export interface CategorySalesReportData {
+  categories: CategorySalesReportDataItem[];
+  summary: {
+    total_sold: number;
+    total_revenue: Money;
+  };
+}
+
 /** Response item — Category Sales Breakdown */
 export interface CategorySalesReportItem {
   category_id: UUID | string;
@@ -105,7 +173,7 @@ export interface TopProductReportItem {
 
 /** Response item — Payment Method Distribution */
 export interface PaymentMethodBreakdownItem {
-  method_key: "QRIS" | "BANK_TRANSFER" | "E_WALLET" | "CREDIT_CARD";
+  method_key: string;
   name: string;
   total_transactions: number;
   total_revenue: Money;
@@ -123,7 +191,15 @@ export interface PeakHourDataPoint {
 
 /** Response item — Full Order Status Breakdown */
 export interface OrderStatusBreakdownItem {
-  status_key: "COMPLETED" | "PROCESSING" | "PENDING" | "CANCELLED" | "REFUNDED";
+  status_key:
+    | "PENDING"
+    | "PAID"
+    | "PROCESSING"
+    | "SHIPPED"
+    | "DELIVERED"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "REFUNDED";
   label: string;
   count: number;
   total_amount: Money;

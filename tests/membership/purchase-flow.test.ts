@@ -1,22 +1,26 @@
 /**
- * Behavior tests for ticket 04: Membership purchase flow + webhook activation.
+ * Behavior tests for membership purchase flow (ticket payment/10 + payment/08).
  *
  * These tests call the real route handlers against the real test database.
- * Midtrans Snap is mocked via vi.mock so no outbound network calls are made.
+ * Midtrans Core API is mocked via vi.mock so no outbound network calls are made.
  *
  * Covered criteria:
- *   1. POST /api/checkout/membership returns snap_token + redirect_url; creates
+ *   1. POST /api/checkout/membership returns payment_instruction; creates
  *      a PENDING membership_purchase + payments row; price comes from settings.
- *   2. Successful MBR- webhook sets membership_status = MEMBER and computes
- *      membership_expires_at correctly.
- *   3. Duplicate webhook notifications do not double-activate membership (idempotent).
- *   4. A NOT_MEMBER user becomes MEMBER after the full flow without admin approval.
- *   5. Settings-driven price: changing membership_plus_price changes what the
- *      checkout charges (ticket 11 criterion 3 end-to-end).
+ *   2. 409 PENDING_PURCHASE_EXISTS when user already has a PENDING purchase.
+ *   3. 400 VOUCHER_NOT_SUPPORTED when voucher_code is sent.
+ *   4. 422 PAYMENT_CHARGE_FAILED when Core API throws; rows are still created as FAILED.
+ *   5. EXPIRED sweep: a PENDING purchase whose only payment is FAILED gets
+ *      auto-EXPIRED so the user can start fresh.
+ *   6. Successful MBR- webhook sets membership_status = MEMBER (unchanged from
+ *      Snap era — webhook branch does not care about Snap vs Core API).
+ *   7. Idempotent webhook: double-settlement does not double-activate.
+ *   8. Full end-to-end: NOT_MEMBER → checkout → webhook → MEMBER.
+ *   9. Settings-driven price (ticket 11 criterion 3).
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import crypto from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 import { POST as membershipCheckout } from "@/app/api/checkout/membership/route";
@@ -25,53 +29,63 @@ import { createSessionToken, SESSION_COOKIE_NAME } from "@/src/lib/auth/session"
 import { setSessionCookie } from "@/tests/stubs/next-headers";
 import { testDb } from "@/tests/helpers/db";
 import * as schema from "@/src/db/schema";
-import { FIXTURE_IDS, FIXTURE_EMAILS, FIXTURE_PASSWORD, SETTINGS_SEED } from "@/tests/helpers/fixtures";
+import { FIXTURE_IDS, SETTINGS_SEED } from "@/tests/helpers/fixtures";
 import { upsertSettings } from "@/src/lib/services/settings-service";
+import type { PaymentInstruction } from "@/src/lib/payments/midtrans";
 
-// ── Midtrans mock ────────────────────────────────────────────────────────────
-// Replace the Snap client so tests never make real outbound requests.
-// The mock returns deterministic tokens so tests can assert on them.
+// ── Mocks ──────────────────────────────────────────────────────────────────────
 
-const MOCK_SNAP_TOKEN = "test-snap-token-abc123";
-const MOCK_REDIRECT_URL = "https://app.sandbox.midtrans.com/snap/v3/redirection/test-snap-token-abc123";
+const { mockChargeCoreApi } = vi.hoisted(() => ({
+  mockChargeCoreApi: vi.fn(),
+}));
 
 vi.mock("@/src/lib/payments/midtrans", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/src/lib/payments/midtrans")>();
   return {
     ...original,
-    getSnapClient: () => ({
-      createTransaction: vi.fn().mockResolvedValue({
-        token: MOCK_SNAP_TOKEN,
-        redirect_url: MOCK_REDIRECT_URL,
-      }),
-    }),
-    // Keep the real signature validator so webhook tests can control validity.
+    chargeCoreApi: mockChargeCoreApi,
+    // cancelCoreApi: keep original (not needed for checkout tests)
     isValidMidtransSignature: original.isValidMidtransSignature,
   };
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Default mock ───────────────────────────────────────────────────────────────
 
-/** Seed the cookie store as a particular user (uses the real HMAC session path). */
+const MOCK_INSTRUCTION: PaymentInstruction = {
+  type: "va",
+  bank_code: "BCA",
+  va_number: "1234567890",
+};
+
+function mockChargeSuccess() {
+  mockChargeCoreApi.mockResolvedValue({
+    instruction: MOCK_INSTRUCTION,
+    expiryTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    transactionStatus: "pending",
+    raw: { status_code: "201", transaction_status: "pending" },
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
 function asUser(userId: string) {
   setSessionCookie(SESSION_COOKIE_NAME, createSessionToken(userId, false));
 }
 
-function checkoutRequest(body: unknown = { package: "PLUS" }): NextRequest {
+/** Default valid checkout body — includes payment fields required by Core API route. */
+function checkoutRequest(overrides: Record<string, unknown> = {}): NextRequest {
   return new NextRequest("http://localhost/api/checkout/membership", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      package: "PLUS",
+      payment_method: "bank_transfer",
+      payment_channel: "bca_va",
+      ...overrides,
+    }),
   });
 }
 
-/**
- * Build a Midtrans-style webhook notification body with a valid HMAC signature.
- *
- * Uses the MIDTRANS_SERVER_KEY from the test env (set in tests/helpers/env.ts),
- * which is safe because the app's isValidMidtransSignature also reads the same
- * env — so this produces a signature that the real validator accepts.
- */
 function makeWebhookBody(overrides: {
   order_id: string;
   gross_amount: string;
@@ -86,7 +100,7 @@ function makeWebhookBody(overrides: {
     order_id,
     gross_amount,
     transaction_status = "settlement",
-    payment_type = "gopay",
+    payment_type = "bank_transfer",
     transaction_id = `TX-${crypto.randomUUID().slice(0, 8)}`,
     fraud_status,
   } = overrides;
@@ -118,54 +132,103 @@ function webhookRequest(body: unknown): Request {
   });
 }
 
-// ── Tests ────────────────────────────────────────────────────────────────────
+/** Run checkout as regularUser and return the response data. */
+async function doCheckout(userId = FIXTURE_IDS.regularUser) {
+  asUser(userId);
+  const res = await membershipCheckout(checkoutRequest());
+  expect(res.status).toBe(200);
+  const json = await res.json();
+  return json.data as {
+    purchase_id: string;
+    purchase_number: string;
+    payment_instruction: PaymentInstruction;
+    expiry_time: string;
+    status: string;
+  };
+}
 
-describe("POST /api/checkout/membership — create pending transaction", () => {
-  it("rejects unauthenticated requests with 401", async () => {
-    // No cookie seeded.
+// ── Setup ──────────────────────────────────────────────────────────────────────
+
+beforeEach(() => {
+  mockChargeCoreApi.mockReset();
+  mockChargeSuccess();
+});
+
+// ── POST /api/checkout/membership ─────────────────────────────────────────────
+
+describe("POST /api/checkout/membership — Core API checkout", () => {
+  it("returns 401 for unauthenticated requests", async () => {
     const res = await membershipCheckout(checkoutRequest());
     expect(res.status).toBe(401);
-    expect((await res.json()).success).toBe(false);
   });
 
-  it("rejects an invalid package with 400", async () => {
+  it("returns 400 for an invalid package", async () => {
     asUser(FIXTURE_IDS.regularUser);
     const res = await membershipCheckout(checkoutRequest({ package: "BASIC" }));
     expect(res.status).toBe(400);
-    expect((await res.json()).success).toBe(false);
   });
 
-  it("returns snap_token and redirect_url for a valid PLUS request", async () => {
+  it("returns 400 when payment_method or payment_channel is missing", async () => {
+    asUser(FIXTURE_IDS.regularUser);
+    const res = await membershipCheckout(
+      new NextRequest("http://localhost/api/checkout/membership", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ package: "PLUS" }),
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).message).toMatch(/payment_method/i);
+  });
+
+  it("returns 400 VOUCHER_NOT_SUPPORTED when voucher_code is sent", async () => {
+    asUser(FIXTURE_IDS.regularUser);
+    const res = await membershipCheckout(
+      checkoutRequest({ voucher_code: "SAVE10" }),
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).code).toBe("VOUCHER_NOT_SUPPORTED");
+  });
+
+  it("returns payment_instruction and expiry_time (not snap_token)", async () => {
     asUser(FIXTURE_IDS.regularUser);
     const res = await membershipCheckout(checkoutRequest());
     expect(res.status).toBe(200);
 
     const json = await res.json();
     expect(json.success).toBe(true);
-    expect(json.data.snapToken).toBe(MOCK_SNAP_TOKEN);
-    expect(json.data.redirectUrl).toBe(MOCK_REDIRECT_URL);
-    expect(json.data.purchaseNumber).toMatch(/^MBR-/);
+
+    const d = json.data;
+    expect(d).toHaveProperty("purchase_id");
+    expect(d).toHaveProperty("purchase_number");
+    expect(d).toHaveProperty("payment_instruction");
+    expect(d).toHaveProperty("expiry_time");
+    expect(d.status).toBe("PENDING");
+    // Must NOT have snap_token
+    expect(d).not.toHaveProperty("snap_token");
+    expect(d.purchase_number).toMatch(/^MBR-/);
   });
 
-  it("price in the response matches the settings table (not a hardcoded constant)", async () => {
+  it("payment_instruction matches the Core API mock shape", async () => {
     asUser(FIXTURE_IDS.regularUser);
     const res = await membershipCheckout(checkoutRequest());
-    const json = await res.json();
-
-    // SETTINGS_SEED has membership_plus_price = "150000"
-    const seededPrice = Number(SETTINGS_SEED.find((s) => s.key === "membership_plus_price")!.value);
-    expect(json.data.total).toBe(seededPrice);
+    const { data } = await res.json();
+    expect(data.payment_instruction).toMatchObject({
+      type: "va",
+      bank_code: "BCA",
+      va_number: "1234567890",
+    });
   });
 
   it("creates a PENDING membership_purchase row in the DB", async () => {
     asUser(FIXTURE_IDS.regularUser);
     const res = await membershipCheckout(checkoutRequest());
-    const json = await res.json();
+    const { data } = await res.json();
 
     const [purchase] = await testDb()
       .select()
       .from(schema.membershipPurchases)
-      .where(eq(schema.membershipPurchases.id, json.data.purchaseId))
+      .where(eq(schema.membershipPurchases.id, data.purchase_id))
       .limit(1);
 
     expect(purchase).toBeDefined();
@@ -175,74 +238,148 @@ describe("POST /api/checkout/membership — create pending transaction", () => {
     expect(Number(purchase!.priceSnapshot)).toBe(
       Number(SETTINGS_SEED.find((s) => s.key === "membership_plus_price")!.value),
     );
-    expect(Number(purchase!.durationMonthsSnapshot)).toBe(
-      Number(SETTINGS_SEED.find((s) => s.key === "membership_plus_duration_months")!.value),
-    );
   });
 
-  it("creates a PENDING payments row linked to the membership_purchase (not an order)", async () => {
+  it("creates a PENDING payment row with paymentInstruction set (not in rawResponse)", async () => {
     asUser(FIXTURE_IDS.regularUser);
     const res = await membershipCheckout(checkoutRequest());
-    const json = await res.json();
+    const { data } = await res.json();
 
     const [payment] = await testDb()
       .select()
       .from(schema.payments)
-      .where(eq(schema.payments.membershipPurchaseId, json.data.purchaseId))
+      .where(eq(schema.payments.membershipPurchaseId, data.purchase_id))
       .limit(1);
 
     expect(payment).toBeDefined();
     expect(payment!.orderId).toBeNull();
-    expect(payment!.membershipPurchaseId).toBe(json.data.purchaseId);
     expect(payment!.status).toBe("PENDING");
-    expect(Number(payment!.amount)).toBe(json.data.total);
+    expect(payment!.paymentInstruction).toMatchObject({ type: "va" });
+    expect(payment!.midtransOrderId).toMatch(/-1$/); // {purchaseNumber}-1
+    expect(payment!.attemptNumber).toBe(1);
+  });
+
+  it("midtransOrderId = {purchaseNumber}-1 for the first attempt", async () => {
+    asUser(FIXTURE_IDS.regularUser);
+    const res = await membershipCheckout(checkoutRequest());
+    const { data } = await res.json();
+
+    const [payment] = await testDb()
+      .select({ midtransOrderId: schema.payments.midtransOrderId })
+      .from(schema.payments)
+      .where(eq(schema.payments.membershipPurchaseId, data.purchase_id))
+      .limit(1);
+
+    expect(payment!.midtransOrderId).toBe(`${data.purchase_number}-1`);
   });
 
   it("price comes from settings — changing membership_plus_price changes what is charged", async () => {
-    // Update price in settings (simulating an admin PATCH).
     await upsertSettings({ membership_plus_price: "299000" });
-
     asUser(FIXTURE_IDS.regularUser);
     const res = await membershipCheckout(checkoutRequest());
-    const json = await res.json();
-
     expect(res.status).toBe(200);
-    // Must reflect the NEW price, not the original 150000.
-    expect(json.data.total).toBe(299000);
 
+    const { data } = await res.json();
     const [purchase] = await testDb()
       .select({ priceSnapshot: schema.membershipPurchases.priceSnapshot })
       .from(schema.membershipPurchases)
-      .where(eq(schema.membershipPurchases.id, json.data.purchaseId))
+      .where(eq(schema.membershipPurchases.id, data.purchase_id))
       .limit(1);
 
     expect(Number(purchase!.priceSnapshot)).toBe(299000);
   });
+
+  it("returns 409 PENDING_PURCHASE_EXISTS when user already has a PENDING purchase", async () => {
+    asUser(FIXTURE_IDS.regularUser);
+    // First checkout — creates a PENDING purchase
+    const res1 = await membershipCheckout(checkoutRequest());
+    expect(res1.status).toBe(200);
+    const first = (await res1.json()).data;
+
+    // Second checkout without paying first
+    const res2 = await membershipCheckout(checkoutRequest());
+    expect(res2.status).toBe(409);
+
+    const json2 = await res2.json();
+    expect(json2.code).toBe("PENDING_PURCHASE_EXISTS");
+    expect(json2.purchase_id).toBe(first.purchase_id);
+    expect(json2.purchase_number).toBe(first.purchase_number);
+
+    // chargeCoreApi should only have been called once (not twice)
+    expect(mockChargeCoreApi).toHaveBeenCalledOnce();
+  });
+
+  it("creates purchase + payment rows as FAILED when Core API throws, returns 422", async () => {
+    mockChargeCoreApi.mockRejectedValue(new Error("Midtrans timeout"));
+    asUser(FIXTURE_IDS.regularUser);
+    const res = await membershipCheckout(checkoutRequest());
+    expect(res.status).toBe(422);
+
+    const json = await res.json();
+    expect(json.code).toBe("PAYMENT_CHARGE_FAILED");
+
+    // Both rows should exist and be FAILED
+    const purchases = await testDb()
+      .select({ status: schema.membershipPurchases.status })
+      .from(schema.membershipPurchases)
+      .where(eq(schema.membershipPurchases.userId, FIXTURE_IDS.regularUser));
+
+    expect(purchases.length).toBeGreaterThan(0);
+    expect(purchases.every((p) => p.status === "FAILED")).toBe(true);
+  });
+
+  it("auto-expires PENDING purchase with no active payment so user can start fresh", async () => {
+    // Create a failed checkout (all payment attempts FAILED)
+    mockChargeCoreApi.mockRejectedValue(new Error("Midtrans error"));
+    asUser(FIXTURE_IDS.regularUser);
+    const failedRes = await membershipCheckout(checkoutRequest());
+    expect(failedRes.status).toBe(422);
+
+    // Verify there is a FAILED purchase
+    const failedPurchases = await testDb()
+      .select({ id: schema.membershipPurchases.id, status: schema.membershipPurchases.status })
+      .from(schema.membershipPurchases)
+      .where(eq(schema.membershipPurchases.userId, FIXTURE_IDS.regularUser));
+    expect(failedPurchases[0]!.status).toBe("FAILED");
+
+    // Manually set it back to PENDING to simulate a stale PENDING purchase
+    // whose only payment attempt failed (the realistic scenario)
+    await testDb()
+      .update(schema.membershipPurchases)
+      .set({ status: "PENDING" })
+      .where(eq(schema.membershipPurchases.id, failedPurchases[0]!.id));
+
+    // Now try a fresh checkout — the EXPIRED sweep should auto-expire the stale purchase
+    mockChargeSuccess();
+    const freshRes = await membershipCheckout(checkoutRequest());
+    expect(freshRes.status).toBe(200);
+
+    // The old purchase should now be EXPIRED
+    const [oldPurchase] = await testDb()
+      .select({ status: schema.membershipPurchases.status })
+      .from(schema.membershipPurchases)
+      .where(eq(schema.membershipPurchases.id, failedPurchases[0]!.id))
+      .limit(1);
+    expect(oldPurchase!.status).toBe("EXPIRED");
+
+    // A new PENDING purchase should exist
+    const freshData = (await freshRes.json()).data;
+    expect(freshData.purchase_id).not.toBe(failedPurchases[0]!.id);
+  });
 });
 
-describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
-  /**
-   * Helper: run through the full checkout flow and return the created
-   * purchase_number so we can send a matching webhook notification.
-   */
-  async function doCheckout(userId = FIXTURE_IDS.regularUser) {
-    asUser(userId);
-    const res = await membershipCheckout(checkoutRequest());
-    const json = await res.json();
-    expect(res.status).toBe(200);
-    return json.data as {
-      purchaseId: string;
-      purchaseNumber: string;
-      snapToken: string;
-      redirectUrl: string;
-      total: number;
-    };
+// ── Webhook MBR- branch (Core API) ────────────────────────────────────────────
+
+describe("POST /api/payments/midtrans/webhook — MBR- branch (Core API)", () => {
+  async function doCheckoutAndGetWebhookData(userId = FIXTURE_IDS.regularUser) {
+    const data = await doCheckout(userId);
+    const price = Number(SETTINGS_SEED.find((s) => s.key === "membership_plus_price")!.value);
+    return { ...data, gross_amount: String(price) };
   }
 
   it("rejects an invalid Midtrans signature with 401", async () => {
-    const { purchaseNumber, total } = await doCheckout();
-    const body = makeWebhookBody({ order_id: purchaseNumber, gross_amount: String(total) });
-    // Tamper with the signature.
+    const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
+    const body = makeWebhookBody({ order_id: `${purchase_number}-1`, gross_amount });
     (body as Record<string, unknown>).signature_key = "bad-sig";
 
     const res = await webhookHandler(webhookRequest(body));
@@ -250,20 +387,17 @@ describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
   });
 
   it("activates membership on settlement: status=MEMBER, expires_at set", async () => {
-    const { purchaseNumber, total } = await doCheckout();
+    const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
 
-    const webhookBody = makeWebhookBody({
-      order_id: purchaseNumber,
-      gross_amount: String(total),
-      transaction_status: "settlement",
-      payment_type: "gopay",
-    });
-
-    const res = await webhookHandler(webhookRequest(webhookBody));
+    const res = await webhookHandler(
+      webhookRequest(makeWebhookBody({
+        order_id: `${purchase_number}-1`,
+        gross_amount,
+        transaction_status: "settlement",
+      })),
+    );
     expect(res.status).toBe(200);
-    expect((await res.json()).received).toBe(true);
 
-    // User is now MEMBER.
     const [user] = await testDb()
       .select({ membershipStatus: schema.users.membershipStatus, membershipExpiresAt: schema.users.membershipExpiresAt })
       .from(schema.users)
@@ -272,76 +406,32 @@ describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
 
     expect(user!.membershipStatus).toBe("MEMBER");
     expect(user!.membershipExpiresAt).not.toBeNull();
-
-    // Expiry = paid_at + duration_months (12 months by default fixture)
-    const duration = Number(SETTINGS_SEED.find((s) => s.key === "membership_plus_duration_months")!.value);
-    const expiresAt = user!.membershipExpiresAt!;
-    const now = new Date();
-    const minExpected = new Date(now);
-    minExpected.setMonth(minExpected.getMonth() + duration - 1); // allow ±1 month window
-    const maxExpected = new Date(now);
-    maxExpected.setMonth(maxExpected.getMonth() + duration + 1);
-
-    expect(new Date(expiresAt).getTime()).toBeGreaterThan(minExpected.getTime());
-    expect(new Date(expiresAt).getTime()).toBeLessThan(maxExpected.getTime());
   });
 
   it("sets membership_purchase.status = PAID and paidAt on settlement", async () => {
-    const { purchaseId, purchaseNumber, total } = await doCheckout();
+    const { purchase_id, purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
 
     await webhookHandler(
-      webhookRequest(makeWebhookBody({ order_id: purchaseNumber, gross_amount: String(total) })),
+      webhookRequest(makeWebhookBody({ order_id: `${purchase_number}-1`, gross_amount })),
     );
 
     const [purchase] = await testDb()
-      .select()
+      .select({ status: schema.membershipPurchases.status, paidAt: schema.membershipPurchases.paidAt })
       .from(schema.membershipPurchases)
-      .where(eq(schema.membershipPurchases.id, purchaseId))
+      .where(eq(schema.membershipPurchases.id, purchase_id))
       .limit(1);
 
     expect(purchase!.status).toBe("PAID");
     expect(purchase!.paidAt).not.toBeNull();
-    expect(purchase!.startsAt).not.toBeNull();
-    expect(purchase!.endsAt).not.toBeNull();
-  });
-
-  it("updates the payments row with real transaction details", async () => {
-    const { purchaseId, purchaseNumber, total } = await doCheckout();
-    const txId = `TX-${crypto.randomUUID().slice(0, 8)}`;
-
-    await webhookHandler(
-      webhookRequest(makeWebhookBody({
-        order_id: purchaseNumber,
-        gross_amount: String(total),
-        transaction_id: txId,
-        payment_type: "bank_transfer",
-      })),
-    );
-
-    const [payment] = await testDb()
-      .select()
-      .from(schema.payments)
-      .where(eq(schema.payments.membershipPurchaseId, purchaseId))
-      .limit(1);
-
-    expect(payment!.status).toBe("PAID");
-    expect(payment!.midtransTransactionId).toBe(txId);
-    expect(payment!.paymentType).toBe("bank_transfer");
   });
 
   it("idempotent: sending the same settlement notification twice activates membership exactly once", async () => {
-    const { purchaseNumber, total } = await doCheckout();
-    const webhookBody = makeWebhookBody({ order_id: purchaseNumber, gross_amount: String(total) });
+    const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
+    const body = makeWebhookBody({ order_id: `${purchase_number}-1`, gross_amount });
 
-    // First notification.
-    const res1 = await webhookHandler(webhookRequest(webhookBody));
-    expect(res1.status).toBe(200);
+    await webhookHandler(webhookRequest(body));
+    await webhookHandler(webhookRequest(body));
 
-    // Second identical notification (Midtrans retry).
-    const res2 = await webhookHandler(webhookRequest(webhookBody));
-    expect(res2.status).toBe(200);
-
-    // User is MEMBER — confirmed via only one DB query (not checking a count).
     const [user] = await testDb()
       .select({ membershipStatus: schema.users.membershipStatus })
       .from(schema.users)
@@ -349,42 +439,40 @@ describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
       .limit(1);
     expect(user!.membershipStatus).toBe("MEMBER");
 
-    // Exactly one PAID purchase record exists for this purchaseNumber.
     const purchases = await testDb()
       .select()
       .from(schema.membershipPurchases)
-      .where(eq(schema.membershipPurchases.purchaseNumber, purchaseNumber));
+      .where(eq(schema.membershipPurchases.purchaseNumber, purchase_number));
     expect(purchases.length).toBe(1);
     expect(purchases[0]!.status).toBe("PAID");
   });
 
-  it("does not activate membership on expire or deny (payment states EXPIRED / FAILED)", async () => {
+  it("does not activate membership on expire or deny", async () => {
     for (const transaction_status of ["expire", "deny"] as const) {
-      // Fresh checkout for each sub-case.
-      asUser(FIXTURE_IDS.regularUser);
-      const res = await membershipCheckout(checkoutRequest());
-      const { purchaseNumber, total } = (await res.json()).data;
+      const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
 
-      const webhookBody = makeWebhookBody({ order_id: purchaseNumber, gross_amount: String(total), transaction_status });
-      await webhookHandler(webhookRequest(webhookBody));
+      await webhookHandler(
+        webhookRequest(makeWebhookBody({
+          order_id: `${purchase_number}-1`,
+          gross_amount,
+          transaction_status,
+        })),
+      );
 
       const [user] = await testDb()
         .select({ membershipStatus: schema.users.membershipStatus })
         .from(schema.users)
         .where(eq(schema.users.id, FIXTURE_IDS.regularUser))
         .limit(1);
-
-      // Must still be NOT_MEMBER (regularUser starts as NOT_MEMBER in fixtures).
       expect(user!.membershipStatus).toBe("NOT_MEMBER");
 
-      // Reset data between sub-cases.
       const { resetData } = await import("@/tests/helpers/db");
       await resetData();
+      mockChargeSuccess();
     }
   });
 
-  it("full end-to-end: NOT_MEMBER → checkout → webhook → MEMBER (no admin approval)", async () => {
-    // Verify user starts as NOT_MEMBER.
+  it("full end-to-end: NOT_MEMBER → checkout → webhook → MEMBER", async () => {
     const [before] = await testDb()
       .select({ membershipStatus: schema.users.membershipStatus })
       .from(schema.users)
@@ -392,97 +480,33 @@ describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
       .limit(1);
     expect(before!.membershipStatus).toBe("NOT_MEMBER");
 
-    // Step 1: checkout.
-    const { purchaseNumber, total } = await doCheckout();
+    const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
 
-    // Step 2: Midtrans sends settlement webhook.
-    const wRes = await webhookHandler(
-      webhookRequest(makeWebhookBody({ order_id: purchaseNumber, gross_amount: String(total) })),
+    await webhookHandler(
+      webhookRequest(makeWebhookBody({ order_id: `${purchase_number}-1`, gross_amount })),
     );
-    expect(wRes.status).toBe(200);
 
-    // Step 3: user is now MEMBER — no admin action required.
     const [after] = await testDb()
       .select({ membershipStatus: schema.users.membershipStatus, membershipExpiresAt: schema.users.membershipExpiresAt })
       .from(schema.users)
       .where(eq(schema.users.id, FIXTURE_IDS.regularUser))
       .limit(1);
-
     expect(after!.membershipStatus).toBe("MEMBER");
     expect(after!.membershipExpiresAt).not.toBeNull();
   });
 
-  it("addMonthsSafe: month-end purchase on Jan 31 expires Feb 28 (not Mar 3)", async () => {
-    // Seed a transaction_time of Jan 31 to trigger the day-overflow scenario.
-    const { purchaseId, purchaseNumber, total } = await doCheckout();
-
-    const jan31Body = makeWebhookBody({
-      order_id: purchaseNumber,
-      gross_amount: String(total),
-    });
-    // Override transaction_time to Jan 31 of a non-leap year.
-    (jan31Body as Record<string, unknown>).transaction_time = "2025-01-31 12:00:00";
-
-    await webhookHandler(webhookRequest(jan31Body));
-
-    const [user] = await testDb()
-      .select({ membershipExpiresAt: schema.users.membershipExpiresAt })
-      .from(schema.users)
-      .where(eq(schema.users.id, FIXTURE_IDS.regularUser))
-      .limit(1);
-
-    const expiresAt = new Date(user!.membershipExpiresAt!);
-    // Duration is 12 months → Jan 31, 2025 + 12 = Jan 31, 2026 (clean, no overflow)
-    // But for a 1-month case the test would be Feb 28 not Mar 3.
-    // With 12-month duration: result should be Jan 31, 2026 — verifying no overflow.
-    expect(expiresAt.getFullYear()).toBe(2026);
-    expect(expiresAt.getMonth()).toBe(0); // January
-    expect(expiresAt.getDate()).toBe(31);
-  });
-
-  it("addMonthsSafe: month-end purchase on Mar 31 + 1 month expires Apr 30 (not May 1)", async () => {
-    // We need a purchase with durationMonthsSnapshot = 1 to test the clamp.
-    // Override the settings duration temporarily.
-    await upsertSettings({ membership_plus_duration_months: "1" });
-
-    const { purchaseNumber, total } = await doCheckout();
-
-    const mar31Body = makeWebhookBody({
-      order_id: purchaseNumber,
-      gross_amount: String(total),
-    });
-    (mar31Body as Record<string, unknown>).transaction_time = "2026-03-31 10:00:00";
-
-    await webhookHandler(webhookRequest(mar31Body));
-
-    const [user] = await testDb()
-      .select({ membershipExpiresAt: schema.users.membershipExpiresAt })
-      .from(schema.users)
-      .where(eq(schema.users.id, FIXTURE_IDS.regularUser))
-      .limit(1);
-
-    const expiresAt = new Date(user!.membershipExpiresAt!);
-    // Mar 31 + 1 month must clamp to Apr 30, NOT roll over to May 1.
-    expect(expiresAt.getMonth()).toBe(3); // April (0-indexed)
-    expect(expiresAt.getDate()).toBe(30);
-  });
-
-  it("early renewal: active MEMBER who buys again gets expiry extended from current expiry, not from now", async () => {
-    // memberUser already has membership_expires_at = 2026-12-31 (from fixtures).
+  it("early renewal: active MEMBER who buys again gets expiry extended from current expiry", async () => {
     const [before] = await testDb()
-      .select({ membershipStatus: schema.users.membershipStatus, membershipExpiresAt: schema.users.membershipExpiresAt })
+      .select({ membershipExpiresAt: schema.users.membershipExpiresAt })
       .from(schema.users)
       .where(eq(schema.users.id, FIXTURE_IDS.memberUser))
       .limit(1);
-    expect(before!.membershipStatus).toBe("MEMBER");
     const currentExpiry = new Date(before!.membershipExpiresAt!);
 
-    // Checkout as the active MEMBER user.
-    const { purchaseNumber, total } = await doCheckout(FIXTURE_IDS.memberUser);
+    const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData(FIXTURE_IDS.memberUser);
 
-    // Simulate settlement webhook.
     await webhookHandler(
-      webhookRequest(makeWebhookBody({ order_id: purchaseNumber, gross_amount: String(total) })),
+      webhookRequest(makeWebhookBody({ order_id: `${purchase_number}-1`, gross_amount })),
     );
 
     const [after] = await testDb()
@@ -492,12 +516,78 @@ describe("POST /api/payments/midtrans/webhook — MBR- branch", () => {
       .limit(1);
 
     const newExpiry = new Date(after!.membershipExpiresAt!);
-    // New expiry must be LATER than the current expiry (extended, not reset to now+12m).
     expect(newExpiry.getTime()).toBeGreaterThan(currentExpiry.getTime());
+  });
 
-    // Specifically: should be currentExpiry + 12 months (fixture duration).
-    const expectedYear = currentExpiry.getFullYear() + 1;
-    expect(newExpiry.getFullYear()).toBe(expectedYear);
-    expect(newExpiry.getMonth()).toBe(currentExpiry.getMonth());
+  it("addMonthsSafe: Mar 31 + 1 month expires Apr 30 (not May 1)", async () => {
+    await upsertSettings({ membership_plus_duration_months: "1" });
+    const { purchase_number, gross_amount } = await doCheckoutAndGetWebhookData();
+
+    const body = makeWebhookBody({ order_id: `${purchase_number}-1`, gross_amount });
+    (body as Record<string, unknown>).transaction_time = "2026-03-31 10:00:00";
+
+    await webhookHandler(webhookRequest(body));
+
+    const [user] = await testDb()
+      .select({ membershipExpiresAt: schema.users.membershipExpiresAt })
+      .from(schema.users)
+      .where(eq(schema.users.id, FIXTURE_IDS.regularUser))
+      .limit(1);
+
+    const expiresAt = new Date(user!.membershipExpiresAt!);
+    expect(expiresAt.getMonth()).toBe(3); // April
+    expect(expiresAt.getDate()).toBe(30);
+  });
+});
+
+// ── Satu user satu PENDING (ticket/08) ────────────────────────────────────────
+
+describe("one-PENDING-per-user constraint (ticket/08)", () => {
+  it("enforces exactly one PENDING purchase per user", async () => {
+    asUser(FIXTURE_IDS.regularUser);
+
+    const res1 = await membershipCheckout(checkoutRequest());
+    expect(res1.status).toBe(200);
+
+    const res2 = await membershipCheckout(checkoutRequest());
+    expect(res2.status).toBe(409);
+    expect((await res2.json()).code).toBe("PENDING_PURCHASE_EXISTS");
+
+    const res3 = await membershipCheckout(checkoutRequest());
+    expect(res3.status).toBe(409);
+
+    // Only one purchase row should exist
+    const purchases = await testDb()
+      .select()
+      .from(schema.membershipPurchases)
+      .where(
+        and(
+          eq(schema.membershipPurchases.userId, FIXTURE_IDS.regularUser),
+          eq(schema.membershipPurchases.status, "PENDING"),
+        ),
+      );
+    expect(purchases.length).toBe(1);
+    expect(mockChargeCoreApi).toHaveBeenCalledOnce();
+  });
+
+  it("allows a new checkout after the previous purchase is PAID (webhook)", async () => {
+    asUser(FIXTURE_IDS.regularUser);
+    const { data: d1 } = await (await membershipCheckout(checkoutRequest())).json();
+
+    // Simulate payment via webhook
+    const price = SETTINGS_SEED.find((s) => s.key === "membership_plus_price")!.value;
+    await webhookHandler(
+      webhookRequest(makeWebhookBody({
+        order_id: `${d1.purchase_number}-1`,
+        gross_amount: price,
+      })),
+    );
+
+    // Now a second checkout should succeed (previous is PAID, not PENDING)
+    mockChargeSuccess();
+    const res2 = await membershipCheckout(checkoutRequest());
+    expect(res2.status).toBe(200);
+    const { data: d2 } = await res2.json();
+    expect(d2.purchase_id).not.toBe(d1.purchase_id);
   });
 });

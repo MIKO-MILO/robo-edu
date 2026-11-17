@@ -18,6 +18,18 @@ declare module "midtrans-client" {
     }): Promise<SnapTransaction>;
   }
 
-  const midtransClient: { Snap: typeof Snap };
+  class CoreApi {
+    constructor(config: SnapConfig);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    charge(payload: unknown): Promise<any>;
+    transaction: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cancel: (orderId: string) => Promise<any>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      refund: (transactionId: string, payload: unknown) => Promise<any>;
+    };
+  }
+
+  const midtransClient: { Snap: typeof Snap; CoreApi: typeof CoreApi };
   export default midtransClient;
 }

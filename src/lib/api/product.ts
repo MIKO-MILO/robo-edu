@@ -1,4 +1,4 @@
-import type { ProductResponse } from "@/types/product";
+import type { Product, ProductResponse } from "@/types/product";
 
 export type ProductQuery = {
   page?: number;
@@ -65,4 +65,37 @@ export async function getProducts(
   }
 
   return response.json();
+}
+
+/**
+ * Fetch a small list of products for client-side recommendation widgets.
+ *
+ * Follows the client-fetch-resilience-pattern:
+ * - Non-ok responses are logged as warnings, never thrown.
+ * - Returns an empty array on failure so the caller can hide the section.
+ */
+export async function getProductRecommendations(
+  limit = 8,
+  sort: ProductQuery["sort"] = "newest",
+): Promise<{ success: boolean; data: Product[] }> {
+  try {
+    const params = new URLSearchParams({ limit: String(limit), sort });
+    const response = await fetch(`/api/product?${params.toString()}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.warn(
+        `GET /api/product (recommendations) returned ${response.status}; hiding section`,
+      );
+      return { success: false, data: [] };
+    }
+
+    const json: ProductResponse = await response.json();
+    return { success: true, data: json.data ?? [] };
+  } catch {
+    console.warn("GET /api/product (recommendations) failed; hiding section");
+    return { success: false, data: [] };
+  }
 }

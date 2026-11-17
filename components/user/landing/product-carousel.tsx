@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from"next/image";
 
@@ -75,8 +75,8 @@ export default function ProductGrid({ products = DEFAULT_PRODUCTS }: ProductGrid
  key={product.id}
  className="flex flex-col items-center text-center group cursor-pointer"
  >
- {/* Custom Grey Image Container (#686868 with 16% opacity -> #68686829) */}
- <div className="w-full bg-[#686868]/10 aspect-square p-6 flex items-center justify-center relative overflow-hidden mb-4">
+ {/* Custom Grey Image Container (var(--color-muted-foreground) with 16% opacity -> var(--color-muted-foreground)29) */}
+ <div className="w-full bg-muted/50 aspect-square p-6 flex items-center justify-center relative overflow-hidden mb-4">
  <div className="relative w-full h-full">
  <Image
  src={product.image}
@@ -92,7 +92,7 @@ export default function ProductGrid({ products = DEFAULT_PRODUCTS }: ProductGrid
  {/* Product Info Below Box */}
  <div className="flex flex-col items-center gap-1 w-full px-2">
  {/* Product Name */}
- <h3 className="font-sans font-bold text-base sm:text-lg text-[#222222] leading-tight line-clamp-1">
+ <h3 className="font-sans font-bold text-base sm:text-lg text-foreground leading-tight line-clamp-1">
  {product.name}
  </h3>
 
@@ -102,7 +102,7 @@ export default function ProductGrid({ products = DEFAULT_PRODUCTS }: ProductGrid
  </span>
 
  {/* Price */}
- <p className="font-sans font-bold text-sm sm:text-base text-[#4DA0CF] mt-0.5">
+ <p className="font-sans font-bold text-sm sm:text-base text-primary mt-0.5">
  {product.price}
  </p>
  </div>
