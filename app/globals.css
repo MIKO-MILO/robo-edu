@@ -294,29 +294,40 @@
 
 /* ==========================================
    Landing Page Color Tokens
-   Warna-warna spesifik landing page yang belum ada di token utama.
-   Semua komponen landing harus pakai token ini, bukan hardcode hex.
    ========================================== */
 
 @theme {
-  /* Biru section landing (InfoCards, InfoCardsList bg) */
   --color-landing-blue: #2781CD;
-  /* Biru tua heading hero */
   --color-landing-navy: #0F2C59;
-  /* Biru langit hero (sama dengan hero membership/contact) */
   --color-landing-sky: #97CEF9;
-  /* Pink kartu promo */
   --color-promo-pink: #E8808C;
-  /* Biru kartu promo */
   --color-promo-blue: #6AA2B8;
-  /* Merah label tipe promo */
   --color-promo-red: #C0392B;
-  /* Orange label kategori carousel */
   --color-promo-orange: #B85C38;
-  /* Gold stroke/aksen gelombang */
   --color-accent-gold: #F3C769;
-  /* Warna bintang testimoni */
   --color-star: #FFC107;
-  /* Ungu lembut card testimoni */
   --color-accent-purple-light: #EAE4FF;
 }
+
+/* ==========================================
+   Filter Pill Active State
+   ========================================== */
+
+@utility filter-pill-active {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+/* ==========================================
+   Pastel card variants
+   ========================================== */
+
+@utility bg-pastel-pink    { background-color: #FFE4EF; }
+@utility bg-pastel-blue    { background-color: #E0F3FB; }
+@utility bg-pastel-yellow  { background-color: #FFFACC; }
+@utility bg-pastel-green   { background-color: #DFF5E1; }
+@utility bg-pastel-purple  { background-color: #EAE8FF; }
+@utility bg-pastel-orange  { background-color: #FFF0D6; }
+@utility bg-pastel-peach   { background-color: #FFE9E4; }
+@utility bg-pastel-butter  { background-color: #FDF7E3; }
