@@ -1,5 +1,5 @@
 /**
- * BullMQ email worker + order worker + membership cron entry point.
+ * BullMQ email worker + membership cron entry point.
  *
  * Run with:
  *   npm run worker
@@ -157,7 +157,6 @@ async function handleMembershipReceipt(
     return;
   }
 
-  // Get payment method from linked payment row
   const [payment] = await db
     .select({ paymentType: schema.payments.paymentType })
     .from(schema.payments)
@@ -274,7 +273,6 @@ const worker = new Worker<EmailJobData>(
         break;
 
       default: {
-        // TypeScript exhaustive check
         const exhaustive: never = data;
         console.warn(`[worker] Unknown job type:`, exhaustive);
       }
