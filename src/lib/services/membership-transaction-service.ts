@@ -241,7 +241,7 @@ export async function createMembershipTransaction(
       .update(payments)
       .set({
         paymentInstruction: charge.instruction,
-        expiryTime: charge.expiryTime ?? expiresAt,
+        expiryTime: (charge.expiryTime && charge.expiryTime < expiresAt) ? charge.expiryTime : expiresAt,
         transactionTime: now,
         rawResponse: charge.raw,
       })
@@ -251,7 +251,7 @@ export async function createMembershipTransaction(
       purchaseId,
       purchaseNumber,
       paymentInstruction: charge.instruction,
-      expiryTime: (charge.expiryTime ?? expiresAt).toISOString(),
+      expiryTime: ((charge.expiryTime && charge.expiryTime < expiresAt) ? charge.expiryTime : expiresAt).toISOString(),
       status: "PENDING",
       total: price,
     };
@@ -470,7 +470,7 @@ export async function retryMembershipPayment(
     });
 
     const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
-    const resolvedExpiry = charge.expiryTime ?? expiresAt;
+    const resolvedExpiry = (charge.expiryTime && charge.expiryTime < expiresAt) ? charge.expiryTime : expiresAt;
 
     await db
       .update(payments)
