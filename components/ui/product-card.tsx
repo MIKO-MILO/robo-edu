@@ -80,7 +80,10 @@ export function ProductCard({
         </div>
 
         {/* Wishlist — kanan atas */}
-        <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="absolute top-3 right-3 z-10"
+          onClick={(e) => e.stopPropagation()}
+        >
           <WishlistButton
             isWishlisted={isWishlisted}
             onClick={handleWishlistClick}
@@ -92,22 +95,6 @@ export function ProductCard({
           />
         </div>
 
-        {/* Cart — kanan bawah (sejajar di bawah Wishlist) */}
-        <div className="absolute bottom-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
-          <Button
-            type="button"
-            variant="default"
-            size="icon-sm"
-            neo={false}
-            disabled={isDisabled}
-            onClick={handleAddToCart}
-            aria-label={`Tambah ${name} ke keranjang`}
-            className="w-11 h-11 p-0 rounded-full shrink-0 bg-primary-600 hover:bg-primary-700 text-card border-0 flex items-center justify-center cursor-pointer shadow-sm [&_svg]:!w-5 [&_svg]:!h-5"
-          >
-            <ShoppingCart className="w-5 h-5 text-card" />
-          </Button>
-        </div>
-
         {outOfStock && (
           <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-card/85 backdrop-blur-[2px]">
             <span className="text-danger font-heading font-bold text-xs px-3 py-1.5 rounded-lg border border-danger/30 select-none">
@@ -117,34 +104,46 @@ export function ProductCard({
         )}
       </div>
 
-      {/* Informasi Produk (Judul & Rating Badge) */}
-      <div className="flex flex-col gap-1.5 px-1">
+      {/* Informasi Produk + Harga — satu blok dengan gap seragam */}
+      <div className="flex flex-col gap-2 px-1 mt-auto">
         <p
           className={cn(
-            "font-heading font-bold text-sm leading-tight line-clamp-2",
+            "font-heading font-bold text-sm leading-tight line-clamp-1",
             outOfStock ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {name}
         </p>
 
-        <StarRating
-          rating={rating}
-          variant="badge"
-          size="xs"
-        />
-      </div>
+        <StarRating rating={rating} variant="badge" size="xs" />
 
-      {/* Price */}
-      <div className="flex items-center justify-between gap-2 px-1 mt-auto">
-        <span
-          className={cn(
-            "font-heading font-bold text-base",
-            outOfStock ? "text-muted-foreground" : "text-foreground",
-          )}
-        >
-          {price}
-        </span>
+        {/* Price + Cart */}
+        <div className="flex items-center justify-between">
+          <span
+            className={cn(
+              "font-heading font-bold text-base",
+              outOfStock ? "text-muted-foreground" : "text-foreground",
+            )}
+          >
+            {price}
+          </span>
+
+          {/* Cart */}
+          <div onClick={(e) => e.stopPropagation()} className="mr-1">
+            <Button
+              type="button"
+              variant="default"
+              size="icon-sm"
+              neo={false}
+              disabled={isDisabled}
+              onClick={handleAddToCart}
+              aria-label={`Tambah ${name} ke keranjang`}
+              className="w-9 h-9 p-0 rounded-full shrink-0 bg-primary-600 hover:bg-primary-700 text-card border-0 flex items-center justify-center cursor-pointer shadow-sm [&_svg]:!w-4 [&_svg]:!h-4"
+            >
+              <ShoppingCart className="w-4 h-4 text-card" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

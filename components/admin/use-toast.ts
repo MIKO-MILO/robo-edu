@@ -1,81 +1,109 @@
 "use client";
 
 import * as React from "react";
+import { toast as sonnerToast, type ExternalToast } from "sonner";
 
 export type ToastVariant = "default" | "success" | "error" | "warning" | "info";
 
 export interface ToastItem {
-  id: string;
+  id?: string | number;
   title?: string;
   description?: string;
   variant?: ToastVariant;
-  duration?: number; // ms
+  duration?: number;
   action?: {
     label: string;
     onClick: () => void;
   };
 }
 
-type ToastListener = (toasts: ToastItem[]) => void;
+type ToastInput =
+  | string
+  | React.ReactNode
+  | ToastItem;
 
-let toastsMemory: ToastItem[] = [];
-const listeners: Set<ToastListener> = new Set();
-
-function notifyListeners() {
-  listeners.forEach((listener) => listener([...toastsMemory]));
+function normalizeOptions(
+  secondArg?: string | ExternalToast,
+  extra?: ExternalToast
+): ExternalToast {
+  if (typeof secondArg === "string") {
+    return { description: secondArg, ...extra };
+  }
+  return { ...secondArg, ...extra };
 }
 
-export function toast(options: Omit<ToastItem, "id">) {
-  const id = Math.random().toString(36).substring(2, 9);
-  const newToast: ToastItem = {
-    id,
-    duration: 4000,
-    variant: "default",
-    ...options,
-  };
+/**
+ * Universal toast wrapper using shadcn's Sonner under the hood.
+ * Supports:
+ * - toast({ title: "...", description: "...", variant: "..." })
+ * - toast("Message", { description: "..." })
+ * - toast.success("Title", "Description")
+ * - toast.error("Title", "Description")
+ */
+function baseToast(first: ToastInput, second?: string | ExternalToast) {
+  if (typeof first === "object" && first !== null && "title" in first) {
+    const item = first as ToastItem;
+    const options: ExternalToast = {
+      description: item.description,
+      duration: item.duration,
+      action: item.action
+        ? {
+            label: item.action.label,
+            onClick: item.action.onClick,
+          }
+        : undefined,
+    };
 
-  toastsMemory = [newToast, ...toastsMemory].slice(0, 5); // Keep max 5 toasts
-  notifyListeners();
-
-  if (newToast.duration && newToast.duration > 0) {
-    setTimeout(() => {
-      dismissToast(id);
-    }, newToast.duration);
+    switch (item.variant) {
+      case "success":
+        return sonnerToast.success(item.title ?? "", options);
+      case "error":
+        return sonnerToast.error(item.title ?? "", options);
+      case "warning":
+        return sonnerToast.warning(item.title ?? "", options);
+      case "info":
+        return sonnerToast.info(item.title ?? "", options);
+      default:
+        return sonnerToast(item.title ?? "", options);
+    }
   }
 
-  return id;
+  const message = (first as string | React.ReactNode) ?? "";
+  const opts = normalizeOptions(second);
+  return sonnerToast(message, opts);
 }
 
-toast.success = (title: string, description?: string) =>
-  toast({ title, description, variant: "success" });
+baseToast.success = (title: string | React.ReactNode, descriptionOrOptions?: string | ExternalToast) => {
+  const opts = normalizeOptions(descriptionOrOptions);
+  return sonnerToast.success(title, opts);
+};
 
-toast.error = (title: string, description?: string) =>
-  toast({ title, description, variant: "error" });
+baseToast.error = (title: string | React.ReactNode, descriptionOrOptions?: string | ExternalToast) => {
+  const opts = normalizeOptions(descriptionOrOptions);
+  return sonnerToast.error(title, opts);
+};
 
-toast.warning = (title: string, description?: string) =>
-  toast({ title, description, variant: "warning" });
+baseToast.warning = (title: string | React.ReactNode, descriptionOrOptions?: string | ExternalToast) => {
+  const opts = normalizeOptions(descriptionOrOptions);
+  return sonnerToast.warning(title, opts);
+};
 
-toast.info = (title: string, description?: string) =>
-  toast({ title, description, variant: "info" });
+baseToast.info = (title: string | React.ReactNode, descriptionOrOptions?: string | ExternalToast) => {
+  const opts = normalizeOptions(descriptionOrOptions);
+  return sonnerToast.info(title, opts);
+};
 
-export function dismissToast(id: string) {
-  toastsMemory = toastsMemory.filter((t) => t.id !== id);
-  notifyListeners();
+baseToast.dismiss = (id?: string | number) => sonnerToast.dismiss(id);
+
+export const toast = baseToast;
+
+export function dismissToast(id?: string | number) {
+  sonnerToast.dismiss(id);
 }
 
 export function useToast() {
-  const [toasts, setToasts] = React.useState<ToastItem[]>(toastsMemory);
-
-  React.useEffect(() => {
-    listeners.add(setToasts);
-    return () => {
-      listeners.delete(setToasts);
-    };
-  }, []);
-
   return {
-    toasts,
-    toast,
+    toast: baseToast,
     dismiss: dismissToast,
   };
 }
