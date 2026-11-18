@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Store, GraduationCap, CheckCircle2 } from "lucide-react";
 
 export function ResellerCategorySection() {
   return (
-    <section className="relative w-full bg-[#2483D0] overflow-hidden">
+    <section className="relative w-full bg-primary overflow-hidden">
       {/* ── Top Scalloped Curves ── */}
       <div className="w-full -mb-1 leading-none overflow-hidden relative z-20">
         <svg
@@ -14,7 +14,7 @@ export function ResellerCategorySection() {
           className="w-full h-auto block"
           preserveAspectRatio="none"
         >
-          {/* Garis Lengkungan Warna #63B5EF */}
+          {/* Garis Lengkungan Warna membership-blue-mid */}
           <path
             d="M0,58 
                C55,18 150,18 205,58 
@@ -25,7 +25,7 @@ export function ResellerCategorySection() {
                C1010,5 1170,5 1245,58 
                C1295,20 1385,20 1440,58"
             fill="none"
-            stroke="#63B5EF"
+            stroke="var(--color-membership-blue-mid)"
             strokeWidth="28"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -69,11 +69,11 @@ export function ResellerCategorySection() {
             <div className="flex flex-col gap-6">
               {/* Header Top Row (Angka Besar + Teks Sesuai Gambar) */}
               <div className="flex items-center gap-4">
-                <span className="font-heading font-black text-4xl sm:text-5xl text-[#FEF08A]/80 tracking-tight shrink-0">
+                <span className="font-heading font-black text-4xl sm:text-5xl text-accent-pale-yellow/80 tracking-tight shrink-0">
                   01
                 </span>
                 <div className="flex flex-col">
-                  <span className="font-heading font-extrabold text-[10px] sm:text-xs text-[#FEF08A] tracking-wider uppercase drop-shadow-sm">
+                  <span className="font-heading font-extrabold text-[10px] sm:text-xs text-accent-pale-yellow tracking-wider uppercase drop-shadow-sm">
                     Kategori A
                   </span>
                   <h3 className="font-heading font-bold text-xl sm:text-2xl text-white leading-snug">
@@ -94,7 +94,7 @@ export function ResellerCategorySection() {
                   "Menjaga reputasi layanan dan ketersediaan stok sparepart cadangan bagi pembeli akhir.",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3.5 px-5 py-4 rounded-2xl bg-white/15 border border-white/30 backdrop-blur-sm shadow-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#FEF08A] shrink-0 drop-shadow-sm" />
+                    <CheckCircle2 className="w-5 h-5 text-accent-pale-yellow shrink-0 drop-shadow-sm" />
                     <span className="font-body text-xs sm:text-sm text-white font-medium leading-relaxed">
                       {item}
                     </span>
@@ -109,11 +109,11 @@ export function ResellerCategorySection() {
             <div className="flex flex-col gap-6">
               {/* Header Top Row (Angka Besar + Teks Sesuai Gambar) */}
               <div className="flex items-center gap-4">
-                <span className="font-heading font-black text-4xl sm:text-5xl text-[#FEF08A]/80 tracking-tight shrink-0">
+                <span className="font-heading font-black text-4xl sm:text-5xl text-accent-pale-yellow/80 tracking-tight shrink-0">
                   02
                 </span>
                 <div className="flex flex-col">
-                  <span className="font-heading font-extrabold text-[10px] sm:text-xs text-[#FEF08A] tracking-wider uppercase drop-shadow-sm">
+                  <span className="font-heading font-extrabold text-[10px] sm:text-xs text-accent-pale-yellow tracking-wider uppercase drop-shadow-sm">
                     Kategori B
                   </span>
                   <h3 className="font-heading font-bold text-xl sm:text-2xl text-white leading-snug">
@@ -134,7 +134,7 @@ export function ResellerCategorySection() {
                   "Berhak mendapatkan pelatihan Train-the-Trainer untuk guru pembina robotika RoboEdu.",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3.5 px-5 py-4 rounded-2xl bg-white/15 border border-white/30 backdrop-blur-sm shadow-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#FEF08A] shrink-0 drop-shadow-sm" />
+                    <CheckCircle2 className="w-5 h-5 text-accent-pale-yellow shrink-0 drop-shadow-sm" />
                     <span className="font-body text-xs sm:text-sm text-white font-medium leading-relaxed">
                       {item}
                     </span>
@@ -156,7 +156,7 @@ export function ResellerCategorySection() {
           className="w-full h-auto block"
           preserveAspectRatio="none"
         >
-          {/* Garis Lengkungan Warna #63B5EF */}
+          {/* Garis Lengkungan Warna membership-blue-mid */}
           <path
             d="M0,60 
                C55,15 150,15 205,60 
@@ -167,7 +167,7 @@ export function ResellerCategorySection() {
                C1010,8 1170,8 1245,60 
                C1295,20 1385,20 1440,60"
             fill="none"
-            stroke="#63B5EF"
+            stroke="var(--color-membership-blue-mid)"
             strokeWidth="28"
             strokeLinecap="round"
             strokeLinejoin="round"

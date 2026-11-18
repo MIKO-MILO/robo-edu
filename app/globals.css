@@ -310,6 +310,27 @@
 }
 
 /* ==========================================
+   Membership / Reseller Page Color Tokens
+   ========================================== */
+
+@theme {
+  /* Biru utama aksen membership (border, teks, ikon) */
+  --color-membership-blue: #1C6CAE;
+  /* Biru muda latar nomor / badge */
+  --color-membership-blue-light: #D5ECFA;
+  /* Biru tengah untuk stroke SVG scallop */
+  --color-membership-blue-mid: #63B5EF;
+  /* Biru gelap untuk drop-shadow robot CTA */
+  --color-membership-blue-dark: #0284C7;
+  /* Gradient layer 1 background membership card */
+  --color-membership-gradient-1: #3897e0;
+  /* Gradient layer 2 background membership card */
+  --color-membership-gradient-2: #62B4EE;
+  /* Kuning pucat label kategori & nomor urut */
+  --color-accent-pale-yellow: #FEF08A;
+}
+
+/* ==========================================
    Filter Pill Active State
    ========================================== */
 

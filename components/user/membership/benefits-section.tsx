@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import { ArrowRight } from "lucide-react";
@@ -29,15 +29,15 @@ function BenefitCard({
           "bg-gradient-to-b from-white via-sky-50/50 to-sky-100/40 dark:from-background dark:via-background dark:to-sky-950/20 shadow-md"
         )}
       >
-        {/* Nomor Bagian Atas dengan warna #D5ECFA */}
-        <span className="inline-flex items-center justify-center w-8 h-7 text-xs font-extrabold text-[#1C6CAE] bg-[#D5ECFA] dark:bg-sky-900/60 rounded-full shrink-0 mb-2.5">
+        {/* Nomor Bagian Atas dengan warna membership-blue-light */}
+        <span className="inline-flex items-center justify-center w-8 h-7 text-xs font-extrabold text-membership-blue bg-membership-blue-light dark:bg-sky-900/60 rounded-full shrink-0 mb-2.5">
           0{number}
         </span>
 
         {/* Konten Utama */}
         <div className="flex flex-col items-center w-full">
           {/* Badge dengan tambahan margin bawah (gap) */}
-          <p className="font-body font-extrabold text-[10px] sm:text-xs text-[#1C6CAE] uppercase tracking-widest bg-sky-100/70 dark:bg-sky-900/40 px-3.5 py-0.5 rounded-full shrink-0 mb-2">
+          <p className="font-body font-extrabold text-[10px] sm:text-xs text-membership-blue uppercase tracking-widest bg-sky-100/70 dark:bg-sky-900/40 px-3.5 py-0.5 rounded-full shrink-0 mb-2">
             {badge}
           </p>
 
@@ -47,7 +47,7 @@ function BenefitCard({
           </h3>
 
           {/* Aksen Dekoratif Garis Kecil */}
-          <div className="w-12 h-1 bg-[#1C6CAE]/25 rounded-full mt-1.5 mb-3 shrink-0" />
+          <div className="w-12 h-1 bg-membership-blue/25 rounded-full mt-1.5 mb-3 shrink-0" />
 
           {/* Deskripsi (Rata dari atas, sejajar lurus di semua kartu) */}
           <p className="font-body text-xs sm:text-[13px] text-foreground/75 leading-relaxed max-w-[215px]">
@@ -58,7 +58,7 @@ function BenefitCard({
 
       {/* Panah Penghubung Antar Kartu */}
       {!isLastItem && (
-        <div className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-20 items-center justify-center text-[#1C6CAE]/80">
+        <div className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-20 items-center justify-center text-membership-blue/80">
           <ArrowRight className="w-5 h-5 stroke-[2.5]" />
         </div>
       )}
@@ -102,7 +102,7 @@ export function ResellerBenefitsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-12 sm:gap-16 w-full">
         {/* Section Header: Judul di Kiri & Deskripsi di Kanan */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-          <h3 className="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-[#1C6CAE] tracking-tight leading-tight max-w-xl">
+          <h3 className="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-membership-blue tracking-tight leading-tight max-w-xl">
             4 Keuntungan Eksklusif Mitra Resmi
           </h3>
 

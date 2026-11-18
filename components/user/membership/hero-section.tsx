@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Image from "next/image";
@@ -7,7 +7,7 @@ export function ResellerHeroSection() {
   return (
     /* Outer Container: Penuh kiri, kanan, atas tanpa gap */
     <div className="w-full bg-background p-0 m-0">
-      <section className="relative w-full min-h-[75vh] sm:min-h-[80vh] lg:min-h-[86vh] bg-[#97CEF9] rounded-none pt-34 sm:pt-40 lg:pt-46 pb-36 sm:pb-42 lg:pb-48 overflow-hidden flex flex-col justify-center items-center">
+      <section className="relative w-full min-h-[75vh] sm:min-h-[80vh] lg:min-h-[86vh] bg-landing-sky rounded-none pt-34 sm:pt-40 lg:pt-46 pb-36 sm:pb-42 lg:pb-48 overflow-hidden flex flex-col justify-center items-center">
         
       {/* --- KUMPULAN GAMBAR AWAN KIRI --- */}
         <div className="absolute top-16 sm:top-20 left-0 w-48 sm:w-72 lg:w-[26rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-start">
@@ -95,7 +95,7 @@ export function ResellerHeroSection() {
                  C950,55 1000,55 1050,-35 
                  C1100,55 1150,55 1200,-35"
               fill="none"
-              stroke="#1C6CAE"
+              stroke="var(--color-membership-blue)"
               strokeWidth="3.9"
               strokeLinecap="round"
             />
