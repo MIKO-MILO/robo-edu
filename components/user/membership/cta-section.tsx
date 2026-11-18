@@ -5,12 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-
-type AuthState = "loading" | "guest" | "member" | "not_member";
+import { Button } from "@/components/ui/button";
+import type { MembershipAuthState } from "@/types";
 
 export function ResellerCtaSection() {
   const router = useRouter();
-  const [authState, setAuthState] = useState<AuthState>("loading");
+  const [authState, setAuthState] = useState<MembershipAuthState>("loading");
 
   useEffect(() => {
     fetch("/api/membership/me", { cache: "no-store" })
@@ -81,13 +81,18 @@ export function ResellerCtaSection() {
               </p>
 
               <div className="pt-2">
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-primary hover:bg-primary/90 text-card font-heading font-bold text-xs sm:text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                <Button
+                  asChild
+                  variant="primary"
+                  neo={false}
+                  size="lg"
+                  className="rounded-full font-heading font-bold text-xs sm:text-sm"
                 >
-                  <span>AJUKAN JADI RESELLER SEKARANG</span>
-                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                </Link>
+                  <Link href="/contact">
+                    AJUKAN JADI RESELLER SEKARANG
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  </Link>
+                </Button>
               </div>
             </div>
 

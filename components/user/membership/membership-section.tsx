@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { Check, ArrowRight, Star, Heart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import type { MembershipPlanInfo, MembershipAuthState } from "@/types";
 
 // ── Types ──────────────────────────────────────────
 interface MembershipTier {
@@ -20,12 +22,8 @@ interface MembershipTier {
   isSpecial?: boolean;
 }
 
-interface PlanInfo {
-  price: number;
-  duration_months: number;
-}
-
-type AuthState = "loading" | "guest" | "member" | "not_member";
+type PlanInfo = Pick<MembershipPlanInfo, "price" | "duration_months">;
+type AuthState = MembershipAuthState;
 
 // ── Data ───────────────────────────────────────────
 const BASE_TIERS: Omit<MembershipTier, "price" | "pricePeriod">[] = [
@@ -121,18 +119,21 @@ function MembershipCard({ tier }: { tier: MembershipTier }) {
           </div>
         </div>
 
-        <Link
-          href="/contact"
+        <Button
+          asChild
+          neo={false}
           className={cn(
-            "w-full inline-flex items-center justify-center gap-2 font-bold text-xs sm:text-sm py-3 px-6 rounded-2xl transition-all shadow-md hover:scale-[1.02] active:scale-95",
+            "w-full font-bold text-xs sm:text-sm py-3 px-6 rounded-2xl",
             tier.isSpecial
-              ? "bg-amber-400 hover:bg-amber-500 text-slate-900 shadow-amber-400/30"
-              : "bg-white text-sky-700 hover:bg-sky-50 shadow-white/20"
+              ? "bg-amber-400 hover:bg-amber-500 text-slate-900"
+              : "bg-card text-sky-700 hover:bg-sky-50"
           )}
         >
-          {tier.isSpecial ? "Gabung VIP Sekarang" : "Mulai Gratis"}
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+          <Link href="/contact">
+            {tier.isSpecial ? "Gabung VIP Sekarang" : "Mulai Gratis"}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </Button>
       </div>
     </article>
   );
