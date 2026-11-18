@@ -153,17 +153,17 @@ export function ResellerPricingSection() {
         
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-          <div className="flex flex-col gap-2 pt-10">
-  <h2 className="font-heading font-bold text-2xl sm:text-3xl lg:text-4xl text-foreground tracking-tight leading-tight max-w-xl">
-    Perbandingan Harga <br />
-    <span className="inline-block mt-2 px-6 py-1.5 bg-primary/10 border border-primary/30 text-primary rounded-full text-xl sm:text-2xl lg:text-3xl shadow-sm">
-      Publik vs Reseller
-    </span>
-  </h2>
-</div>
+          <div className="flex flex-col gap-2 pt-0">
+            <h2 className="font-heading font-bold text-2xl sm:text-3xl lg:text-4xl text-foreground tracking-tight leading-tight max-w-xl">
+              Perbandingan Harga <br />
+              <span className="inline-block mt-2 px-6 py-1.5 bg-primary/10 border border-primary/30 text-primary rounded-full text-xl sm:text-2xl lg:text-3xl shadow-sm">
+                Publik vs Reseller
+              </span>
+            </h2>
+          </div>
 
           <p className="font-body text-xs sm:text-sm text-muted-foreground max-w-md lg:text-right leading-relaxed">
-            Lihat selisih harga nyata yang bisa kamu raih sebagai mitra reseller
+            Lihat selisih harga nyata yang bisa kamu raih sebagai mitra reseller 
             resmi RoboEdu — langsung dari harga grosir pabrik, tanpa markup distributor.
           </p>
         </div>
