@@ -6,8 +6,8 @@ import {
   ResellerStepsSection,
   ResellerCategorySection,
   ResellerFaqSection,
-  ResellerCtaSection,
   ResellerMembershipSection,
+  ResellerCtaSection, // <--- Ditambahkan di sini
 } from "@/components/user/membership";
 
 export const metadata: Metadata = {
@@ -43,4 +43,3 @@ export default function ResellerPage() {
     </main>
   );
 }
-

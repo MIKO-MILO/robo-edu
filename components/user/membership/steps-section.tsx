@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import { cn } from "@/lib/utils";
@@ -78,8 +78,8 @@ function StepCard({
             {/* Step number badge */}
             <div
               className={cn(
-                "w-10 h-10 rounded-xl border-2 border-[#1C6CAE] flex items-center justify-center shrink-0",
-                step === 3 ? "bg-[#1C6CAE] text-white" : "bg-[#60B9F8]/30 text-[#1C6CAE]"
+                "w-10 h-10 rounded-xl border-2 border-membership-blue flex items-center justify-center shrink-0",
+                step === 3 ? "bg-membership-blue text-white" : "bg-membership-blue-mid/30 text-membership-blue"
               )}
             >
               <span className="font-heading font-bold text-base">
@@ -88,7 +88,7 @@ function StepCard({
             </div>
 
             {/* Status badge */}
-            <span className="inline-flex items-center px-3 py-1 rounded-full border-2 border-[#1C6CAE] bg-white font-body font-bold text-[10px] sm:text-xs text-foreground tracking-wide">
+            <span className="inline-flex items-center px-3 py-1 rounded-full border-2 border-membership-blue bg-white font-body font-bold text-[10px] sm:text-xs text-foreground tracking-wide">
               {badgeLabel}
             </span>
           </div>
@@ -104,12 +104,12 @@ function StepCard({
           </p>
 
           {/* Divider */}
-          <div className="border-t-2 border-dashed border-[#1C6CAE]/25 mt-auto pt-3" />
+          <div className="border-t-2 border-dashed border-membership-blue/25 mt-auto pt-3" />
 
           {/* Footer */}
           <div className="flex items-center gap-2 pt-1">
-            <FooterIcon className="w-4 h-4 text-[#1C6CAE] shrink-0" />
-            <span className="font-body font-bold text-xs sm:text-sm text-[#1C6CAE]">
+            <FooterIcon className="w-4 h-4 text-membership-blue shrink-0" />
+            <span className="font-body font-bold text-xs sm:text-sm text-membership-blue">
               {footerText}
             </span>
           </div>
@@ -122,12 +122,12 @@ function StepCard({
 
 export function ResellerStepsSection() {
   return (
-    <section className="w-full pt-6 sm:pt-10 pb-16 sm:pb-24 bg-[#F3EFE4]">
+    <section className="w-full pt-6 sm:pt-10 pb-16 sm:pb-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-12 sm:gap-16">
 
         {/* Section Header (Judul Sejajar Lurus Dalam Satu Baris) */}
         <div className="flex flex-col items-center text-center gap-3 max-w-4xl mx-auto">
-          <h2 className="font-heading font-bold text-2xl sm:text-3xl lg:text-4xl text-[#1C6CAE] leading-tight whitespace-nowrap">
+          <h2 className="font-heading font-bold text-2xl sm:text-3xl lg:text-4xl text-membership-blue leading-tight whitespace-nowrap">
             Alur Cepat 3 Langkah Menjadi Mitra
           </h2>
 
