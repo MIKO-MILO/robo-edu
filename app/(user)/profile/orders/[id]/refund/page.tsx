@@ -2,14 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, RefreshCcw, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+interface OrderItem {
+  id: string;
+  product_name_snapshot: string;
+  variant_name_snapshot: string | null;
+}
 
 interface OrderData {
   id: string;
   order_number: string;
   status: string;
+  order_items: OrderItem[];
 }
 
 const RETURN_REASONS = [
@@ -23,12 +30,14 @@ const RETURN_REASONS = [
 export default function RefundPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
+  const router = useRouter();
 
   const [order, setOrder] = useState<OrderData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   // Form state
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,33 +54,57 @@ export default function RefundPage() {
         const json = await res.json();
         if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan.");
         const data = json.data as OrderData;
+        // Redirect if order status does not allow returns
         if (data.status !== "DELIVERED" && data.status !== "COMPLETED") {
-          setLoadError(
-            "Pengembalian hanya dapat diajukan untuk pesanan yang sudah dikirim atau selesai.",
-          );
-        } else {
-          setOrder(data);
+          router.replace(`/profile/orders/${id}`);
+          return;
         }
+        setOrder(data);
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : "Gagal memuat pesanan.");
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, router]);
+
+  function toggleItem(itemId: string) {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!reason || !description.trim()) return;
+    if (!reason || !description.trim() || selectedItemIds.size === 0) return;
     setIsSubmitting(true);
     setSubmitError(null);
+
+    // Build a description that includes which items the user selected,
+    // since the backend endpoint is order-level (not per-item).
+    const selectedNames = order?.order_items
+      .filter((item) => selectedItemIds.has(item.id))
+      .map(
+        (item) =>
+          item.product_name_snapshot +
+          (item.variant_name_snapshot ? ` (${item.variant_name_snapshot})` : ""),
+      )
+      .join(", ");
+    const fullDescription = `Produk yang dikembalikan: ${selectedNames}.\n\n${description.trim()}`;
+
     try {
       const res = await fetch(`/api/orders/${id}/refund`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reason,
-          description: description.trim(),
+          description: fullDescription,
         }),
       });
       const json = await res.json();
@@ -96,14 +129,12 @@ export default function RefundPage() {
     );
   }
 
-  // ── Error ────────────────────────────────────────────────────────────
-  if (loadError || !order) {
+  // ── Fetch error (not a status mismatch — that redirects) ─────────────
+  if (loadError) {
     return (
       <div className="flex flex-col items-center gap-4 py-24 text-center">
         <AlertCircle className="w-10 h-10 text-red-400" />
-        <p className="font-body text-sm text-muted-foreground">
-          {loadError ?? "Pesanan tidak ditemukan."}
-        </p>
+        <p className="font-body text-sm text-muted-foreground">{loadError}</p>
         <Link href={`/profile/orders/${id}`}>
           <Button variant="outline" size="sm">Kembali ke Detail Pesanan</Button>
         </Link>
@@ -132,6 +163,8 @@ export default function RefundPage() {
       </div>
     );
   }
+
+  if (!order) return null;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto">
@@ -167,11 +200,41 @@ export default function RefundPage() {
         onSubmit={(e) => void handleSubmit(e)}
         className="bg-card border-2 border-foreground rounded-2xl p-6 flex flex-col gap-5"
       >
+        {/* Pilih produk yang dikembalikan */}
+        <div className="flex flex-col gap-2">
+          <span className="font-body font-semibold text-sm text-foreground">
+            Produk yang Dikembalikan <span className="text-red-500">*</span>
+          </span>
+          <div className="flex flex-col gap-2">
+            {order.order_items.map((item) => (
+              <label
+                key={item.id}
+                className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border-2 border-foreground/20 hover:border-primary transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedItemIds.has(item.id)}
+                  onChange={() => toggleItem(item.id)}
+                  className="accent-primary w-4 h-4 shrink-0"
+                />
+                <span className="font-body text-sm text-foreground leading-snug">
+                  {item.product_name_snapshot}
+                  {item.variant_name_snapshot && (
+                    <span className="text-muted-foreground">
+                      {" "}({item.variant_name_snapshot})
+                    </span>
+                  )}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* Alasan pengembalian */}
-        <div className="flex flex-col gap-1.5">
-          <label className="font-body font-semibold text-sm text-foreground">
+        <div className="flex flex-col gap-2">
+          <span className="font-body font-semibold text-sm text-foreground">
             Alasan Pengembalian <span className="text-red-500">*</span>
-          </label>
+          </span>
           <div className="flex flex-col gap-2">
             {RETURN_REASONS.map((r) => (
               <label key={r} className="flex items-center gap-3 cursor-pointer">
@@ -181,7 +244,7 @@ export default function RefundPage() {
                   value={r}
                   checked={reason === r}
                   onChange={() => setReason(r)}
-                  className="accent-primary w-4 h-4"
+                  className="accent-primary w-4 h-4 shrink-0"
                 />
                 <span className="font-body text-sm text-foreground">{r}</span>
               </label>
@@ -191,7 +254,10 @@ export default function RefundPage() {
 
         {/* Deskripsi */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="description-input" className="font-body font-semibold text-sm text-foreground">
+          <label
+            htmlFor="description-input"
+            className="font-body font-semibold text-sm text-foreground"
+          >
             Deskripsi Lengkap <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -217,7 +283,12 @@ export default function RefundPage() {
           type="submit"
           variant="primary"
           size="sm"
-          disabled={isSubmitting || !reason || !description.trim()}
+          disabled={
+            isSubmitting ||
+            selectedItemIds.size === 0 ||
+            !reason ||
+            !description.trim()
+          }
           className="gap-2 self-end"
         >
           {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}

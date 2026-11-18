@@ -46,19 +46,19 @@ export default function ComplaintPage() {
         const json = await res.json();
         if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan.");
         const data = json.data as OrderData;
-        // Only DELIVERED or COMPLETED orders can file a complaint
+        // Redirect if order status does not allow complaints
         if (data.status !== "DELIVERED" && data.status !== "COMPLETED") {
-          setLoadError("Komplain hanya dapat diajukan untuk pesanan yang sudah dikirim atau selesai.");
-        } else {
-          setOrder(data);
+          router.replace(`/profile/orders/${id}`);
+          return;
         }
+        setOrder(data);
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : "Gagal memuat pesanan.");
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,14 +97,12 @@ export default function ComplaintPage() {
     );
   }
 
-  // ── Error ────────────────────────────────────────────────────────────
-  if (loadError || !order) {
+  // ── Fetch error (not a status mismatch — that redirects) ─────────────
+  if (loadError) {
     return (
       <div className="flex flex-col items-center gap-4 py-24 text-center">
         <AlertCircle className="w-10 h-10 text-red-400" />
-        <p className="font-body text-sm text-muted-foreground">
-          {loadError ?? "Pesanan tidak ditemukan."}
-        </p>
+        <p className="font-body text-sm text-muted-foreground">{loadError}</p>
         <Link href={`/profile/orders/${id}`}>
           <Button variant="outline" size="sm">Kembali ke Detail Pesanan</Button>
         </Link>
@@ -134,6 +132,8 @@ export default function ComplaintPage() {
     );
   }
 
+  if (!order) return null;
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto">
       {/* Back + Header */}
@@ -162,7 +162,10 @@ export default function ComplaintPage() {
       >
         {/* Pilih produk */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="item-select" className="font-body font-semibold text-sm text-foreground">
+          <label
+            htmlFor="item-select"
+            className="font-body font-semibold text-sm text-foreground"
+          >
             Produk yang Dikomplain <span className="text-red-500">*</span>
           </label>
           <select
@@ -184,7 +187,10 @@ export default function ComplaintPage() {
 
         {/* Alasan singkat */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="reason-input" className="font-body font-semibold text-sm text-foreground">
+          <label
+            htmlFor="reason-input"
+            className="font-body font-semibold text-sm text-foreground"
+          >
             Alasan Komplain <span className="text-red-500">*</span>
           </label>
           <input
@@ -201,7 +207,10 @@ export default function ComplaintPage() {
 
         {/* Deskripsi lengkap */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="description-input" className="font-body font-semibold text-sm text-foreground">
+          <label
+            htmlFor="description-input"
+            className="font-body font-semibold text-sm text-foreground"
+          >
             Deskripsi Lengkap <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -227,7 +236,12 @@ export default function ComplaintPage() {
           type="submit"
           variant="primary"
           size="sm"
-          disabled={isSubmitting || !selectedItemId || !reason.trim() || !description.trim()}
+          disabled={
+            isSubmitting ||
+            !selectedItemId ||
+            !reason.trim() ||
+            !description.trim()
+          }
           className="gap-2 self-end"
         >
           {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
