@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+  },
   allowedDevOrigins: [
     "probiotic-dad-suggest.ngrok-free.dev",
     "*.ngrok-free.dev",

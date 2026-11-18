@@ -3,202 +3,269 @@ import Link from "next/link";
 import CarouselLogo from "@/components/user/carousel-logo";
 
 /**
- * Footer - Komponen footer utama untuk halaman user.
+ * Footer — Komponen footer utama untuk halaman user.
  *
  * Struktur:
  *  1. CarouselLogo  — marquee ticker strip (background kuning)
- *  2. Footer body   — 4 kolom: Jelajahi Roboedu, Layanan, Metode Pembayaran, Ikuti Kami
- *  3. Brand text    — teks "roboedu" besar di bawah (font Unbounded bold 256px)
+ *  2. Footer body   — 4 kolom: Maskot+Tagline, Jelajahi, Metode Pembayaran, Ikuti Kami
+ *  3. Brand text    — teks "roboedu" besar di bawah (font Unbounded bold, butter cream)
  *
- * Warna mengacu pada CSS variables di globals.css:
- *   --color-primary    → #2483D0  (background footer)
- *   --color-background → #F3EFE4  (teks / butter cream)
+ * Design tokens (globals.css):
+ *   --color-primary       → #2483D0  (background footer)
+ *   --color-accent-butter → #FAF1CA  (teks & ikon di atas biru)
+ *   --font-heading        → Unbounded (judul kolom & wordmark)
+ *   --font-body           → Outfit    (body teks & link)
+ *
+ * Asset sosial: /assets/svg/{facebook,instagram,youtube,tiktok}.svg
+ * Asset maskot: /assets/svg/maskot.svg
+ * Asset payment: /assets/images/{dana,bri,bni,gopay,bca,ovo,mandiri,qris,cimb}-new.png
  */
 
-const paymentMethods = [
-  { src: "/assets/images/BNI.png", alt: "BNI" },
-  { src: "/assets/images/BRI.png", alt: "Bank BRI" },
-  { src: "/assets/images/BCA.png", alt: "BCA" },
-  { src: "/assets/images/Dana.png", alt: "DANA" },
-  { src: "/assets/images/Spay.png", alt: "ShopeePay" },
-  { src: "/assets/images/Google-pay.png", alt: "Google Pay" },
-  { src: "/assets/images/gopay.png", alt: "GoPay" },
-  { src: "/assets/images/QRIS.png", alt: "QRIS" },
-  { src: "/assets/images/Mandiri.png", alt: "Mandiri" },
-];
+/* ─── Data ───────────────────────────────────────────────── */
+
+/** Grid 3×3: baris 1 → DANA, BRI, BNI | baris 2 → GoPay, BCA, OVO | baris 3 → Mandiri, QRIS, CIMB */
+const paymentRows = [
+  [
+    { src: "/assets/images/dana-new.png",    alt: "DANA"     },
+    { src: "/assets/images/bri-new.png",     alt: "Bank BRI" },
+    { src: "/assets/images/bni-new.png",     alt: "BNI"      },
+  ],
+  [
+    { src: "/assets/images/gopay-new.png",   alt: "GoPay"    },
+    { src: "/assets/images/bca-new.png",     alt: "BCA"      },
+    { src: "/assets/images/ovo-new.png",     alt: "OVO"      },
+  ],
+  [
+    { src: "/assets/images/mandiri-new.png", alt: "Mandiri"  },
+    { src: "/assets/images/qris-new.png",    alt: "QRIS"     },
+    { src: "/assets/images/cimb-new.png",    alt: "CIMB"     },
+  ],
+] as const;
 
 const jelajahiLinks = [
-  { label: "Fitur 1", href: "#" },
-  { label: "Fitur 2", href: "#" },
-  { label: "Fitur 3", href: "#" },
-  { label: "Fitur 4", href: "#" },
-  { label: "Fitur 5", href: "#" },
-  { label: "Fitur 6", href: "#" },
-];
-
-const layananLinks = [
-  { label: "Layanan 1", href: "#" },
-  { label: "Layanan 2", href: "#" },
-  { label: "Layanan 3", href: "#" },
-  { label: "Layanan 4", href: "#" },
-  { label: "Layanan 5", href: "#" },
-  { label: "Layanan 6", href: "#" },
-];
+  { label: "Beranda",        href: "/"           },
+  { label: "Katalog Produk", href: "/product"    },
+  { label: "Membership",     href: "/membership" },
+  { label: "Kontak",         href: "/contact"    },
+  { label: "Profil Saya",    href: "/profile"    },
+] as const;
 
 const socialLinks = [
-  { label: "Instagram", href: "#" },
-  { label: "YouTube", href: "#" },
-  { label: "TikTok", href: "#" },
-  { label: "LinkedIn", href: "#" },
-];
+  { label: "Facebook",  href: "#", icon: "/assets/svg/facebook.svg"  },
+  { label: "Instagram", href: "#", icon: "/assets/svg/instagram.svg" },
+  { label: "YouTube",   href: "#", icon: "/assets/svg/youtube.svg"   },
+  { label: "TikTok",    href: "#", icon: "/assets/svg/tiktok.svg"    },
+] as const;
+
+/* ─── Component ─────────────────────────────────────────── */
 
 export default function Footer() {
   return (
     <footer
-      className="w-full flex flex-col overflow-hidden"
+      className="w-full flex flex-col overflow-hidden select-none"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
-      {/* ── 1. Marquee Ticker Strip ─────────────────────────── */}
+      {/* ── 1. Marquee Ticker Strip ───────────────────────────── */}
       <CarouselLogo />
 
-      {/* ── 2. Footer Body ──────────────────────────────────── */}
-      <div className="w-full px-8 md:px-16 pt-16 pb-8 z-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 w-full max-w-[1440px] mx-auto">
+      {/* ── 2. Footer Body ─────────────────────────────────────── */}
+      {/*
+        Figma spec (desktop 1440px):
+          Maskot          : 202 × 202.87 px
+          Tagline         : Outfit Medium 20px → 1.25rem
+          Heading kolom   : Unbounded Medium 24px → 1.5rem
+          Link Jelajahi   : Outfit Medium 20px → 1.25rem
+          Payment logo    : 82 × 46 px
+          Social icon     : ~40 × 40 px
+        Semua di-clamp agar tetap proporsional di bawah/atas 1440px.
+        Referensi clamp: nilai tengah dihitung sbg px/1440 × 100vw.
+      */}
+      <div className="w-full px-[clamp(1.5rem,5.5vw,5rem)] pt-14 pb-6">
+        {/*
+          Desktop  : flex-row + justify-between → 4 kolom tersebar kiri ↔ kanan
+          Mobile   : flex-col, stack vertikal dengan gap seragam
+        */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10">
 
-          {/* Column 1 — Jelajahi Roboedu */}
-          <div className="md:col-span-3 flex flex-col gap-3">
-            <h3
-              className="text-[24px] font-semibold leading-[130%] tracking-[-0.06em] mb-4"
+          {/* ── Col 1 — Maskot + Tagline ────────────────────── */}
+          {/*
+            Max-width col dibatasi agar tidak makan terlalu banyak ruang.
+            Maskot: 202px di 1440 → 14vw. Tagline: 20px → 1.389vw ≈ 1.25rem max.
+          */}
+          {/* max-w: 280px→17.5rem, 440px→27.5rem */}
+          <div className="flex flex-row items-end gap-[clamp(0.75rem,1.5vw,1.25rem)] shrink-0 max-w-[clamp(17.5rem,32vw,27.5rem)]">
+            {/* Maskot: 100px→6.25rem min, 202px→12.625rem max */}
+            <div
+              className="relative shrink-0"
               style={{
-                fontFamily: "var(--font-heading)",
-                color: "var(--color-accent-butter)",
+                width:  "clamp(6.25rem, 14.03vw, 12.625rem)",
+                height: "clamp(6.25rem, 14.09vw, 12.6875rem)",
               }}
             >
-              Jelajahi Roboedu
-            </h3>
-            {jelajahiLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-[16px] leading-[160%] transition-opacity duration-200 hover:opacity-70"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  color: "var(--color-accent-butter)",
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+              <Image
+                src="/assets/svg/maskot.svg"
+                alt="RoboEdu Maskot"
+                fill
+                priority
+                className="object-contain object-bottom drop-shadow-sm"
+              />
+            </div>
 
-          {/* Column 2 — Layanan */}
-          <div className="md:col-span-3 flex flex-col gap-3">
-            <h3
-              className="text-[24px] font-semibold leading-[130%] tracking-[-0.06em] mb-4"
+            {/* Tagline — Outfit Medium 20px Figma */}
+            <p
+              className="font-medium leading-[1.6] pb-2"
               style={{
-                fontFamily: "var(--font-heading)",
-                color: "var(--color-accent-butter)",
+                fontFamily: "var(--font-body)",
+                fontSize:   "clamp(0.9rem, 1.389vw, 1.25rem)",
+                color:      "var(--color-accent-butter)",
               }}
             >
-              Layanan
-            </h3>
-            {layananLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-[16px] leading-[160%] transition-opacity duration-200 hover:opacity-70"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  color: "var(--color-accent-butter)",
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
+              Dunia mainan robot lucu dan edukatif. Bermain seru, imajinasi melesat!
+            </p>
           </div>
 
-          {/* Column 3 — Metode Pembayaran */}
-          <div className="md:col-span-4 flex flex-col gap-3">
+          {/* ── Col 2 — Jelajahi ────────────────────────────── */}
+          {/* Heading: Unbounded Medium 24px. Links: Outfit Medium 20px. */}
+          <nav aria-label="Navigasi Footer" className="flex flex-col shrink-0">
             <h3
-              className="text-[24px] font-semibold leading-[130%] tracking-[-0.06em] mb-4"
+              className="font-medium leading-[1.3] tracking-[-0.02em] mb-4"
               style={{
                 fontFamily: "var(--font-heading)",
-                color: "var(--color-accent-butter)",
+                fontSize:   "clamp(1rem, 1.667vw, 1.5rem)",
+                color:      "var(--color-accent-butter)",
+              }}
+            >
+              Jelajahi
+            </h3>
+            <ul className="flex flex-col">
+              {jelajahiLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="transition-opacity duration-200 hover:opacity-70 block"
+                    style={{
+                      fontFamily:  "var(--font-body)",
+                      fontSize:    "clamp(0.9rem, 1.389vw, 1.25rem)",
+                      fontWeight:  500,
+                      lineHeight:  "2",
+                      color:       "var(--color-accent-butter)",
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* ── Col 3 — Metode Pembayaran ───────────────────── */}
+          {/* Heading: Unbounded Medium 24px. Logo: 82×46px Figma. */}
+          <div className="flex flex-col shrink-0">
+            <h3
+              className="font-medium leading-[1.3] tracking-[-0.02em] mb-4"
+              style={{
+                fontFamily: "var(--font-heading)",
+                fontSize:   "clamp(1rem, 1.667vw, 1.5rem)",
+                color:      "var(--color-accent-butter)",
               }}
             >
               Metode Pembayaran
             </h3>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-5 items-center">
-              {paymentMethods.map((method) => (
+
+            {/* Grid 3 kolom — logo 82×46px per Figma spec */}
+            <div
+              className="grid grid-cols-3 gap-y-[clamp(0.5rem,1vw,0.875rem)]"
+              style={{ columnGap: "clamp(0.75rem,2.2vw,2rem)" }}
+            >
+              {paymentRows.flat().map((method) => (
                 <div
                   key={method.alt}
                   className="flex items-center justify-start"
+                  style={{ height: "clamp(1.875rem, 3.19vw, 2.875rem)" }}
                 >
                   <Image
                     src={method.src}
                     alt={method.alt}
-                    width={80}
-                    height={32}
-                    className="h-8 w-auto object-contain"
-                    style={{ filter: "brightness(0) invert(1)" }}
+                    width={82}
+                    height={46}
+                    className="h-full w-auto object-contain"
+                    style={{ maxWidth: "clamp(3.5rem, 5.69vw, 5.125rem)" }}
                   />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Column 4 — Ikuti Kami */}
-          <div className="md:col-span-2 flex flex-col gap-3">
+          {/* ── Col 4 — Ikuti Kami ──────────────────────────── */}
+          {/* Heading: Unbounded Medium 24px. Icons: ~40px diameter. */}
+          <div className="flex flex-col shrink-0">
             <h3
-              className="text-[24px] font-semibold leading-[130%] tracking-[-0.06em] mb-4"
+              className="font-medium leading-[1.3] tracking-[-0.02em] mb-4"
               style={{
                 fontFamily: "var(--font-heading)",
-                color: "var(--color-accent-butter)",
+                fontSize:   "clamp(1rem, 1.667vw, 1.5rem)",
+                color:      "var(--color-accent-butter)",
               }}
             >
               Ikuti Kami
             </h3>
-            <div className="flex flex-col gap-3">
+
+            <div className="flex flex-row gap-[clamp(0.5rem,1.1vw,1rem)]">
               {socialLinks.map((social) => (
                 <Link
                   key={social.label}
                   href={social.href}
-                  className="text-[16px] leading-[160%] transition-opacity duration-200 hover:opacity-70"
+                  aria-label={`${social.label} roboedu`}
+                  className="flex items-center justify-center rounded-full overflow-hidden transition-opacity duration-200 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                   style={{
-                    fontFamily: "var(--font-body)",
-                    color: "var(--color-accent-butter)",
+                    width:  "clamp(2rem, 2.78vw, 2.5rem)",
+                    height: "clamp(2rem, 2.78vw, 2.5rem)",
                   }}
                 >
-                  {social.label}
+                  <Image
+                    src={social.icon}
+                    alt={social.label}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
                 </Link>
               ))}
             </div>
           </div>
+
         </div>
       </div>
 
-      {/* ── 3. Brand Text — "roboedu" besar ─────────────────── */}
+      {/* ── 3. Giant "roboedu" Wordmark ─────────────────────────── */}
+      {/*
+        containerType inline-size membuat 18cqw relatif terhadap lebar footer,
+        bukan viewport — sehingga wordmark selalu proporsional terhadap lebar
+        footer itu sendiri (bukan layar secara keseluruhan).
+        translate-y-[12%] menyebabkan huruf sedikit terpotong di bagian bawah,
+        persis seperti referensi desain.
+      */}
       <div
-        className="w-full flex justify-center items-end overflow-hidden pb-16 pt-12"
-        style={{
-          lineHeight: 0,
-          containerType: "inline-size"
-        }}
+        className="w-full overflow-hidden"
+        style={{ containerType: "inline-size" }}
       >
-        <span
-          style={{
-            fontFamily: "var(--font-heading)",
-            fontSize: "clamp(80px, 18cqw, 324px)",    //pakai cqw, bukan vw
-            fontWeight: 700,
-            color: "var(--color-accent-butter)",
-            letterSpacing: "-0.03em",
-            lineHeight: "0.85",
-            display: "block",
-            userSelect: "none",
-          }}
-        >
-          roboedu
-        </span>
+        <div className="flex justify-center items-end pointer-events-none">
+          <span
+            className="translate-y-[12%] block"
+            style={{
+              fontFamily:    "var(--font-heading)",
+              fontSize:      "clamp(5rem, 20cqw, 20.25rem)",
+              fontWeight:    900,
+              color:         "var(--color-accent-butter)",
+              letterSpacing: "-0.03em",
+              lineHeight:    1,
+              userSelect:    "none",
+              whiteSpace:    "nowrap",
+            }}
+          >
+            roboedu
+          </span>
+        </div>
       </div>
     </footer>
   );

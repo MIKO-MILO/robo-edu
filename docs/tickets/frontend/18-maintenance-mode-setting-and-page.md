@@ -12,13 +12,13 @@ Tiga hal yang dibangun:
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `PATCH /api/admin/settings` menerima field `maintenance_mode` dengan nilai `"true"` atau `"false"`.
-- [ ] `GET /api/maintenance-status` tersedia tanpa auth dan mengembalikan `{ active: boolean }`.
-- [ ] Toggle di halaman Settings membaca nilai tersimpan dari database saat halaman dibuka.
-- [ ] Menekan "Simpan Perubahan" menyimpan nilai toggle ke database.
-- [ ] Guest yang mengakses halaman user saat mode maintenance aktif di-redirect ke `/maintenance`.
-- [ ] Admin yang sudah login tetap bisa mengakses `/admin/*` meski mode maintenance aktif.
-- [ ] Halaman `/maintenance` tampil dengan pesan pemeliharaan yang jelas, desain konsisten dengan sistem desain proyek.
-- [ ] Menonaktifkan mode maintenance dan menyimpan kembali memulihkan akses guest ke halaman user.
+- [x] `PATCH /api/admin/settings` menerima field `maintenance_mode` dengan nilai `"true"` atau `"false"`.
+- [x] `GET /api/maintenance-status` tersedia tanpa auth dan mengembalikan `{ active: boolean }`.
+- [x] Toggle di halaman Settings membaca nilai tersimpan dari database saat halaman dibuka.
+- [x] Menekan "Simpan Perubahan" menyimpan nilai toggle ke database.
+- [x] Guest yang mengakses halaman user saat mode maintenance aktif di-redirect ke `/maintenance`.
+- [x] Admin yang sudah login tetap bisa mengakses `/admin/*` meski mode maintenance aktif.
+- [x] Halaman `/maintenance` tampil dengan pesan pemeliharaan yang jelas, desain konsisten dengan sistem desain proyek.
+- [x] Menonaktifkan mode maintenance dan menyimpan kembali memulihkan akses guest ke halaman user.

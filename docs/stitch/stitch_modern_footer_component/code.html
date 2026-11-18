@@ -1,0 +1,163 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>roboedu Footer</title>
+<!-- Google Fonts: Unbounded & Outfit -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;family=Unbounded:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#1E78D6',
+              ribbon: '#85BEE8',
+              cream: '#FFF4C3',
+            }
+          },
+          fontFamily: {
+            unbounded: ['Unbounded', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Stylesheet for typography and custom adjustments -->
+<style data-purpose="custom-styling">
+    .font-unbounded {
+      font-family: 'Unbounded', cursive, sans-serif;
+    }
+    .font-outfit {
+      font-family: 'Outfit', sans-serif;
+    }
+    /* Giant text matching exact figma specs: font-size 258px, line-height 317px, letter-spacing -3% */
+    .giant-wordmark {
+      font-size: clamp(80px, 17.9vw, 258px);
+      line-height: clamp(98px, 22vw, 317px);
+      letter-spacing: -0.03em;
+      color: #FFF2B2;
+    }
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col justify-end m-0 p-0 antialiased selection:bg-yellow-200 selection:text-blue-900">
+<!-- BEGIN: MainFooter -->
+<footer class="w-full bg-[#1E78D6] text-white relative overflow-hidden flex flex-col pt-0 select-none" data-purpose="site-footer" style="background-color: rgb(36, 131, 208);">
+<!-- BEGIN: TopDecorativeRibbon -->
+<!-- Pattern strip along top with repeating "roboedu" text and cute robot head icon -->
+
+<!-- END: TopDecorativeRibbon -->
+<!-- BEGIN: FooterContent -->
+<!-- Content columns with exact 80px gap requirement -->
+<div class="max-w-[1360px] w-full mx-auto px-6 sm:px-8 lg:px-10 pt-14 pb-8 flex flex-col lg:flex-row items-start justify-between gap-[80px]" data-purpose="footer-columns">
+<!-- Column 1: Brand Mascot & Description -->
+<div class="flex items-center gap-6 max-w-[420px] flex-shrink-0" data-purpose="brand-summary">
+<!-- Cute Robot Mascot Asset Group 177 -->
+<div class="w-36 h-36 flex-shrink-0 relative" style="width: 202px; height: 202.87px;">
+<img alt="roboedu mascot" class="w-full h-full object-contain pointer-events-none drop-shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZsQLQ1fw3J7E8DK91AFGjgZ05YCYV7at1KScc4L0_i0y_8OXj5bzLBNa1xjxIQSTodTZGubgyGOQWSLKL4BOTQTwM6YCLoNvsfeu0UNr-OdHYJMqYIGXxPkzL5ADGp6YgCWdZqSiwC5NdgMFnxVSzixZ6E_3fy0AxU6Va_3-gB5_yZS8ir3b5ihEmWMGQ7oW0DaIawOKpxF2cPTlPPhvTdGY5cd-XZXPt4f_nlX4ZL7Up6SkQbGp8">
+</div>
+<p class="font-outfit text-white leading-[1.6]" style="font-size: 20px; font-weight: 500; font-family: Outfit, sans-serif;">
+          Dunia mainan robot lucu dan edukatif. Bermain seru, imajinasi melesat!
+        </p>
+</div>
+<!-- Column 2: Jelajahi Links -->
+<nav aria-label="Navigasi Footer" class="flex flex-col gap-4 min-w-[130px]" data-purpose="footer-links">
+<h3 class="font-unbounded text-lg font-bold text-white tracking-tight">
+          Jelajahi
+        </h3>
+<ul class="font-outfit text-[15px] font-normal space-y-2 text-white">
+<li><a class="hover:text-yellow-200 transition-colors" href="#">Beranda</a></li>
+<li><a class="hover:text-yellow-200 transition-colors" href="#">Katalog Produk</a></li>
+<li><a class="hover:text-yellow-200 transition-colors" href="#">Membership</a></li>
+<li><a class="hover:text-yellow-200 transition-colors" href="#">Kontak</a></li>
+<li><a class="hover:text-yellow-200 transition-colors" href="#">Profil Saya</a></li>
+</ul>
+</nav>
+<!-- Column 3: Payment Methods -->
+<div class="flex flex-col gap-4" data-purpose="payment-methods">
+<h3 class="font-unbounded text-lg font-bold text-white tracking-tight">
+          Metode Pembayaran
+        </h3>
+<!-- Payment Partners Grid 3x3 -->
+<div class="grid grid-cols-3 gap-x-6 gap-y-3.5 items-center">
+<!-- Row 1: DANA, BRI, BNI -->
+<div class="flex items-center justify-start h-8">
+<img alt="DANA" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoWb54NkClO6wK9-udmwpbwKMhzcDQIJZJV8cx8_wtdmBo_qhqXsE_WgeqS3uQ0Itp5N1W5lq8jPfeG1rLqxeJmDr7CKbJFwMrIgtOOS_ypB02cSOcPLr_VYh48gX8DKZpl9Td2IdJzs6Jta1LAGeDQ8Oc_1LuyWrAkrJyX8tFEgBoHwMV1fqr62JJoUbzfc8YbB-_AMPps4MCfvWW-eH-mqjXJH0p_JAu6blM51zMygC97qMaVY8o">
+</div>
+<div class="flex items-center justify-start h-8">
+<img alt="BANK BRI" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiDGRrcHOiQCmjKsttIz8IWbJdTEyX3-a7jA8e3De6XvDQdAoKXXgIvlX-QQEgC747uGo75X-Yyk4J3X7j7Wf2dGihhiX_nT0-kkHkHkqHHqmGic_XX83vM7kHc3EEm9xyvlWVgN3GriY2bPsQSqFMFl5Fw9O7xb6r1ekXH3-TA97VPgTdtBE4hqH0m3cAJleuW1k19pJK2bjRReNYhLf4xK6l7NtqDzzOUswSpOBQZ1UG8c6GCanE">
+</div>
+<div class="flex items-center justify-start h-8">
+<img alt="BNI" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgBanLS3aQY7MwAzz5PA8b9Q029eiUTufDYmPgEL3l0B5ErQWOvQtNJ-1B7MWk7oFmwFZJKoTp9KmLHKqwii4EefonWlb5-6HBdqmLmZWbaD3KyeM90X8JyPJDORtF11_qpgQ5kPUTtKnIJCXNeF5JVet1W9NuqZGUUpmqfl8Fj5Kl-LgAGT4dusg1d-PTAmhjlovOpLjUs6Gy9tBmyRtTIcMmDr9gi76ZRtlDPL4yXs1isNpmL-rm">
+</div>
+<!-- Row 2: GoPay, BCA, OVO -->
+<div class="flex items-center justify-start h-8">
+<img alt="gopay" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD--2OwYth1pL6FUj4WO7AtQVQrMnE9RdKbI4f1WHRoGKO4byxA8B2AbqcWbxLOUbn7Cgp0UL1qFKsUp0UNvjq7fQtd8n05qLcShf3T3HfZbnz0qYGP2ZGg8TF26SYivhjqzu84X42Ue-tOhP1g61D00DP4ImR_l6coStBpNDqjZpQCHd14dD9SNho3zMKH4_bAikiLd0dA_ffshOqZ2PgZX6Z-1oCL7hglppuVsceCe4kqmyBxCbBN">
+</div>
+<div class="flex items-center justify-start h-8">
+<img alt="BCA" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMh_u17G3Y8uBgW76K-oiIMZuSTYGSKajfVqcGwRK6lh2N2hMokA0yDD0vnrI4vGpJbn6R6RuuPoEFA3buCo-GxlY8ToXD7lsNDw6rlov4vj-7DLwtIRcn49NpGc0dRSagkfVWd3T0Apq3akcGFyzJieJzkOWcSSwd8_AJzRS_S6wh-Ca3EQX3bwE71GJJABqg5RJ4f5i5JGALIH0RYk1t55r6qgBprJjsE9svvjzJp-qdDUAsr6r7">
+</div>
+<div class="flex items-center justify-start h-8">
+<img alt="OVO" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLiS8WblWvV2LoqvtZm_80HQVh9ELmXEZljflgb6NvRvER3kzv1WXFX2o1CXa82QjXKIOtSTN2L-uJgIk27Cr-V2KB76K2hZRSWpx3WBaCTpRuTgqoXaHFpyJqChVsBHy4mTPtYPyQxZ5Qmwt2zKOiY5mskgwqqwpB68dG3hHURS8TwhecLw9e3odWzF-PNhFqw9_kMPfHxyqS9l10cg79gMNMcS6KtyPg3_J1xmBUIoRKAOSvcGSt">
+</div>
+<!-- Row 3: Mandiri, QRIS, CIMB -->
+<div class="flex items-center justify-start h-8">
+<img alt="mandiri" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAxpAGvLhmRHuiQQQQRKgyc7bJYK4_jH7PPfDpUFtWGm-efCH5ftXfXstasOhB9KG4SoLxdS77cNlFpdmo_wNsoIepR6MsUoUPGKPUQmi-4DD0lFmG65JrBAQMGk7ZanS8FYyvqpCg9eJK-AgeJZvdIfF4q0LxWyilk-eV5PnzM9QY4SUx1vQthHdpH4PcmXDpGEgvAmdq7YqKs8gHF4zfPs2JBPMvyvykbKGEuaMl5trHvUrbrAWY">
+</div>
+<div class="flex items-center justify-start h-8">
+<img alt="QRIS" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBszHBxJaLTT5wo5i07vftEgFy1yHUWoU2bbHYoGsFMV79_KKj0jPL1StexC-9hqKb3vs6hIUVyzxAzhDHspbN6bpyqLsgGwybOPM6DFHk-_dZu9oMAIEoupGGxY12VUrTH2Rdn36WjYM90ISO4SyH-xv-ZGteuv2XCIuW0Bhy70eMpSRkEm-0xKxmrmnjqnI-U3FY8I8FiRr2VyoVb1rRySGLyxpCPVjhcWTK7XYFMyMqj1RvtsP4H">
+</div>
+<div class="flex items-center justify-start h-8">
+<img alt="CIMB" class="max-h-7 max-w-[72px] object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFAw4PM9djnrujB3Xao3r-t2r-doEdRJ4Omb9Y-lOVz9ACsWEDoL1n5NI2VC3V4Jpdd8O-0cSkZIYW5-W2i83mr1YcOZ_7ssF5C6gnJbUtqCRWOtrrSp4M1hFkMtzon4YFTH8rmPCVVcuctMoYb67AbLn7q0Cpl7IOCLgvkS5o5MFiCaKglO8Co3y5Ht9DVqpSz5lBRb1cVb8ev4m8_IC5o1XujAoMTHCsu5k5s8WItAPiDja_cA2C">
+</div>
+</div>
+</div>
+<!-- Column 4: Social Media ("Ikuti Kami") -->
+<div class="flex flex-col gap-4" data-purpose="social-links">
+<h3 class="font-unbounded text-lg font-bold text-white tracking-tight">
+          Ikuti Kami
+        </h3>
+<div class="flex items-center gap-3">
+<!-- Facebook Icon -->
+<a aria-label="Facebook roboedu" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center hover:opacity-85 transition-opacity" href="#">
+<img alt="Facebook" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXbPFaM9hP-oEfbVkLuRL0VZz9zX-CqMU7uTno8ZD9VLCRYUnkq_vxbxzSazWPvpjORXuaZFQHQomwLlKzQaYQv4SJtXDLziL8yC-LsUMPzAYeo6xKYMUze-DxXKqJB83pKgDd2n5GzCBnmqd2Fqj5D739n-53aAv2sxzd_P0n3SWho8nKUkEY5b8ONINaBRw2VBgLFb3yFRpdR6DFkWxWBSkiA9iRq1GWaKrh091_fRVtvN1WPtQ2">
+</a>
+<!-- Instagram Icon -->
+<a aria-label="Instagram roboedu" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center hover:opacity-85 transition-opacity" href="#">
+<img alt="Instagram" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC33zKcNwpHeCrXXpnjxP-4RIw37cxaVycN3LhPtC506DnovCEGLlRrTzWeBRnmovDaMpjTlGzfQYoaDN6VeX8yQ-DEsyl1q3MZZEDBxPqU6hXdun_BbFyb19tJzp6pSshLmhOD0baXlL3Ef7AoCVsDvAnyjpNP8mFYurxLEg1NBBLU2fF7SiX9BBNyer66cGvaziU-TGGB3OAiDuSqkfh-NBSmi6BTGrFZ7QuYqWxxcnGQvgPjzFzB">
+</a>
+<!-- YouTube Icon -->
+<a aria-label="YouTube roboedu" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center hover:opacity-85 transition-opacity" href="#">
+<img alt="YouTube" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCxMwVos42ZySnJQH9qb2DQGk3_DfNO1FwkjO982UC2nOVMK4JMSqUTRmYSwpJ9-J9IFmvbJhJPvFHwwl8fs8srODG1X5fmaMHgY060qcAi2nt9jcsce8sac75kPBp2IV-3cwectDSmyQq4UCoGoWj3l-WvVVrhhBYiDf5y_xUIeLJ3-3xCbYe7X-CM3aZTaOp0Zz6x9ZYFRXxI9qa48K1F7kI0NZ6ZK2eR-dxDsLq1tY2OzVmvbrN">
+</a>
+<!-- TikTok Icon -->
+<a aria-label="TikTok roboedu" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center hover:opacity-85 transition-opacity" href="#">
+<img alt="TikTok" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8Owr9iPZG3QzFZ6flk40mMNk4wzpFkYQVQ3zHCZVTMu5welDoIi9uliMhJVixOt9CzJOU3x1eyqIVEX-myKro5iLglvdenqmT1XlZ6PU5Kf4oobx_fK_Mra6zwqwKYFtiNDtnD6vyTRUop5TO0uBU74uEZ7zt-W3zRKDwCfacoZXiL4_v4KQ1Px2o9u8PZWHr4Rx_x9BpMNjLsqFJrfpboTXG8_8C_Y530hYeoeRQSw3sG2LIuhc8">
+</a>
+</div>
+</div>
+</div>
+<!-- END: FooterContent -->
+<!-- BEGIN: GiantBottomWordmark -->
+<!-- Large statement wordmark spanning across the bottom matching exact specs -->
+<div class="w-full flex justify-center items-end overflow-hidden select-none pointer-events-none -mt-4 sm:-mt-6 lg:-mt-10" data-purpose="giant-brand-typography">
+<h1 class="font-unbounded giant-wordmark font-black text-center whitespace-nowrap m-0 p-0 transform translate-y-3 sm:translate-y-5 lg:translate-y-8">
+        roboedu
+      </h1>
+</div>
+<!-- END: GiantBottomWordmark -->
+</footer>
+<!-- END: MainFooter -->
+
+
+</body></html>
