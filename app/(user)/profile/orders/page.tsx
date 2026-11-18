@@ -101,6 +101,7 @@ function OrdersContent() {
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<ApiOrder | null>(null);
   const [selectedReviewOrder, setSelectedReviewOrder] = useState<ApiOrder | null>(null);
   const [loadingDetailId, setLoadingDetailId] = useState<string | null>(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -267,6 +268,40 @@ function OrdersContent() {
     showToast(`Pesanan ${orderNumber} berhasil dibatalkan.`);
   }
 
+  async function handleConfirmReceived(orderId: string) {
+    // Optimistic update: DELIVERED → COMPLETED
+    setConfirmingOrderId(orderId);
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId ? { ...o, status: "COMPLETED" as OrderStatus } : o,
+      ),
+    );
+    try {
+      const res = await fetch(`/api/orders/${orderId}/confirm-received`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) {
+        // Roll back
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId ? { ...o, status: "DELIVERED" as OrderStatus } : o,
+          ),
+        );
+        showToast(json?.message ?? "Gagal mengkonfirmasi penerimaan. Silakan coba lagi.");
+      } else {
+        showToast("Penerimaan paket berhasil dikonfirmasi. Pesanan selesai!");
+      }
+    } catch {
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: "DELIVERED" as OrderStatus } : o,
+        ),
+      );
+      showToast("Gagal mengkonfirmasi penerimaan. Periksa koneksi internet Anda.");
+    } finally {
+      setConfirmingOrderId(null);
+    }
+  }
+
   function handleReviewSuccess() {
     showToast("Ulasanmu berhasil dikirim!");
     // Tandai order ini sebagai sudah direview agar banner hilang
@@ -396,6 +431,8 @@ function OrdersContent() {
                   onReview={handleReview}
                   onPayNow={handlePayNow}
                   onCancelOrder={handleCancelOrder}
+                  onConfirmReceived={handleConfirmReceived}
+                  confirmingId={confirmingOrderId}
                 />
               </div>
             ))}
