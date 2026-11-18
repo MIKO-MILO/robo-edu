@@ -14,11 +14,11 @@ Empat hal yang dibangun dalam satu ticket ini karena semuanya berkaitan dengan t
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `POST /api/orders/[id]/confirm-received` tersedia, mengubah status DELIVERED → COMPLETED, mengisi `completed_at`, dan idempoten untuk status yang sudah COMPLETED.
-- [ ] `POST /api/reviews` menolak order berstatus `DELIVERED` dengan pesan error yang jelas; hanya menerima `COMPLETED`.
-- [ ] Endpoint refund user-facing tersedia dan menerima order berstatus `DELIVERED` atau `COMPLETED`.
-- [ ] Fungsi `runOrderAutoConfirm` tersedia di layer cron, mengubah order DELIVERED yang sudah > 3 hari ke COMPLETED secara idempoten.
-- [ ] Cron auto-confirm terdaftar di worker dan berjalan harian.
-- [ ] API `POST /api/complaints` tidak diubah — sudah benar menerima `DELIVERED`.
+- [x] `POST /api/orders/[id]/confirm-received` tersedia, mengubah status DELIVERED → COMPLETED, mengisi `completed_at`, dan idempoten untuk status yang sudah COMPLETED.
+- [x] `POST /api/reviews` menolak order berstatus `DELIVERED` dengan pesan error yang jelas; hanya menerima `COMPLETED`.
+- [x] Endpoint refund user-facing tersedia dan menerima order berstatus `DELIVERED` atau `COMPLETED`.
+- [x] Fungsi `runOrderAutoConfirm` tersedia di layer cron, mengubah order DELIVERED yang sudah > 3 hari ke COMPLETED secara idempoten.
+- [x] Cron auto-confirm terdaftar di worker dan berjalan harian.
+- [x] API `POST /api/complaints` tidak diubah — sudah benar menerima `DELIVERED`.
