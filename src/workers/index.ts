@@ -49,9 +49,8 @@ import {
 } from "@/src/lib/cron/membership-cron";
 import { runOrderAutoCancel } from "@/src/lib/jobs/order-auto-cancel";
 import { runPaymentReconcile } from "@/src/lib/jobs/payment-reconcile";
+import { runOrderAutoConfirm } from "@/src/lib/cron/order-auto-confirm";
 
-// Import db via a worker-safe path (send-worker.ts already creates its own pool;
-// here we need direct DB access to fetch data for email templates).
 import * as schema from "@/src/db/schema";
 
 // ── DB ────────────────────────────────────────────────────────────────────────
@@ -248,7 +247,7 @@ async function handleMembershipReminder(
   });
 }
 
-// ── BullMQ Worker ─────────────────────────────────────────────────────────────
+// ── BullMQ Email Worker ───────────────────────────────────────────────────────
 
 const worker = new Worker<EmailJobData>(
   EMAIL_QUEUE_NAME,
@@ -301,19 +300,72 @@ console.log(
   `[worker] 🚀 Email worker started — listening on queue "${EMAIL_QUEUE_NAME}"`,
 );
 
+// ── BullMQ Order Worker ───────────────────────────────────────────────────────
+
+const orderWorker = new Worker<OrderJobData>(
+  ORDER_QUEUE_NAME,
+  async (job: Job<OrderJobData>) => {
+    const { data } = job;
+    console.log(`[order-worker] Processing job ${job.id} type=${data.type}`);
+
+    switch (data.type) {
+      case "order-auto-cancel":
+        await runOrderAutoCancel(db);
+        break;
+
+      case "payment-reconcile":
+        await runPaymentReconcile(db, {
+          paymentId: data.paymentId,
+          midtransOrderId: data.midtransOrderId,
+          orderId: data.orderId,
+        });
+        break;
+
+      default: {
+        // TypeScript exhaustive check
+        const exhaustive: never = data;
+        console.warn(`[order-worker] Unknown job type:`, exhaustive);
+      }
+    }
+  },
+  {
+    connection: getRedisConnection(),
+    concurrency: 2,
+  },
+);
+
+orderWorker.on("completed", (job) => {
+  console.log(
+    `[order-worker] ✅ Job ${job.id} (${job.data.type}) completed`,
+  );
+});
+
+orderWorker.on("failed", (job, err) => {
+  console.error(
+    `[order-worker] ❌ Job ${job?.id} (${job?.data?.type}) failed (attempt ${job?.attemptsMade}):`,
+    err.message,
+  );
+});
+
+// Register the repeatable order-auto-cancel job (runs every 5 min).
+registerOrderAutoCancelJob()
+  .then(() => {
+    console.log(
+      `[order-worker] 🚀 Order worker started — listening on queue "${ORDER_QUEUE_NAME}"`,
+    );
+    console.log(
+      `[order-worker] 🔁 order-auto-cancel repeatable job registered (every 5 min)`,
+    );
+  })
+  .catch((err: unknown) => {
+    console.error(
+      "[order-worker] Failed to register order-auto-cancel repeatable job:",
+      err,
+    );
+  });
+
 // ── Cron scheduler ────────────────────────────────────────────────────────────
 
-/**
- * Schedule a function to run daily at a fixed UTC hour:minute.
- *
- * Uses only Node.js built-ins (no node-cron dependency). Calculates the
- * milliseconds until the next occurrence and uses setTimeout recursively.
- *
- * @param label   Human-readable name for log messages
- * @param utcHour Target hour in UTC (0-23)
- * @param utcMin  Target minute in UTC (0-59)
- * @param fn      Async function to run
- */
 function scheduleDailyUtc(
   label: string,
   utcHour: number,
@@ -353,11 +405,16 @@ scheduleDailyUtc("expire", 18, 0, () => runExpireMemberships(db));
 // Reminder cron: daily at 08:00 WIB = 01:00 UTC
 scheduleDailyUtc("reminder", 1, 0, () => runReminderQueue(db));
 
+// Auto-confirm cron: daily at 02:00 WIB = 19:00 UTC
+// Sweeps DELIVERED orders with delivered_at > 3 days ago and marks them COMPLETED.
+scheduleDailyUtc("order-auto-confirm", 19, 0, () => runOrderAutoConfirm(db));
+
 // ── Graceful shutdown ─────────────────────────────────────────────────────────
 
 async function shutdown(signal: string) {
   console.log(`[worker] ${signal} received — shutting down gracefully...`);
   await worker.close();
+  await orderWorker.close();
   await pool.end();
   console.log("[worker] Shutdown complete.");
   process.exit(0);

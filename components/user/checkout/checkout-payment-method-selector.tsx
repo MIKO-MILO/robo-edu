@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Check, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CHANNEL_CATALOG, type PaymentChannelEntry } from "@/src/lib/payment/channels";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,8 +15,6 @@ export type PaymentChannel =
   | "permata_va"
   | "cimb_va"
   | "credit_card"
-  | "gopay"
-  | "shopeepay"
   | "qris"
   | "dana"
   | "ovo"
@@ -41,31 +40,63 @@ export interface SelectedPayment {
   ovoPhone?: string;
 }
 
-// ─── Static fallback list ─────────────────────────────────────────────────────
-// Digunakan ketika GET /payment-methods belum tersedia (404 / network error).
-// Menghapus blok ini dan menggantinya dengan live fetch sudah cukup untuk switch ke API.
+// ─── Display metadata ────────────────────────────────────────────────────────
+// `icon` / `color` / `bg` are pure rendering concerns, kept separate from the
+// canonical channel catalog (`src/lib/payment/channels.ts`) which is the
+// single source of truth for *which* channels exist. This map only describes
+// *how* a known channel is rendered; channels not listed here fall back to a
+// neutral chip derived from the label.
 
-export const PAYMENT_METHODS_FALLBACK: PaymentMethod[] = [
+const CHANNEL_DISPLAY: Record<string, { icon: string; color: string; bg: string }> = {
   // Virtual Account
-  { method: "bank_transfer", channel: "bca_va",      label: "BCA Virtual Account",      group: "Virtual Account", icon: "BCA",       color: "text-blue-800",    bg: "bg-blue-50"    },
-  { method: "bank_transfer", channel: "bni_va",      label: "BNI Virtual Account",      group: "Virtual Account", icon: "BNI",       color: "text-orange-700",  bg: "bg-orange-50"  },
-  { method: "bank_transfer", channel: "bri_va",      label: "BRI Virtual Account",      group: "Virtual Account", icon: "BRI",       color: "text-blue-700",    bg: "bg-sky-50"     },
-  { method: "bank_transfer", channel: "mandiri_va",  label: "Mandiri Virtual Account",  group: "Virtual Account", icon: "Mandiri",   color: "text-yellow-700",  bg: "bg-yellow-50"  },
-  { method: "bank_transfer", channel: "permata_va",  label: "Permata Virtual Account",  group: "Virtual Account", icon: "Permata",   color: "text-teal-700",    bg: "bg-teal-50"    },
-  { method: "bank_transfer", channel: "cimb_va",     label: "CIMB Virtual Account",     group: "Virtual Account", icon: "CIMB",      color: "text-red-700",     bg: "bg-red-50"     },
-  // Kartu Kredit
-  { method: "credit_card",   channel: "credit_card", label: "Kartu Kredit / Debit",     group: "Kartu",           icon: "VISA",      color: "text-indigo-700",  bg: "bg-indigo-50"  },
+  bca_va:      { icon: "BCA",     color: "text-blue-800",   bg: "bg-blue-50"   },
+  bni_va:      { icon: "BNI",     color: "text-orange-700", bg: "bg-orange-50" },
+  bri_va:      { icon: "BRI",     color: "text-blue-700",   bg: "bg-sky-50"     },
+  mandiri_va:  { icon: "Mandiri", color: "text-yellow-700", bg: "bg-yellow-50"  },
+  permata_va:  { icon: "Permata", color: "text-teal-700",   bg: "bg-teal-50"    },
+  cimb_va:     { icon: "CIMB",    color: "text-red-700",    bg: "bg-red-50"     },
+  // Kartu
+  credit_card: { icon: "VISA",   color: "text-indigo-700", bg: "bg-indigo-50"  },
   // QRIS
-  { method: "gopay",         channel: "gopay",       label: "GoPay QRIS",               group: "QRIS",            icon: "GoPay",     color: "text-emerald-700", bg: "bg-emerald-50" },
-  { method: "shopeepay",     channel: "shopeepay",   label: "ShopeePay QRIS",           group: "QRIS",            icon: "SPay",      color: "text-orange-600",  bg: "bg-orange-50"  },
-  { method: "qris",          channel: "qris",        label: "QRIS (semua dompet)",       group: "QRIS",            icon: "QRIS",      color: "text-blue-700",    bg: "bg-blue-50"    },
+  qris:        { icon: "QRIS",   color: "text-blue-700",   bg: "bg-blue-50"    },
   // E-Wallet
-  { method: "dana",          channel: "dana",        label: "DANA",                     group: "E-Wallet",        icon: "DANA",      color: "text-blue-700",    bg: "bg-sky-50"     },
-  { method: "ovo",           channel: "ovo",         label: "OVO",                      group: "E-Wallet",        icon: "OVO",       color: "text-purple-700",  bg: "bg-purple-50"  },
+  dana:        { icon: "DANA",   color: "text-blue-700",   bg: "bg-sky-50"     },
+  ovo:         { icon: "OVO",    color: "text-purple-700", bg: "bg-purple-50"  },
   // Gerai
-  { method: "cstore",        channel: "alfamart",    label: "Alfamart",                 group: "Gerai",           icon: "Alfa",      color: "text-red-700",     bg: "bg-red-50"     },
-  { method: "cstore",        channel: "indomaret",   label: "Indomaret",                group: "Gerai",           icon: "Indo",      color: "text-red-600",     bg: "bg-red-50"     },
-];
+  alfamart:    { icon: "Alfa",   color: "text-red-700",    bg: "bg-red-50"     },
+  indomaret:   { icon: "Indo",   color: "text-red-600",    bg: "bg-red-50"     },
+};
+
+interface RawApiMethod {
+  method: string;
+  channel: string;
+  label: string;
+  group?: string;
+}
+
+/** Merge a catalog/API entry with its display metadata into a PaymentMethod. */
+function toPaymentMethod(
+  entry: Pick<PaymentChannelEntry, "method" | "channel" | "label" | "group">,
+): PaymentMethod {
+  const display = CHANNEL_DISPLAY[entry.channel];
+  return {
+    method: entry.method,
+    channel: entry.channel as PaymentChannel,
+    label: entry.label,
+    group: entry.group,
+    icon: display?.icon ?? entry.label.slice(0, 4).toUpperCase(),
+    color: display?.color ?? "text-foreground",
+    bg: display?.bg ?? "bg-muted",
+  };
+}
+
+// ─── Static fallback list ─────────────────────────────────────────────────────
+// Derived from the canonical catalog so it can never drift from the set of
+// channels the backend considers valid. Used only when GET /payment-methods
+// is unreachable (network error / 404) — otherwise the live API response wins.
+
+export const PAYMENT_METHODS_FALLBACK: PaymentMethod[] =
+  CHANNEL_CATALOG.map(toPaymentMethod);
 
 // ─── Fetch helper ─────────────────────────────────────────────────────────────
 
@@ -74,16 +105,22 @@ async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
     const res = await fetch("/api/payment-methods");
     if (!res.ok) throw new Error("not available");
     const json = await res.json();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (json.data as any[]).map((m) => ({
-      method:  m.method,
-      channel: m.channel as PaymentChannel,
-      label:   m.label,
-      group:   m.group ?? "Lainnya",
-      icon:    m.icon  ?? m.label.slice(0, 4).toUpperCase(),
-      color:   m.color ?? "text-foreground",
-      bg:      m.bg    ?? "bg-muted",
-    }));
+    const data = json.data as RawApiMethod[];
+    // Keep only channels the catalog recognises (defensive: drop any channel the
+    // backend shouldn't be advertising), then attach display metadata.
+    return CHANNEL_CATALOG.filter((c) =>
+      data.some((m) => m.channel === c.channel),
+    )
+      .map((c) => {
+        const api = data.find((m) => m.channel === c.channel)!;
+        // Prefer the API label/group when present, fall back to the catalog.
+        return toPaymentMethod({
+          method: c.method,
+          channel: c.channel,
+          label: api.label || c.label,
+          group: api.group ?? c.group,
+        });
+      });
   } catch {
     // Endpoint belum tersedia — gunakan fallback lokal
     return PAYMENT_METHODS_FALLBACK;

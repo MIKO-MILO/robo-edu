@@ -102,7 +102,7 @@ export function ProductImage({
   return (
     <div
       className={cn(
-        "bg-card rounded-2xl overflow-hidden border border-foreground relative flex items-center justify-center shrink-0 select-none",
+        "bg-transparent rounded-2xl overflow-hidden border-0 !border-none outline-none relative flex items-center justify-center shrink-0 select-none",
         containerSizeClass,
         aspectClass,
         className,

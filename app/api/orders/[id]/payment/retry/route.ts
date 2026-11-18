@@ -6,6 +6,10 @@ import { db } from "@/src/db";
 import { orders, payments, users } from "@/src/db/schema";
 import { getUserIdFromRequest } from "@/src/lib/auth/session";
 import { cancelCoreApi, chargeCoreApi } from "@/src/lib/payments/midtrans";
+import {
+  assertChannelActive,
+  PaymentChannelUnavailableError,
+} from "@/src/lib/payment/payment-methods-service";
 
 export const runtime = "nodejs";
 
@@ -189,6 +193,27 @@ export async function POST(
       },
       { status: 422 },
     );
+  }
+
+  // ── Enforce payment channel availability (new charges only) ───────────────
+  // Placed after the idempotency check so a duplicate request with the same
+  // Idempotency-Key still returns its cached attempt. New charges (a genuinely
+  // new method) must use an active channel — keeps "Ganti Metode" consistent
+  // with the checkout selector and blocks direct API POSTs of disabled/unknown
+  // channels.
+  try {
+    await assertChannelActive(paymentChannel);
+  } catch (err) {
+    if (err instanceof PaymentChannelUnavailableError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Metode pembayaran tidak tersedia. Silakan pilih metode lain.",
+        },
+        { status: 422 },
+      );
+    }
+    throw err;
   }
 
   const latestAttempt = existingAttempts[0] ?? null;

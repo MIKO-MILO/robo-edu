@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { StarRating } from "@/components/ui/star-rating";
 
 // ==========================================
 // 1. TYPES & INTERFACES
@@ -36,12 +37,12 @@ export interface TestimoniProps {
 
 // Palet warna aksen untuk card — digilir berdasarkan index
 const ACCENT_PALETTES = [
-  { accentBg: "bg-[#FFF9D2]", innerBorderColor: "border-[#E2C044]", quoteColor: "text-[#E2C044]", avatarBg: "bg-[#FFF37E]" },
-  { accentBg: "bg-[#E6F4FF]", innerBorderColor: "border-[#85BDE6]", quoteColor: "text-[#85BDE6]", avatarBg: "bg-[#BDE0FF]" },
-  { accentBg: "bg-[#EAE4FF]", innerBorderColor: "border-[#A090E0]", quoteColor: "text-[#A090E0]", avatarBg: "bg-[#D6CEFF]" },
-  { accentBg: "bg-[#FFEAD5]", innerBorderColor: "border-[#E8A36E]", quoteColor: "text-[#E8A36E]", avatarBg: "bg-[#FFD3AD]" },
-  { accentBg: "bg-[#DCFCE7]", innerBorderColor: "border-[#6EBE8A]", quoteColor: "text-[#6EBE8A]", avatarBg: "bg-[#AEECC4]" },
-  { accentBg: "bg-[#FFE4E8]", innerBorderColor: "border-[#E07090]", quoteColor: "text-[#E07090]", avatarBg: "bg-[#FFC0CE]" },
+  { accentBg: "bg-accent-butter",     innerBorderColor: "border-accent-gold",   quoteColor: "text-accent-gold",   avatarBg: "bg-accent-yellow" },
+  { accentBg: "bg-primary-100",       innerBorderColor: "border-primary-300",   quoteColor: "text-primary-300",   avatarBg: "bg-accent-soft-blue" },
+  { accentBg: "bg-accent-purple-light", innerBorderColor: "border-accent-purple", quoteColor: "text-accent-purple", avatarBg: "bg-accent-purple/50" },
+  { accentBg: "bg-accent-orange/40",  innerBorderColor: "border-accent-orange", quoteColor: "text-accent-orange", avatarBg: "bg-accent-orange" },
+  { accentBg: "bg-accent-green/40",   innerBorderColor: "border-accent-green",  quoteColor: "text-accent-green",  avatarBg: "bg-accent-green" },
+  { accentBg: "bg-accent-pink/40",    innerBorderColor: "border-accent-pink",   quoteColor: "text-accent-pink",   avatarBg: "bg-accent-pink" },
 ];
 
 // Data statis sebagai fallback jika DB belum punya review
@@ -125,15 +126,15 @@ function TestimonialCard({ item }: { item: Testimonial }) {
           <div className="flex items-center gap-2.5 xs:gap-3 pt-1 mb-2 sm:mb-3">
             {/* Avatar inisial — avatar key di MinIO bersifat private, tidak bisa diakses publik */}
             <div
-              className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full ${item.avatarBg} shrink-0 flex items-center justify-center border border-[#3D2900]/10`}
+              className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-full ${item.avatarBg} shrink-0 flex items-center justify-center border border-foreground/10`}
               aria-hidden="true"
             >
-              <span className="font-heading font-extrabold text-[#3D2900] text-xs xs:text-sm sm:text-base select-none">
+              <span className="font-heading font-extrabold text-foreground text-xs xs:text-sm sm:text-base select-none">
                 {item.avatarInitial}
               </span>
             </div>
             <div className="overflow-hidden">
-              <h3 className="font-heading text-xs xs:text-sm sm:text-base font-extrabold text-[#3D2900] leading-tight truncate">
+              <h3 className="font-heading text-xs xs:text-sm sm:text-base font-extrabold text-foreground leading-tight truncate">
                 {item.name}
               </h3>
             </div>
@@ -144,13 +145,15 @@ function TestimonialCard({ item }: { item: Testimonial }) {
  &ldquo;{item.comment}&rdquo;
  </blockquote>
 
- {/* Rating Bintang */}
+                 {/* Rating Bintang */}
  <div className="flex items-center justify-end border-t border-border/10 pt-2 sm:pt-3">
- <div className="flex items-center gap-0.5 xs:gap-1" aria-label={`Rating ${item.rating} dari 5 bintang`}>
- {[...Array(item.rating)].map((_, i) => (
- <Star key={i} className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 fill-[#FFC107] text-[#FFC107]" aria-hidden="true" />
- ))}
- </div>
+   <StarRating
+     rating={item.rating}
+     variant="full"
+     size="sm"
+     showScore={false}
+     showCount={false}
+   />
  </div>
  </div>
 
@@ -213,8 +216,8 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
  className="absolute inset-0 z-0 bg-fixed bg-cover bg-center"
  style={{ backgroundImage:"url('/images/foto3.jpg')" }}
  >
- {/* Layer overlay #2781CD dengan transparansi */}
- <div className="absolute inset-0 bg-[#2781CD]/78" />
+ {/* Layer overlay landing-blue dengan transparansi */}
+ <div className="absolute inset-0 bg-landing-blue/78" />
  </div>
 
  {/* Lengkungan Atas */}
@@ -299,7 +302,7 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
  <button
  onClick={handlePrev}
  aria-label="Testimoni sebelumnya"
- className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#FFF37E] text-foreground flex items-center justify-center transition-all duration-200 hover:bg-[#FFE838] hover:scale-110 active:scale-95 z-30 cursor-pointer"
+ className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-accent-yellow text-foreground flex items-center justify-center transition-all duration-200 hover:bg-accent-yellow hover:scale-110 active:scale-95 z-30 cursor-pointer"
  >
  <ChevronLeft className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 stroke-[3]" aria-hidden="true" />
  </button>
@@ -330,7 +333,7 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
  <button
  onClick={handleNext}
  aria-label="Testimoni selanjutnya"
- className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#FFF37E] text-foreground flex items-center justify-center transition-all duration-200 hover:bg-[#FFE838] hover:scale-110 active:scale-95 z-30 cursor-pointer"
+ className="shrink-0 w-7 h-7 xs:w-9 xs:h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-accent-yellow text-foreground flex items-center justify-center transition-all duration-200 hover:bg-accent-yellow hover:scale-110 active:scale-95 z-30 cursor-pointer"
  >
  <ChevronRight className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 stroke-[3]" aria-hidden="true" />
  </button>
@@ -339,22 +342,22 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
 
  {/* Bagian Bawah: Bayangan Gelap Harmonis */}
  <div className="absolute bottom-0 left-0 right-0 w-full overflow-visible leading-none z-20 pointer-events-none" aria-hidden="true">
- {/* Definisikan Gradasi yang Lebih Luas/Lebar */}
+ {/* Definisikan Gradasi dengan Warna Biru yang Dimudakan Sedikit Lagi */}
  <svg width="0" height="0" className="absolute block">
  <defs>
- {/* Gradasi layer tengah: Penyebaran transisi dibuat luas dari ujung ke ujung */}
+ {/* Gradasi layer tengah: Dimudakan sedikit dari sebelumnya agar pas */}
  <linearGradient id="largeShadowFade" x1="0%" y1="0%" x2="100%" y2="0%">
- <stop offset="0%" stopColor="#2563EB" stopOpacity="0.05" />
- <stop offset="30%" stopColor="#1D4ED8" stopOpacity="0.3" />
- <stop offset="70%" stopColor="#1E3A8A" stopOpacity="0.65" />
- <stop offset="100%" stopColor="#172554" stopOpacity="0.85" />
+ <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.06" />
+ <stop offset="30%" stopColor="var(--color-primary)" stopOpacity="0.25" />
+ <stop offset="70%" stopColor="var(--color-primary-700)" stopOpacity="0.5" />
+ <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.65" />
  </linearGradient>
 
- {/* Gradasi penyebar untuk layer paling belakang agar area bayangan lebih tinggi */}
+ {/* Gradasi penyebar untuk layer paling belakang */}
  <linearGradient id="largeBaseGlow" x1="0%" y1="0%" x2="100%" y2="0%">
- <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1" />
- <stop offset="50%" stopColor="#2563EB" stopOpacity="0.3" />
- <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.5" />
+ <stop offset="0%" stopColor="var(--color-primary-300)" stopOpacity="0.08" />
+ <stop offset="50%" stopColor="var(--color-primary)" stopOpacity="0.22" />
+ <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.4" />
  </linearGradient>
  </defs>
  </svg>
@@ -385,7 +388,7 @@ export default function Testimoni({ reviews: rawReviews }: TestimoniProps) {
  />
  </svg>
 
- {/* LAYER 3: Lengkungan Utama Paling Depan (#F3EFE4) */}
+ {/* LAYER 3: Lengkungan Utama Paling Depan (bg-background) */}
  <svg
  className="relative block w-full h-16 sm:h-24 lg:h-36 text-background z-20 overflow-visible"
  viewBox="0 0 1440 120"

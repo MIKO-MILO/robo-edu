@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from"next/image";
 
@@ -41,7 +41,7 @@ export default function Carousel() {
 
  <use
  href="#robo-wave-path-back"
- stroke="#F3C769"
+ stroke="var(--color-accent-gold)"
  strokeWidth="68"
  strokeLinecap="round"
  strokeLinejoin="round"
@@ -49,7 +49,7 @@ export default function Carousel() {
  />
  <text
  dy="0.35em"
- className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
+ className="fill-foreground font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
  >
  <textPath href="#robo-wave-path-back" startOffset="0%">
  <animate
@@ -65,7 +65,7 @@ export default function Carousel() {
 
  <use
  href="#robo-wave-path-front"
- stroke="#F3C769"
+ stroke="var(--color-accent-gold)"
  strokeWidth="68"
  strokeLinecap="round"
  strokeLinejoin="round"
@@ -73,7 +73,7 @@ export default function Carousel() {
  />
  <text
  dy="0.35em"
- className="fill-[#3D2900] font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
+ className="fill-foreground font-semibold text-sm sm:text-base tracking-[0.16em] lowercase font-heading select-none"
  >
  <textPath href="#robo-wave-path-front" startOffset="0%">
  <animate
@@ -97,7 +97,7 @@ export default function Carousel() {
  <tspan
  x="195"
  dy="0"
- className="text-xs sm:text-sm font-bold tracking-[0.18em] uppercase fill-[#B85C38]"
+ className="text-xs sm:text-sm font-bold tracking-[0.18em] uppercase fill-promo-orange"
  >
  Koleksi Pilihan
  </tspan>
@@ -105,7 +105,7 @@ export default function Carousel() {
  x="195"
  dy="52"
  style={{ fontSize:"43px" }}
- className="font-extrabold tracking-tight fill-[#3D2900]"
+ className="font-extrabold tracking-tight fill-foreground"
  >
  Mainan & Robot IoT
  </tspan>
@@ -113,7 +113,7 @@ export default function Carousel() {
  x="195"
  dy="46"
  style={{ fontSize:"43px" }}
- className="font-extrabold tracking-tight fill-[#3D2900]"
+ className="font-extrabold tracking-tight fill-foreground"
  >
  Canggih
  </tspan>
@@ -127,13 +127,13 @@ export default function Carousel() {
  width="230"
  height="50"
  rx="25"
- className="fill-[#3D2900] transition-all duration-300 group-hover:fill-[#103B5E]"
+ className="fill-foreground transition-all duration-300 group-hover:fill-primary-900"
  />
  <text
  x="1215"
  y="330"
  textAnchor="middle"
- className="fill-[#FAF1CA] font-bold text-xs sm:text-sm tracking-wider font-heading select-none pointer-events-none"
+ className="fill-accent-butter font-bold text-xs sm:text-sm tracking-wider font-heading select-none pointer-events-none"
  >
  Lihat Selengkapnya
  </text>

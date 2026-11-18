@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
-import Image from"next/image";
-import ProductCarousel from"@/components/user/landing/product-carousel";
+import Image from "next/image";
+import ProductCarousel from "@/components/user/landing/product-carousel";
 
 // ==========================================
 // SUB-COMPONENTS
@@ -39,48 +39,42 @@ function CurvedArrowSVG({ className = "" }: { className?: string }) {
 
 // Atom: Section Label
 function SectionLabel({ text }: { text: string }) {
- return (
- <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
- {/* Panah Kiri */}
- <CurvedArrowSVG className="w-6 sm:w-10 h-auto text-[#C0392B]" />
-
- <span className="font-body text-xs sm:text-sm font-bold text-[#C0392B] tracking-wide uppercase">
- {text}
- </span>
-
- {/* Panah Kanan */}
- <CurvedArrowSVG className="w-6 sm:w-10 h-auto text-[#C0392B] scale-x-[-1]" />
- </div>
- );
+  return (
+    <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
+      <span className="font-body text-base sm:text-lg font-bold text-promo-red tracking-wide uppercase">
+        {text}
+      </span>
+    </div>
+  );
 }
 
-// Atom: Side Toy Decorations (Kiri & Kanan)
+// Atom: Side Toy Decorations (Di dalam container max-w-6xl agar selalu nempel dengan card)
 function SideToyDecorations() {
- return (
- <>
- {/* Gambar Mainan Kiri (images/toys.webp) */}
- <div className="hidden sm:block absolute top-24 sm:-left-4 md:-left-12 lg:-left-16 xl:left-10 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 pointer-events-none select-none z-0 -rotate-12 transition-transform opacity-100">
- <Image
- src="/images/toys.webp"
- alt="Toy Decoration Left"
- fill
- className="object-contain"
- priority
- />
- </div>
+  return (
+    <>
+      {/* Gambar Mainan Kiri (toy3.webp) - Dinaikkan lebih ke atas */}
+      <div className="hidden sm:block absolute -top-2 sm:top-0 lg:-top-2 sm:-left-20 md:-left-24 lg:-left-28 xl:-left-36 w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 xl:w-56 xl:h-56 pointer-events-none select-none z-30 transition-transform">
+        <Image
+          src="/images/toy3.webp"
+          alt="Toy Decoration Left"
+          fill
+          className="object-contain drop-shadow-md"
+          priority
+        />
+      </div>
 
- {/* Gambar Mainan Kanan (images/toy.webp) - Posisi lg disesuaikan agar tidak terlalu ke kiri */}
- <div className="hidden sm:block absolute sm:-top-2 sm:-right-8 md:-right-16 lg:-right-12 xl:right-10 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-48 lg:h-48 xl:w-56 xl:h-56 pointer-events-none select-none z-50 opacity-100">
- <Image
- src="/images/toy.webp"
- alt="Toy Decoration Right"
- fill
- className="object-contain"
- priority
- />
- </div>
- </>
- );
+      {/* Gambar Mainan Kanan (toy1.webp) */}
+      <div className="hidden sm:block absolute top-4 sm:top-6 lg:top-4 sm:-right-12 md:-right-16 lg:-right-20 xl:-right-24 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 pointer-events-none select-none z-30 transition-transform">
+        <Image
+          src="/images/toy1.webp"
+          alt="Toy Decoration Right"
+          fill
+          className="object-contain drop-shadow-md"
+          priority
+        />
+      </div>
+    </>
+  );
 }
 
 // ==========================================
@@ -93,12 +87,12 @@ export interface ProductShowcaseProps {
 export default function ProductShowcase({ products }: ProductShowcaseProps) {
   return (
     <section className="relative bg-background pt-4 pb-12 sm:pt-6 lg:pt-8 px-4 sm:px-10 overflow-x-clip">
-      {/* Hiasan Mainan Kiri & Kanan */}
-      <SideToyDecorations />
+      <div className="max-w-6xl mx-auto relative">
+        {/* Hiasan Mainan Kiri & Kanan diletakkan di dalam wrapper max-w-6xl */}
+        <SideToyDecorations />
 
-      <div className="max-w-6xl mx-auto relative z-10">
         {/* HEADER SECTION */}
-        <div className="text-center pt-2 sm:pt-4 lg:pt-6 mb-8 sm:mb-10">
+        <div className="text-center pt-2 sm:pt-4 lg:pt-6 mb-8 sm:mb-10 relative z-10">
           <SectionLabel text="Produk Terbaru" />
           <h2 className="font-heading text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight leading-snug">
             Koleksi Mainan &amp; Robot IoT <span className="text-foreground">Pilihan Terbaik</span>
@@ -106,7 +100,11 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
         </div>
 
         {/* CAROUSEL PRODUK */}
-        <ProductCarousel products={products} />
+        <div className="relative z-10">
+          
+
+<ProductCarousel products={products} />
+        </div>
       </div>
     </section>
   );

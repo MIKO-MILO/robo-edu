@@ -73,9 +73,6 @@ export default async function ProductsPage(props: ProductsPageProps) {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Logo Marquee */}
-      <CarouselLogo />
-
       {/* Catalog Section */}
       <section
         id="katalog"

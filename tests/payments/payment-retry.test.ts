@@ -268,7 +268,7 @@ describe("POST /api/orders/[id]/payment/retry", () => {
     it("marks the previous PENDING attempt as FAILED after a successful retry", async () => {
       mockChargeSuccess();
 
-      const req = retryRequest(FIXTURE_IDS.order, { paymentChannel: "gopay" });
+      const req = retryRequest(FIXTURE_IDS.order, { paymentChannel: "bni_va" });
       const res = await retryHandler(req, params(FIXTURE_IDS.order));
       expect(res.status).toBe(200);
 
@@ -285,7 +285,7 @@ describe("POST /api/orders/[id]/payment/retry", () => {
     it("calls cancelCoreApi with the old midtrans_order_id when previous attempt is PENDING", async () => {
       mockChargeSuccess();
 
-      const req = retryRequest(FIXTURE_IDS.order, { paymentChannel: "gopay" });
+      const req = retryRequest(FIXTURE_IDS.order, { paymentChannel: "bni_va" });
       await retryHandler(req, params(FIXTURE_IDS.order));
 
       expect(mockCancelCoreApi).toHaveBeenCalledOnce();
