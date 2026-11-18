@@ -46,6 +46,7 @@ export const SETTINGS_SEED = [
       indomaret: true,
     }),
   },
+  { key: "maintenance_mode", value: "false" },
 ] as const;
 
 export async function seedSettings(

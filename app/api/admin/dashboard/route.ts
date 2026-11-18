@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, count, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  isNotNull,
+  lt,
+  sql,
+  sum,
+} from "drizzle-orm";
 import { db } from "@/src/db";
-import { orders, orderItems, users, productImages } from "@/src/db/schema";
+import {
+  orders,
+  orderItems,
+  users,
+  products,
+  productVariants,
+} from "@/src/db/schema";
 import { requireAdminFromRequest } from "@/src/lib/auth/require-admin-from-request";
 
 export const runtime = "nodejs";
@@ -9,91 +26,144 @@ export const runtime = "nodejs";
 /**
  * GET /api/admin/dashboard
  *
- * Aggregates the following from the DB:
- *  - total_orders_all_time      — COUNT(*) from orders
- *  - total_orders_this_month    — COUNT(*) for orders created this calendar month
- *  - total_revenue              — SUM(total) for orders that have been paid
- *                                  (paidAt IS NOT NULL, i.e. status >= PAID)
- *  - total_customers            — COUNT(*) of users with role = "CUSTOMER"
- *  - pending_orders             — COUNT(*) of orders with status = "pending"
- *  - recent_orders              — 5 most recent orders with customer info
+ * Returns:
+ *  - revenue_this_month         — SUM(total) for orders paid within the current calendar month
+ *  - revenue_trend_percentage   — % change vs last month (null when last month = 0)
+ *  - total_orders               — COUNT(*) all orders
+ *  - pending_orders             — COUNT(*) orders with status = "pending"
+ *  - total_customers            — COUNT(*) users with role = "CUSTOMER"
+ *  - top_products               — up to 5 products by total quantity sold (paid orders this month)
+ *  - low_stock_products         — up to 10 variants with stock <= low_stock_threshold
  */
 export async function GET(request: NextRequest) {
   const auth = await requireAdminFromRequest(request);
   if (!auth.ok) return auth.response;
 
-  // ── 1. Total orders (all-time) ──────────────────────────────────────────
-  const [{ totalOrdersAllTime }] = await db
-    .select({ totalOrdersAllTime: count() })
-    .from(orders);
-
-  // ── 2. Total orders (this calendar month) ──────────────────────────────
   const now = new Date();
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const firstDayNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-  const [{ totalOrdersThisMonth }] = await db
-    .select({ totalOrdersThisMonth: count() })
-    .from(orders)
-    .where(gte(orders.createdAt, firstDayOfMonth));
-
-  // ── 3. Total revenue from paid orders ──────────────────────────────────
-  // An order is "paid" once `paid_at` is set (Midtrans callback confirmed it).
-  // We sum `total` — the final charge the customer paid.
-  const [{ totalRevenue }] = await db
+  // ── 1. Revenue this month (paid orders) ────────────────────────────────
+  const [{ revenueThisMonth }] = await db
     .select({
-      totalRevenue: sql<string>`COALESCE(SUM(${orders.total}), 0)`,
+      revenueThisMonth: sql<string>`COALESCE(SUM(${orders.total}), 0)`,
     })
     .from(orders)
-    .where(isNotNull(orders.paidAt));
+    .where(
+      and(
+        isNotNull(orders.paidAt),
+        gte(orders.paidAt, firstDayThisMonth),
+        lt(orders.paidAt, firstDayNextMonth),
+      ),
+    );
 
-  // ── 4. Total customers ─────────────────────────────────────────────────
-  // "Customers" = users with role CUSTOMER (case-insensitive stored as "CUSTOMER").
-  const [{ totalCustomers }] = await db
-    .select({ totalCustomers: count() })
-    .from(users)
-    .where(eq(users.role, "CUSTOMER"));
+  // ── 2. Revenue last month (for trend calculation) ──────────────────────
+  const [{ revenueLastMonth }] = await db
+    .select({
+      revenueLastMonth: sql<string>`COALESCE(SUM(${orders.total}), 0)`,
+    })
+    .from(orders)
+    .where(
+      and(
+        isNotNull(orders.paidAt),
+        gte(orders.paidAt, firstDayLastMonth),
+        lt(orders.paidAt, firstDayThisMonth),
+      ),
+    );
 
-  // ── 5. Pending orders ──────────────────────────────────────────────────
+  const revenueThisMonthNum = Number(revenueThisMonth);
+  const revenueLastMonthNum = Number(revenueLastMonth);
+  const revenueTrendPercentage =
+    revenueLastMonthNum === 0
+      ? null
+      : Math.round(
+          ((revenueThisMonthNum - revenueLastMonthNum) /
+            revenueLastMonthNum) *
+            100 *
+            100,
+        ) / 100;
+
+  // ── 3. Total orders (all-time) ──────────────────────────────────────────
+  const [{ totalOrders }] = await db
+    .select({ totalOrders: count() })
+    .from(orders);
+
+  // ── 4. Pending orders ──────────────────────────────────────────────────
   const [{ pendingOrders }] = await db
     .select({ pendingOrders: count() })
     .from(orders)
     .where(eq(orders.status, "pending"));
 
-  // ── 6. 5 most recent orders with customer name and email ───────────────
-  const recentOrderRows = await db
+  // ── 5. Total customers ─────────────────────────────────────────────────
+  const [{ totalCustomers }] = await db
+    .select({ totalCustomers: count() })
+    .from(users)
+    .where(eq(users.role, "CUSTOMER"));
+
+  // ── 6. Top products (by quantity sold, paid orders this month) ─────────
+  const topProductRows = await db
     .select({
-      id: orders.id,
-      orderNumber: orders.orderNumber,
-      status: orders.status,
-      total: orders.total,
-      createdAt: orders.createdAt,
-      customerName: users.name,
-      customerEmail: users.email,
+      product_id: orderItems.productId,
+      name: orderItems.productNameSnapshot,
+      total_sold: sql<number>`CAST(SUM(${orderItems.quantity}) AS UNSIGNED)`,
     })
-    .from(orders)
-    .innerJoin(users, eq(orders.userId, users.id))
-    .orderBy(desc(orders.createdAt))
+    .from(orderItems)
+    .innerJoin(orders, eq(orderItems.orderId, orders.id))
+    .where(
+      and(
+        isNotNull(orders.paidAt),
+        gte(orders.paidAt, firstDayThisMonth),
+        lt(orders.paidAt, firstDayNextMonth),
+      ),
+    )
+    .groupBy(orderItems.productId, orderItems.productNameSnapshot)
+    .orderBy(desc(sql`SUM(${orderItems.quantity})`))
     .limit(5);
 
-  const recentOrders = recentOrderRows.map((r) => ({
-    id: r.id,
-    order_number: r.orderNumber,
-    status: r.status,
-    total: Number(r.total),
-    created_at: r.createdAt.toISOString(),
-    customer_name: r.customerName,
-    customer_email: r.customerEmail,
-  }));
+  // ── 7. Low stock products ──────────────────────────────────────────────
+  // A variant is low-stock when: low_stock_threshold > 0 AND stock <= low_stock_threshold
+  const lowStockRows = await db
+    .select({
+      product_id: productVariants.productId,
+      name: products.name,
+      variant_id: productVariants.id,
+      variant_name: productVariants.variantName,
+      stock: productVariants.stock,
+      threshold: productVariants.lowStockThreshold,
+    })
+    .from(productVariants)
+    .innerJoin(products, eq(productVariants.productId, products.id))
+    .where(
+      and(
+        gt(productVariants.lowStockThreshold, 0),
+        sql`${productVariants.stock} <= ${productVariants.lowStockThreshold}`,
+      ),
+    )
+    .orderBy(productVariants.stock)
+    .limit(10);
 
   return NextResponse.json({
     success: true,
     data: {
-      total_orders_all_time: Number(totalOrdersAllTime),
-      total_orders_this_month: Number(totalOrdersThisMonth),
-      total_revenue: Number(totalRevenue),
-      total_customers: Number(totalCustomers),
+      revenue_this_month: revenueThisMonthNum,
+      revenue_trend_percentage: revenueTrendPercentage,
+      total_orders: Number(totalOrders),
       pending_orders: Number(pendingOrders),
-      recent_orders: recentOrders,
+      total_customers: Number(totalCustomers),
+      top_products: topProductRows.map((r) => ({
+        product_id: r.product_id,
+        name: r.name,
+        total_sold: Number(r.total_sold),
+      })),
+      low_stock_products: lowStockRows.map((r) => ({
+        product_id: r.product_id,
+        name: r.name,
+        variant_id: r.variant_id,
+        variant_name: r.variant_name,
+        stock: r.stock,
+        threshold: r.threshold,
+      })),
     },
   });
 }

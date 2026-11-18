@@ -21,7 +21,6 @@ import {
   getReviewStats,
   type AdminReviewRow,
 } from "@/components/admin/reviews";
-import type { ReviewStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
 // Fetch helper
@@ -38,7 +37,6 @@ async function fetchAdminReviews(params: {
   page: number;
   limit: number;
   q: string;
-  status: string;
   rating: string;
   sort: string;
 }): Promise<{ data: AdminReviewRow[]; meta: ReviewListMeta }> {
@@ -48,7 +46,6 @@ async function fetchAdminReviews(params: {
     sort: params.sort,
   });
   if (params.q) qs.set("q", params.q);
-  if (params.status !== "ALL") qs.set("status", params.status);
   if (params.rating !== "ALL") qs.set("rating", params.rating);
 
   const res = await fetch(`/api/admin/reviews?${qs.toString()}`, { cache: "no-store" });
@@ -69,7 +66,6 @@ function AdminReviewsContent() {
 
   // ── URL params ────────────────────────────────────────────────────────
   const searchQuery  = searchParams.get("search") || "";
-  const statusFilter = searchParams.get("status") || "ALL";
   const ratingFilter = searchParams.get("rating") || "ALL";
   const sortBy       = searchParams.get("sortBy") || "created_at";
   const sortOrder    = searchParams.get("sortOrder") || "desc";
@@ -81,7 +77,6 @@ function AdminReviewsContent() {
   const [meta, setMeta]             = useState<ReviewListMeta>({ page: 1, limit: LIMIT, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading]   = useState(true);
   const [loadError, setLoadError]   = useState<string | null>(null);
-  const [processingId, setProcessingId] = useState<string | null>(null);
 
   // ── Delete dialog state ───────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<AdminReviewRow | null>(null);
@@ -112,7 +107,6 @@ function AdminReviewsContent() {
         page: currentPage,
         limit: LIMIT,
         q: searchQuery,
-        status: statusFilter,
         rating: ratingFilter,
         sort: `${sortBy}_${sortOrder}`,
       });
@@ -123,16 +117,15 @@ function AdminReviewsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchQuery, statusFilter, ratingFilter, sortBy, sortOrder]);
+  }, [currentPage, searchQuery, ratingFilter, sortBy, sortOrder]);
 
   useEffect(() => { void load(); }, [load]);
 
   // ── Stats ─────────────────────────────────────────────────────────────
   const stats = useMemo(() => getReviewStats(reviews), [reviews]);
 
-  // ── Handlers URL params ───────────────────────────────────────────────
+  // ── URL param handlers ────────────────────────────────────────────────
   const handleSearchChange = (val: string) => pushParams({ search: val, page: null });
-  const handleStatusFilterChange = (val: string) => pushParams({ status: val, page: null });
   const handleRatingFilterChange = (val: string) => pushParams({ rating: val, page: null });
   const handleSortChange = (val: string) => {
     const lastUnderscore = val.lastIndexOf("_");
@@ -141,42 +134,6 @@ function AdminReviewsContent() {
     if (field && order) pushParams({ sortBy: field, sortOrder: order, page: null });
   };
   const handlePageChange = (page: number) => pushParams({ page: page > 1 ? String(page) : null });
-
-  // ── Toggle status ─────────────────────────────────────────────────────
-  const handleToggleStatus = async (review: AdminReviewRow) => {
-    setProcessingId(review.id);
-    const nextStatus: ReviewStatus = review.status === "PUBLISHED" ? "HIDDEN" : "PUBLISHED";
-    const label = nextStatus === "PUBLISHED" ? "VISIBLE" : "HIDDEN";
-
-    try {
-      const res = await fetch(`/api/admin/reviews/${review.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-      if (!res.ok) {
-        const j = await res.json();
-        throw new Error(j.message ?? "Gagal mengubah status.");
-      }
-      // Optimistic update di state lokal
-      setReviews((prev) =>
-        prev.map((r) => (r.id === review.id ? { ...r, status: nextStatus } : r)),
-      );
-      toast({
-        title: "Status Ulasan Diperbarui",
-        description: `Ulasan dari ${review.user_name} berhasil diubah menjadi ${label}.`,
-        variant: "success",
-      });
-    } catch (err) {
-      toast({
-        title: "Gagal Mengubah Status",
-        description: err instanceof Error ? err.message : "Terjadi kesalahan.",
-        variant: "error",
-      });
-    } finally {
-      setProcessingId(null);
-    }
-  };
 
   // ── Delete ────────────────────────────────────────────────────────────
   const handleConfirmDelete = async () => {
@@ -220,7 +177,7 @@ function AdminReviewsContent() {
             </h1>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Melihat, memoderasi, menyembunyikan, atau menghapus ulasan yang tidak sesuai ketentuan.
+            Melihat dan mengelola ulasan produk dari customer.
           </p>
         </div>
         <Button
@@ -254,23 +211,11 @@ function AdminReviewsContent() {
       <ReviewTable
         data={reviews}
         isLoading={isLoading}
-        onToggleStatus={handleToggleStatus}
         onDeleteReview={(review) => setDeleteTarget(review)}
-        processingId={processingId}
         searchValue={searchQuery}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Cari produk, customer, atau komentar..."
         filters={[
-          {
-            id: "status",
-            label: "Status",
-            value: statusFilter,
-            onChange: handleStatusFilterChange,
-            options: [
-              { value: "PUBLISHED", label: "VISIBLE (Tampil)" },
-              { value: "HIDDEN", label: "HIDDEN (Disembunyikan)" },
-            ],
-          },
           {
             id: "rating",
             label: "Rating",

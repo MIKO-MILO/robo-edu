@@ -11,14 +11,14 @@
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `GET /api/admin/dashboard` mengembalikan field `revenue_this_month` berisi total revenue dari order berbayar bulan ini.
-- [ ] Response mengembalikan field `total_orders` berisi COUNT semua order.
-- [ ] Response mengembalikan field `revenue_trend_percentage` (angka atau null).
-- [ ] Response mengembalikan array `top_products` dengan hingga 5 item, masing-masing berisi `product_id`, `name`, `total_sold`.
-- [ ] Response mengembalikan array `low_stock_products` dengan hingga 10 item, masing-masing berisi `product_id`, `name`, `variant_id` (opsional), `variant_name` (opsional), `stock`.
-- [ ] Kartu "Total Revenue" di halaman dashboard admin menampilkan angka nyata dari database.
-- [ ] Kartu "Jumlah Pesanan" menampilkan angka nyata dari database.
-- [ ] Panel "Produk Terlaris" menampilkan data produk nyata (bukan empty state) jika ada data penjualan bulan ini.
-- [ ] Panel "Stok Menipis" menampilkan data variant nyata (bukan empty state) jika ada stok yang rendah.
+- [x] `GET /api/admin/dashboard` mengembalikan field `revenue_this_month` berisi total revenue dari order berbayar bulan ini.
+- [x] Response mengembalikan field `total_orders` berisi COUNT semua order.
+- [x] Response mengembalikan field `revenue_trend_percentage` (angka atau null).
+- [x] Response mengembalikan array `top_products` dengan hingga 5 item, masing-masing berisi `product_id`, `name`, `total_sold`.
+- [x] Response mengembalikan array `low_stock_products` dengan hingga 10 item, masing-masing berisi `product_id`, `name`, `variant_id` (opsional), `variant_name` (opsional), `stock`.
+- [x] Kartu "Total Revenue" di halaman dashboard admin menampilkan angka nyata dari database.
+- [x] Kartu "Jumlah Pesanan" menampilkan angka nyata dari database.
+- [x] Panel "Produk Terlaris" menampilkan data produk nyata (bukan empty state) jika ada data penjualan bulan ini.
+- [x] Panel "Stok Menipis" menampilkan data variant nyata (bukan empty state) jika ada stok yang rendah.

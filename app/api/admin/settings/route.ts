@@ -58,6 +58,7 @@ const SETTING_SPECS: Record<string, SettingSpec> = {
   shipping_cost: { kind: "number" },
   order_expires_hours: { kind: "number", positiveInt: true },
   payment_methods_config: { kind: "string", json: true, channels: true },
+  maintenance_mode: { kind: "string" },
 };
 
 const ALLOWED_KEYS = new Set(Object.keys(SETTING_SPECS));
@@ -159,6 +160,11 @@ async function normalizeField(
     } catch {
       return [null, `\`${key}\` harus berupa JSON array yang valid.`];
     }
+  }
+
+  // maintenance_mode must be exactly "true" or "false" (string).
+  if (key === "maintenance_mode" && value !== "true" && value !== "false") {
+    return [null, "`maintenance_mode` harus bernilai \"true\" atau \"false\"."];
   }
 
   return [value, null];
