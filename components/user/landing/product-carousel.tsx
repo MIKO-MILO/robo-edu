@@ -1,114 +1,51 @@
 ﻿"use client";
 
-import Image from"next/image";
+import { PASTEL_VARIANTS } from "@/components/ui/filter-button";
+import { WishlistAwareProductCard } from "@/components/user/wishlist/wishlist-aware-product-card";
 
-// ==========================================
-// TYPES (Backend-Ready)
-// ==========================================
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 export interface CarouselProductItem {
- id: number;
- name: string;
- category?: string;
- price: string;
- image: string;
+  id: number;
+  name: string;
+  category?: string;
+  price: string;
+  image: string;
 }
 
 interface ProductGridProps {
- products?: CarouselProductItem[];
+  products?: CarouselProductItem[];
 }
 
 const DEFAULT_PRODUCTS: CarouselProductItem[] = [
- {
- id: 1,
- name:"IoT Smart Walking Dog",
- category:"Kids Toys",
- price:"Rp 450.000",
- image:"images/product.webp",
- },
- {
- id: 2,
- name:"Smart Servo Mechanical Cat",
- category:"Kids Toys",
- price:"Rp 520.000",
- image:"images/product2.webp",
- },
- {
- id: 3,
- name:"IoT Obstacle Avoiding Dino",
- category:"Kids Toys",
- price:"Rp 610.000",
- image:"images/product.webp",
- },
- {
- id: 4,
- name:"Bluetooth Racing Mech Bug",
- category:"Kids Toys",
- price:"Rp 380.000",
- image:"images/product2.webp",
- },
- {
- id: 5,
- name:"Smart IoT Climbing Monkey",
- category:"Kids Toys",
- price:"Rp 690.000",
- image:"images/product.webp",
- },
- {
- id: 6,
- name:"IoT Smart Walking Dog Extra",
- category:"Kids Toys",
- price:"Rp 450.000",
- image:"images/product2.webp",
- },
+  { id: 1, name: "IoT Smart Walking Dog",      category: "Kids Toys", price: "Rp 450.000", image: "images/product.webp" },
+  { id: 2, name: "Smart Servo Mechanical Cat", category: "Kids Toys", price: "Rp 520.000", image: "images/product2.webp" },
+  { id: 3, name: "IoT Obstacle Avoiding Dino", category: "Kids Toys", price: "Rp 610.000", image: "images/product.webp" },
+  { id: 4, name: "Bluetooth Racing Mech Bug",  category: "Kids Toys", price: "Rp 380.000", image: "images/product2.webp" },
+  { id: 5, name: "Smart IoT Climbing Monkey",  category: "Kids Toys", price: "Rp 690.000", image: "images/product.webp" },
+  { id: 6, name: "IoT Smart Walking Dog Extra",category: "Kids Toys", price: "Rp 450.000", image: "images/product2.webp" },
 ];
 
-// ==========================================
-// MAIN COMPONENT
-// ==========================================
+// ── Component ─────────────────────────────────────────────────────────────────
+
+/**
+ * ProductGrid — renders landing page product showcase using the same
+ * WishlistAwareProductCard component used in the catalog page.
+ * No duplicated card code — single source of truth in components/ui/product-card.tsx.
+ */
 export default function ProductGrid({ products = DEFAULT_PRODUCTS }: ProductGridProps) {
- return (
- <div className="relative w-full">
- {/* Product Cards Grid */}
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
- {products.map((product) => (
- <div
- key={product.id}
- className="flex flex-col items-center text-center group cursor-pointer"
- >
- {/* Custom Grey Image Container (var(--color-muted-foreground) with 16% opacity -> var(--color-muted-foreground)29) */}
- <div className="w-full bg-muted/50 aspect-square p-6 flex items-center justify-center relative overflow-hidden mb-4">
- <div className="relative w-full h-full">
- <Image
- src={product.image}
- alt={product.name}
- fill
- unoptimized
- className="object-contain transition-transform duration-300 group-hover:scale-105"
- sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
- />
- </div>
- </div>
-
- {/* Product Info Below Box */}
- <div className="flex flex-col items-center gap-1 w-full px-2">
- {/* Product Name */}
- <h3 className="font-sans font-bold text-base sm:text-lg text-foreground leading-tight line-clamp-1">
- {product.name}
- </h3>
-
- {/* Subtitle / Category */}
- <span className="text-xs sm:text-sm text-gray-500 font-medium">
- {product.category ||"Kids Toys"}
- </span>
-
- {/* Price */}
- <p className="font-sans font-bold text-sm sm:text-base text-primary mt-0.5">
- {product.price}
- </p>
- </div>
- </div>
- ))}
- </div>
- </div>
- );
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.map((product, index) => (
+        <WishlistAwareProductCard
+          key={product.id}
+          id={String(product.id)}
+          name={product.name}
+          price={product.price}
+          imageUrl={`/${product.image}`}
+          bgColorClass={PASTEL_VARIANTS[index % PASTEL_VARIANTS.length]}
+        />
+      ))}
+    </div>
+  );
 }

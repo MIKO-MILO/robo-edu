@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 // Register Page Component - Roboedu Auth Group
 
@@ -119,7 +119,7 @@ export default function RegisterPage() {
       {/* ── Card Shell ── */}
       <main
         aria-label="Daftar akun Roboedu"
-        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden"
+        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden rounded-2xl"
       >
         {/* ════════════════════════════════════════════
             LEFT — Image canvas (hidden on mobile)
@@ -185,6 +185,11 @@ export default function RegisterPage() {
         <section className="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
           {/* ── Header ── */}
           <div className="mb-8 text-center flex flex-col items-center">
+            <div className="inline-flex items-center justify-center size-12 rounded-full bg-accent-yellow border-2 border-border mb-3">
+              <svg className="size-6 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
             <h2
               className="uppercase mt-2"
               style={{
@@ -233,7 +238,7 @@ export default function RegisterPage() {
                   px-3 py-2.5
                   font-body text-sm
                   placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
+                  focus:outline-none focus:ring-2 focus:ring-primary/40
                   transition-colors duration-150
                 "
               />
@@ -264,7 +269,7 @@ export default function RegisterPage() {
                   px-3 py-2.5
                   font-body text-sm
                   placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
+                  focus:outline-none focus:ring-2 focus:ring-primary/40
                   transition-colors duration-150
                 "
               />
@@ -325,7 +330,7 @@ export default function RegisterPage() {
               {passwordTouched && (
                 <p
                   className={`font-body text-xs flex items-center gap-1 ${
-                    passwordValid ? "text-green-600" : "text-red-500"
+                    passwordValid ? "text-success" : "text-danger"
                   }`}
                 >
                   {passwordValid ? (
@@ -372,7 +377,7 @@ export default function RegisterPage() {
                   px-3 py-2.5
                   font-body text-sm
                   placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0 focus:border-primary
+                  focus:outline-none focus:ring-2 focus:ring-primary/40
                   transition-colors duration-150
                 "
               />
@@ -415,7 +420,7 @@ export default function RegisterPage() {
             {error && (
               <p
                 role="alert"
-                className="flex items-center gap-1.5 font-body text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-sm"
+                className="flex items-center gap-1.5 font-body text-sm text-danger bg-danger-bg border border-danger/30 px-3 py-2 rounded-xl"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
