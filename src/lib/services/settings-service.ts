@@ -39,6 +39,26 @@ export async function getSetting(key: string): Promise<string | null> {
 }
 
 /**
+ * Default threshold used when a variant's own `low_stock_threshold` is 0
+ * (i.e. the per-variant alert has not been configured).
+ */
+export const LOW_STOCK_FALLBACK_DEFAULT = 5;
+
+/**
+ * Returns the global low-stock default threshold from the `settings` table.
+ * Falls back to `LOW_STOCK_FALLBACK_DEFAULT` (5) when the key is absent or
+ * cannot be parsed as a positive integer.
+ */
+export async function getLowStockDefaultThreshold(): Promise<number> {
+  const raw = await getSetting("low_stock_default_threshold");
+  if (raw === null) return LOW_STOCK_FALLBACK_DEFAULT;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed > 0
+    ? parsed
+    : LOW_STOCK_FALLBACK_DEFAULT;
+}
+
+/**
  * Upsert exactly the supplied keys, atomically.
  *
  * All keys are written inside a single `db.transaction`, so a failure on any

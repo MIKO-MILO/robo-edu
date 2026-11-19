@@ -46,6 +46,7 @@ export const SETTINGS_SEED = [
       indomaret: true,
     }),
   },
+  { key: "low_stock_default_threshold",     value: "5" },
 ] as const;
 
 export async function seedSettings(

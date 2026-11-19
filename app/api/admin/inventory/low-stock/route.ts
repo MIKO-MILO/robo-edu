@@ -4,6 +4,7 @@ import { eq, sql, asc } from "drizzle-orm";
 import { db } from "@/src/db";
 import { productVariants, products } from "@/src/db/schema";
 import { requireAdmin } from "@/src/lib/auth/require-admin";
+import { getLowStockDefaultThreshold } from "@/src/lib/services/settings-service";
 
 export const runtime = "nodejs";
 
@@ -36,9 +37,13 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(100, Math.max(1, Number(params.get("limit")) || 50));
   const offset = (page - 1) * limit;
 
-  // Variants at or below their own threshold; threshold 0 (alerts disabled) is
-  // excluded so unconfigured variants never surface as low-stock noise.
-  const where = sql`${productVariants.stock} <= ${productVariants.lowStockThreshold} AND ${productVariants.lowStockThreshold} > 0`;
+  // Effective threshold per variant:
+  //   - Use the variant's own low_stock_threshold when it is > 0 (explicitly configured).
+  //   - Fall back to the global default from settings (default: 5) when it is 0
+  //     (meaning "not yet configured").
+  // This ensures every variant is covered without requiring per-variant setup.
+  const globalThreshold = await getLowStockDefaultThreshold();
+  const where = sql`${productVariants.stock} <= IF(${productVariants.lowStockThreshold} > 0, ${productVariants.lowStockThreshold}, ${globalThreshold})`;
 
   const [rows, [countRow]] = await Promise.all([
     db
