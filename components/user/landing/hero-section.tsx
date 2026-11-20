@@ -122,14 +122,14 @@ export default function HeroSection() {
                             Rakit & Mainkan{""}
                             {/* line.webp diperbesar sedikit dan dinaikkan ke atas menggunakan -mt dan ukuran w/h yang disesuaikan */}
                            <span className="inline-block relative w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 align-middle -mt-10 sm:-mt-16 lg:-mt-20 -ml-1 sm:-ml-2">
-    <Image
-        src="/images/line.webp"
-        alt="Aksen Judul"
-        fill
-        className="object-contain"
-        priority
-    />
-</span>
+                            <Image
+                                src="/images/line.webp"
+                                alt="Aksen Judul"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </span>
                         </span>{""}
                         <span className="block mt-1 sm:mt-2 lg:mt-0 lg:inline">
                             Robot Impian Anak
