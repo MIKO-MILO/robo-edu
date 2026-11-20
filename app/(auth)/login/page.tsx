@@ -111,7 +111,7 @@ export default function LoginPage() {
       {/* ── Card Shell ── */}
       <main
         aria-label="Login ke akun Roboedu"
-        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden rounded-none"
+        className="w-full max-w-5xl flex flex-col md:flex-row md:h-[80vh] bg-card border-2 border-border neo-shadow overflow-hidden rounded-2xl"
       >
         {/* ════════════════════════════════════════════
             LEFT — Image canvas
@@ -195,6 +195,11 @@ export default function LoginPage() {
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card overflow-y-auto">
           {/* ── Header ── */}
           <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center size-12 rounded-full bg-accent-yellow border-2 border-border mb-3">
+              <svg className="size-6 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
             <h2
               className="uppercase mb-2"
               style={{
@@ -222,37 +227,27 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="login-email"
-                className="block font-body font-bold text-sm text-foreground"
+                className="block font-heading text-xs font-bold uppercase text-foreground"
               >
                 Email
               </label>
-              <input
-                id="login-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Masukkan email kamu"
-                className={`
-                  w-full
-                  bg-muted text-foreground
-                  border-2
-                  rounded-none
-                  px-3 py-2.5
-                  font-body text-sm
-                  placeholder:text-muted-foreground
-                  focus:outline-none focus:ring-0
-                  transition-colors duration-150
-                  ${fieldErrors.email || credentialError ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"}
-                `}
-              />
+              <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <input
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Masukkan email kamu"
+                  className={`w-full bg-muted text-foreground border-2 rounded-xl pl-10 pr-4 py-2.5 font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors ${fieldErrors.email || credentialError ? "border-danger" : "border-border"}`}
+                />
+              </div>
               {fieldErrors.email && (
-                <p className="font-body text-xs text-red-500 flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                  </svg>
+                <p className="font-body text-xs text-danger flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
                   {fieldErrors.email}
                 </p>
               )}
@@ -262,11 +257,12 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="login-password"
-                className="block font-body font-bold text-sm text-foreground"
+                className="block font-heading text-xs font-bold uppercase text-foreground"
               >
                 Password
               </label>
               <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <input
                   id="login-password"
                   name="password"
@@ -276,18 +272,7 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="Masukkan password kamu"
-                  className={`
-                    w-full
-                    bg-muted text-foreground
-                    border-2
-                    rounded-none
-                    px-3 py-2.5 pr-10
-                    font-body text-sm
-                    placeholder:text-muted-foreground
-                    focus:outline-none focus:ring-0
-                    transition-colors duration-150
-                    ${fieldErrors.password || credentialError ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"}
-                  `}
+                  className={`w-full bg-muted text-foreground border-2 rounded-xl pl-10 pr-10 py-2.5 font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors ${fieldErrors.password || credentialError ? "border-danger" : "border-border"}`}
                 />
                 <button
                   type="button"
@@ -310,10 +295,8 @@ export default function LoginPage() {
                 </button>
               </div>
               {fieldErrors.password && (
-                <p className="font-body text-xs text-red-500 flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                  </svg>
+                <p className="font-body text-xs text-danger flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
                   {fieldErrors.password}
                 </p>
               )}
@@ -323,7 +306,7 @@ export default function LoginPage() {
             {error && (
               <p
                 role="alert"
-                className="flex items-center gap-1.5 font-body text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-sm"
+                className="flex items-center gap-1.5 font-body text-sm text-danger bg-danger-bg border border-danger/30 px-3 py-2 rounded-xl"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
