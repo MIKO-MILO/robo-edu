@@ -8,9 +8,15 @@
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `paidAt` pada order yang baru dibayar menggunakan `transaction_time` dari payload Midtrans, bukan waktu server saat webhook diterima.
-- [ ] Jika `transaction_time` tidak hadir di payload, `paidAt` fallback ke waktu server (`new Date()`).
-- [ ] Endpoint `POST /api/admin/orders/[id]/tracking` menggunakan `new Date()` ketika `timestamp` tidak disertakan di body.
-- [ ] Tidak ada perubahan schema database.
+> **Catatan implementasi:** Setelah investigasi kode, semua perilaku yang diminta sudah terimplementasi dengan benar sebelum ticket ini dikerjakan. Tidak ada perubahan kode yang diperlukan.
+>
+> - `handleOrderWebhook` (`app/api/payments/midtrans/webhook/route.ts`) sudah menggunakan `body.transaction_time` untuk `timestamp` dengan fallback `new Date()`.
+> - `POST /api/orders/[id]/payment/check` sudah menggunakan `midtransStatus.transaction_time` dengan fallback `new Date()`.
+> - `POST /api/admin/orders/[id]/tracking` sudah menggunakan `new Date()` di branch `else` ketika `body.timestamp` tidak disertakan.
+
+- [x] `paidAt` pada order yang baru dibayar menggunakan `transaction_time` dari payload Midtrans, bukan waktu server saat webhook diterima.
+- [x] Jika `transaction_time` tidak hadir di payload, `paidAt` fallback ke waktu server (`new Date()`).
+- [x] Endpoint `POST /api/admin/orders/[id]/tracking` menggunakan `new Date()` ketika `timestamp` tidak disertakan di body.
+- [x] Tidak ada perubahan schema database.
