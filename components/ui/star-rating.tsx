@@ -10,11 +10,12 @@ export interface StarRatingProps {
   /** Label atau jumlah ulasan (contoh: "1.2k ulasan" atau 120) */
   reviewCount?: string | number;
   /** Tipe tampilan bintang:
-   * - "single": 1 bintang tunggal (cocok untuk Product Card Katalog)
-   * - "full": 5 bintang visual (cocok untuk Detail Produk & Review List)
-   * - "interactive": 5 bintang interaktif yang bisa diklik/hover (cocok untuk Form Review)
+   * - "badge": 1 bintang dengan kotak latar biru lembut (khusus Product Card)
+   * - "single": 1 bintang tunggal standar
+   * - "full": 5 bintang visual (Detail Produk & Review List)
+   * - "interactive": 5 bintang interaktif yang bisa diklik/hover (Form Review)
    */
-  variant?: "single" | "full" | "interactive";
+  variant?: "badge" | "single" | "full" | "interactive";
   /** Ukuran ikon bintang */
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   /** Override warna bintang aktif */
@@ -64,7 +65,36 @@ export function StarRating({
   const textSizeClass = TEXT_SIZE_MAP[size];
   const currentRating = hoverRating !== null ? hoverRating : rating;
 
-  // Single Star Mode (Katalog / Product Card)
+// Badge Mode (1 Bintang besar tanpa kotak background, ukuran & angka diperbesar)
+  if (variant === "badge") {
+    return (
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 select-none",
+          className
+        )}
+      >
+        <Star
+          className={cn(
+            "w-5 h-5", // Bintang dibuat lebih besar (md)
+            "fill-accent-yellow-shadow text-accent-yellow-shadow shrink-0"
+          )}
+        />
+        {showScore && (
+          <span
+            className={cn(
+              "font-body font-bold text-foreground text-base", // Angka rating diperbesar menjadi text-base / lebih tebal
+              textSizeClass
+            )}
+          >
+            {rating.toFixed(1)}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Single Star Mode (Katalog / Product Card Standar)
   if (variant === "single") {
     return (
       <div

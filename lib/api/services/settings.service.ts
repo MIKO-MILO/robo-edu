@@ -19,6 +19,7 @@ export interface AdminSettings {
   shipping_cost?: string;
   order_expires_hours?: string;
   payment_methods_config?: string;
+  maintenance_mode?: string; // "true" | "false"
 }
 
 export interface AdminSettingsResponse {
@@ -41,6 +42,7 @@ export interface AdminSettingsPatchBody {
   shipping_cost?: number;
   order_expires_hours?: number;
   payment_methods_config?: string;
+  maintenance_mode?: string; // "true" | "false"
 }
 
 export interface AdminSettingsPatchResponse {

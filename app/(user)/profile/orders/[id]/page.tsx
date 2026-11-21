@@ -6,10 +6,12 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Package, MapPin, CreditCard, Truck,
   CheckCircle2, Clock, MapPinIcon, Copy, Check,
-  Loader2, AlertCircle, Receipt
+  Loader2, AlertCircle, Receipt, PackageCheck,
+  MessageSquareWarning, RefreshCcw, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/user/orders/order-status-badge";
+import { OrderReviewModal } from "@/components/user/orders/order-review-modal";
 import type { OrderStatus } from "@/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -230,6 +232,9 @@ export default function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -254,6 +259,34 @@ export default function OrderDetailPage() {
     void navigator.clipboard.writeText(order.shipment.tracking_number);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleConfirmReceived() {
+    if (!order || isConfirming) return;
+    setIsConfirming(true);
+    setConfirmError(null);
+    // Optimistic update
+    setOrder((prev) =>
+      prev ? { ...prev, status: "COMPLETED", completed_at: new Date().toISOString() } : prev,
+    );
+    try {
+      const res = await fetch(`/api/orders/${order.id}/confirm-received`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) {
+        // Roll back
+        setOrder((prev) =>
+          prev ? { ...prev, status: "DELIVERED", completed_at: null } : prev,
+        );
+        setConfirmError(json?.message ?? "Gagal mengkonfirmasi penerimaan. Silakan coba lagi.");
+      }
+    } catch {
+      setOrder((prev) =>
+        prev ? { ...prev, status: "DELIVERED", completed_at: null } : prev,
+      );
+      setConfirmError("Gagal mengkonfirmasi penerimaan. Periksa koneksi internet Anda.");
+    } finally {
+      setIsConfirming(false);
+    }
   }
 
   // ── Loading ─────────────────────────────────────────────────────────
@@ -336,6 +369,70 @@ export default function OrderDetailPage() {
             <CreditCard className="w-4 h-4" />
             Bayar Sekarang
           </Button>
+        </div>
+      )}
+
+      {/* ── Banner Konfirmasi Penerimaan (hanya saat DELIVERED) ─── */}
+      {order.status === "DELIVERED" && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-accent-green/20 border-2 border-foreground rounded-2xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <PackageCheck className="w-5 h-5 text-emerald-700 shrink-0" />
+            <div>
+              <p className="font-heading font-bold text-sm text-foreground">
+                Paketmu Telah Tiba!
+              </p>
+              <p className="font-body text-xs text-muted-foreground mt-0.5">
+                Konfirmasi penerimaan agar pesanan selesai dan dana diteruskan ke penjual.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1 shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              className="gap-2"
+              disabled={isConfirming}
+              onClick={() => void handleConfirmReceived()}
+            >
+              {isConfirming
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <CheckCircle2 className="w-4 h-4" />
+              }
+              {isConfirming ? "Mengkonfirmasi..." : "Konfirmasi Penerimaan Paket"}
+            </Button>
+            {confirmError && (
+              <p className="font-body text-xs text-red-500 text-right">{confirmError}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Tombol Post-Delivery (DELIVERED atau COMPLETED) ───────── */}
+      {(order.status === "DELIVERED" || order.status === "COMPLETED") && (
+        <div className="flex flex-wrap gap-3">
+          <Link href={`/profile/orders/${order.id}/complaint`}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <MessageSquareWarning className="w-4 h-4 text-orange-500" />
+              Ajukan Komplain
+            </Button>
+          </Link>
+          <Link href={`/profile/orders/${order.id}/refund`}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <RefreshCcw className="w-4 h-4 text-blue-500" />
+              Ajukan Pengembalian
+            </Button>
+          </Link>
+          {order.status === "COMPLETED" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowReviewModal(true)}
+            >
+              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+              Tulis Ulasan
+            </Button>
+          )}
         </div>
       )}
 
@@ -552,6 +649,17 @@ export default function OrderDetailPage() {
           </Section>
         </div>
       </div>
+
+      {/* ── Modals ──────────────────────────────────────────────── */}
+      {showReviewModal && order && (
+        <OrderReviewModal
+          isOpen
+          onClose={() => setShowReviewModal(false)}
+          orderNumber={order.order_number}
+          orderId={order.id}
+          onSubmitSuccess={() => setShowReviewModal(false)}
+        />
+      )}
     </div>
   );
 }

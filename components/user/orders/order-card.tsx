@@ -16,6 +16,10 @@ import {
   Ban,
   Clock,
   CheckCircle2,
+  PackageCheck,
+  MessageSquareWarning,
+  RefreshCcw,
+  Loader2,
 } from "lucide-react";
 import type { OrderListItem, OrderStatus } from "@/types";
 
@@ -37,6 +41,8 @@ export interface OrderCardProps {
   onReview?: (orderNumber: string) => void;
   onPayNow?: (orderNumber: string) => void;
   onCancelOrder?: (orderNumber: string) => void;
+  onConfirmReceived?: (orderId: string) => Promise<void>;
+  confirmingId?: string | null;
 }
 
 export function OrderCard({
@@ -47,9 +53,11 @@ export function OrderCard({
   onReview,
   onPayNow,
   onCancelOrder,
+  onConfirmReceived,
+  confirmingId,
 }: OrderCardProps) {
   const [showReviewAlert, setShowReviewAlert] = useState(
-    (order.status === "DELIVERED" || order.status === "COMPLETED") && !order.has_reviewed
+    order.status === "COMPLETED" && !order.has_reviewed
   );
 
   const formatRupiah = (amount: number) => {
@@ -200,6 +208,30 @@ export function OrderCard({
               <X className="w-4 h-4" />
             </button>
           </div>
+        </div>
+      )}
+
+      {order.status === "DELIVERED" && (
+        <div className="bg-accent-green/30 border-b-2 border-foreground p-3 px-4 sm:px-6 flex justify-between items-center text-foreground">
+          <div className="flex items-center gap-2">
+            <PackageCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+            <span className="font-body font-bold text-xs sm:text-sm text-foreground">
+              Paketmu sudah tiba? Konfirmasi penerimaan agar pesanan selesai.
+            </span>
+          </div>
+          <Button
+            variant="primary"
+            size="xs"
+            disabled={confirmingId === order.id}
+            onClick={() => void onConfirmReceived?.(order.id)}
+            className="shrink-0 flex items-center gap-1.5"
+          >
+            {confirmingId === order.id
+              ? <Loader2 className="w-3 h-3 animate-spin" />
+              : <CheckCircle2 className="w-3 h-3" />
+            }
+            Konfirmasi
+          </Button>
         </div>
       )}
 
@@ -361,15 +393,33 @@ export function OrderCard({
                     Beli Lagi
                   </Button>
 
-                  <Button
-                    variant="card"
-                    size="sm"
-                    onClick={() => onReview?.(order.order_number)}
-                    className="flex items-center gap-1.5"
-                  >
-                    <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                    Beri Ulasan
-                  </Button>
+                  {order.status === "DELIVERED" && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      disabled={confirmingId === order.id}
+                      onClick={() => void onConfirmReceived?.(order.id)}
+                      className="flex items-center gap-1.5"
+                    >
+                      {confirmingId === order.id
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <PackageCheck className="w-4 h-4" />
+                      }
+                      Konfirmasi Penerimaan
+                    </Button>
+                  )}
+
+                  {order.status === "COMPLETED" && (
+                    <Button
+                      variant="card"
+                      size="sm"
+                      onClick={() => onReview?.(order.order_number)}
+                      className="flex items-center gap-1.5"
+                    >
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                      Tulis Ulasan
+                    </Button>
+                  )}
 
                   <Button
                     variant="card"

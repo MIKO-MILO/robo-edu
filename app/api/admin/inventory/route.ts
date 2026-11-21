@@ -4,6 +4,7 @@ import { and, asc, eq, like, or, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { productVariants, products, categories } from "@/src/db/schema";
 import { requireAdmin } from "@/src/lib/auth/require-admin";
+import { getLowStockDefaultThreshold } from "@/src/lib/services/settings-service";
 
 export const runtime = "nodejs";
 
@@ -65,10 +66,11 @@ export async function GET(request: NextRequest) {
   }
 
   if (lowStock) {
-    // Same condition as /api/admin/inventory/low-stock: stock at or below the
-    // per-variant threshold, and threshold > 0 (0 = alerts disabled).
+    // Same condition as /api/admin/inventory/low-stock: use per-variant
+    // threshold when configured (> 0), otherwise fall back to global default.
+    const globalThreshold = await getLowStockDefaultThreshold();
     filters.push(
-      sql`${productVariants.stock} <= ${productVariants.lowStockThreshold} AND ${productVariants.lowStockThreshold} > 0`,
+      sql`${productVariants.stock} <= IF(${productVariants.lowStockThreshold} > 0, ${productVariants.lowStockThreshold}, ${globalThreshold})`,
     );
   }
 

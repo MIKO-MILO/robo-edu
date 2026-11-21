@@ -4,6 +4,7 @@ import { WishlistProvider } from "@/contexts/wishlist-context";
 import { CartProvider } from "@/contexts/cart-context";
 import { WishlistFab } from "@/components/user/wishlist/wishlist-fab";
 import { WishlistSidebar } from "@/components/user/wishlist/wishlist-sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function UserLayout({
   children,
@@ -42,6 +43,7 @@ export default function UserLayout({
       ─────────────────────────────────────────────────────── */}
         <WishlistFab />
         <WishlistSidebar />
+        <Toaster />
       </CartProvider>
     </WishlistProvider>
   );

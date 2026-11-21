@@ -11,6 +11,11 @@ import { eq } from "drizzle-orm";
 import { GET } from "@/app/api/payment-methods/route";
 import { PATCH } from "@/app/api/admin/settings/route";
 import {
+  isChannelActive,
+  assertChannelActive,
+  PaymentChannelUnavailableError,
+} from "@/src/lib/payment/payment-methods-service";
+import {
   createSessionToken,
   SESSION_COOKIE_NAME,
 } from "@/src/lib/auth/session";
@@ -51,7 +56,7 @@ function patchRequest(body: unknown): NextRequest {
 // ──────────────────────────────────────────────────────────────────────────
 
 describe("GET /api/payment-methods", () => {
-  it("returns all 14 active channels with method, channel, label, is_active", async () => {
+  it("returns all 12 active channels with method, channel, label, is_active", async () => {
     const res = await GET();
     expect(res.status).toBe(200);
 
@@ -59,8 +64,9 @@ describe("GET /api/payment-methods", () => {
     expect(json.success).toBe(true);
     expect(Array.isArray(json.data)).toBe(true);
 
-    // All 14 PRD §11.4 channels should be present (seed has all active).
-    expect(json.data).toHaveLength(14);
+    // All 12 supported channels should be present (seed has all active).
+    // GoPay QRIS & ShopeePay QRIS were removed and must never appear.
+    expect(json.data).toHaveLength(12);
 
     // Every entry has the required fields.
     for (const entry of json.data) {
@@ -75,12 +81,15 @@ describe("GET /api/payment-methods", () => {
     expect(channels).toContain("bca_va");
     expect(channels).toContain("mandiri_va");
     expect(channels).toContain("credit_card");
-    expect(channels).toContain("gopay");
     expect(channels).toContain("qris");
     expect(channels).toContain("dana");
     expect(channels).toContain("ovo");
     expect(channels).toContain("alfamart");
     expect(channels).toContain("indomaret");
+
+    // Removed channels must never be advertised.
+    expect(channels).not.toContain("gopay");
+    expect(channels).not.toContain("shopeepay");
   });
 
   it("filters out channels where is_active=false in settings", async () => {
@@ -105,8 +114,8 @@ describe("GET /api/payment-methods", () => {
     expect(channels).not.toContain("bca_va");
     expect(channels).not.toContain("ovo");
 
-    // Other channels should still be present (12 out of 14).
-    expect(json.data).toHaveLength(12);
+    // Other channels should still be present (10 out of 12).
+    expect(json.data).toHaveLength(10);
     expect(channels).toContain("bni_va");
     expect(channels).toContain("indomaret");
   });
@@ -122,7 +131,7 @@ describe("GET /api/payment-methods", () => {
 
     const json = await res.json();
     // Null config = all channels active (safe default).
-    expect(json.data).toHaveLength(14);
+    expect(json.data).toHaveLength(12);
   });
 
   it("returns all channels when config is malformed JSON", async () => {
@@ -136,7 +145,7 @@ describe("GET /api/payment-methods", () => {
 
     const json = await res.json();
     // Malformed JSON = treat as all-active (safe default).
-    expect(json.data).toHaveLength(14);
+    expect(json.data).toHaveLength(12);
   });
 });
 
@@ -164,8 +173,8 @@ describe("PATCH /api/admin/settings → GET /api/payment-methods integration", (
     const channels = json.data.map((e: { channel: string }) => e.channel);
 
     expect(channels).not.toContain("dana");
-    // Other 13 channels still present.
-    expect(json.data).toHaveLength(13);
+    // Other 11 channels still present.
+    expect(json.data).toHaveLength(11);
   });
 
   it("admin can update order_expires_hours via PATCH", async () => {
@@ -197,6 +206,33 @@ describe("PATCH /api/admin/settings → GET /api/payment-methods integration", (
     const json = await res.json();
     expect(json.message).toContain("JSON");
   });
+
+  it("rejects unknown channel keys in payment_methods_config", async () => {
+    asAdmin();
+
+    // 'kredivo' and the legacy 'gopay'/'shopeepay' are not in the catalog.
+    const res = await PATCH(
+      patchRequest({
+        payment_methods_config: JSON.stringify({ kredivo: true }),
+      }),
+    );
+    expect(res.status).toBe(422);
+    const json = await res.json();
+    expect(json.message).toContain("kredivo");
+  });
+
+  it("rejects non-boolean values in payment_methods_config", async () => {
+    asAdmin();
+
+    const res = await PATCH(
+      patchRequest({
+        payment_methods_config: JSON.stringify({ dana: "yes" as unknown as boolean }),
+      }),
+    );
+    expect(res.status).toBe(422);
+    const json = await res.json();
+    expect(json.message).toContain("boolean");
+  });
 });
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -218,5 +254,57 @@ describe("GET /api/admin/settings includes order_expires_hours", () => {
     const json = await res.json();
     expect(json.data).toHaveProperty("order_expires_hours");
     expect(json.data.order_expires_hours).toBe("24");
+  });
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────
+
+describe("payment channel enforcement helpers", () => {
+  // Seed has all 12 supported channels active (see SETTINGS_SEED).
+
+  it("isChannelActive returns true for an active channel", async () => {
+    expect(await isChannelActive("bca_va")).toBe(true);
+    expect(await isChannelActive("ovo")).toBe(true);
+  });
+
+  it("isChannelActive returns false for removed / unknown channels", async () => {
+    // Removed from catalog.
+    expect(await isChannelActive("gopay")).toBe(false);
+    expect(await isChannelActive("shopeepay")).toBe(false);
+    // Never existed in the catalog.
+    expect(await isChannelActive("kredivo")).toBe(false);
+  });
+
+  it("isChannelActive reflects an admin-disabled channel", async () => {
+    await testDb()
+      .update(schema.settings)
+      .set({ value: JSON.stringify({ dana: false }) })
+      .where(eq(schema.settings.key, "payment_methods_config"));
+
+    expect(await isChannelActive("dana")).toBe(false);
+    // A channel absent from the config still defaults to active.
+    expect(await isChannelActive("bca_va")).toBe(true);
+  });
+
+  it("assertChannelActive resolves for an active channel", async () => {
+    await expect(assertChannelActive("qris")).resolves.toBeUndefined();
+  });
+
+  it("assertChannelActive throws for a disabled channel", async () => {
+    await testDb()
+      .update(schema.settings)
+      .set({ value: JSON.stringify({ alfamart: false }) })
+      .where(eq(schema.settings.key, "payment_methods_config"));
+
+    await expect(assertChannelActive("alfamart")).rejects.toBeInstanceOf(
+      PaymentChannelUnavailableError,
+    );
+  });
+
+  it("assertChannelActive throws for an unknown channel", async () => {
+    await expect(assertChannelActive("kredivo")).rejects.toBeInstanceOf(
+      PaymentChannelUnavailableError,
+    );
   });
 });

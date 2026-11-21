@@ -39,8 +39,6 @@ export const SETTINGS_SEED = [
       permata_va: true,
       cimb_va: true,
       credit_card: true,
-      gopay: true,
-      shopeepay: true,
       qris: true,
       dana: true,
       ovo: true,
@@ -48,6 +46,8 @@ export const SETTINGS_SEED = [
       indomaret: true,
     }),
   },
+  { key: "maintenance_mode",                value: "false" },
+  { key: "low_stock_default_threshold",     value: "5" },
 ] as const;
 
 export async function seedSettings(

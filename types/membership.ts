@@ -70,6 +70,26 @@ export interface MembershipPurchase {
 }
 
 /**
+ * Plan info returned by GET /api/membership/plan-info.
+ * Public endpoint — no auth required.
+ */
+export interface MembershipPlanInfo {
+  plan_name: string;
+  price: number;
+  duration_months: number;
+  currency: "IDR";
+}
+
+/**
+ * Auth state for membership CTA components.
+ * loading  = fetching session
+ * guest    = not logged in
+ * member   = logged in and MEMBER
+ * not_member = logged in but NOT_MEMBER
+ */
+export type MembershipAuthState = "loading" | "guest" | "member" | "not_member";
+
+/**
  * Payload response dari GET /membership/me.
  * Menggabungkan status membership user dengan seluruh riwayat pembelian.
  *

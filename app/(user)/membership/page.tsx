@@ -6,8 +6,8 @@ import {
   ResellerStepsSection,
   ResellerCategorySection,
   ResellerFaqSection,
-  ResellerCtaSection,
   ResellerMembershipSection,
+  ResellerCtaSection, // <--- Ditambahkan di sini
 } from "@/components/user/membership";
 
 export const metadata: Metadata = {
@@ -24,26 +24,22 @@ export default function ResellerPage() {
 
       {/* 2. Benefits Section (4 keuntungan eksklusif) */}
       <ResellerBenefitsSection />
+
+      {/* 3. Membership Card Section */}
+      <ResellerMembershipSection />
       
-      {/* 3. Pricing Comparison Section */}
+      {/* 4. Pricing Comparison Section */}
       <ResellerPricingSection />
 
-      {/* 4. Category & Partnership Requirements */}
+      {/* 5. Category & Partnership Requirements */}
       <ResellerCategorySection />
 
-      {/* 5. FAQ Section */}
+      {/* 6. FAQ Section */}
       <ResellerFaqSection />
-
-      {/* 6. Membership Card Section */}
-      <ResellerMembershipSection />
-
-      {/* 7. 3-Step Onboarding Section */}
-      <ResellerStepsSection />
       
-      {/* 8. Final CTA Section */}
+      {/* 7. Final CTA Section */}
       <ResellerCtaSection />
       
     </main>
   );
 }
-

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useWishlist, type WishlistProductInput } from "@/contexts/wishlist-context";
 import { useCart } from "@/contexts/cart-context";
 import { ProductCard, type ProductCardProps } from "@/components/ui/product-card";
+import { toast } from "@/components/admin/use-toast";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -81,12 +82,17 @@ export function WishlistAwareProductCard({
       if (!id) return;
       setIsAddingToCart(true);
       try {
-        await addToCart({ productId: id, quantity });
+        const ok = await addToCart({ productId: id, quantity });
+        if (ok) {
+          toast.success("Ditambahkan ke keranjang", name);
+        } else {
+          toast.error("Gagal menambahkan", "Silakan coba lagi.");
+        }
       } finally {
         setIsAddingToCart(false);
       }
     },
-    [id, addToCart],
+    [id, name, addToCart],
   );
 
   return (

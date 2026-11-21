@@ -4,6 +4,10 @@ import { getUserIdFromRequest } from "@/src/lib/auth/session";
 import {
   retryMembershipPayment,
 } from "@/src/lib/services/membership-transaction-service";
+import {
+  assertChannelActive,
+  PaymentChannelUnavailableError,
+} from "@/src/lib/payment/payment-methods-service";
 
 export const runtime = "nodejs";
 
@@ -78,6 +82,25 @@ export async function POST(
       },
       { status: 400 },
     );
+  }
+
+  // ── Enforce payment channel availability ───────────────────────────────
+  // Rejects channels the admin has disabled (or unknown channels) even when
+  // a client POSTs the channel directly — keeps "Ganti Metode" consistent
+  // with the checkout selector.
+  try {
+    await assertChannelActive(paymentChannel);
+  } catch (err) {
+    if (err instanceof PaymentChannelUnavailableError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Metode pembayaran tidak tersedia. Silakan pilih metode lain.",
+        },
+        { status: 422 },
+      );
+    }
+    throw err;
   }
 
   const idempotencyKey = req.headers.get("Idempotency-Key") ?? undefined;

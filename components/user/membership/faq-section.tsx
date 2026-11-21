@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useId } from "react";
 import Image from "next/image";
@@ -64,8 +64,7 @@ function AccordionItem({
   const buttonId = useId();
 
   return (
-    /* Outline / border dibuat lebih tipis dengan opacity / ketebalan yang lebih ringan */
-    <div className="bg-white rounded-xl border border-[#1C6CAE]/30 overflow-hidden transition-all duration-200 shadow-sm">
+    <div className="bg-white rounded-xl border border-membership-blue/30 overflow-hidden transition-all duration-200 shadow-sm">
       <button
         id={buttonId}
         type="button"
@@ -74,15 +73,15 @@ function AccordionItem({
         aria-controls={contentId}
         className="w-full px-5 py-4 flex items-center justify-between text-left gap-3 hover:bg-slate-50 transition-colors cursor-pointer group"
       >
-        <span className="font-heading font-semibold text-sm sm:text-base text-[#1C6CAE] group-hover:text-[#2483D0] transition-colors">
+        <span className="font-heading font-semibold text-sm sm:text-base text-membership-blue group-hover:text-primary transition-colors">
           {item.question}
         </span>
 
         <div
           className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 ${
             isOpen
-              ? "rotate-0 bg-[#1C6CAE] text-white"
-              : "rotate-180 bg-slate-200/70 text-[#1C6CAE]"
+              ? "rotate-0 bg-membership-blue text-white"
+              : "rotate-180 bg-slate-200/70 text-membership-blue"
           }`}
         >
           <ChevronDown className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
@@ -98,7 +97,7 @@ function AccordionItem({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-[#1C6CAE]/90 leading-relaxed border-t border-[#1C6CAE]/10">
+          <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-membership-blue/90 leading-relaxed border-t border-membership-blue/10">
             {item.answer}
           </div>
         </div>
@@ -116,13 +115,13 @@ export function ResellerFaqSection() {
   };
 
   return (
-    <section className="relative z-20 bg-[#F3EFE4] text-[#1C6CAE] pb-16 sm:pb-24 overflow-hidden">
+    <section className="relative z-20 bg-background text-membership-blue pb-16 sm:pb-24 overflow-hidden">
       {/* Top SVG wave */}
       <div className="relative w-full overflow-hidden leading-none z-0 pointer-events-none">
         <svg
           viewBox="0 0 1440 80"
           preserveAspectRatio="none"
-          className="relative block w-full h-10 sm:h-14 md:h-16 lg:h-20 text-[#F3EFE4]"
+          className="relative block w-full h-10 sm:h-14 md:h-16 lg:h-20 text-background"
           fill="currentColor"
         >
           <path d="M0,80 Q720,-10 1440,80 L1440,0 L0,0 Z" />
@@ -131,28 +130,28 @@ export function ResellerFaqSection() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-8 sm:pt-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-24 items-start">
 
-          {/* Left: Header Column */}
-          <div className="lg:col-span-5 text-left lg:pt-4 mb-6 lg:mb-0">
+          {/* Left: Header Column (TETAP, jangan diubah) */}
+          <div className="lg:col-span-5 lg:-ml-12 text-left lg:pt-4 mb-6 lg:mb-0">
             {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1C6CAE]/10 text-[#1C6CAE] font-medium text-xs mb-4 backdrop-blur-sm border border-[#1C6CAE]/20">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-membership-blue/10 text-membership-blue font-medium text-xs mb-4 backdrop-blur-sm border border-membership-blue/20">
               <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Pusat Bantuan Reseller</span>
             </div>
 
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1C6CAE] tracking-tight leading-tight">
+            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-membership-blue tracking-tight leading-tight">
               Pertanyaan yang Sering Diajukan
             </h2>
 
-            <p className="mt-4 text-xs sm:text-sm text-[#1C6CAE]/85 leading-relaxed">
+            <p className="mt-4 text-xs sm:text-sm text-membership-blue/85 leading-relaxed">
               Punya pertanyaan seputar program mitra RoboEdu? Temukan jawaban
               lengkap mengenai pendaftaran, harga, garansi, dan dukungan di sini.
             </p>
 
-            {/* Arrow illustration - Ukuran sedikit diperbesar */}
+            {/* Arrow illustration */}
             <div className="pt-8 hidden lg:flex justify-start">
-              <div className="w-56 sm:w-64 h-auto translate-x-6">
+              <div className="w-56 sm:w-64 h-auto -translate-x-2">
                 <Image
                   src="/images/arrow2.webp"
                   alt="Panah penunjuk"
@@ -164,8 +163,8 @@ export function ResellerFaqSection() {
             </div>
           </div>
 
-          {/* Right: Accordion List */}
-          <div className="lg:col-span-7 space-y-3">
+          {/* Right: Accordion List (Digeser dikit lagi ke kanan pakai lg:-mr-16) */}
+          <div className="lg:col-span-7 lg:-mr-16 space-y-3">
             {RESELLER_FAQS.map((item, index) => (
               <AccordionItem
                 key={item.id}

@@ -16,9 +16,6 @@
   --color-primary-900: #103B5E;
   /* teks di atas primary-100, dsb */
 
-  /* Tambahkan token warna kustom untuk input */
-  --color-contact-input: #E4E4E4;
-
   /* ===== BRAND — Secondary (teks utama, heading, kontras tinggi) ===== */
   --color-secondary-100: #ECEAE6;
   --color-secondary-300: #C5BFB2;
@@ -49,14 +46,14 @@
   --color-success-bg: #A9E8AE;
   /* = pastel green */
   --color-warning: #736D39;
-  --color-warning-bg: #FFF37E;
   /* = pastel yellow */
+  --color-warning-bg: #FFF37E;
   --color-danger: #7A2E22;
-  --color-danger-bg: #FFAFA3;
   /* = pastel peach, dipakai buat error ringan/soft */
+  --color-danger-bg: #FFAFA3;
   --color-info: #406173;
-  --color-info-bg: #8ED8FF;
   /* = pastel blue */
+  --color-info-bg: #8ED8FF;
 
   /* ===== ACCENT — Pastel (khusus aksen komponen: badge, tag, ilustrasi, chip kategori) ===== */
   --color-accent-yellow: #FFF37E;
@@ -80,19 +77,6 @@
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
   --font-body: var(--font-outfit), sans-serif;
-
-  /* ===== ACCENT — Pastel ===== */
-  --color-accent-yellow: #FFF37E;
-  --color-accent-yellow-shadow: #E0D14E; /* versi lebih tua */
-
-  --color-accent-soft-blue: #C9E9F6;
-  --color-accent-soft-blue-shadow: #9ACCE0; /* versi lebih tua */
-
-  --color-accent-green: #A9E8AE;
-  --color-accent-green-shadow: #7CC782; /* versi lebih tua */
-
-  --color-accent-pink: #FFC0DD;
-  --color-accent-pink-shadow: #E092B6; /* versi lebih tua */
 }
 
 @theme inline {
@@ -236,18 +220,29 @@
    ========================================== */
 
 @utility neo-shadow {
-  box-shadow: none;
+  box-shadow: 4px 4px 0px 0px #3D2900;
 }
 
 @utility neo-shadow-hover {
   &:hover {
-    box-shadow: none;
-    transform: none;
+    box-shadow: 2px 2px 0px 0px #3D2900;
+    transform: translate(2px, 2px);
   }
 }
 
 @utility neo-shadow-icon {
-  box-shadow: none;
+  box-shadow: 2px 2px 0px 0px #3D2900;
+}
+
+/* Custom Pill Shadow untuk Kategori */
+.category-shadow {
+  box-shadow: none !important;
+  filter: drop-shadow(0 3px 0 #F1E7DB) !important;
+}
+
+.category-shadow:active {
+  filter: none !important;
+  transform: translateY(2px);
 }
 
 /* Hide scrollbar utility (keeps scrolling functionality active) */
@@ -299,31 +294,61 @@
 
 /* ==========================================
    Landing Page Color Tokens
-   Warna-warna spesifik landing page yang belum ada di token utama.
-   Semua komponen landing harus pakai token ini, bukan hardcode hex.
    ========================================== */
 
 @theme {
-  /* Biru section landing (InfoCards, InfoCardsList bg) */
   --color-landing-blue: #2781CD;
-  /* Biru tua heading hero */
   --color-landing-navy: #0F2C59;
-  /* Biru langit hero (sama dengan hero membership/contact) */
   --color-landing-sky: #97CEF9;
-  /* Pink kartu promo */
   --color-promo-pink: #E8808C;
-  /* Biru kartu promo */
   --color-promo-blue: #6AA2B8;
-  /* Merah label tipe promo */
   --color-promo-red: #C0392B;
-  /* Orange label kategori carousel */
   --color-promo-orange: #B85C38;
-  /* Gold stroke/aksen gelombang */
   --color-accent-gold: #F3C769;
-  /* Warna bintang testimoni */
   --color-star: #FFC107;
-  /* Ungu lembut card testimoni */
   --color-accent-purple-light: #EAE4FF;
 }
 
+/* ==========================================
+   Membership / Reseller Page Color Tokens
+   ========================================== */
 
+@theme {
+  /* Biru utama aksen membership (border, teks, ikon) */
+  --color-membership-blue: #1C6CAE;
+  /* Biru muda latar nomor / badge */
+  --color-membership-blue-light: #D5ECFA;
+  /* Biru tengah untuk stroke SVG scallop */
+  --color-membership-blue-mid: #63B5EF;
+  /* Biru gelap untuk drop-shadow robot CTA */
+  --color-membership-blue-dark: #0284C7;
+  /* Gradient layer 1 background membership card */
+  --color-membership-gradient-1: #3897e0;
+  /* Gradient layer 2 background membership card */
+  --color-membership-gradient-2: #62B4EE;
+  /* Kuning pucat label kategori & nomor urut */
+  --color-accent-pale-yellow: #FEF08A;
+}
+
+/* ==========================================
+   Filter Pill Active State
+   ========================================== */
+
+@utility filter-pill-active {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+/* ==========================================
+   Pastel card variants
+   ========================================== */
+
+@utility bg-pastel-pink    { background-color: #FFE4EF; }
+@utility bg-pastel-blue    { background-color: #E0F3FB; }
+@utility bg-pastel-yellow  { background-color: #FFFACC; }
+@utility bg-pastel-green   { background-color: #DFF5E1; }
+@utility bg-pastel-purple  { background-color: #EAE8FF; }
+@utility bg-pastel-orange  { background-color: #FFF0D6; }
+@utility bg-pastel-peach   { background-color: #FFE9E4; }
+@utility bg-pastel-butter  { background-color: #FDF7E3; }

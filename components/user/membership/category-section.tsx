@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { Store, GraduationCap, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
+import { Store, GraduationCap, CheckCircle2 } from "lucide-react";
 
 export function ResellerCategorySection() {
   return (
-    <section className="relative w-full bg-[#2483D0] overflow-hidden">
+    <section className="relative w-full bg-primary overflow-hidden">
       {/* ── Top Scalloped Curves ── */}
       <div className="w-full -mb-1 leading-none overflow-hidden relative z-20">
         <svg
@@ -14,7 +14,7 @@ export function ResellerCategorySection() {
           className="w-full h-auto block"
           preserveAspectRatio="none"
         >
-          {/* Garis Biru Muda (#97CEF9) Dibuat Lebih Tebal (strokeWidth 28) */}
+          {/* Garis Lengkungan Warna membership-blue-mid */}
           <path
             d="M0,58 
                C55,18 150,18 205,58 
@@ -25,7 +25,7 @@ export function ResellerCategorySection() {
                C1010,5 1170,5 1245,58 
                C1295,20 1385,20 1440,58"
             fill="none"
-            stroke="#97CEF9"
+            stroke="var(--color-membership-blue-mid)"
             strokeWidth="28"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -51,58 +51,38 @@ export function ResellerCategorySection() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 flex flex-col gap-12">
 
         {/* Section Header - Center Layout */}
-        <div className="flex flex-col items-center text-center gap-1 max-w-3xl mx-auto">
+        <div className="flex flex-col items-center text-center gap-2 max-w-4xl mx-auto w-full">
           <h2 className="font-heading font-bold text-2xl sm:text-3xl lg:text-4xl text-white leading-tight mt-10">
-            Kategori &amp; Syarat Kemitraan
+            Kategori & Syarat Kemitraan
           </h2>
 
-          {/* Aksen SVG Dekoratif di Bawah Judul */}
-          <div className="w-60 sm:w-80 lg:w-[26rem] h-auto mt-1 mb-6 translate-x-6 sm:translate-x-12">
-            <svg
-              viewBox="0 0 134 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-auto drop-shadow-sm"
-            >
-              <path
-                d="M89 0.8C97.16 0.5 128.89 -0.8 131.95 0.5C135.5 2.0 132.99 2.8 95.5 3.8C70.04 4.5 0 9.5 0 9.5C0 9.5 54.15 2.2 89 0.8Z"
-                fill="#FEF08A"
-              />
-            </svg>
-          </div>
-
-          <p className="font-body text-sm sm:text-base text-white/90 leading-relaxed mb-8">
+          <p className="font-body font-normal text-sm sm:text-base text-white/80 leading-relaxed max-w-3xl mb-10">
             RoboEdu membuka peluang bagi berbagai skala mitra edukasi. Kami membagi pemohon ke dalam dua profil utama dengan persyaratan administrasi yang simpel dan transparan.
           </p>
         </div>
 
-        {/* Two Category Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+        {/* Two Category Cards (Lebar container grid diperbesar sedikit ke samping) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto w-full">
 
           {/* Card A: Toko & Individu */}
-          <div className="bg-white/15 backdrop-blur-md border border-white/40 rounded-[2.5rem] p-8 sm:p-10 flex flex-col justify-between gap-6 shadow-xl hover:bg-white/20 transition-all">
+          <div className="bg-white/10 backdrop-blur-md border border-white/25 rounded-3xl p-8 sm:p-10 flex flex-col gap-6 shadow-xl hover:bg-white/15 transition-all w-full">
             <div className="flex flex-col gap-6">
-              {/* Header Top Row */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-[#FEF08A] flex items-center justify-center shrink-0 text-[#2483D0] shadow-md">
-                    <Store className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="font-heading font-extrabold text-xs text-[#FEF08A] tracking-wider uppercase drop-shadow-sm">
-                      Kategori A
-                    </span>
-                    <h3 className="font-heading font-bold text-xl sm:text-2xl text-white leading-snug">
-                      Toko &amp; Individu Kreatif
-                    </h3>
-                  </div>
-                </div>
-                <span className="font-heading font-extrabold text-3xl text-[#FEF08A]/60">
+              {/* Header Top Row (Angka Besar + Teks Sesuai Gambar) */}
+              <div className="flex items-center gap-4">
+                <span className="font-heading font-black text-4xl sm:text-5xl text-accent-pale-yellow/80 tracking-tight shrink-0">
                   01
                 </span>
+                <div className="flex flex-col">
+                  <span className="font-heading font-extrabold text-[10px] sm:text-xs text-accent-pale-yellow tracking-wider uppercase drop-shadow-sm">
+                    Kategori A
+                  </span>
+                  <h3 className="font-heading font-bold text-xl sm:text-2xl text-white leading-snug">
+                    Toko & Individu Kreatif
+                  </h3>
+                </div>
               </div>
 
-              <p className="font-body text-xs sm:text-sm text-white/90 leading-relaxed">
+              <p className="font-body font-normal text-xs sm:text-sm text-white/80 leading-relaxed">
                 Dirancang untuk hobby shop, pengajar privat, kreator edukasi, maupun reseller e-commerce.
               </p>
 
@@ -113,8 +93,8 @@ export function ResellerCategorySection() {
                   "Komitmen awal pemesanan fleksibel (mulai dari paket uji coba <10 unit hingga rutin bulanan).",
                   "Menjaga reputasi layanan dan ketersediaan stok sparepart cadangan bagi pembeli akhir.",
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/20 border border-white/30 backdrop-blur-sm shadow-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#FEF08A] shrink-0 mt-0.5 drop-shadow-sm" />
+                  <div key={i} className="flex items-center gap-3.5 px-5 py-4 rounded-2xl bg-white/15 border border-white/30 backdrop-blur-sm shadow-sm">
+                    <CheckCircle2 className="w-5 h-5 text-accent-pale-yellow shrink-0 drop-shadow-sm" />
                     <span className="font-body text-xs sm:text-sm text-white font-medium leading-relaxed">
                       {item}
                     </span>
@@ -125,29 +105,24 @@ export function ResellerCategorySection() {
           </div>
 
           {/* Card B: Institusi & Komunitas */}
-          <div className="bg-white/15 backdrop-blur-md border border-white/40 rounded-[2.5rem] p-8 sm:p-10 flex flex-col justify-between gap-6 shadow-xl hover:bg-white/20 transition-all">
+          <div className="bg-white/10 backdrop-blur-md border border-white/25 rounded-3xl p-8 sm:p-10 flex flex-col gap-6 shadow-xl hover:bg-white/15 transition-all w-full">
             <div className="flex flex-col gap-6">
-              {/* Header Top Row */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-[#FEF08A] flex items-center justify-center shrink-0 text-[#2483D0] shadow-md">
-                    <GraduationCap className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="font-heading font-extrabold text-xs text-[#FEF08A] tracking-wider uppercase drop-shadow-sm">
-                      Kategori B
-                    </span>
-                    <h3 className="font-heading font-bold text-xl sm:text-2xl text-white leading-snug">
-                      Institusi &amp; Komunitas
-                    </h3>
-                  </div>
-                </div>
-                <span className="font-heading font-extrabold text-3xl text-[#FEF08A]/60">
+              {/* Header Top Row (Angka Besar + Teks Sesuai Gambar) */}
+              <div className="flex items-center gap-4">
+                <span className="font-heading font-black text-4xl sm:text-5xl text-accent-pale-yellow/80 tracking-tight shrink-0">
                   02
                 </span>
+                <div className="flex flex-col">
+                  <span className="font-heading font-extrabold text-[10px] sm:text-xs text-accent-pale-yellow tracking-wider uppercase drop-shadow-sm">
+                    Kategori B
+                  </span>
+                  <h3 className="font-heading font-bold text-xl sm:text-2xl text-white leading-snug">
+                    Institusi & Komunitas
+                  </h3>
+                </div>
               </div>
 
-              <p className="font-body text-xs sm:text-sm text-white/90 leading-relaxed">
+              <p className="font-body font-normal text-xs sm:text-sm text-white/80 leading-relaxed">
                 Dikhususkan bagi Sekolah SD/SMP/SMA/SMK, LPK robotika, universitas, dan komunitas pendidikan.
               </p>
 
@@ -158,8 +133,8 @@ export function ResellerCategorySection() {
                   "Proyeksi serapan kurikulum kelas berulang (10–50+ unit per semester/tahun ajaran).",
                   "Berhak mendapatkan pelatihan Train-the-Trainer untuk guru pembina robotika RoboEdu.",
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/20 border border-white/30 backdrop-blur-sm shadow-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#FEF08A] shrink-0 mt-0.5 drop-shadow-sm" />
+                  <div key={i} className="flex items-center gap-3.5 px-5 py-4 rounded-2xl bg-white/15 border border-white/30 backdrop-blur-sm shadow-sm">
+                    <CheckCircle2 className="w-5 h-5 text-accent-pale-yellow shrink-0 drop-shadow-sm" />
                     <span className="font-body text-xs sm:text-sm text-white font-medium leading-relaxed">
                       {item}
                     </span>
@@ -169,30 +144,6 @@ export function ResellerCategorySection() {
             </div>
           </div>
 
-        </div>
-
-        {/* MAP Policy Banner */}
-        <div className="bg-white/15 mb-10 backdrop-blur-md border border-white/40 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-12 h-12 rounded-2xl bg-[#FEF08A] flex items-center justify-center shrink-0 text-[#2483D0] shadow-md">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-heading font-bold text-base sm:text-lg text-white leading-snug">
-                Standar Etika Harga RoboEdu (MAP Policy)
-              </p>
-              <p className="font-body text-xs sm:text-sm text-white/90 mt-1 leading-relaxed">
-                Seluruh mitra wajib mematuhi batas harga jual minimum eceran resmi demi melindungi margin bersama di ekosistem edukasi.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 shrink-0 bg-[#FEF08A] text-[#2483D0] hover:bg-[#fde047] font-heading font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full transition-colors shadow-md"
-          >
-            DAFTAR SEKARANG
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
 
       </div>
@@ -205,7 +156,7 @@ export function ResellerCategorySection() {
           className="w-full h-auto block"
           preserveAspectRatio="none"
         >
-          {/* Garis Biru Muda (#97CEF9) Dibuat Lebih Tebal (strokeWidth 28) */}
+          {/* Garis Lengkungan Warna membership-blue-mid */}
           <path
             d="M0,60 
                C55,15 150,15 205,60 
@@ -216,7 +167,7 @@ export function ResellerCategorySection() {
                C1010,8 1170,8 1245,60 
                C1295,20 1385,20 1440,60"
             fill="none"
-            stroke="#97CEF9"
+            stroke="var(--color-membership-blue-mid)"
             strokeWidth="28"
             strokeLinecap="round"
             strokeLinejoin="round"
