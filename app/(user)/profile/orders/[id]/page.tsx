@@ -193,12 +193,11 @@ function TrackingTimeline({ trackings }: { trackings: TrackingEntry[] }) {
               <span className="absolute left-3.5 top-7 -bottom-4 w-0.5 bg-foreground/20" aria-hidden="true" />
             )}
             <div className={`relative z-10 w-7 h-7 rounded-full border-2 border-foreground flex items-center justify-center shrink-0 ${
-              isFirst ? "bg-accent-green neo-shadow-icon" : "bg-muted"
+              isFirst ? "bg-primary neo-shadow-icon" : "bg-muted"
             }`}>
-              {isFirst
-                ? <CheckCircle2 className="w-4 h-4 text-foreground stroke-[2.5]" />
-                : <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-              }
+              <span className={`block w-2.5 h-2.5 rounded-full ${
+                isFirst ? "bg-primary-foreground" : "bg-muted-foreground/50"
+              }`} aria-hidden="true" />
             </div>
             <div className="flex flex-col gap-0.5 flex-1 pb-3">
               <p className={`font-body text-sm leading-snug ${isFirst ? "font-bold text-foreground" : "text-foreground/80"}`}>
