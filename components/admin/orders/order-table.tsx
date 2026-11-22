@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { AdminOrderRow } from "./order-list-types";
+import { deriveOrderDisplayStatus } from "./order-display-status";
 
 export interface OrderTableProps {
   data: AdminOrderRow[];
@@ -55,7 +56,6 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
               <th className="py-3.5 px-4">Item &amp; Produk</th>
               <th className="py-3.5 px-4">Total Tagihan</th>
               <th className="py-3.5 px-4">Status Pesanan</th>
-              <th className="py-3.5 px-4">Pembayaran</th>
               <th className="py-3.5 px-4 text-center">Aksi</th>
             </tr>
           </thead>
@@ -65,7 +65,7 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
             {isLoading &&
               Array.from({ length: SKELETON_ROWS }).map((_, i) => (
                 <tr key={`sk-${i}`}>
-                  {Array.from({ length: 7 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <td key={j} className="py-3.5 px-4">
                       <Skeleton className="h-4 w-full max-w-[120px] rounded-lg" />
                     </td>
@@ -77,7 +77,7 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
             {!isLoading && data.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="py-12 text-center text-muted-foreground"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -148,14 +148,20 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
                     </div>
                   </td>
 
-                  {/* Order Status */}
+                  {/* Status */}
                   <td className="py-3.5 px-4">
-                    <StatusBadge status={order.status} size="sm" neo />
-                  </td>
-
-                  {/* Payment Status */}
-                  <td className="py-3.5 px-4">
-                    <StatusBadge status={order.payment_status} size="sm" />
+                    {(() => {
+                      const display = deriveOrderDisplayStatus(order.status, order.payment_status);
+                      return (
+                        <StatusBadge
+                          status={order.status}
+                          customLabel={display.label}
+                          statusTheme={display.theme}
+                          size="sm"
+                          neo
+                        />
+                      );
+                    })()}
                   </td>
 
                   {/* Action */}
