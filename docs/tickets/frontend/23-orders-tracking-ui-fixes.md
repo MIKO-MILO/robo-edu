@@ -1,3 +1,4 @@
+
 # 23: Perbaikan UI Order — Dropdown Checkpoint & Dot Timeline
 
 **What to build:** Dua perbaikan visual pada halaman order:
@@ -8,10 +9,14 @@
 
 **Blocked by:** 22-fix-paidat-timestamp-and-tracking-checkpoint (backend timestamp fix harus selesai agar form checkpoint tanpa waktu berjalan benar)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Form tambah checkpoint admin menampilkan dropdown status dengan opsi predefined, bukan free-text input.
-- [ ] Field picker waktu tidak ada di form tambah checkpoint admin.
-- [ ] Submit form checkpoint tanpa field waktu berhasil dan checkpoint tersimpan dengan waktu server.
-- [ ] Timeline pesanan user menggunakan dot berwarna untuk semua entry, bukan ikon centang.
-- [ ] Dot entry pertama (terbaru) berwarna aksen/primer; dot entry lama berwarna muted.
+> **Files changed:**
+> - `app/(admin)/admin/orders/[id]/page.tsx` — status field diganti `<select>` dengan 7 opsi predefined; state `cpTimestamp` dan field datetime-local dihapus; `timestamp` tidak lagi dikirim ke API.
+> - `app/(user)/profile/orders/[id]/page.tsx` — `TrackingTimeline` menggunakan dot berwarna (`bg-primary` untuk entry terbaru, `bg-muted` untuk entry lama) menggantikan ikon `CheckCircle2`/`Clock`.
+
+- [x] Form tambah checkpoint admin menampilkan dropdown status dengan opsi predefined, bukan free-text input.
+- [x] Field picker waktu tidak ada di form tambah checkpoint admin.
+- [x] Submit form checkpoint tanpa field waktu berhasil dan checkpoint tersimpan dengan waktu server.
+- [x] Timeline pesanan user menggunakan dot berwarna untuk semua entry, bukan ikon centang.
+- [x] Dot entry pertama (terbaru) berwarna aksen/primer; dot entry lama berwarna muted.
