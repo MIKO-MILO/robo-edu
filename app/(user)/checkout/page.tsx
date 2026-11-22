@@ -126,6 +126,26 @@ export default function CheckoutPage() {
     setPageLoading(true);
     setPageError(null);
     try {
+      // Read the selection made on the cart page (written by cart/page.tsx
+      // before navigating here). Falls back to null when absent, which means
+      // "use all cart items" — preserving the previous behaviour.
+      let selectedCartIds: string[] | null = null;
+      try {
+        const raw = sessionStorage.getItem("checkout_selected_ids");
+        if (raw) {
+          const parsed: unknown = JSON.parse(raw);
+          if (
+            Array.isArray(parsed) &&
+            parsed.length > 0 &&
+            parsed.every((v) => typeof v === "string")
+          ) {
+            selectedCartIds = parsed as string[];
+          }
+        }
+      } catch {
+        // sessionStorage unavailable or JSON malformed — fall back to full cart
+      }
+
       const [addrRes, cartRes, shippingRes, membershipRes] = await Promise.all([
         fetch("/api/profile/addresses"),
         fetch("/api/cart"),
@@ -156,7 +176,16 @@ export default function CheckoutPage() {
       if (!shippingRes.ok) throw new Error(shippingJson.message ?? "Gagal memuat opsi kurir.");
 
       const mappedAddresses: UserAddress[] = (addrJson.data as ApiAddress[]).map(mapAddress);
-      const mappedItems: CartItemDetail[] = (cartJson.data.items as ApiCartItem[]).map(mapCartItem);
+      const allItems: CartItemDetail[] = (cartJson.data.items as ApiCartItem[]).map(mapCartItem);
+
+      // Apply selection filter: when selectedCartIds is set, show only those
+      // items. If the filtered result is empty (IDs no longer in cart), the
+      // existing empty-cart guard below will redirect back to /cart.
+      const mappedItems: CartItemDetail[] =
+        selectedCartIds !== null
+          ? allItems.filter((item) => selectedCartIds!.includes(item.id))
+          : allItems;
+
       const options: ShippingOption[] = shippingJson.data as ShippingOption[];
 
       if (mappedItems.length === 0) {
@@ -315,6 +344,25 @@ export default function CheckoutPage() {
     }
 
     try {
+      // Read the selected IDs one more time from sessionStorage — the same
+      // values that were used to filter the displayed items.
+      let itemIds: string[] | undefined;
+      try {
+        const raw = sessionStorage.getItem("checkout_selected_ids");
+        if (raw) {
+          const parsed: unknown = JSON.parse(raw);
+          if (
+            Array.isArray(parsed) &&
+            parsed.length > 0 &&
+            parsed.every((v) => typeof v === "string")
+          ) {
+            itemIds = parsed as string[];
+          }
+        }
+      } catch {
+        // sessionStorage unavailable — omit itemIds (backend falls back to all items)
+      }
+
       const res = await fetch("/api/checkout/midtrans", {
         method: "POST",
         headers: {
@@ -331,11 +379,23 @@ export default function CheckoutPage() {
           paymentMethod: selectedPayment!.method.method,
           paymentChannel: selectedPayment!.method.channel,
           ovoPhone: selectedPayment!.method.channel === "ovo" ? selectedPayment!.ovoPhone : undefined,
+          // Selected cart item IDs — only these items will be ordered and
+          // removed from the cart; any unselected items remain in the cart.
+          itemIds,
         }),
       });
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.message ?? "Gagal membuat pesanan.");
+
+      // Clear the selection from sessionStorage now that the order is placed.
+      // This ensures a subsequent checkout of the remaining cart items starts
+      // fresh (falls back to all items) rather than reusing the stale selection.
+      try {
+        sessionStorage.removeItem("checkout_selected_ids");
+      } catch {
+        // sessionStorage unavailable — not critical
+      }
 
       // Redirect ke halaman pembayaran dedicated (Snap popup) — bukan ke hosted Midtrans page
       router.push(`/payment/${json.data.orderId}`);
