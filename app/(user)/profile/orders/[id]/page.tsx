@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/user/orders/order-status-badge";
-import { OrderReviewModal } from "@/components/user/orders/order-review-modal";
 import type { OrderStatus } from "@/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -233,7 +232,6 @@ export default function OrderDetailPage() {
   const [copied, setCopied] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -422,15 +420,16 @@ export default function OrderDetailPage() {
             </Button>
           </Link>
           {order.status === "COMPLETED" && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => setShowReviewModal(true)}
-            >
-              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-              Tulis Ulasan
-            </Button>
+            <Link href={`/profile/orders/${order.id}/review`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                Tulis Ulasan
+              </Button>
+            </Link>
           )}
         </div>
       )}
@@ -649,16 +648,6 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* ── Modals ──────────────────────────────────────────────── */}
-      {showReviewModal && order && (
-        <OrderReviewModal
-          isOpen
-          onClose={() => setShowReviewModal(false)}
-          orderNumber={order.order_number}
-          orderId={order.id}
-          onSubmitSuccess={() => setShowReviewModal(false)}
-        />
-      )}
     </div>
   );
 }
