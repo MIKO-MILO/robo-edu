@@ -84,6 +84,11 @@ export default function CartPage() {
       return;
     }
 
+    if (hasOutOfStockItems) {
+      setCheckoutError("Hapus item stok habis sebelum melanjutkan checkout.");
+      return;
+    }
+
     // Arahkan ke halaman checkout untuk memilih alamat, kurir, dan voucher
     router.push("/checkout");
   };
@@ -99,7 +104,10 @@ export default function CartPage() {
   };
 
   // 5. Calculations
-  const subtotal = cartItems.reduce(
+  // Items with stock === 0 are excluded from the subtotal (can't be checked out).
+  const inStockItems = cartItems.filter((item) => item.stock > 0);
+  const hasOutOfStockItems = cartItems.some((item) => item.stock === 0);
+  const subtotal = inStockItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
@@ -146,15 +154,17 @@ export default function CartPage() {
 
               {/* Cart Items List */}
               <div className="space-y-4">
-                {cartItems.map((item) => (
+                {cartItems.map((item) => {
+                  const isOOS = item.stock === 0;
+                  return (
                   <div
                     key={item.id}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 sm:py-6 px-4 sm:px-6 items-center bg-[#FAF6ED] rounded-2xl shadow-sm transition-all duration-300"
+                    className={`grid grid-cols-1 md:grid-cols-12 gap-4 py-4 sm:py-6 px-4 sm:px-6 items-center rounded-2xl shadow-sm transition-all duration-300 ${isOOS ? "bg-muted/60 opacity-75" : "bg-[#FAF6ED]"}`}
                   >
                     {/* Item Image & Info */}
                     <div className="col-span-1 md:col-span-6 flex items-center gap-3 sm:gap-4 min-w-0">
                       {/* Playful Image Container */}
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-accent-orange/20 rounded-2xl flex items-center justify-center p-2 border-2 border-white shadow-sm flex-shrink-0 transition-transform duration-300 hover:scale-105">
+                      <div className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl flex items-center justify-center p-2 border-2 border-white shadow-sm flex-shrink-0 transition-transform duration-300 ${isOOS ? "bg-muted grayscale" : "bg-accent-orange/20 hover:scale-105"}`}>
                         <Image
                           src={
                             item.imageUrl || "/images/placeholder-product.jpg"
@@ -168,20 +178,27 @@ export default function CartPage() {
 
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
-                        <Link href={`/product/${item.slug || item.productId}`}>
-                          <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground mb-1 leading-tight hover:underline">
-                            {item.name}
-                          </h3>
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <Link href={`/product/${item.slug || item.productId}`}>
+                            <h3 className={`font-heading text-sm sm:text-base lg:text-lg font-bold leading-tight hover:underline ${isOOS ? "text-muted-foreground" : "text-foreground"}`}>
+                              {item.name}
+                            </h3>
+                          </Link>
+                          {isOOS && (
+                            <span className="inline-block font-body text-[10px] sm:text-xs font-bold text-danger bg-danger/10 border border-danger/30 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              Stok Habis
+                            </span>
+                          )}
+                        </div>
                         <p className="font-body text-xs sm:text-sm text-muted-foreground mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
                           <span>Varian: {item.variantName || "Standard"}</span>
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-border-strong flex-shrink-0"></span>
-                          <span className="font-semibold text-primary-900 flex-shrink-0">
+                          <span className={`font-semibold flex-shrink-0 ${isOOS ? "text-muted-foreground" : "text-primary-900"}`}>
                             {formatPrice(item.price)}
                           </span>
                         </p>
 
-                        {/* Remove Action */}
+                        {/* Remove Action — always active */}
                         <button
                           onClick={() => handleRemoveItem(item.id)}
                           className="inline-flex items-center font-body text-xs text-danger hover:text-danger-bg font-semibold transition-colors duration-200 cursor-pointer"
@@ -215,7 +232,8 @@ export default function CartPage() {
                         {/* Minus Button */}
                         <button
                           onClick={() => handleQuantityChange(item.id, -1)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer"
+                          disabled={isOOS}
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-border-strong"
                           aria-label="Kurangi jumlah"
                         >
                           <svg
@@ -234,14 +252,15 @@ export default function CartPage() {
                         </button>
 
                         {/* Quantity Value */}
-                        <span className="font-body font-bold text-sm sm:text-base text-foreground w-8 sm:w-10 text-center">
+                        <span className={`font-body font-bold text-sm sm:text-base w-8 sm:w-10 text-center ${isOOS ? "text-muted-foreground" : "text-foreground"}`}>
                           {item.quantity}
                         </span>
 
                         {/* Plus Button */}
                         <button
                           onClick={() => handleQuantityChange(item.id, 1)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer"
+                          disabled={isOOS}
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-border-strong"
                           aria-label="Tambah jumlah"
                         >
                           <svg
@@ -266,12 +285,19 @@ export default function CartPage() {
                       <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
                         Subtotal
                       </span>
-                      <span className="font-heading font-bold text-base sm:text-lg text-foreground">
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
+                      {isOOS ? (
+                        <span className="font-body text-xs font-semibold text-muted-foreground">
+                          Tidak dihitung
+                        </span>
+                      ) : (
+                        <span className="font-heading font-bold text-base sm:text-lg text-foreground">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Continue Shopping Link */}
@@ -339,8 +365,8 @@ export default function CartPage() {
             {/* Proceed to Checkout Button */}
             <button
               onClick={handleCheckout}
-              disabled={cartItems.length === 0}
-              className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg"
+              disabled={cartItems.length === 0 || hasOutOfStockItems}
+              className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               Proceed to Checkout
               <svg
@@ -360,6 +386,11 @@ export default function CartPage() {
             {checkoutError && (
               <p className="mb-4 text-center font-body text-xs font-semibold text-danger">
                 {checkoutError}
+              </p>
+            )}
+            {hasOutOfStockItems && !checkoutError && (
+              <p className="mb-4 text-center font-body text-xs font-semibold text-danger">
+                Hapus item stok habis sebelum melanjutkan checkout.
               </p>
             )}
 
@@ -452,7 +483,7 @@ export default function CartPage() {
 
       {/* RECOMMENDATIONS SECTION — hidden when loading finished and no items */}
       {(recsLoading || recommendations.filter(
-          (p) => !cartItems.some((ci) => ci.productId === p.id)
+          (p) => !cartItems.some((ci) => ci.productId === p.id) && p.stock > 0
         ).length > 0) && (
         <div className="mt-12 sm:mt-16 pt-8 sm:pt-12 border-t border-border-strong/50">
           {/* Recommendations Header with Slider Buttons */}
@@ -534,7 +565,7 @@ export default function CartPage() {
                   </div>
                 ))
               : recommendations
-                  .filter((p) => !cartItems.some((ci) => ci.productId === p.id))
+                  .filter((p) => !cartItems.some((ci) => ci.productId === p.id) && p.stock > 0)
                   .slice(0, 4)
                   .map((prod) => {
                     const isWishlisted = wishlist.includes(prod.id);
@@ -606,7 +637,8 @@ export default function CartPage() {
                                 e.preventDefault();
                                 handleAddRecommendedToCart(prod);
                               }}
-                              className="absolute bottom-3 right-3 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-600 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
+                              disabled={prod.stock === 0}
+                              className="absolute bottom-3 right-3 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-600 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                               aria-label={`Add ${prod.name} to cart`}
                             >
                               <svg

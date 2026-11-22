@@ -93,6 +93,7 @@ interface ApiProduct {
   slug: string;
   price: { min: number | null; max: number | null };
   image: string | null;
+  stock?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -620,6 +621,7 @@ return (
                 reviewCount="0 ulasan"
                 imageUrl={item.image ?? "/images/placeholder-product.jpg"}
                 bgColorClass={BG_COLORS[idx % BG_COLORS.length]}
+                outOfStock={item.stock === 0}
               />
             </div>
           ))}
