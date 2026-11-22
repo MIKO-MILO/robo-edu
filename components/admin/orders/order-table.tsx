@@ -2,12 +2,16 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, User, Eye, XCircle } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Calendar, User, Eye, Pencil, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { AdminOrderRow } from "./order-list-types";
 import { deriveOrderDisplayStatus } from "./order-display-status";
+import { OrderStatusDialog } from "./order-status-dialog";
+import type { OrderStatus } from "@/types/enums";
+import { ADMIN_ORDERS_QUERY_KEY } from "@/hooks/admin/orders/use-admin-orders";
 
 export interface OrderTableProps {
   data: AdminOrderRow[];
@@ -37,16 +41,42 @@ const SKELETON_ROWS = 5;
 
 /**
  * Organism — tabel utama daftar pesanan admin.
- * - Klik baris atau tombol "Detail" → navigasi ke halaman detail.
+ * - Klik baris atau tombol Detail (icon) → navigasi ke halaman detail.
+ * - Tombol "Edit Status" → buka OrderStatusDialog inline, invalidate query setelah sukses.
  * - Loading state: skeleton rows.
  * - Empty state: icon + pesan.
- * Saat backend siap, ganti prop `data` dengan hasil API hook.
  */
 export function OrderTable({ data, isLoading = false }: OrderTableProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // ── Dialog state ──────────────────────────────────────────────────────
+  const [dialogOrder, setDialogOrder] = React.useState<{
+    id: string;
+    order_number: string;
+    status: OrderStatus;
+  } | null>(null);
+
+  const handleEditStatus = (
+    e: React.MouseEvent,
+    order: AdminOrderRow,
+  ) => {
+    e.stopPropagation();
+    setDialogOrder({
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status,
+    });
+  };
+
+  const handleDialogSuccess = (_newStatus: OrderStatus) => {
+    // Invalidate semua query pesanan agar tabel refresh otomatis.
+    queryClient.invalidateQueries({ queryKey: ADMIN_ORDERS_QUERY_KEY });
+  };
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-xs">
+    <>
+      <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-xs">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse font-body text-sm">
           <thead>
@@ -169,16 +199,34 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
                     className="py-3.5 px-4 text-center"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="xs"
-                      onClick={() => router.push(`/admin/orders/${order.id}`)}
-                      className="gap-1 rounded-xl"
-                    >
-                      <Eye className="size-3.5" />
-                      <span>Detail</span>
-                    </Button>
+                    <div className="flex items-center justify-center gap-1.5">
+                      {/* Detail — icon only */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/admin/orders/${order.id}`);
+                        }}
+                        className="rounded-xl px-2"
+                        title="Lihat Detail"
+                      >
+                        <Eye className="size-3.5" />
+                      </Button>
+
+                      {/* Edit Status */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        onClick={(e) => handleEditStatus(e, order)}
+                        className="gap-1 rounded-xl"
+                      >
+                        <Pencil className="size-3.5" />
+                        <span>Edit Status</span>
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -186,5 +234,18 @@ export function OrderTable({ data, isLoading = false }: OrderTableProps) {
         </table>
       </div>
     </div>
+
+    {/* Edit Status Dialog — dikontrol dari baris tabel */}
+    {dialogOrder && (
+      <OrderStatusDialog
+        open={!!dialogOrder}
+        onOpenChange={(open) => { if (!open) setDialogOrder(null); }}
+        orderId={dialogOrder.id}
+        orderNumber={dialogOrder.order_number}
+        currentStatus={dialogOrder.status}
+        onSuccess={handleDialogSuccess}
+      />
+    )}
+    </>
   );
 }
