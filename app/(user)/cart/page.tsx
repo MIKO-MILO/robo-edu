@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,14 +34,95 @@ export default function CartPage() {
     };
   }, []);
 
-  // 3. Page Interactivity States
+  // ── Selection state ────────────────────────────────────────────────────────
+  // Initialise with all in-stock item IDs selected.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    return new Set<string>();
+  });
+
+  // Track which IDs have been seen before, so we can distinguish:
+  //   • a new item arriving (should auto-select it)
+  //   • a removed item (should prune from selection)
+  //   • a user-unchecked item (should stay unchecked on refresh)
+  const seenIdsRef = useRef<Set<string>>(new Set());
+
+  // Sync selection whenever the cart items list changes.
+  useEffect(() => {
+    const currentIds = new Set(cartItems.map((i) => i.id));
+    const inStockIds = new Set(cartItems.filter((i) => i.stock > 0).map((i) => i.id));
+
+    setSelectedIds((prev) => {
+      const next = new Set<string>();
+
+      for (const id of inStockIds) {
+        if (!seenIdsRef.current.has(id)) {
+          // Brand-new item (just added to cart, or first load): auto-select it.
+          next.add(id);
+        } else if (prev.has(id)) {
+          // Item existed before and user had it checked: keep checked.
+          next.add(id);
+        }
+        // If item existed before but user unchecked it: leave it unchecked (don't add).
+      }
+
+      // Update the seen-IDs registry to match the current cart.
+      seenIdsRef.current = currentIds;
+
+      return next;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems.map((i) => i.id).join(",")]);
+
+  const inStockItems = cartItems.filter((item) => item.stock > 0);
+  const hasOutOfStockItems = cartItems.some((item) => item.stock === 0);
+
+  // Derived: all in-stock items are currently selected
+  const isAllSelected =
+    inStockItems.length > 0 &&
+    inStockItems.every((item) => selectedIds.has(item.id));
+
+  // Derived: at least one but not all in-stock items selected (indeterminate)
+  const isSomeSelected =
+    inStockItems.some((item) => selectedIds.has(item.id)) && !isAllSelected;
+
+  const toggleItem = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (isAllSelected) {
+      // Uncheck all in-stock items
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        inStockItems.forEach((item) => next.delete(item.id));
+        return next;
+      });
+    } else {
+      // Check all in-stock items
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        inStockItems.forEach((item) => next.add(item.id));
+        return next;
+      });
+    }
+  }, [isAllSelected, inStockItems]);
+
+  // ── Page Interactivity States ──────────────────────────────────────────────
   const [checkoutError, setCheckoutError] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
 
   const recommendationSliderRef = useRef<HTMLDivElement>(null);
 
-  // 4. Cart Logic Handlers (Database-connected via useCart)
+  // ── Cart Logic Handlers ────────────────────────────────────────────────────
   const handleQuantityChange = (id: string, delta: number) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
@@ -54,6 +135,12 @@ export default function CartPage() {
   };
 
   const handleRemoveItem = (id: string) => {
+    // Prune the removed item from selection before removing from cart
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     removeItem(id);
   };
 
@@ -64,8 +151,6 @@ export default function CartPage() {
   };
 
   const handleAddRecommendedToCart = async (prod: Product) => {
-    // POST /api/cart auto-selects the first active variant when variantId is
-    // omitted, so we only need to send a real productId here.
     await addToCart({
       productId: prod.id,
       quantity: 1,
@@ -73,6 +158,8 @@ export default function CartPage() {
   };
 
   const handleCheckout = async () => {
+    setCheckoutError("");
+
     const authResponse = await fetch("/api/auth/me", { cache: "no-store" });
     if (!authResponse.ok) {
       router.push("/login?next=/checkout");
@@ -84,12 +171,17 @@ export default function CartPage() {
       return;
     }
 
-    if (hasOutOfStockItems) {
-      setCheckoutError("Hapus item stok habis sebelum melanjutkan checkout.");
+    if (selectedIds.size === 0) {
+      setCheckoutError("Pilih minimal 1 produk untuk melanjutkan checkout.");
       return;
     }
 
-    // Arahkan ke halaman checkout untuk memilih alamat, kurir, dan voucher
+    // Hand off selection to the checkout page via sessionStorage
+    sessionStorage.setItem(
+      "checkout_selected_ids",
+      JSON.stringify([...selectedIds]),
+    );
+
     router.push("/checkout");
   };
 
@@ -103,11 +195,12 @@ export default function CartPage() {
     }
   };
 
-  // 5. Calculations
-  // Items with stock === 0 are excluded from the subtotal (can't be checked out).
-  const inStockItems = cartItems.filter((item) => item.stock > 0);
-  const hasOutOfStockItems = cartItems.some((item) => item.stock === 0);
-  const subtotal = inStockItems.reduce(
+  // ── Calculations ───────────────────────────────────────────────────────────
+  // Only selected AND in-stock items contribute to the subtotal.
+  const selectedInStockItems = cartItems.filter(
+    (item) => item.stock > 0 && selectedIds.has(item.id),
+  );
+  const subtotal = selectedInStockItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
@@ -145,157 +238,203 @@ export default function CartPage() {
             </div>
           ) : (
             <div>
-              {/* Desktop/Tablet Headers - Hidden on small mobile */}
-              <div className="hidden md:grid grid-cols-12 gap-4 items-center bg-[#FAF6ED] rounded-2xl px-6 py-4 text-xs font-bold text-muted-foreground tracking-wider uppercase font-body mb-4">
-                <div className="col-span-6">Product</div>
-                <div className="col-span-3 text-center">Quantity</div>
-                <div className="col-span-3 text-right">Subtotal</div>
+              {/* Desktop/Tablet Headers */}
+              <div className="hidden md:flex items-center bg-[#FAF6ED] rounded-2xl px-4 py-4 text-xs font-bold text-muted-foreground tracking-wider uppercase font-body mb-4 gap-3">
+                {/* Select-all checkbox */}
+                <div className="flex-shrink-0 w-5 flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isSomeSelected;
+                    }}
+                    onChange={toggleAll}
+                    disabled={inStockItems.length === 0}
+                    className="w-4 h-4 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 rounded"
+                    aria-label="Pilih semua item"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">Product</div>
+                <div className="w-32 text-center flex-shrink-0">Quantity</div>
+                <div className="w-28 text-right flex-shrink-0">Subtotal</div>
               </div>
 
               {/* Cart Items List */}
               <div className="space-y-4">
                 {cartItems.map((item) => {
                   const isOOS = item.stock === 0;
+                  const isSelected = !isOOS && selectedIds.has(item.id);
+
                   return (
-                  <div
-                    key={item.id}
-                    className={`grid grid-cols-1 md:grid-cols-12 gap-4 py-4 sm:py-6 px-4 sm:px-6 items-center rounded-2xl shadow-sm transition-all duration-300 ${isOOS ? "bg-muted/60 opacity-75" : "bg-[#FAF6ED]"}`}
-                  >
-                    {/* Item Image & Info */}
-                    <div className="col-span-1 md:col-span-6 flex items-center gap-3 sm:gap-4 min-w-0">
-                      {/* Playful Image Container */}
-                      <div className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl flex items-center justify-center p-2 border-2 border-white shadow-sm flex-shrink-0 transition-transform duration-300 ${isOOS ? "bg-muted grayscale" : "bg-accent-orange/20 hover:scale-105"}`}>
-                        <Image
-                          src={
-                            item.imageUrl || "/images/placeholder-product.jpg"
-                          }
-                          alt={item.name}
-                          width={80}
-                          height={80}
-                          className="object-contain max-h-full"
+                    <div
+                      key={item.id}
+                      className={`flex flex-col md:flex-row gap-3 md:gap-4 py-4 sm:py-5 px-4 sm:px-5 items-start md:items-center rounded-2xl shadow-sm transition-all duration-300 ${
+                        isOOS
+                          ? "bg-muted/60 opacity-75"
+                          : isSelected
+                            ? "bg-[#FAF6ED]"
+                            : "bg-[#FAF6ED] opacity-60"
+                      }`}
+                    >
+                      {/* ── Checkbox (mobile: top-left of card; desktop: leftmost column) ── */}
+                      <div className="flex items-center md:flex-shrink-0 md:w-5 md:justify-center self-start md:self-center mt-1 md:mt-0">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => !isOOS && toggleItem(item.id)}
+                          disabled={isOOS}
+                          className="w-4 h-4 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 rounded flex-shrink-0"
+                          aria-label={`Pilih ${item.name}`}
                         />
                       </div>
 
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <Link href={`/product/${item.slug || item.productId}`}>
-                            <h3 className={`font-heading text-sm sm:text-base lg:text-lg font-bold leading-tight hover:underline ${isOOS ? "text-muted-foreground" : "text-foreground"}`}>
-                              {item.name}
-                            </h3>
-                          </Link>
-                          {isOOS && (
-                            <span className="inline-block font-body text-[10px] sm:text-xs font-bold text-danger bg-danger/10 border border-danger/30 px-2 py-0.5 rounded-full whitespace-nowrap">
-                              Stok Habis
-                            </span>
-                          )}
+                      {/* ── Item Image & Info ──────────────────────────────────── */}
+                      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                        {/* Product Image */}
+                        <div
+                          className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl flex items-center justify-center p-2 border-2 border-white shadow-sm flex-shrink-0 transition-transform duration-300 ${
+                            isOOS
+                              ? "bg-muted grayscale"
+                              : "bg-accent-orange/20 hover:scale-105"
+                          }`}
+                        >
+                          <Image
+                            src={
+                              item.imageUrl || "/images/placeholder-product.jpg"
+                            }
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            className="object-contain max-h-full"
+                          />
                         </div>
-                        <p className="font-body text-xs sm:text-sm text-muted-foreground mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span>Varian: {item.variantName || "Standard"}</span>
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-border-strong flex-shrink-0"></span>
-                          <span className={`font-semibold flex-shrink-0 ${isOOS ? "text-muted-foreground" : "text-primary-900"}`}>
-                            {formatPrice(item.price)}
+
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <Link href={`/product/${item.slug || item.productId}`}>
+                              <h3
+                                className={`font-heading text-sm sm:text-base lg:text-lg font-bold leading-tight hover:underline ${
+                                  isOOS ? "text-muted-foreground" : "text-foreground"
+                                }`}
+                              >
+                                {item.name}
+                              </h3>
+                            </Link>
+                            {isOOS && (
+                              <span className="inline-block font-body text-[10px] sm:text-xs font-bold text-danger bg-danger/10 border border-danger/30 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                Stok Habis
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-body text-xs sm:text-sm text-muted-foreground mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <span>Varian: {item.variantName || "Standard"}</span>
+                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-border-strong flex-shrink-0" />
+                            <span
+                              className={`font-semibold flex-shrink-0 ${
+                                isOOS ? "text-muted-foreground" : "text-primary-900"
+                              }`}
+                            >
+                              {formatPrice(item.price)}
+                            </span>
+                          </p>
+
+                          {/* Remove Action */}
+                          <button
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="inline-flex items-center font-body text-xs text-danger hover:text-danger-bg font-semibold transition-colors duration-200 cursor-pointer"
+                            aria-label={`Remove ${item.name} from cart`}
+                          >
+                            <svg
+                              className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* ── Quantity Selector ──────────────────────────────────── */}
+                      <div className="flex justify-between md:justify-center items-center py-2 md:py-0 border-t border-border/40 md:border-none w-full md:w-32 md:flex-shrink-0">
+                        <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
+                          Jumlah
+                        </span>
+                        <div className="flex items-center">
+                          <button
+                            onClick={() => handleQuantityChange(item.id, -1)}
+                            disabled={isOOS}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-border-strong"
+                            aria-label="Kurangi jumlah"
+                          >
+                            <svg
+                              className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19.5 12h-15"
+                              />
+                            </svg>
+                          </button>
+                          <span
+                            className={`font-body font-bold text-sm sm:text-base w-8 sm:w-10 text-center ${
+                              isOOS ? "text-muted-foreground" : "text-foreground"
+                            }`}
+                          >
+                            {item.quantity}
                           </span>
-                        </p>
-
-                        {/* Remove Action — always active */}
-                        <button
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="inline-flex items-center font-body text-xs text-danger hover:text-danger-bg font-semibold transition-colors duration-200 cursor-pointer"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          <svg
-                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            viewBox="0 0 24 24"
+                          <button
+                            onClick={() => handleQuantityChange(item.id, 1)}
+                            disabled={isOOS}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-border-strong"
+                            aria-label="Tambah jumlah"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          Hapus
-                        </button>
+                            <svg
+                              className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 4.5v15m7.5-7.5h-15"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* ── Subtotal ───────────────────────────────────────────── */}
+                      <div className="flex justify-between md:justify-end items-center py-2 md:py-0 border-t border-border/40 md:border-none w-full md:w-28 md:flex-shrink-0">
+                        <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
+                          Subtotal
+                        </span>
+                        {isOOS ? (
+                          <span className="font-body text-xs font-semibold text-muted-foreground">
+                            Tidak dihitung
+                          </span>
+                        ) : (
+                          <span className="font-heading font-bold text-base sm:text-lg text-foreground">
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                        )}
                       </div>
                     </div>
-
-                    {/* Quantity Selector */}
-                    <div className="col-span-1 md:col-span-3 flex justify-between md:justify-center items-center py-2 md:py-0 border-t border-border/40 md:border-none">
-                      <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
-                        Jumlah
-                      </span>
-
-                      <div className="flex items-center">
-                        {/* Minus Button */}
-                        <button
-                          onClick={() => handleQuantityChange(item.id, -1)}
-                          disabled={isOOS}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-border-strong"
-                          aria-label="Kurangi jumlah"
-                        >
-                          <svg
-                            className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19.5 12h-15"
-                            />
-                          </svg>
-                        </button>
-
-                        {/* Quantity Value */}
-                        <span className={`font-body font-bold text-sm sm:text-base w-8 sm:w-10 text-center ${isOOS ? "text-muted-foreground" : "text-foreground"}`}>
-                          {item.quantity}
-                        </span>
-
-                        {/* Plus Button */}
-                        <button
-                          onClick={() => handleQuantityChange(item.id, 1)}
-                          disabled={isOOS}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-border-strong flex items-center justify-center text-foreground hover:bg-white hover:border-foreground active:scale-90 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-border-strong"
-                          aria-label="Tambah jumlah"
-                        >
-                          <svg
-                            className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 4.5v15m7.5-7.5h-15"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Subtotal */}
-                    <div className="col-span-1 md:col-span-3 flex justify-between md:justify-end items-center py-2 md:py-0 border-t border-border/40 md:border-none">
-                      <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
-                        Subtotal
-                      </span>
-                      {isOOS ? (
-                        <span className="font-body text-xs font-semibold text-muted-foreground">
-                          Tidak dihitung
-                        </span>
-                      ) : (
-                        <span className="font-heading font-bold text-base sm:text-lg text-foreground">
-                          {formatPrice(item.price * item.quantity)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
                   );
                 })}
               </div>
@@ -334,6 +473,14 @@ export default function CartPage() {
             </h2>
 
             <div className="space-y-3 sm:space-y-4 mb-6">
+              {/* Selected item count */}
+              <div className="flex justify-between font-body text-xs sm:text-sm text-muted-foreground">
+                <span>Item dipilih</span>
+                <span className="font-semibold">
+                  {selectedIds.size} item
+                </span>
+              </div>
+
               {/* Subtotal */}
               <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
                 <span>Subtotal</span>
@@ -350,7 +497,6 @@ export default function CartPage() {
 
               {/* Divider */}
               <div className="border-t border-border pt-3 sm:pt-4">
-                {/* Total */}
                 <div className="flex justify-between items-end">
                   <span className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground">
                     Total
@@ -365,7 +511,11 @@ export default function CartPage() {
             {/* Proceed to Checkout Button */}
             <button
               onClick={handleCheckout}
-              disabled={cartItems.length === 0 || hasOutOfStockItems}
+              disabled={
+                isCheckingOut ||
+                cartItems.length === 0 ||
+                selectedIds.size === 0
+              }
               className="w-full font-body font-extrabold text-white bg-[#2483D0] hover:bg-primary-600 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-md flex items-center justify-center gap-2 mb-4 cursor-pointer text-sm sm:text-base lg:text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               Proceed to Checkout
@@ -383,14 +533,16 @@ export default function CartPage() {
                 />
               </svg>
             </button>
+
+            {/* Error messages */}
             {checkoutError && (
               <p className="mb-4 text-center font-body text-xs font-semibold text-danger">
                 {checkoutError}
               </p>
             )}
             {hasOutOfStockItems && !checkoutError && (
-              <p className="mb-4 text-center font-body text-xs font-semibold text-danger">
-                Hapus item stok habis sebelum melanjutkan checkout.
+              <p className="mb-4 text-center font-body text-xs font-semibold text-muted-foreground">
+                Item stok habis tidak dapat dipilih.
               </p>
             )}
 
@@ -481,14 +633,15 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* RECOMMENDATIONS SECTION — hidden when loading finished and no items */}
-      {(recsLoading || recommendations.filter(
-          (p) => !cartItems.some((ci) => ci.productId === p.id) && p.stock > 0
+      {/* RECOMMENDATIONS SECTION */}
+      {(recsLoading ||
+        recommendations.filter(
+          (p) =>
+            !cartItems.some((ci) => ci.productId === p.id) && p.stock > 0,
         ).length > 0) && (
         <div className="mt-12 sm:mt-16 pt-8 sm:pt-12 border-t border-border-strong/50">
           {/* Recommendations Header with Slider Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 sm:mb-12 lg:mb-14">
-            {/* Title + Underline Accent */}
             <div className="relative inline-block pb-6 sm:pb-8 lg:pb-10">
               <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
                 You might like
@@ -502,7 +655,6 @@ export default function CartPage() {
               />
             </div>
 
-            {/* Circular slider arrows */}
             <div className="flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
               <button
                 onClick={() => handleScrollSlider("left")}
@@ -523,7 +675,6 @@ export default function CartPage() {
                   />
                 </svg>
               </button>
-
               <button
                 onClick={() => handleScrollSlider("right")}
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-border-strong flex items-center justify-center bg-white text-foreground hover:border-foreground hover:bg-muted active:scale-90 transition-all duration-200 shadow-sm"
@@ -546,14 +697,13 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Horizontal Card Slider Container */}
+          {/* Horizontal Card Slider */}
           <div
             ref={recommendationSliderRef}
             className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scrollbar-none scroll-smooth snap-x snap-mandatory"
           >
             {recsLoading
-              ? /* Loading skeletons */
-                Array.from({ length: 4 }).map((_, i) => (
+              ? Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
                     className="w-64 sm:w-72 flex-shrink-0 bg-white rounded-3xl p-4 shadow-sm border border-border snap-start animate-pulse"
@@ -565,11 +715,14 @@ export default function CartPage() {
                   </div>
                 ))
               : recommendations
-                  .filter((p) => !cartItems.some((ci) => ci.productId === p.id) && p.stock > 0)
+                  .filter(
+                    (p) =>
+                      !cartItems.some((ci) => ci.productId === p.id) &&
+                      p.stock > 0,
+                  )
                   .slice(0, 4)
                   .map((prod) => {
                     const isWishlisted = wishlist.includes(prod.id);
-                    // Cycle through a fixed palette so cards still have distinct bg colours.
                     const bgPalette = [
                       "bg-accent-soft-blue/40",
                       "bg-accent-yellow/40",
@@ -586,7 +739,7 @@ export default function CartPage() {
                         key={prod.id}
                         className="w-64 sm:w-72 flex-shrink-0 bg-white rounded-3xl p-4 shadow-sm border border-border hover:shadow-md hover:scale-[1.01] transition-all duration-300 relative snap-start group"
                       >
-                        {/* Floating Wishlist Heart Button (top right) */}
+                        {/* Wishlist Heart Button */}
                         <button
                           onClick={() => handleAddToWishlist(prod.id)}
                           className="absolute top-6 right-6 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white flex items-center justify-center shadow-md border border-border hover:scale-105 active:scale-90 transition-transform duration-200 cursor-pointer"
@@ -616,7 +769,7 @@ export default function CartPage() {
                           )}
                         </button>
 
-                        {/* Playful Image Container */}
+                        {/* Product Image */}
                         <Link href={`/product/${prod.slug}`} tabIndex={-1}>
                           <div
                             className={`w-full aspect-square ${bgColor} rounded-2xl flex items-center justify-center p-6 border border-white relative overflow-hidden transition-transform duration-500`}
@@ -630,8 +783,6 @@ export default function CartPage() {
                               height={200}
                               className="object-contain max-h-full transition-transform duration-500 group-hover:scale-105"
                             />
-
-                            {/* Floating Add to Cart Button (bottom right) */}
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -658,7 +809,7 @@ export default function CartPage() {
                           </div>
                         </Link>
 
-                        {/* Recommendation Details */}
+                        {/* Product Details */}
                         <div className="mt-4">
                           <Link href={`/product/${prod.slug}`}>
                             <h3 className="font-body text-sm sm:text-base font-bold text-foreground group-hover:text-primary transition-colors duration-200 truncate">
@@ -668,9 +819,7 @@ export default function CartPage() {
                           <p className="font-body text-xs text-muted-foreground mb-3">
                             {prod.category.name}
                           </p>
-
                           <div className="flex justify-between items-center">
-                            {/* Price in IDR */}
                             <div className="flex items-baseline gap-2">
                               <span className="font-body font-bold text-sm sm:text-base text-foreground">
                                 {formatPrice(prod.price.min ?? 0)}
@@ -682,8 +831,6 @@ export default function CartPage() {
                                   </span>
                                 )}
                             </div>
-
-                            {/* Stock badge */}
                             {prod.stock === 0 && (
                               <span className="font-body text-xs font-semibold text-danger bg-danger-bg/30 px-2 py-0.5 rounded-full">
                                 Habis
