@@ -21,6 +21,7 @@ export * from "./settings";
 export * from "./voucher";
 export * from "./voucher-usage";
 export * from "./review";
+export * from "./review-image";
 export * from "./complaint";
 export * from "./complaint-attachment";
 export * from "./email-log";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { reviews, orderItems, orders } from "@/src/db/schema";
+import { reviews, reviewImages, orderItems, orders } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import crypto from "node:crypto";
 
@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  * POST /api/reviews
  *
  * Submit ulasan dari user yang sudah login.
- * Body JSON: { order_item_id, rating, comment? }
+ * Body JSON: { order_item_id, rating, comment?, image_urls? }
  *
  * Validasi:
  * - order_item harus milik order milik user ini
@@ -19,6 +19,7 @@ export const runtime = "nodejs";
  * - rating harus 1–5
  * - satu order_item hanya boleh direview sekali (UNIQUE di DB)
  * - review berstatus PUBLISHED langsung (moderasi bisa dilakukan admin)
+ * - image_urls (opsional): array URL string, maks 5 item
  */
 export async function POST(request: NextRequest) {
   const userId = await getSessionUserId();
@@ -39,10 +40,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { order_item_id, rating, comment } = body as {
+  const { order_item_id, rating, comment, image_urls } = body as {
     order_item_id?: unknown;
     rating?: unknown;
     comment?: unknown;
+    image_urls?: unknown;
   };
 
   // ── Validasi input ────────────────────────────────────────────────────
@@ -62,6 +64,32 @@ export async function POST(request: NextRequest) {
   }
 
   const commentStr = typeof comment === "string" ? comment.trim() : null;
+
+  // Validasi image_urls
+  const imageUrlsArray: string[] = [];
+  if (image_urls !== undefined && image_urls !== null) {
+    if (!Array.isArray(image_urls)) {
+      return NextResponse.json(
+        { success: false, message: "image_urls harus berupa array." },
+        { status: 422 },
+      );
+    }
+    if (image_urls.length > 5) {
+      return NextResponse.json(
+        { success: false, message: "Maksimal 5 foto per ulasan." },
+        { status: 422 },
+      );
+    }
+    for (const url of image_urls) {
+      if (typeof url !== "string" || !url.trim()) {
+        return NextResponse.json(
+          { success: false, message: "Setiap item dalam image_urls harus berupa string URL yang valid." },
+          { status: 422 },
+        );
+      }
+      imageUrlsArray.push(url.trim());
+    }
+  }
 
   // ── Verifikasi order_item milik user & status order ───────────────────
   const [item] = await db
@@ -132,6 +160,17 @@ export async function POST(request: NextRequest) {
     status: "PUBLISHED", // langsung publish, admin bisa hide jika perlu
   });
 
+  // ── Insert review images (kalau ada) ─────────────────────────────────
+  if (imageUrlsArray.length > 0) {
+    await db.insert(reviewImages).values(
+      imageUrlsArray.map((url) => ({
+        id: crypto.randomUUID(),
+        reviewId,
+        url,
+      })),
+    );
+  }
+
   const [created] = await db
     .select({
       id: reviews.id,
@@ -155,6 +194,7 @@ export async function POST(request: NextRequest) {
         rating: created!.rating,
         comment: created!.comment ?? null,
         status: created!.status,
+        image_urls: imageUrlsArray,
         created_at: created!.createdAt.toISOString(),
       },
     },

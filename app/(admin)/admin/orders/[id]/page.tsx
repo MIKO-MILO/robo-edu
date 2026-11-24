@@ -141,7 +141,6 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
   // ── Form tambah checkpoint tracking ──────────────────────────────────
   const [cpLocation, setCpLocation] = useState("");
   const [cpDescription, setCpDescription] = useState("");
-  const [cpTimestamp, setCpTimestamp] = useState("");
   const [cpStatus, setCpStatus] = useState("IN_TRANSIT");
   const [cpSubmitting, setCpSubmitting] = useState(false);
   const [cpError, setCpError] = useState<string | null>(null);
@@ -214,11 +213,10 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
     setCpError(null);
     try {
       const payload: Record<string, unknown> = {
-        status: cpStatus.trim() || "IN_TRANSIT",
+        status: cpStatus || "IN_TRANSIT",
       };
       if (cpLocation.trim()) payload.location = cpLocation.trim();
       if (cpDescription.trim()) payload.description = cpDescription.trim();
-      if (cpTimestamp.trim()) payload.timestamp = cpTimestamp.trim();
 
       const res = await fetch(`/api/admin/orders/${id}/tracking`, {
         method: "POST",
@@ -232,7 +230,6 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
       // Reset form & refresh
       setCpLocation("");
       setCpDescription("");
-      setCpTimestamp("");
       setCpStatus("IN_TRANSIT");
       refetch();
     } catch (err) {
@@ -442,14 +439,21 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
                 <label htmlFor="cp-status" className="block text-[11px] font-semibold text-muted-foreground font-body">
                   Status
                 </label>
-                <Input
+                <select
                   id="cp-status"
                   value={cpStatus}
                   onChange={(e) => setCpStatus(e.target.value)}
-                  placeholder="IN_TRANSIT"
                   disabled={cpSubmitting}
-                  className="h-9 rounded-xl text-xs"
-                />
+                  className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs font-body text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                >
+                  <option value="PICKED_UP">PICKED_UP</option>
+                  <option value="IN_TRANSIT">IN_TRANSIT</option>
+                  <option value="AT_HUB">AT_HUB</option>
+                  <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                  <option value="RETURNED">RETURNED</option>
+                  <option value="FAILED_ATTEMPT">FAILED_ATTEMPT</option>
+                </select>
               </div>
               <div className="space-y-1">
                 <label htmlFor="cp-location" className="block text-[11px] font-semibold text-muted-foreground font-body">
@@ -478,20 +482,6 @@ export default function AdminOrderDetailPage({ params }: AdminOrderDetailPagePro
                 className="h-9 rounded-xl text-xs"
               />
             </div>
-            <div className="space-y-1">
-              <label htmlFor="cp-timestamp" className="block text-[11px] font-semibold text-muted-foreground font-body">
-                Waktu (opsional — kosongkan untuk sekarang)
-              </label>
-              <Input
-                id="cp-timestamp"
-                type="datetime-local"
-                value={cpTimestamp}
-                onChange={(e) => setCpTimestamp(e.target.value)}
-                disabled={cpSubmitting}
-                className="h-9 rounded-xl text-xs"
-              />
-            </div>
-
             {cpError && (
               <p className="text-xs text-danger font-body flex items-center gap-1.5">
                 <AlertTriangle className="size-3.5 shrink-0" />

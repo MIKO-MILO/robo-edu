@@ -50,6 +50,13 @@ export function ComplaintActionPanel({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showRejectDialog, setShowRejectDialog] = React.useState(false);
 
+  const isTerminal = currentStatus === "RESOLVED" || currentStatus === "REJECTED";
+
+  React.useEffect(() => {
+    setSelectedStatus(currentStatus);
+    setResolution(currentResolution ?? "");
+  }, [currentStatus, currentResolution]);
+
   const hasChanged =
     selectedStatus !== currentStatus ||
     resolution !== (currentResolution ?? "");
@@ -93,6 +100,7 @@ export function ComplaintActionPanel({
             options={STATUS_OPTIONS}
             placeholder="Pilih status baru..."
             selectSize="md"
+            disabled={isTerminal || isSubmitting}
           />
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-[11px] text-muted-foreground">Status saat ini:</span>
@@ -108,7 +116,14 @@ export function ComplaintActionPanel({
           placeholder='Tulis ringkasan tindak lanjut, misal: "Sudah dihubungi via WhatsApp tanggal 12/9, customer setuju dikirim unit pengganti."'
           rows={5}
           maxChars={2000}
+          disabled={isTerminal || isSubmitting}
         />
+
+        {isTerminal && (
+          <p className="text-[11px] text-muted-foreground bg-muted/50 p-2.5 rounded-xl border border-border">
+            Pengaduan ini sudah diselesaikan/ditutup ({currentStatus}) dan tidak dapat diubah lagi.
+          </p>
+        )}
 
         {/* Submit button */}
         <Button
@@ -116,7 +131,7 @@ export function ComplaintActionPanel({
           variant={selectedStatus === "REJECTED" ? "danger-solid" : "default"}
           size="default"
           className="w-full gap-2 font-bold"
-          disabled={!hasChanged || isSubmitting}
+          disabled={!hasChanged || isSubmitting || isTerminal}
           onClick={handleSubmitClick}
         >
           {isSubmitting ? (

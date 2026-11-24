@@ -146,10 +146,14 @@ export default function AdminComplaintDetailPage({
       });
     } catch (err) {
       console.error("Failed to update complaint:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat menyimpan perubahan. Silakan coba lagi.";
       toast({
         variant: "error",
         title: "Gagal memperbarui klaim",
-        description: "Terjadi kesalahan saat menyimpan perubahan. Silakan coba lagi.",
+        description: errorMessage,
       });
       throw err; // re-throw so ComplaintActionPanel can reset its loading state
     }

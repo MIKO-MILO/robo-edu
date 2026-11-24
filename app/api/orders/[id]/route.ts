@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/src/db";
 import {
   orders,
@@ -8,6 +8,7 @@ import {
   shipments,
   shipmentTrackings,
   shippingProviders,
+  reviews,
 } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import type { OrderStatus } from "@/types";
@@ -63,6 +64,17 @@ export async function GET(
     .from(orderItems)
     .where(eq(orderItems.orderId, id))
     .orderBy(asc(orderItems.createdAt));
+
+  // ── Check which items have already been reviewed ─────────────────────
+  const itemIds = items.map((i) => i.id);
+  const reviewedItemIds = new Set<string>();
+  if (itemIds.length > 0) {
+    const reviewRows = await db
+      .select({ orderItemId: reviews.orderItemId })
+      .from(reviews)
+      .where(inArray(reviews.orderItemId, itemIds));
+    for (const r of reviewRows) reviewedItemIds.add(r.orderItemId);
+  }
 
   // ── Fetch payment ─────────────────────────────────────────────────────
   const [payment] = await db
@@ -160,6 +172,7 @@ export async function GET(
         price_snapshot: Number(item.priceSnapshot),
         quantity: item.quantity,
         subtotal: Number(item.subtotal),
+        already_reviewed: reviewedItemIds.has(item.id),
       })),
       payment: payment
         ? {

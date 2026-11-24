@@ -1,7 +1,7 @@
 import "server-only";
 
 import crypto from "node:crypto";
-import { and, count, eq, gte, lte, sql } from "drizzle-orm";
+import { and, count, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import {
   cartItems,
@@ -45,6 +45,13 @@ export type CreatePaymentTransactionInput = {
   cardToken?: string;
   /** Idempotency key from the checkout request's Idempotency-Key header */
   idempotencyKey?: string;
+  /**
+   * Optional list of cart item IDs to include in this order.
+   * When provided (and non-empty), only those items are ordered and only
+   * those items are removed from the cart after a successful order.
+   * When absent, all cart items are ordered and cleared (existing behaviour).
+   */
+  itemIds?: string[];
   // ── Dropship ─────────────────────────────────────────────────────────────
   /** When true the order is a dropship — senderName + senderPhone are required. */
   isDropship?: boolean;
@@ -267,8 +274,14 @@ export async function createPaymentTransaction(
     const memberActive = isActiveMember(user);
 
     // ── 4. Fetch cart items with both prices ────────────────────────────────
+    const scopedItemIds =
+      Array.isArray(input.itemIds) && input.itemIds.length > 0
+        ? input.itemIds
+        : null;
+
     const rows = await tx
       .select({
+        id: cartItems.id,
         productId: products.id,
         productName: products.name,
         variantId: productVariants.id,
@@ -288,6 +301,7 @@ export async function createPaymentTransaction(
           eq(carts.userId, input.userId),
           eq(products.status, "ACTIVE"),
           eq(productVariants.status, "ACTIVE"),
+          scopedItemIds ? inArray(cartItems.id, scopedItemIds) : undefined,
         ),
       );
 
@@ -295,6 +309,10 @@ export async function createPaymentTransaction(
       throw new Error("Cart is empty or contains unavailable products");
 
     // ── 5. Determine effective prices ───────────────────────────────────────
+    // Capture the exact cart_items.id values that were fetched so the DELETE
+    // below can remove precisely these rows (and only these rows).
+    const fetchedCartItemIds = rows.map((row) => row.id);
+
     const items: PricedCartItem[] = rows.map((row) => {
       const useMemberPrice =
         memberActive &&
@@ -316,7 +334,6 @@ export async function createPaymentTransaction(
         quantity: row.quantity,
       };
     });
-
     // ── 6. Atomically reserve stock ─────────────────────────────────────────
     for (const item of items) {
       const qty = item.quantity;
@@ -472,7 +489,22 @@ export async function createPaymentTransaction(
       .limit(1);
 
     if (userCart) {
-      await tx.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
+      if (fetchedCartItemIds.length > 0) {
+        // Scoped delete: only remove the items that were part of this order.
+        // Items the user did not select remain in the cart.
+        await tx
+          .delete(cartItems)
+          .where(
+            and(
+              eq(cartItems.cartId, userCart.id),
+              inArray(cartItems.id, fetchedCartItemIds),
+            ),
+          );
+      } else {
+        // Fallback (should not normally be reached — rows.length === 0 throws
+        // above, but kept for safety).
+        await tx.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
+      }
     }
 
     return {

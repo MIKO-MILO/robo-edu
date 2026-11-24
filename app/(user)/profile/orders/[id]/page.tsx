@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/user/orders/order-status-badge";
-import { OrderReviewModal } from "@/components/user/orders/order-review-modal";
 import type { OrderStatus } from "@/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -193,12 +192,11 @@ function TrackingTimeline({ trackings }: { trackings: TrackingEntry[] }) {
               <span className="absolute left-3.5 top-7 -bottom-4 w-0.5 bg-foreground/20" aria-hidden="true" />
             )}
             <div className={`relative z-10 w-7 h-7 rounded-full border-2 border-foreground flex items-center justify-center shrink-0 ${
-              isFirst ? "bg-accent-green neo-shadow-icon" : "bg-muted"
+              isFirst ? "bg-primary neo-shadow-icon" : "bg-muted"
             }`}>
-              {isFirst
-                ? <CheckCircle2 className="w-4 h-4 text-foreground stroke-[2.5]" />
-                : <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-              }
+              <span className={`block w-2.5 h-2.5 rounded-full ${
+                isFirst ? "bg-primary-foreground" : "bg-muted-foreground/50"
+              }`} aria-hidden="true" />
             </div>
             <div className="flex flex-col gap-0.5 flex-1 pb-3">
               <p className={`font-body text-sm leading-snug ${isFirst ? "font-bold text-foreground" : "text-foreground/80"}`}>
@@ -234,7 +232,6 @@ export default function OrderDetailPage() {
   const [copied, setCopied] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -423,15 +420,16 @@ export default function OrderDetailPage() {
             </Button>
           </Link>
           {order.status === "COMPLETED" && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => setShowReviewModal(true)}
-            >
-              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-              Tulis Ulasan
-            </Button>
+            <Link href={`/profile/orders/${order.id}/review`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                Tulis Ulasan
+              </Button>
+            </Link>
           )}
         </div>
       )}
@@ -650,16 +648,6 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* ── Modals ──────────────────────────────────────────────── */}
-      {showReviewModal && order && (
-        <OrderReviewModal
-          isOpen
-          onClose={() => setShowReviewModal(false)}
-          orderNumber={order.order_number}
-          orderId={order.id}
-          onSubmitSuccess={() => setShowReviewModal(false)}
-        />
-      )}
     </div>
   );
 }

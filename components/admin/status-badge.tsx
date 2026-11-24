@@ -134,6 +134,7 @@ export function StatusBadge({
   showDot = true,
   size,
   neo,
+  statusTheme,
   className,
   ...props
 }: StatusBadgeProps) {
@@ -149,7 +150,7 @@ export function StatusBadge({
     <span
       className={cn(
         statusBadgeVariants({
-          statusTheme: config.theme,
+          statusTheme: statusTheme ?? config.theme,
           size,
           neo,
           className,

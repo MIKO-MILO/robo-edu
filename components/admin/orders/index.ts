@@ -45,10 +45,13 @@ export type { OrderStatusActionCardProps } from "./order-status-action-card";
 
 // Organisms
 export { OrderTable } from "./order-table";
+export type { OrderTableProps } from "./order-table";
+
+export { deriveOrderDisplayStatus } from "./order-display-status";
+export type { OrderDisplayStatus } from "./order-display-status";
 
 export { OrderStatusDialog } from "./order-status-dialog";
 export type { OrderStatusDialogProps } from "./order-status-dialog";
-export type { OrderTableProps } from "./order-table";
 
 export { OrderItemsCard } from "./order-items-card";
 export type {
