@@ -10,9 +10,9 @@ Halaman riwayat pesanan (OrderCard): tambahkan tombol "Konfirmasi Penerimaan" un
 
 **Status:** ready-for-agent
 
-- [ ] Tombol "Konfirmasi Penerimaan Paket" muncul di halaman detail order saat status `DELIVERED`, tidak muncul di status lain.
-- [ ] Klik konfirmasi memanggil `POST /api/orders/[id]/confirm-received`; setelah sukses status terupdate ke `COMPLETED` secara optimistic.
-- [ ] Tombol "Konfirmasi Penerimaan" juga muncul di OrderCard (halaman riwayat) untuk status `DELIVERED`.
-- [ ] Tombol "Ajukan Komplain" dan "Ajukan Pengembalian" muncul di halaman detail order saat status `DELIVERED` atau `COMPLETED`.
-- [ ] Tombol "Tulis Ulasan" di halaman detail order dan OrderCard hanya muncul saat status `COMPLETED` (tidak lagi `DELIVERED`).
-- [ ] State loading dan error handling ditangani dengan baik pada tombol konfirmasi.
+- [x] Tombol "Konfirmasi Penerimaan Paket" muncul di halaman detail order saat status `DELIVERED`, tidak muncul di status lain.
+- [x] Klik konfirmasi memanggil `POST /api/orders/[id]/confirm-received`; setelah sukses status terupdate ke `COMPLETED` secara optimistic.
+- [x] Tombol "Konfirmasi Penerimaan" juga muncul di OrderCard (halaman riwayat) untuk status `DELIVERED`.
+- [x] Tombol "Ajukan Komplain" dan "Ajukan Pengembalian" muncul di halaman detail order saat status `DELIVERED` atau `COMPLETED`.
+- [x] Tombol "Tulis Ulasan" di halaman detail order dan OrderCard hanya muncul saat status `COMPLETED` (tidak lagi `DELIVERED`).
+- [x] State loading dan error handling ditangani dengan baik pada tombol konfirmasi.

@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] Job order-auto-cancel berjalan setiap 5 menit; order PENDING yang expires_at < NOW() menjadi CANCELLED.
-- [ ] Pembatalan membatalkan percobaan PENDING di Midtrans Cancel API sebelum update status DB.
-- [ ] Stok dikembalikan atomik per order_item.
-- [ ] Job idempoten: order yang sudah CANCELLED dilewati tanpa error.
-- [ ] Job payment-reconcile memanggil Get Transaction Status Midtrans dan mensinkronkan status payment; OVO dijadwalkan +70 detik, metode lain +2 menit dari expiry_time.
+- [x] Job order-auto-cancel berjalan setiap 5 menit; order PENDING yang expires_at < NOW() menjadi CANCELLED.
+- [x] Pembatalan membatalkan percobaan PENDING di Midtrans Cancel API sebelum update status DB.
+- [x] Stok dikembalikan atomik per order_item.
+- [x] Job idempoten: order yang sudah CANCELLED dilewati tanpa error.
+- [x] Job payment-reconcile memanggil Get Transaction Status Midtrans dan mensinkronkan status payment; OVO dijadwalkan +70 detik, metode lain +2 menit dari expiry_time.
 - [ ] Test: seed order PENDING dengan expires_at di masa lalu, jalankan job, verifikasi order CANCELLED + stok kembali + payment PENDING → EXPIRED.

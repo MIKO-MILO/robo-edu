@@ -15,7 +15,7 @@
 **Status:** ready-for-agent
 
 - [ ] `GET /api/complaints/[complaintId]` mengembalikan detail komplain milik user yang login; return 403 jika bukan miliknya.
-- [ ] `GET /api/complaints` mengembalikan daftar komplain milik user yang login.
+- [x] `GET /api/complaints` mengembalikan daftar komplain milik user yang login.
 - [ ] `GET /api/admin/refunds` mengembalikan daftar semua refund dengan pagination; hanya dapat diakses admin.
 - [ ] `GET /api/orders/[id]/refund/[refundId]` mengembalikan detail refund; return 403 jika order bukan milik user.
 - [ ] Semua endpoint mengembalikan 401 jika tidak ada sesi valid.

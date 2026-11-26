@@ -6,10 +6,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] Halaman checkout memiliki section "Metode Pembayaran" yang menampilkan daftar pilihan (VA: BCA, BNI, BRI, Mandiri, Permata, CIMB; kartu; GoPay QRIS; ShopeePay QRIS; QRIS umum; Dana; OVO; Alfamart; Indomaret).
-- [ ] Setiap pilihan menampilkan ikon metode (logo bank/e-wallet) dan label yang jelas.
-- [ ] Memilih OVO memunculkan input nomor HP OVO secara inline.
-- [ ] Metode yang dipilih dan nomor HP OVO (jika relevan) tersimpan di state dan dimasukkan ke body request saat submit.
-- [ ] Tombol submit dinonaktifkan jika belum ada metode yang dipilih.
-- [ ] Daftar metode di-fetch dari GET /payment-methods jika endpoint tersedia; jika tidak (404 / network error), fallback ke daftar hardcode lokal tanpa error yang terlihat user.
-- [ ] Komponen pilihan metode responsif dan konsisten secara visual dengan komponen checkout yang sudah ada.
+- [x] Halaman checkout memiliki section "Metode Pembayaran" yang menampilkan daftar pilihan (VA: BCA, BNI, BRI, Mandiri, Permata, CIMB; kartu; GoPay QRIS; ShopeePay QRIS; QRIS umum; Dana; OVO; Alfamart; Indomaret).
+- [x] Setiap pilihan menampilkan ikon metode (logo bank/e-wallet) dan label yang jelas.
+- [x] Memilih OVO memunculkan input nomor HP OVO secara inline.
+- [x] Metode yang dipilih dan nomor HP OVO (jika relevan) tersimpan di state dan dimasukkan ke body request saat submit.
+- [x] Tombol submit dinonaktifkan jika belum ada metode yang dipilih.
+- [x] Daftar metode di-fetch dari GET /payment-methods jika endpoint tersedia; jika tidak (404 / network error), fallback ke daftar hardcode lokal tanpa error yang terlihat user.
+- [x] Komponen pilihan metode responsif dan konsisten secara visual dengan komponen checkout yang sudah ada.

@@ -12,8 +12,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `POST /api/complaints` menerima dan menyimpan `attachment_urls` tanpa error.
+- [x] `POST /api/complaints` menerima dan menyimpan `attachment_urls` tanpa error. *(Diimplementasikan dengan field `attachments: [{ file_url, file_name, file_type? }]`, disimpan ke tabel `complaint_attachments`.)*
 - [ ] Endpoint refund user-facing menerima dan menyimpan `attachment_urls` tanpa error.
-- [ ] `GET /api/admin/complaints/[id]` mengembalikan field `customer_phone` yang terisi dari data user.
+- [x] `GET /api/admin/complaints/[id]` mengembalikan field `customer_phone` yang terisi dari data user. *(Dikembalikan sebagai `customer.phone` dari JOIN ke `users.phone`.)*
 - [ ] Fungsi `requiresManualProof()` mengklasifikasikan payment type dengan benar sesuai tipe yang ada di DB.
 - [ ] Endpoint refund admin tidak menghasilkan status "gagal" saat nominal berhasil diproses di DB.

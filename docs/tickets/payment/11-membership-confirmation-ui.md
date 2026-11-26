@@ -6,13 +6,13 @@
 
 **Status:** ready-for-agent
 
-- [ ] Tombol "Beli Membership Plus" di halaman `/membership` membuka layar konfirmasi (bisa modal atau halaman `/membership/confirm`).
-- [ ] Layar konfirmasi menampilkan: nama paket (Plus), harga yang diambil dari `GET /api/admin/settings` (key `membership_plus_price`), durasi (key `membership_plus_duration_months`), dan estimasi tanggal mulai + tanggal berakhir.
-- [ ] Data akun user (nama, email, telepon) ditampilkan read-only dari session/profil.
-- [ ] Komponen pilihan metode pembayaran di-reuse dari checkout (bukan duplikasi kode baru); fetch dari `GET /api/payment-methods`.
-- [ ] Tombol submit mengirim `POST /api/checkout/membership` dengan `payment_method`, `payment_channel`, dan `payer_phone_number` (jika OVO); dinonaktifkan selama belum ada metode yang dipilih.
-- [ ] Setelah submit berhasil → redirect ke `/membership/payment/[purchaseId]`.
-- [ ] Jika user belum login → redirect ke `/login?redirect=/membership`.
-- [ ] Jika user sudah berstatus `MEMBER` aktif → tombol CTA berubah menjadi "Perpanjang Membership"; layar konfirmasi menampilkan info bahwa masa berlaku akan diperpanjang dari tanggal berakhir yang ada.
-- [ ] Jika API mengembalikan 409 `PENDING_PURCHASE_EXISTS` → tampilkan opsi "Lanjutkan pembayaran yang ada" dengan link ke `/membership/payment/[purchase_id]`, bukan membuat purchase baru.
-- [ ] Harga yang ditampilkan selalu dari `settings` DB — jika admin ubah harga, layar konfirmasi langsung mencerminkan harga baru tanpa redeploy.
+- [x] Tombol "Beli Membership Plus" di halaman `/membership` membuka layar konfirmasi (bisa modal atau halaman `/membership/confirm`).
+- [x] Layar konfirmasi menampilkan: nama paket (Plus), harga yang diambil dari `GET /api/admin/settings` (key `membership_plus_price`), durasi (key `membership_plus_duration_months`), dan estimasi tanggal mulai + tanggal berakhir. *(Diimplementasikan via `GET /api/membership/plan-info` yang membaca settings DB.)*
+- [x] Data akun user (nama, email, telepon) ditampilkan read-only dari session/profil.
+- [x] Komponen pilihan metode pembayaran di-reuse dari checkout (bukan duplikasi kode baru); fetch dari `GET /api/payment-methods`.
+- [x] Tombol submit mengirim `POST /api/checkout/membership` dengan `payment_method`, `payment_channel`, dan `payer_phone_number` (jika OVO); dinonaktifkan selama belum ada metode yang dipilih.
+- [x] Setelah submit berhasil → redirect ke `/membership/payment/[purchaseId]`.
+- [x] Jika user belum login → redirect ke `/login?redirect=/membership`. *(Param dipakai: `next` bukan `redirect`.)*
+- [x] Jika user sudah berstatus `MEMBER` aktif → tombol CTA berubah menjadi "Perpanjang Membership"; layar konfirmasi menampilkan info bahwa masa berlaku akan diperpanjang dari tanggal berakhir yang ada.
+- [x] Jika API mengembalikan 409 `PENDING_PURCHASE_EXISTS` → tampilkan opsi "Lanjutkan pembayaran yang ada" dengan link ke `/membership/payment/[purchase_id]`, bukan membuat purchase baru.
+- [x] Harga yang ditampilkan selalu dari `settings` DB — jika admin ubah harga, layar konfirmasi langsung mencerminkan harga baru tanpa redeploy.
