@@ -20,16 +20,28 @@ interface AttachmentInput {
   file_type?: string;
 }
 
+/** Derive a file_name from a URL by taking the last path segment. */
+function fileNameFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    const segment = pathname.split("/").filter(Boolean).pop();
+    return segment || url;
+  } catch {
+    return url;
+  }
+}
+
 // ── POST /api/complaints ─────────────────────────────────────────────────────
 
 /**
  * Submit a warranty complaint for a delivered order item.
  *
  * Body (JSON):
- *   order_item_id  — the order item being complained about
- *   reason         — short summary (mapped to `subject` in the DB)
- *   description    — full description of the issue
- *   attachments?   — array of { file_url, file_name, file_type? }
+ *   order_item_id    — the order item being complained about
+ *   reason           — short summary (mapped to `subject` in the DB)
+ *   description      — full description of the issue
+ *   attachment_urls? — array of pre-uploaded MinIO URL strings (preferred)
+ *   attachments?     — array of { file_url, file_name, file_type? } (legacy)
  *
  * Rules:
  *   - The order item must belong to the logged-in user.
@@ -62,11 +74,14 @@ export async function POST(request: NextRequest) {
     reason,
     description,
     attachments,
+    attachment_urls,
   } = body as {
     order_item_id?: unknown;
     reason?: unknown;
     description?: unknown;
     attachments?: unknown;
+    /** Simple array of pre-uploaded MinIO URLs — alternative to `attachments`. */
+    attachment_urls?: unknown;
   };
 
   // ── Validate required fields ──────────────────────────────────────────
@@ -89,9 +104,33 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Validate attachments array shape if provided
+  // Validate attachments array shape if provided.
+  // Accepts two formats:
+  //   attachment_urls: string[]          — simple list of pre-uploaded MinIO URLs
+  //   attachments: AttachmentInput[]     — richer objects with file_url, file_name, file_type
+  // If both are provided, attachment_urls takes precedence.
   const attachmentList: AttachmentInput[] = [];
-  if (attachments !== undefined && attachments !== null) {
+  if (attachment_urls !== undefined && attachment_urls !== null) {
+    if (!Array.isArray(attachment_urls)) {
+      return NextResponse.json(
+        { success: false, message: "attachment_urls harus berupa array." },
+        { status: 422 },
+      );
+    }
+    for (const u of attachment_urls as unknown[]) {
+      if (typeof u !== "string" || !u.trim()) {
+        return NextResponse.json(
+          { success: false, message: "Setiap item di attachment_urls harus berupa string URL." },
+          { status: 422 },
+        );
+      }
+      attachmentList.push({
+        file_url: u.trim(),
+        file_name: fileNameFromUrl(u.trim()),
+        file_type: undefined,
+      });
+    }
+  } else if (attachments !== undefined && attachments !== null) {
     if (!Array.isArray(attachments)) {
       return NextResponse.json(
         { success: false, message: "attachments harus berupa array." },

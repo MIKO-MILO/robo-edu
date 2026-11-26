@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { orders, payments, refunds } from "@/src/db/schema";
+import { orders, payments, refunds, refundAttachments } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import crypto from "node:crypto";
 
@@ -15,8 +15,9 @@ export const runtime = "nodejs";
  * can review and process it.
  *
  * Body JSON:
- *   reason      — required, short description of return reason
- *   description — required, full detail of the return request
+ *   reason           — required, short description of return reason
+ *   description      — required, full detail of the return request
+ *   attachment_urls? — optional array of pre-uploaded MinIO URL strings
  *
  * Rules:
  * - User must be logged in.
@@ -50,9 +51,11 @@ export async function POST(
     );
   }
 
-  const { reason, description } = body as {
+  const { reason, description, attachment_urls } = body as {
     reason?: unknown;
     description?: unknown;
+    /** Optional array of pre-uploaded MinIO URL strings. */
+    attachment_urls?: unknown;
   };
 
   if (!reason || typeof reason !== "string" || !reason.trim()) {
@@ -66,6 +69,26 @@ export async function POST(
       { success: false, message: "description diperlukan." },
       { status: 422 },
     );
+  }
+
+  // Validate attachment_urls if provided
+  const attachmentUrls: string[] = [];
+  if (attachment_urls !== undefined && attachment_urls !== null) {
+    if (!Array.isArray(attachment_urls)) {
+      return NextResponse.json(
+        { success: false, message: "attachment_urls harus berupa array." },
+        { status: 422 },
+      );
+    }
+    for (const u of attachment_urls as unknown[]) {
+      if (typeof u !== "string" || !u.trim()) {
+        return NextResponse.json(
+          { success: false, message: "Setiap item di attachment_urls harus berupa string URL." },
+          { status: 422 },
+        );
+      }
+      attachmentUrls.push(u.trim());
+    }
   }
 
   const reasonStr = reason.trim();
@@ -158,6 +181,27 @@ export async function POST(
     updatedAt: now,
   });
 
+  // ── Insert attachments ────────────────────────────────────────────────────
+  if (attachmentUrls.length > 0) {
+    const attachmentValues = attachmentUrls.map((url) => {
+      let fileName: string;
+      try {
+        const pathname = new URL(url).pathname;
+        fileName = pathname.split("/").filter(Boolean).pop() ?? url;
+      } catch {
+        fileName = url;
+      }
+      return {
+        id: crypto.randomUUID(),
+        refundId,
+        fileUrl: url,
+        fileName,
+        createdAt: now,
+      };
+    });
+    await db.insert(refundAttachments).values(attachmentValues);
+  }
+
   return NextResponse.json(
     {
       success: true,
@@ -170,6 +214,7 @@ export async function POST(
         reason: reasonStr,
         description: descriptionStr,
         status: "PENDING",
+        attachment_urls: attachmentUrls,
         created_at: now.toISOString(),
       },
     },
