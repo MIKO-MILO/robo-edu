@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { FilterButton } from "@/components/ui/filter-button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface Category {
@@ -13,12 +13,14 @@ export interface CategoryFilterListProps {
   categories: Category[];
   activeCategory: string;
   className?: string;
+  orientation?: "vertical" | "horizontal" | "responsive";
 }
 
 export function CategoryFilterList({
   categories,
   activeCategory,
   className,
+  orientation = "responsive",
 }: CategoryFilterListProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -36,34 +38,44 @@ export function CategoryFilterList({
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const isAlwaysVertical = orientation === "vertical";
+  const isAlwaysHorizontal = orientation === "horizontal";
+
   return (
     <div
       role="group"
       aria-label="Filter kategori"
       className={cn(
-        "flex items-center gap-3 overflow-x-auto py-3 -mx-1 px-1 no-scrollbar",
+        isAlwaysVertical
+          ? "flex flex-col gap-2.5 w-full"
+          : isAlwaysHorizontal
+          ? "flex items-center gap-2.5 overflow-x-auto py-2 -mx-1 px-1 no-scrollbar w-full"
+          : "flex flex-row md:flex-col gap-2 md:gap-2.5 overflow-x-auto md:overflow-visible pb-2 md:pb-0 no-scrollbar w-full",
         className
       )}
     >
-      {categories.map((cat, index) => {
+      {categories.map((cat) => {
         const isActive = activeCategory === cat.id;
 
         return (
-          <FilterButton
+          <Button
             key={cat.id}
-            index={index}
-            isActive={isActive}
+            type="button"
             onClick={() => handleCategoryClick(cat.id)}
             aria-pressed={isActive}
+            neo={false}
             className={cn(
-              "rounded-full px-6 py-2 font-body text-sm font-semibold whitespace-nowrap transition-all cursor-pointer category-shadow",
+              "rounded-full px-5 py-2.5 font-body text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 h-auto",
+              isAlwaysVertical || orientation === "responsive"
+                ? "md:w-full md:text-left md:whitespace-normal md:flex md:items-center md:justify-between"
+                : "",
               isActive
-                ? "bg-primary-100 text-primary-900 border-2 border-primary"
-                : "bg-card text-primary-900 border-2 border-primary-300 hover:border-primary/70"
+                ? "bg-primary-100 text-primary-900 border-2 border-primary font-bold shadow-xs hover:bg-primary-100"
+                : "bg-card text-primary-900 border-2 border-primary-300 hover:border-primary/70 hover:bg-primary-100/30"
             )}
           >
-            {cat.label}
-          </FilterButton>
+            <span>{cat.label}</span>
+          </Button>
         );
       })}
     </div>

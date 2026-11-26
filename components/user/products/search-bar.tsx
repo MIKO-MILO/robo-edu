@@ -9,8 +9,8 @@ export interface SearchBarProps {
   onChange?: (value: string) => void;
   onSubmit?: (e: React.FormEvent) => void;
   placeholder?: string;
-  label?: string;
   useUrlState?: boolean;
+  className?: string;
 }
 
 export function SearchBar({
@@ -18,8 +18,8 @@ export function SearchBar({
   onChange: controlledOnChange,
   onSubmit: controlledOnSubmit,
   placeholder = "Cari produk, kategori, atau lainnya...",
-  label = "What you're looking for?",
   useUrlState = true,
+  className = "",
 }: SearchBarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -56,16 +56,8 @@ export function SearchBar({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center bg-card border-2 border-primary rounded-full px-5 py-2 gap-3 w-full"
+      className={`flex items-center bg-card border-2 border-primary rounded-full px-4 sm:px-5 py-2 gap-2 sm:gap-3 w-full shadow-sm hover:shadow-md transition-shadow ${className}`}
     >
-      {/* Label */}
-      <span className="font-heading font-bold text-foreground text-sm sm:text-base whitespace-nowrap shrink-0">
-        {label}
-      </span>
-
-      {/* Separator */}
-      <div className="w-px h-6 bg-border-strong shrink-0" />
-
       {/* Search icon + input */}
       <div className="relative flex-1 flex items-center min-w-0">
         <Search className="absolute left-0 w-4 h-4 text-muted-foreground shrink-0" />
@@ -75,16 +67,16 @@ export function SearchBar({
           placeholder={placeholder}
           value={internalValue}
           onChange={handleInputChange}
-          className="w-full pl-6 bg-transparent border-none outline-none font-body text-sm text-foreground placeholder:text-muted-foreground"
+          className="w-full pl-6 bg-transparent border-none outline-none font-body text-xs sm:text-sm text-foreground placeholder:text-muted-foreground"
         />
       </div>
 
       {/* Search button */}
       <button
         type="submit"
-        className="shrink-0 inline-flex items-center gap-1.5 bg-primary text-white font-heading font-bold text-xs sm:text-sm px-5 py-2 rounded-full hover:bg-primary-600 transition-colors"
+        className="shrink-0 inline-flex items-center gap-1.5 bg-primary text-white font-heading font-bold text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-full hover:bg-primary-600 transition-colors cursor-pointer"
       >
-        Search
+        <span>Search</span>
         <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
       </button>
     </form>

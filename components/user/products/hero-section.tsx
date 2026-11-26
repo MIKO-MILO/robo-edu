@@ -1,11 +1,15 @@
+import React, { Suspense } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { SearchBar } from "./search-bar";
 
-export function HeroSection() {
+export interface HeroSectionProps {
+  children?: React.ReactNode;
+}
+
+export function HeroSection({ children }: HeroSectionProps) {
   return (
     <div className="w-full bg-background p-0 m-0">
-      <section className="relative w-full min-h-[70vh] bg-[#97CEF9] rounded-none pt-36 sm:pt-48 lg:pt-52 pb-44 sm:pb-48 lg:pb-56 overflow-hidden flex flex-col justify-center items-center">
+      <section className="relative w-full min-h-[60vh] sm:min-h-[65vh] bg-[#97CEF9] rounded-none pt-32 sm:pt-40 lg:pt-44 pb-36 sm:pb-44 lg:pb-48 overflow-hidden flex flex-col justify-center items-center">
 
         {/* Awan kiri */}
         <div className="absolute top-12 sm:top-16 left-0 w-56 sm:w-80 lg:w-[28rem] opacity-85 pointer-events-none select-none z-0 flex flex-col items-start">
@@ -28,7 +32,7 @@ export function HeroSection() {
         <div className="absolute top-36 right-20 sm:right-32 w-8 h-8 bg-white/20 rounded-full opacity-60 pointer-events-none z-0" />
 
         {/* Konten */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 gap-5 sm:gap-6 max-w-3xl mx-auto pt-10">
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 gap-4 sm:gap-5 max-w-3xl mx-auto pt-6 sm:pt-8 w-full">
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-slate-900 tracking-tight">
             Bring Your Ideas<br className="hidden sm:block" />
             <span className="text-[#1C6CAE]"> to Life!</span>
@@ -37,6 +41,13 @@ export function HeroSection() {
             Temukan berbagai kit eksperimen dan mainan edukatif yang dirancang
             untuk memicu rasa ingin tahu serta kreativitas si kecil.
           </p>
+
+          {/* Search bar persis di bawah deskripsi */}
+          <div className="w-full max-w-2xl mt-2 sm:mt-3">
+            <Suspense fallback={<div className="h-12 w-full rounded-full bg-card/70 animate-pulse border-2 border-primary/40" />}>
+              {children ?? <SearchBar />}
+            </Suspense>
+          </div>
         </div>
 
         {/* Scalloped bottom */}

@@ -1,5 +1,4 @@
 import { HeroSection } from "@/components/user/products/hero-section";
-import { SearchBar } from "@/components/user/products/search-bar";
 import { CategoryFilterList } from "@/components/user/products/category-filter-list";
 import { WishlistAwareProductCard } from "@/components/user/wishlist/wishlist-aware-product-card";
 import { Pagination } from "@/components/ui/pagination";
@@ -39,7 +38,7 @@ export default async function ProductsPage(props: ProductsPageProps) {
   const searchQuery = searchParams.search || "";
   const activeCategory = searchParams.category || "all";
   const currentPage = Math.max(1, Number(searchParams.page) || 1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 9;
 
   // ─── Fetch categories dari DB (hanya yang aktif) ──────────────────────────
   const dbCategories = await db
@@ -70,90 +69,93 @@ export default async function ProductsPage(props: ProductsPageProps) {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {/* Hero Section dengan Search Bar di bawah deskripsi */}
       <HeroSection />
 
-      {/* Catalog Section */}
+      {/* Catalog Section dengan Menu di Kiri & Produk di Kanan */}
       <section
         id="katalog"
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-8"
+        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
       >
-        {/* Search Bar (Client Component synced with URL SearchParams) */}
-        <SearchBar />
-
-        {/* Category Filter Pills (Client Component synced with URL SearchParams) */}
-        <CategoryFilterList
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-        />
-
-        {/* Result Count & Page Info */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-sm text-muted-foreground font-body">
-            Menampilkan{" "}
-            <span className="font-semibold text-foreground">
-              {products.length}
-            </span>{" "}
-            dari{" "}
-            <span className="font-semibold text-foreground">{totalItems}</span>{" "}
-            produk
-            {activeCategory !== "all" && (
-              <span>
-                {" "}
-                di kategori{" "}
-                <span className="font-semibold text-foreground">
-                  {CATEGORIES.find((c) => c.id === activeCategory)?.label}
-                </span>
-              </span>
-            )}
-          </p>
-
-          {totalPages > 1 && (
-            <span className="text-xs text-muted-foreground font-body">
-              Halaman {currentPage} dari {totalPages}
-            </span>
-          )}
-        </div>
-
-        {/* Product Grid */}
-        {products.length > 0 ? (
-          <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {products.map((product, index) => (
-                <WishlistAwareProductCard
-                  key={product.id}
-                  id={product.id}
-                  slug={product.slug}
-                  name={product.name}
-                  price={formatPrice(product.price.min || 0)}
-                  priceRaw={product.price.min || 0}
-                  rating={product.rating_avg ?? 0}
-                  reviewCount={formatReviewCount(product.review_count)}
-                  imageUrl={product.image ?? "/images/placeholder-product.jpg"}
-                  outOfStock={product.stock === 0}
-                  bgColorClass={
-                    PASTEL_VARIANTS[
-                      (startIndex + index) % PASTEL_VARIANTS.length
-                    ]
-                  }
-                />
-              ))}
+        <div className="flex flex-col md:flex-row items-start gap-8 lg:gap-10">
+          {/* Kolom Kiri: Menu Kategori Vertikal (Sidebar) */}
+          <aside className="w-full md:w-56 lg:w-64 shrink-0">
+            <div className="md:sticky md:top-24 space-y-3.5">
+              <h2 className="font-heading font-bold text-base sm:text-lg text-foreground tracking-tight hidden md:block">
+                Kategori
+              </h2>
+              <CategoryFilterList
+                categories={CATEGORIES}
+                activeCategory={activeCategory}
+              />
             </div>
+          </aside>
 
-            {/* Pagination Component */}
-            <Pagination currentPage={currentPage} totalPages={totalPages} />
-          </>
-        ) : (
-          /* Empty State */
-          <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-            <h2 className="font-heading font-bold text-xl text-foreground">
-              Produk tidak ditemukan
-            </h2>
-            <p className="text-muted-foreground font-body max-w-xs">
-              Coba kata kunci lain atau pilih kategori yang berbeda.
-            </p>
+          {/* Kolom Kanan: Daftar Produk 3 Card per Baris */}
+          <div className="flex-1 min-w-0 w-full flex flex-col gap-6">
+            {/* Product Grid: 3 card ke samping / 3 kolom */}
+            {products.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                  {products.map((product, index) => (
+                    <WishlistAwareProductCard
+                      key={product.id}
+                      id={product.id}
+                      slug={product.slug}
+                      name={product.name}
+                      price={formatPrice(product.price.min || 0)}
+                      priceRaw={product.price.min || 0}
+                      rating={product.rating_avg ?? 0}
+                      reviewCount={formatReviewCount(product.review_count)}
+                      imageUrl={product.image ?? "/images/placeholder-product.jpg"}
+                      outOfStock={product.stock === 0}
+                      bgColorClass={
+                        PASTEL_VARIANTS[
+                          (startIndex + index) % PASTEL_VARIANTS.length
+                        ]
+                      }
+                    />
+                  ))}
+                </div>
+
+                {/* Bagian Bawah Card: Info Produk & Pagination (tanpa garis horizontal) */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6">
+                  <p className="text-sm text-muted-foreground font-body">
+                    Menampilkan{" "}
+                    <span className="font-semibold text-foreground">
+                      {products.length}
+                    </span>{" "}
+                    dari{" "}
+                    <span className="font-semibold text-foreground">{totalItems}</span>{" "}
+                    produk
+                    {activeCategory !== "all" && (
+                      <span>
+                        {" "}
+                        di kategori{" "}
+                        <span className="font-semibold text-foreground">
+                          {CATEGORIES.find((c) => c.id === activeCategory)?.label}
+                        </span>
+                      </span>
+                    )}
+                  </p>
+
+                  {/* Pagination Component */}
+                  <Pagination currentPage={currentPage} totalPages={totalPages} />
+                </div>
+              </>
+            ) : (
+              /* Empty State */
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center bg-card/40 rounded-2xl border border-dashed border-border/60 p-8">
+                <h2 className="font-heading font-bold text-xl text-foreground">
+                  Produk tidak ditemukan
+                </h2>
+                <p className="text-muted-foreground font-body max-w-xs text-sm">
+                  Coba kata kunci lain atau pilih kategori yang berbeda.
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </section>
     </main>
   );
