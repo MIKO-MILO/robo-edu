@@ -4,7 +4,6 @@ import {
   count,
   desc,
   eq,
-  gt,
   gte,
   isNotNull,
   lt,
@@ -20,6 +19,7 @@ import {
   productVariants,
 } from "@/src/db/schema";
 import { requireAdminFromRequest } from "@/src/lib/auth/require-admin-from-request";
+import { getLowStockDefaultThreshold } from "@/src/lib/services/settings-service";
 
 export const runtime = "nodejs";
 
@@ -122,7 +122,11 @@ export async function GET(request: NextRequest) {
     .limit(5);
 
   // ── 7. Low stock products ──────────────────────────────────────────────
-  // A variant is low-stock when: low_stock_threshold > 0 AND stock <= low_stock_threshold
+  // Effective threshold = per-variant value when configured (> 0),
+  // otherwise fall back to the global default from settings (default: 5).
+  // A variant with threshold = 0 means "not yet configured", NOT "disabled".
+  const globalThreshold = await getLowStockDefaultThreshold();
+
   const lowStockRows = await db
     .select({
       product_id: productVariants.productId,
@@ -135,10 +139,7 @@ export async function GET(request: NextRequest) {
     .from(productVariants)
     .innerJoin(products, eq(productVariants.productId, products.id))
     .where(
-      and(
-        gt(productVariants.lowStockThreshold, 0),
-        sql`${productVariants.stock} <= ${productVariants.lowStockThreshold}`,
-      ),
+      sql`${productVariants.stock} <= IF(${productVariants.lowStockThreshold} > 0, ${productVariants.lowStockThreshold}, ${globalThreshold})`,
     )
     .orderBy(productVariants.stock)
     .limit(10);

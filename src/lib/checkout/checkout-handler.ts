@@ -63,6 +63,13 @@ export async function handleCheckout(request: NextRequest): Promise<NextResponse
     const isDropship  = body.isDropship === true;
     const senderName  = typeof body.senderName  === "string" ? body.senderName.trim()  : undefined;
     const senderPhone = typeof body.senderPhone === "string" ? body.senderPhone.trim() : undefined;
+    // Optional: list of cart item IDs the user chose to include in this order.
+    // When present and non-empty, only those items are ordered and cleared from
+    // the cart; unselected items remain. Falls back to all items when absent.
+    const itemIds: string[] | undefined =
+      Array.isArray(body.itemIds) && (body.itemIds as unknown[]).every((v) => typeof v === "string")
+        ? (body.itemIds as string[]).filter((v) => v.trim() !== "")
+        : undefined;
 
     // ── Validation ───────────────────────────────────────────────────────────
     if (!addressId) {
@@ -141,6 +148,7 @@ export async function handleCheckout(request: NextRequest): Promise<NextResponse
       isDropship,
       senderName: isDropship ? senderName : undefined,
       senderPhone: isDropship ? senderPhone : undefined,
+      itemIds: itemIds && itemIds.length > 0 ? itemIds : undefined,
     });
 
     return NextResponse.json({ success: true, data: transaction }, { status: 201 });

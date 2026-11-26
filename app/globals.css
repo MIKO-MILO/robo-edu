@@ -77,6 +77,13 @@
   /* Font */
   --font-heading: var(--font-unbounded), sans-serif;
   --font-body: var(--font-outfit), sans-serif;
+
+/* ==== HEART / LOVE & BADGE NOTIF === */
+  --color-love-red: #E22B2E;
+  --color-badge-red: #D8181B;
+
+  /* ==== ANIMATION — Badge Notif Naik Turun ===== */
+  --animate-badge-float: badge-float 1.6s ease-in-out infinite;
 }
 
 @theme inline {
@@ -300,13 +307,48 @@
   --color-landing-blue: #2781CD;
   --color-landing-navy: #0F2C59;
   --color-landing-sky: #97CEF9;
-  --color-promo-pink: #E8808C;
+  --color-promo-pink: #7F8DE7;
+  --color-promo-indigo: #7F8DE7;
   --color-promo-blue: #6AA2B8;
   --color-promo-red: #C0392B;
   --color-promo-orange: #B85C38;
   --color-accent-gold: #F3C769;
   --color-star: #FFC107;
   --color-accent-purple-light: #EAE4FF;
+
+  /* Voucher Card Tokens */
+  --color-voucher-blue: #80A4E8;
+  --color-voucher-blue-end: #6D95DF;
+  --color-voucher-blue-stroke: #5C86D9;
+  --color-voucher-blue-eyebrow: #1C3B78;
+  --color-voucher-blue-title: #0E2554;
+  --color-voucher-blue-text: #234991;
+  --color-voucher-blue-btn: #335FA8;
+  --color-voucher-blue-btn-hover: #264A85;
+  --color-voucher-blue-btn-text: #FFFFFF;
+  --color-voucher-blue-btn-border: #1D3B73;
+
+  --color-voucher-yellow: #FCDF7E;
+  --color-voucher-yellow-end: #F8D261;
+  --color-voucher-yellow-stroke: #E5BA45;
+  --color-voucher-yellow-eyebrow: #5C4300;
+  --color-voucher-yellow-title: #3D2900;
+  --color-voucher-yellow-text: #8A6400;
+  --color-voucher-yellow-btn: #FFFFFF;
+  --color-voucher-yellow-btn-hover: #F8F6EE;
+  --color-voucher-yellow-btn-text: #3D2900;
+  --color-voucher-yellow-btn-border: #FFFFFF;
+
+  --color-voucher-purple: #BFB8FF;
+  --color-voucher-purple-end: #ABA2F5;
+  --color-voucher-purple-stroke: #968DE0;
+  --color-voucher-purple-eyebrow: #3E3278;
+  --color-voucher-purple-title: #271D57;
+  --color-voucher-purple-text: #5042A6;
+  --color-voucher-purple-btn: #5F50BD;
+  --color-voucher-purple-btn-hover: #4E40A6;
+  --color-voucher-purple-btn-text: #FFFFFF;
+  --color-voucher-purple-btn-border: #40338F;
 }
 
 /* ==========================================
@@ -341,6 +383,14 @@
 }
 
 /* ==========================================
+   Outline Variant — Kuning Tua
+   ========================================== */
+
+@utility outline-yellow-dark {
+  border: 2px solid var(--color-accent-gold);
+}
+
+/* ==========================================
    Pastel card variants
    ========================================== */
 
@@ -352,3 +402,16 @@
 @utility bg-pastel-orange  { background-color: #FFF0D6; }
 @utility bg-pastel-peach   { background-color: #FFE9E4; }
 @utility bg-pastel-butter  { background-color: #FDF7E3; }
+
+
+/* ==========================================
+   Badge Notif Naik Turun Animation
+   ========================================== */
+@keyframes badge-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}

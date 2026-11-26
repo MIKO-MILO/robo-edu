@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import HeroRobot from "@/components/user/landing/robot";
 import Link from "next/link";
@@ -65,8 +65,11 @@ export default function HeroSection() {
                 {/* DEKORASI AWAN */}
                 {/* ------------------------------------------------------------- */}
 
-                {/* Awan Kiri Utama (Atas) */}
-                <div className="absolute top-[38%] xs:top-[34%] sm:top-[30%] lg:top-20 xl:top-16 2xl:top-20 left-0 z-0 w-48 max-[360px]:w-40 xs:w-60 sm:w-80 md:w-96 lg:w-88 xl:w-[28rem] aspect-square pointer-events-none opacity-80 transition-all duration-300">
+                {/* Awan Kiri Utama (Atas)
+                    - Mobile 320-375: besarin lagi & naikkan ke atas lagi
+                    - Tablet (md): lebih naik lagi (md:top-14)
+                */}
+                <div className="absolute top-[12%] max-[375px]:top-[10%] max-[360px]:top-[8%] xs:top-[16%] sm:top-[22%] md:top-14 lg:top-20 xl:top-16 2xl:top-20 left-0 z-0 w-60 max-[375px]:w-64 max-[360px]:w-56 xs:w-64 sm:w-80 md:w-96 lg:w-88 xl:w-[28rem] aspect-square pointer-events-none opacity-80 transition-all duration-300">
                     <Image
                         src="/images/awan.webp"
                         alt="Dekorasi Awan Kiri"
@@ -76,8 +79,12 @@ export default function HeroSection() {
                     />
                 </div>
 
-                {/* Awan Kiri Bawah - Diperbesar lagi dikit & dinaikkan posisinya */}
-                <div className="absolute top-[59%] sm:top-[55%] md:top-[53%] lg:top-[21rem] xl:top-[24rem] 2xl:top-[24rem] left-0 z-0 w-40 sm:w-56 md:w-60 lg:w-56 xl:w-60 aspect-square pointer-events-none opacity-60 transition-all duration-300">
+                {/* Awan Kiri Bawah
+                    - Mobile 320-375: besarin lagi & naikkan ke atas lagi
+                    - Tablet: agak besarin (md:w-72) & lebih naikkan ke atas (md:top-[46%])
+                    - Laptop 1024-1440: besaran dikit & agak ke bawahan (lg:w-64 lg:top-[24rem] xl:w-72 xl:top-[27rem])
+                */}
+                <div className="absolute top-[44%] max-[375px]:top-[40%] max-[360px]:top-[38%] xs:top-[46%] sm:top-[50%] md:top-[46%] lg:top-[24rem] xl:top-[27rem] 2xl:top-[25rem] left-0 z-0 w-52 max-[375px]:w-56 max-[360px]:w-50 xs:w-56 sm:w-64 md:w-72 lg:w-64 xl:w-72 aspect-square pointer-events-none opacity-60 transition-all duration-300">
                     <Image
                         src="/images/awan.webp"
                         alt="Dekorasi Awan Kiri Bawah"
@@ -86,8 +93,11 @@ export default function HeroSection() {
                     />
                 </div>
 
-                {/* Awan Kanan Utama (Atas) */}
-                <div className="absolute top-[36%] xs:top-[30%] sm:top-[28%] lg:top-16 xl:top-20 2xl:top-24 right-0 z-0 w-48 max-[360px]:w-40 xs:w-60 sm:w-80 md:w-96 lg:w-88 xl:w-[28rem] aspect-square pointer-events-none opacity-80 transition-all duration-300">
+                {/* Awan Kanan Utama (Atas)
+                    - Mobile 320-375: besarin lagi & naikkan ke atas lagi
+                    - Tablet (md): naikkan ke atas dikit (md:top-16)
+                */}
+                <div className="absolute top-[16%] max-[375px]:top-[13%] max-[360px]:top-[11%] xs:top-[20%] sm:top-[26%] md:top-16 lg:top-16 xl:top-20 2xl:top-24 right-0 z-0 w-56 max-[375px]:w-60 max-[360px]:w-52 xs:w-64 sm:w-80 md:w-96 lg:w-88 xl:w-[28rem] aspect-square pointer-events-none opacity-80 transition-all duration-300">
                     <Image
                         src="/images/awan.webp"
                         alt="Dekorasi Awan Kanan"
@@ -97,8 +107,12 @@ export default function HeroSection() {
                     />
                 </div>
 
-                {/* Awan Kanan Bawah - Ukuran & posisi disamakan dengan kiri bawah */}
-                <div className="absolute top-[59%] sm:top-[55%] md:top-[53%] lg:top-[21rem] xl:top-[24rem] 2xl:top-[24rem] right-0 z-0 w-40 sm:w-56 md:w-60 lg:w-56 xl:w-60 aspect-square pointer-events-none opacity-60 transition-all duration-300">
+                {/* Awan Kanan Bawah
+                    - Mobile 320-375: besarin lagi & naikkan ke atas lagi
+                    - Tablet: besarin (md:w-68) & posisinya proporsional (md:top-[50%])
+                    - Laptop 1024-1440: besaran dikit & agak ke bawahan (lg:w-64 lg:top-[24rem] xl:w-72 xl:top-[27rem])
+                */}
+                <div className="absolute top-[48%] max-[375px]:top-[44%] max-[360px]:top-[42%] xs:top-[50%] sm:top-[54%] md:top-[50%] lg:top-[24rem] xl:top-[27rem] 2xl:top-[25rem] right-0 z-0 w-48 max-[375px]:w-52 max-[360px]:w-46 xs:w-52 sm:w-64 md:w-68 lg:w-64 xl:w-72 aspect-square pointer-events-none opacity-60 transition-all duration-300">
                     <Image
                         src="/images/awan.webp"
                         alt="Dekorasi Awan Kanan Bawah"
@@ -120,7 +134,6 @@ export default function HeroSection() {
                     <h1 className="relative font-heading text-2xl xs:text-3xl sm:text-4xl lg:text-[2.65rem] xl:text-5xl font-bold leading-tight sm:leading-[1.25] lg:leading-[1.18] text-landing-navy tracking-tight max-w-xl lg:max-w-none">
                         <span className="block lg:inline">
                             Rakit & Mainkan{""}
-                            {/* line.webp diperbesar sedikit dan dinaikkan ke atas menggunakan -mt dan ukuran w/h yang disesuaikan */}
                            <span className="inline-block relative w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 align-middle -mt-10 sm:-mt-16 lg:-mt-20 -ml-1 sm:-ml-2">
                             <Image
                                 src="/images/line.webp"
@@ -138,9 +151,9 @@ export default function HeroSection() {
                         {/* Badge Teks Dinamis */}
                         <span className="block mt-3 sm:mt-4 lg:mt-4">
                             <span
-                                className={`inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl rotate-[-2deg] text-sm sm:text-lg lg:text-xl xl:text-2xl font-extrabold transition-colors duration-500 ease-in-out ${currentStyle.bg} ${currentStyle.textColor}`}
+                                className={`inline-flex items-center gap-2 px-6 py-3.5 sm:px-5 sm:py-2 rounded-full sm:rounded-xl rotate-[-2deg] text-xs sm:text-lg lg:text-xl xl:text-2xl font-extrabold transition-colors duration-500 ease-in-out ${currentStyle.bg} ${currentStyle.textColor}`}
                             >
-                                <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-current shrink-0" />
+                                <span className="w-2.5 h-2.5 rounded-full bg-current shrink-0" />
                                 <span>
                                     {displayedText}
                                     <span className="animate-pulse ml-0.5 opacity-80">|</span>
@@ -177,7 +190,7 @@ export default function HeroSection() {
                 </div>
 
                 {/* RIGHT COLUMN: Visual Robot */}
-                <div className="lg:col-span-5 flex justify-center items-center relative w-full mt-4 sm:mt-6 lg:mt-0 z-10">
+                <div className="lg:col-span-5 flex justify-center items-center relative w-full mt-2 sm:mt-4 md:mt-2 lg:mt-0 -translate-y-3 sm:translate-y-0 pb-4 sm:pb-2 md:mb-6 md:pb-6 lg:mb-0 lg:pb-0 z-10">
                     <HeroRobot />
                 </div>
 

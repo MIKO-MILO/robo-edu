@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 export default function TextMarquee() {
   return (
-    <div className="relative w-full overflow-hidden -mt-20 sm:-mt-16 lg:-mt-24 z-20 flex items-center justify-center pb-4 sm:pb-6 pointer-events-none">
-      <div className="w-full min-w-[1000px] flex justify-center items-center scale-[0.85] sm:scale-110 lg:scale-125 transition-transform">
+    <div className="relative w-full overflow-hidden -mt-12 max-[375px]:-mt-8 sm:-mt-16 md:-mt-16 lg:-mt-14 xl:-mt-24 z-20 flex items-center justify-center pb-4 sm:pb-6 pointer-events-none">
+      <div className="w-full min-w-[1000px] flex justify-center items-center scale-[1.08] max-[375px]:scale-[1.15] sm:scale-110 md:scale-[1.20] lg:scale-[1.35] xl:scale-125 transition-transform">
         <svg
           viewBox="0 -16 1128 135"
           fill="none"

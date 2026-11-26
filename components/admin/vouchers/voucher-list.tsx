@@ -1,10 +1,22 @@
-import React from "react";
+"use client";
+
+import React, { useState, useMemo } from "react";
 import type { Voucher, PaginationMeta, UUID } from "@/types";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Edit2Icon, Trash2Icon, TicketIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Edit2Icon, Trash2Icon, TicketIcon, EyeIcon } from "lucide-react";
+import { mapVoucherToPromoItem } from "@/types/voucher";
+import { VoucherCardMulti, VoucherTicketSingle } from "@/components/user/landing";
+import { cn } from "@/lib/utils";
 
 export interface VoucherTableProps {
   data: Voucher[];
@@ -31,6 +43,14 @@ export function VoucherList({
   onEdit,
   onDelete,
 }: VoucherTableProps) {
+  const [previewVoucher, setPreviewVoucher] = useState<Voucher | null>(null);
+  const [previewMode, setPreviewMode] = useState<"multi" | "single">("multi");
+  const [previewThemeIndex, setPreviewThemeIndex] = useState(0);
+
+  const previewPromoItem = useMemo(() => {
+    if (!previewVoucher) return null;
+    return mapVoucherToPromoItem(previewVoucher, previewThemeIndex);
+  }, [previewVoucher, previewThemeIndex]);
   if (isLoading) {
     return (
       <div className="w-full space-y-4">
@@ -132,6 +152,17 @@ export function VoucherList({
                 {/* Actions */}
                 <td className="py-3 px-4 text-right">
                   <div className="flex items-center justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      neo={false}
+                      onClick={() => setPreviewVoucher(voucher)}
+                      title="Lihat Preview Tiket"
+                    >
+                      <EyeIcon className="size-3.5" />
+                      <span>Preview</span>
+                    </Button>
                     {onEdit && (
                       <Button
                         type="button"
@@ -176,6 +207,92 @@ export function VoucherList({
           />
         </div>
       )}
+
+      {/* Dialog Preview Voucher */}
+      <Dialog open={!!previewVoucher} onOpenChange={(open) => !open && setPreviewVoucher(null)}>
+        <DialogContent className="max-w-4xl p-6 bg-card border-border">
+          <DialogHeader className="border-b border-border/60 pb-3">
+            <DialogTitle className="font-heading font-bold text-lg text-foreground flex items-center gap-2">
+              <EyeIcon className="size-5 text-primary" />
+              Preview Kartu Voucher: {previewVoucher?.code}
+            </DialogTitle>
+            <DialogDescription className="font-body text-xs text-muted-foreground">
+              Desain kartu voucher yang tampil langsung di antarmuka pengunjung website.
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewPromoItem && (
+            <div className="space-y-4 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex items-center rounded-xl border border-border bg-muted/60 p-1 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("multi")}
+                    className={cn(
+                      "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                      previewMode === "multi"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Card Multi (2 Sejajar)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("single")}
+                    className={cn(
+                      "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                      previewMode === "single"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Tiket Single (Besar)
+                  </button>
+                </div>
+
+                {previewMode === "multi" && (
+                  <div className="inline-flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground font-body">Tema Pola:</span>
+                    {[
+                      { index: 0, label: "Biru", color: "bg-voucher-blue" },
+                      { index: 1, label: "Kuning", color: "bg-voucher-yellow" },
+                      { index: 2, label: "Ungu", color: "bg-voucher-purple" },
+                    ].map((th) => (
+                      <button
+                        key={th.index}
+                        type="button"
+                        onClick={() => setPreviewThemeIndex(th.index)}
+                        title={`Pola tema ${th.label}`}
+                        className={cn(
+                          "w-5 h-5 rounded-full border-2 transition-transform cursor-pointer",
+                          th.color,
+                          previewThemeIndex === th.index
+                            ? "border-secondary scale-110 shadow-xs"
+                            : "border-white/80 opacity-70 hover:opacity-100"
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Box Preview dengan Latar Belakang Website */}
+              <div className="bg-background rounded-2xl p-4 sm:p-8 flex items-center justify-center border border-border/40 overflow-hidden min-h-[280px]">
+                {previewMode === "multi" ? (
+                  <div className="w-full max-w-lg">
+                    <VoucherCardMulti item={previewPromoItem} index={previewThemeIndex} />
+                  </div>
+                ) : (
+                  <div className="w-full max-w-3xl">
+                    <VoucherTicketSingle item={previewPromoItem} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

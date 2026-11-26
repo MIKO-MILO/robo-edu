@@ -25,7 +25,7 @@ const VALID_STATUSES = new Set(["open", "in_review", "resolved", "closed"]);
  * Once `resolved` or `closed`, no further transitions are permitted.
  */
 const ALLOWED_TRANSITIONS: Record<string, Set<string>> = {
-  open:      new Set(["in_review", "closed"]),
+  open:      new Set(["in_review", "resolved", "closed"]),
   in_review: new Set(["resolved", "closed"]),
   // Terminal states: no transitions allowed
   resolved:  new Set(),

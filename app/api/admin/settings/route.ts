@@ -59,6 +59,7 @@ const SETTING_SPECS: Record<string, SettingSpec> = {
   order_expires_hours: { kind: "number", positiveInt: true },
   payment_methods_config: { kind: "string", json: true, channels: true },
   maintenance_mode: { kind: "string" },
+  low_stock_default_threshold: { kind: "number", positiveInt: true },
 };
 
 const ALLOWED_KEYS = new Set(Object.keys(SETTING_SPECS));
