@@ -1,41 +1,16 @@
-﻿"use client";
+
+"use client";
 
 import Image from "next/image";
 import ProductCarousel from "@/components/user/landing/product-carousel";
 
+import type { CarouselProductItem } from "@/components/user/landing/product-carousel";
+
+export type ProductItem = CarouselProductItem;
+
 // ==========================================
 // SUB-COMPONENTS
 // ==========================================
-import type { CarouselProductItem } from "@/components/user/landing/product-carousel";
-export type ProductItem = CarouselProductItem;
-
-// Custom Arrow SVG yang disesuaikan
-function CurvedArrowSVG({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      width="477"
-      height="205"
-      viewBox="0 0 477 205"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M26.9974 0C26.9974 13.5283 10.6085 88.3099 2.41406 124.01L90.9141 140.92"
-        stroke="currentColor"
-        strokeWidth="20"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2.41406 124.008C2.41406 124.008 98.8292 34.4932 169.581 45.0975C264.431 59.3137 260.819 206.898 356.414 202.929C418.68 200.343 474.414 124.012 474.414 124.012"
-        stroke="currentColor"
-        strokeWidth="20"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 // Atom: Section Label
 function SectionLabel({ text }: { text: string }) {
@@ -48,12 +23,29 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
-// Atom: Side Toy Decorations (Di dalam container max-w-6xl agar selalu nempel dengan card)
+// ==========================================
+// Side Toy Decorations
+// ==========================================
+
 function SideToyDecorations() {
   return (
     <>
-      {/* Gambar Mainan Kiri (toy3.webp) - Dinaikkan lebih ke atas */}
-      <div className="hidden sm:block absolute -top-2 sm:top-0 lg:-top-2 sm:-left-20 md:-left-24 lg:-left-28 xl:-left-36 w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 xl:w-56 xl:h-56 pointer-events-none select-none z-30 transition-transform">
+      {/* Gambar Mainan Kiri (toy3.webp) */}
+      <div
+        className="
+          hidden sm:block absolute
+          -top-2 sm:top-0 lg:-top-2
+          sm:-left-20 md:-left-20 lg:-left-24 xl:-left-32
+          w-24 h-24
+          sm:w-32 sm:h-32
+          md:w-[7.2rem] md:h-[7.2rem]
+          lg:w-40 lg:h-40
+          xl:w-44 xl:h-44
+          2xl:w-52 2xl:h-52
+          pointer-events-none select-none
+          z-30
+        "
+      >
         <Image
           src="/images/toy3.webp"
           alt="Toy Decoration Left"
@@ -64,7 +56,21 @@ function SideToyDecorations() {
       </div>
 
       {/* Gambar Mainan Kanan (toy1.webp) */}
-      <div className="hidden sm:block absolute top-4 sm:top-6 lg:top-4 sm:-right-12 md:-right-16 lg:-right-20 xl:-right-24 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 pointer-events-none select-none z-30 transition-transform">
+      <div
+        className="
+          hidden sm:block absolute
+          top-4 sm:top-6 md:top-1 lg:top-4
+          sm:-right-12 md:-right-24 lg:-right-16 xl:-right-20
+          w-28 h-28
+          sm:w-36 sm:h-36
+          md:w-24 md:h-24
+          lg:w-44 lg:h-44
+          xl:w-48 xl:h-48
+          2xl:w-60 2xl:h-60
+          pointer-events-none select-none
+          z-30
+        "
+      >
         <Image
           src="/images/toy1.webp"
           alt="Toy Decoration Right"
@@ -80,31 +86,38 @@ function SideToyDecorations() {
 // ==========================================
 // MAIN ORGANISM COMPONENT
 // ==========================================
+
 export interface ProductShowcaseProps {
   products?: CarouselProductItem[];
 }
 
-export default function ProductShowcase({ products }: ProductShowcaseProps) {
+export default function ProductShowcase({
+  products,
+}: ProductShowcaseProps) {
   return (
     <section className="relative bg-background pt-4 pb-12 sm:pt-6 lg:pt-8 px-4 sm:px-10 overflow-x-clip">
       <div className="max-w-6xl mx-auto relative">
-        {/* Hiasan Mainan Kiri & Kanan diletakkan di dalam wrapper max-w-6xl */}
+
+        {/* Hiasan Mainan Kiri & Kanan */}
         <SideToyDecorations />
 
         {/* HEADER SECTION */}
         <div className="text-center pt-2 sm:pt-4 lg:pt-6 mb-8 sm:mb-10 relative z-10">
           <SectionLabel text="Produk Terbaru" />
+
           <h2 className="font-heading text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight leading-snug">
-            Koleksi Mainan &amp; Robot IoT <span className="text-foreground">Pilihan Terbaik</span>
+            Koleksi Mainan &amp; Robot IoT{" "}
+            <span className="text-foreground">
+              Pilihan Terbaik
+            </span>
           </h2>
         </div>
 
         {/* CAROUSEL PRODUK */}
         <div className="relative z-10">
-          
-
-<ProductCarousel products={products} />
+          <ProductCarousel products={products} />
         </div>
+
       </div>
     </section>
   );

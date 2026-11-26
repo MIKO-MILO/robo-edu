@@ -2,16 +2,9 @@
 
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/contexts/wishlist-context";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/**
- * Atom — Floating Action Button wishlist.
- *
- * - Fixed di pojok kanan bawah layar (z-40, di bawah sidebar z-50)
- * - Menampilkan badge counter di atas tombol jika ada item
- * - Click → membuka/menutup WishlistSidebar via context
- * - Ikon jantung terisi (filled) saat wishlist tidak kosong
- */
 export function WishlistFab() {
   const { items, toggleSidebar } = useWishlist();
   const count = items.length;
@@ -19,8 +12,11 @@ export function WishlistFab() {
 
   return (
     <div className="fixed bottom-6 right-6 z-40" aria-live="polite">
-      <button
+      <Button
         type="button"
+        variant="accent-yellow"
+        size="icon"
+        neo={false}
         onClick={toggleSidebar}
         aria-label={
           hasItems
@@ -28,56 +24,39 @@ export function WishlistFab() {
             : "Buka wishlist"
         }
         className={cn(
-          // Shape & Size
           "relative flex items-center justify-center w-14 h-14 rounded-full",
-          // Color — primary brand
-          "bg-primary text-white",
-          // Neo-brutalism border & shadow
-          "border-2 border-foreground",
-          "shadow-[4px_4px_0px_0px_#3D2900]",
-          // Hover: geser 2px ke kanan-bawah, shadow mengecil
-          "transition-all duration-150 ease-in-out",
-          "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#3D2900]",
-          // Active
-          "active:scale-95 active:shadow-none",
-          "cursor-pointer"
+          "bg-accent-yellow text-foreground outline-yellow-dark shadow-none",
+          "hover:opacity-90 transition-opacity",
+          "active:scale-95 cursor-pointer"
         )}
       >
         <Heart
           className={cn(
-            "w-6 h-6 transition-all duration-200",
+            "w-5 h-5 transition-all duration-200",
             hasItems
-              ? "fill-white text-white scale-110"
-              : "fill-none text-white"
+              ? "fill-love-red text-love-red scale-110"
+              : "fill-none text-love-red"
           )}
           aria-hidden="true"
         />
 
-        {/* Badge counter — muncul hanya jika ada item */}
         {hasItems && (
           <span
             aria-hidden="true"
             className={cn(
-              // Positioning
-              "absolute -top-2 -right-2",
-              // Size & Shape
-              "min-w-[1.5rem] h-6 px-1.5 rounded-full",
-              // Color — accent yellow
-              "bg-accent-yellow border-2 border-foreground",
-              // Shadow
-              "shadow-[2px_2px_0px_0px_#3D2900]",
-              // Typography
+              "absolute -top-3 -right-2.5",
+              "min-w-8 h-8 px-1.5 rounded-full",
+              "bg-badge-red text-white",
+              "border border-white/80 shadow-none",
               "flex items-center justify-center",
-              "font-body font-bold text-xs text-foreground",
-              // Entrance animation
-              "animate-bounce"
+              "font-body font-bold text-sm leading-none",
+              "animate-badge-float"
             )}
-            style={{ animationDuration: "0.6s", animationIterationCount: "1" }}
           >
             {count > 99 ? "99+" : count}
           </span>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

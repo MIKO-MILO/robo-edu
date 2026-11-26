@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,9 +9,12 @@ import { Button } from "@/components/ui/button";
 import { AdminInput } from "@/components/admin/form/input";
 import { AdminTextarea } from "@/components/admin/form/textarea";
 import { AdminSelect } from "@/components/admin/form/select";
-import { SaveIcon, ArrowLeftIcon, Loader2Icon } from "lucide-react";
+import { SaveIcon, ArrowLeftIcon, Loader2Icon, EyeIcon } from "lucide-react";
 import type { Voucher, CreateVoucherRequestBody, UpdateVoucherRequestBody } from "@/types";
+import { mapVoucherToPromoItem } from "@/types/voucher";
+import { VoucherCardMulti, VoucherTicketSingle } from "@/components/user/landing";
 import { useCreateVoucher, useUpdateVoucher } from "@/hooks/admin/vouchers";
+import { cn } from "@/lib/utils";
 
 const voucherSchema = z.object({
   code: z.string().min(3, "Kode voucher minimal 3 karakter"),
@@ -82,8 +85,8 @@ export function VoucherForm({ initialData }: VoucherFormProps) {
     control,
     watch,
     formState: { errors },
-  } = useForm({
-    resolver: zodResolver(voucherSchema),
+  } = useForm<VoucherFormValues>({
+    resolver: zodResolver(voucherSchema) as any,
     defaultValues: {
       code: initialData?.code || "",
       name: initialData?.name || "",
@@ -100,6 +103,26 @@ export function VoucherForm({ initialData }: VoucherFormProps) {
   });
 
   const discountType = watch("discount_type");
+  const formValues = watch();
+
+  const [previewMode, setPreviewMode] = useState<"multi" | "single">("multi");
+  const [previewThemeIndex, setPreviewThemeIndex] = useState(0);
+
+  const previewItem = useMemo(() => {
+    return mapVoucherToPromoItem(
+      {
+        id: initialData?.id || "preview",
+        code: formValues.code,
+        name: formValues.name,
+        discount_type: formValues.discount_type,
+        discount_value: formValues.discount_value ? Number(formValues.discount_value) : 0,
+        minimum_purchase: formValues.minimum_purchase ? Number(formValues.minimum_purchase) : null,
+        maximum_discount: formValues.maximum_discount ? Number(formValues.maximum_discount) : null,
+        end_at: formValues.end_at,
+      },
+      previewThemeIndex
+    );
+  }, [formValues, initialData?.id, previewThemeIndex]);
 
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -319,6 +342,91 @@ export function VoucherForm({ initialData }: VoucherFormProps) {
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* Live Preview Tampilan Voucher di Halaman Landing User    */}
+      {/* ======================================================== */}
+      <div className="p-5 sm:p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+          <div>
+            <h3 className="font-heading font-bold text-base text-foreground flex items-center gap-2">
+              <EyeIcon className="size-4 text-primary" />
+              Live Preview Kartu Voucher
+            </h3>
+            <p className="font-body text-xs text-muted-foreground mt-0.5">
+              Tampilan real-time kartu voucher persis seperti yang akan dilihat oleh pengunjung di halaman landing.
+            </p>
+          </div>
+
+          {/* Controls: Mode & Color Theme switcher */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center rounded-xl border border-border bg-muted/60 p-1 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setPreviewMode("multi")}
+                className={cn(
+                  "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                  previewMode === "multi"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Card Multi (2 Sejajar)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode("single")}
+                className={cn(
+                  "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                  previewMode === "single"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Tiket Single (Besar)
+              </button>
+            </div>
+
+            {previewMode === "multi" && (
+              <div className="inline-flex items-center gap-1.5 pl-2 border-l border-border/60">
+                <span className="text-xs text-muted-foreground font-body">Tema:</span>
+                {[
+                  { index: 0, label: "Biru", color: "bg-voucher-blue" },
+                  { index: 1, label: "Kuning", color: "bg-voucher-yellow" },
+                  { index: 2, label: "Ungu", color: "bg-voucher-purple" },
+                ].map((th) => (
+                  <button
+                    key={th.index}
+                    type="button"
+                    onClick={() => setPreviewThemeIndex(th.index)}
+                    title={`Pola tema ${th.label}`}
+                    className={cn(
+                      "w-5 h-5 rounded-full border-2 transition-transform cursor-pointer",
+                      th.color,
+                      previewThemeIndex === th.index
+                        ? "border-secondary scale-110 shadow-xs"
+                        : "border-white/80 opacity-70 hover:opacity-100"
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Preview Container — Styled with the website's background so tickets look native */}
+        <div className="bg-background rounded-2xl p-4 sm:p-8 flex items-center justify-center border border-border/40 overflow-hidden min-h-[300px]">
+          {previewMode === "multi" ? (
+            <div className="w-full max-w-lg">
+              <VoucherCardMulti item={previewItem} index={previewThemeIndex} />
+            </div>
+          ) : (
+            <div className="w-full max-w-3xl">
+              <VoucherTicketSingle item={previewItem} />
+            </div>
+          )}
         </div>
       </div>
     </form>

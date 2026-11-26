@@ -15,16 +15,15 @@ import { cn } from "@/lib/utils";
 function EmptyWishlist() {
   return (
     <div className="flex flex-col items-center justify-center h-full min-h-[50vh] gap-5 text-center px-6">
-      {/* Icon container */}
       <div className="relative">
-        <div className="w-20 h-20 rounded-full bg-accent-pink border-2 border-foreground neo-shadow flex items-center justify-center">
+        {/* Lingkaran besar diubah ke kuning (bg-accent-yellow + outline-yellow-dark) */}
+        <div className="w-20 h-20 rounded-full bg-accent-yellow outline-yellow-dark shadow-none flex items-center justify-center">
           <Heart
-            className="w-9 h-9 text-heart fill-heart"
+            className="w-9 h-9 text-love-red fill-love-red"
             aria-hidden="true"
           />
         </div>
-        {/* Decorative dot */}
-        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent-yellow border-2 border-foreground" />
+        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-badge-red border border-white/80 shadow-none" />
       </div>
 
       <div className="space-y-2">
@@ -37,42 +36,36 @@ function EmptyWishlist() {
       </div>
 
       <Link href="/products">
-        <Button variant="primary" size="sm" neo className="gap-2 rounded-full">
-          <PackageSearch className="w-4 h-4" aria-hidden="true" />
+        <Button
+          variant="accent-yellow"
+          size="sm"
+          neo={false}
+          className="gap-2 rounded-full text-love-red border border-foreground/15 shadow-none"
+        >
+          <PackageSearch className="w-4 h-4 text-love-red" aria-hidden="true" />
           Jelajahi Produk
         </Button>
       </Link>
     </div>
   );
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Molecule — panel sidebar wishlist yang muncul dari sisi kanan layar.
- * - Backdrop semi-transparan dengan blur saat terbuka
- * - Slide-in animation dari kanan
- * - Accessible: fokus trap via Escape key, aria-modal, aria-label
- * - Scroll-lock pada body saat sidebar terbuka
- */
 export function WishlistSidebar() {
   const { items, isOpen, closeSidebar, removeItem } = useWishlist();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const prevIsOpen = useRef(false);
 
-  // Fokuskan tombol close saat sidebar baru dibuka
   useEffect(() => {
     if (isOpen && !prevIsOpen.current) {
-      // Delay kecil untuk menunggu animasi mount
       const timer = setTimeout(() => closeButtonRef.current?.focus(), 50);
       return () => clearTimeout(timer);
     }
     prevIsOpen.current = isOpen;
   }, [isOpen]);
 
-  // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -82,7 +75,6 @@ export function WishlistSidebar() {
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, closeSidebar]);
 
-  // Scroll-lock pada body saat sidebar terbuka
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -115,35 +107,25 @@ export function WishlistSidebar() {
         aria-modal="true"
         aria-label="Wishlist"
         className={cn(
-          // Positioning
           "fixed top-0 right-0 z-50 h-full w-full max-w-[360px]",
-          // Appearance — Neo-brutalism style
-          "bg-background border-l-2 border-foreground",
-          // Hard shadow ke kiri (kebalikan neo-shadow yang biasanya ke kanan-bawah)
-          "shadow-[-6px_0px_0px_0px_#3D2900]",
-          // Layout
+          "bg-background border-l border-foreground/15 shadow-none",
           "flex flex-col",
-          // Slide animation
           "transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        {/* ── Header ── */}
-        <header className="flex items-center justify-between px-5 py-4 border-b-2 border-foreground shrink-0 bg-background">
+       {/* ── Header ── */}
+        <header className="flex items-center justify-between px-5 py-4 border-b border-foreground/15 shrink-0 bg-background">
           <div className="flex items-center gap-2.5">
-            <Heart
-              className="w-5 h-5 text-heart fill-heart"
-              aria-hidden="true"
-            />
             <h2 className="font-heading font-bold text-lg text-foreground">
               Wishlist
             </h2>
 
-            {/* Badge jumlah item */}
+            {/* Badge angka paling atas — merah dari globals.css */}
             {items.length > 0 && (
               <span
                 aria-label={`${items.length} item di wishlist`}
-                className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-accent-yellow border-2 border-foreground neo-shadow-icon font-body font-bold text-xs text-foreground"
+                className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-badge-red text-white shadow-none font-body font-bold text-xs"
               >
                 {items.length > 99 ? "99+" : items.length}
               </span>
@@ -180,17 +162,16 @@ export function WishlistSidebar() {
           )}
         </div>
 
-        {/* ── Footer ── */}
+    {/* ── Footer ── */}
         {items.length > 0 && (
-          <footer className="shrink-0 px-4 py-4 border-t-2 border-foreground bg-background">
+          <footer className="shrink-0 px-4 py-4 border-t border-foreground/15 bg-background">
             <Link href="/products" onClick={closeSidebar} className="block">
               <Button
-                variant="primary"
                 size="lg"
-                neo
-                className="w-full rounded-full font-body font-bold gap-2"
+                neo={false}
+                className="w-full rounded-full font-body font-bold gap-2 bg-accent-yellow text-love-red hover:opacity-90 border border-foreground/15 shadow-none"
               >
-                <ShoppingBag className="w-4 h-4" aria-hidden="true" />
+                <ShoppingBag className="w-4 h-4 text-love-red" aria-hidden="true" />
                 Jelajahi Lebih Banyak
               </Button>
             </Link>

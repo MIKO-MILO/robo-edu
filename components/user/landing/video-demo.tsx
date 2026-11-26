@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -18,7 +18,7 @@ export interface VideoDemoProps {
 // 2. SUB-COMPONENTS (Atomic Elements)
 // ==========================================
 
-// Atom: Background Decorative Cloud
+// Atom: Background Decorative Cloud (z-0 agar selalu di belakang video)
 function CloudAccent({
   src,
   alt,
@@ -33,7 +33,7 @@ function CloudAccent({
   height: number;
 }) {
   return (
-    <div className={`absolute pointer-events-none z-20 ${className}`}>
+    <div className={`absolute pointer-events-none z-0 ${className}`}>
       <Image
         src={src}
         alt={alt}
@@ -123,16 +123,22 @@ export default function VideoDemo({
 
   return (
     <section className="relative bg-background pt-14 sm:pt-28 pb-10 sm:pb-10 text-foreground overflow-x-clip">
-      {/* Decorative Clouds - Kiri (Dinaikkan & diperbesar sedikit: -top-4 sm:-top-8 dan w-44 sm:w-72) */}
+      {/* Decorative Clouds - Kiri
+          - Mobile 320px: agak turunin dikit (top-1 min-[360px]:-top-4)
+          - Laptop 1024-1440: agak dikecilin dikit (lg:w-56 xl:w-60)
+          - Posisi di belakang video (z-0)
+      */}
       <CloudAccent
         src="/images/awan3.webp"
         alt="Awan Accent Kiri"
-        className="-top-4 sm:-top-8 -left-10 sm:-left-12 w-44 sm:w-72 scale-x-[-1]"
+        className="top-1 min-[360px]:-top-4 sm:-top-8 -left-10 sm:-left-12 w-44 sm:w-72 lg:w-56 xl:w-60 2xl:w-72 scale-x-[-1]"
         width={360}
         height={360}
       />
       
-      {/* Decorative Clouds - Kanan Atas */}
+      {/* Decorative Clouds - Kanan Atas
+          - Posisi di belakang video (z-0) agar tidak menimpa video di tablet & semua device
+      */}
       <CloudAccent
         src="/images/awan3.webp"
         alt="Awan Accent Kanan Atas"
@@ -146,7 +152,7 @@ export default function VideoDemo({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center lg:pl-6">
           
           {/* Left Column - Video Preview Container */}
-          <div className="lg:col-span-6 flex justify-center lg:justify-end relative lg:-ml-4 xl:-ml-8">
+          <div className="lg:col-span-6 flex justify-center lg:justify-end relative lg:-ml-4 xl:-ml-8 z-10">
             <VideoThumbnail
               thumbnailSrc={thumbnailSrc}
               altText={`Video Demo: ${title}`}
@@ -154,8 +160,8 @@ export default function VideoDemo({
             />
           </div>
 
-          {/* Right Column - Title & Description */}
-          <div className="lg:col-span-6 space-y-3 sm:space-y-4 text-center lg:text-left xl:pl-6">
+          {/* Right Column - Title & Description (Dikembalikan seperti semula) */}
+          <div className="lg:col-span-6 space-y-3 sm:space-y-4 text-center lg:text-left xl:pl-6 z-10">
             <div className="space-y-1">
               <div className="relative inline-block pb-[calc(1.5rem-3px)] sm:pb-[calc(2rem-3px)]">
                 <h2 className="font-heading text-xl sm:text-3xl lg:text-4xl font-extrabold leading-tight text-foreground tracking-tight relative z-10">
@@ -185,6 +191,7 @@ export default function VideoDemo({
               {description}
             </p>
           </div>
+
         </div>
       </div>
 

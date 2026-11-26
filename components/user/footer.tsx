@@ -5,25 +5,16 @@ import CarouselLogo from "@/components/user/carousel-logo";
 /**
  * Footer — Komponen footer utama untuk halaman user.
  *
- * Struktur:
- *  1. CarouselLogo  — marquee ticker strip (background kuning)
- *  2. Footer body   — 4 kolom: Maskot+Tagline, Jelajahi, Metode Pembayaran, Ikuti Kami
- *  3. Brand text    — teks "roboedu" besar di bawah (font Unbounded bold, butter cream)
- *
- * Design tokens (globals.css):
- *   --color-primary       → #2483D0  (background footer)
- *   --color-accent-butter → #FAF1CA  (teks & ikon di atas biru)
- *   --font-heading        → Unbounded (judul kolom & wordmark)
- *   --font-body           → Outfit    (body teks & link)
- *
- * Asset sosial: /assets/svg/{facebook,instagram,youtube,tiktok}.svg
- * Asset maskot: /assets/svg/maskot.svg
- * Asset payment: /assets/images/{dana,bri,bni,gopay,bca,ovo,mandiri,qris,cimb}-new.png
+ * Layout responsive:
+ *   Mobile  (<768px)  : stack vertikal — maskot & tagline berdampingan (tagline di tengah-tengah secara vertikal terhadap robot),
+ *                       Jelajahi 2 kolom (3 kiri, 2 kanan).
+ *   Tablet  (768-1023): 4 kolom horizontal dengan gap proporsional, tanpa ada bagian yang kepotong.
+ *   Laptop  (1024-1439): 4 kolom, maskot & tagline proporsional sejajar menu lainnya.
+ *   Desktop (>=1440px): Layout sesuai referensi Figma — Maskot & Tagline horizontal di sebelah kiri, tagline pas di tengah-tengah tinggi maskot.
  */
 
 /* ─── Data ───────────────────────────────────────────────── */
 
-/** Grid 3×3: baris 1 → DANA, BRI, BNI | baris 2 → GoPay, BCA, OVO | baris 3 → Mandiri, QRIS, CIMB */
 const paymentRows = [
   [
     { src: "/assets/images/dana-new.png",    alt: "DANA"     },
@@ -69,75 +60,70 @@ export default function Footer() {
       <CarouselLogo />
 
       {/* ── 2. Footer Body ─────────────────────────────────────── */}
-      {/*
-        Figma spec (desktop 1440px):
-          Maskot          : 202 × 202.87 px
-          Tagline         : Outfit Medium 20px → 1.25rem
-          Heading kolom   : Unbounded Medium 24px → 1.5rem
-          Link Jelajahi   : Outfit Medium 20px → 1.25rem
-          Payment logo    : 82 × 46 px
-          Social icon     : ~40 × 40 px
-        Semua di-clamp agar tetap proporsional di bawah/atas 1440px.
-        Referensi clamp: nilai tengah dihitung sbg px/1440 × 100vw.
-      */}
-      <div className="w-full px-[clamp(1.5rem,5.5vw,5rem)] pt-14 pb-6">
+      <div className="w-full px-5 sm:px-8 md:px-5 lg:px-8 xl:px-16 2xl:px-20 pt-8 sm:pt-10 md:pt-12 xl:pt-14 pb-6">
         {/*
-          Desktop  : flex-row + justify-between → 4 kolom tersebar kiri ↔ kanan
-          Mobile   : flex-col, stack vertikal dengan gap seragam
+          Mobile  (<md)        : flex-col (stack vertikal)
+          Tablet  (md)         : flex-row dengan gap rapat/proporsional agar tidak kepotong (md:gap-4 lg:gap-8)
+          Laptop/Desktop (xl+) : flex-row justify-between sesuai gambar referensi 1440px
         */}
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 md:gap-4 lg:gap-8 xl:gap-12 2xl:gap-16">
 
           {/* ── Col 1 — Maskot + Tagline ────────────────────── */}
           {/*
-            Max-width col dibatasi agar tidak makan terlalu banyak ruang.
-            Maskot: 202px di 1440 → 14vw. Tagline: 20px → 1.389vw ≈ 1.25rem max.
+            - Mobile (<md): flex-row items-center agar tagline berada di tengah-tengah tinggi robot
+            - Tablet (md to lg): flex-col items-start
+            - Desktop (xl+ / 1440px): flex-row items-center berdampingan horizontal dan tagline pas di tengah-tengah tinggi robot
           */}
-          {/* max-w: 280px→17.5rem, 440px→27.5rem */}
-          <div className="flex flex-row items-end gap-[clamp(0.75rem,1.5vw,1.25rem)] shrink-0 max-w-[clamp(17.5rem,32vw,27.5rem)]">
-            {/* Maskot: 100px→6.25rem min, 202px→12.625rem max */}
-            <div
-              className="relative shrink-0"
-              style={{
-                width:  "clamp(6.25rem, 14.03vw, 12.625rem)",
-                height: "clamp(6.25rem, 14.09vw, 12.6875rem)",
-              }}
-            >
-              <Image
-                src="/assets/svg/maskot.svg"
-                alt="RoboEdu Maskot"
-                fill
-                priority
-                className="object-contain object-bottom drop-shadow-sm"
-              />
-            </div>
+         
+{/* ── Col 1 — Maskot + Tagline ────────────────────── */}
+<div className="flex flex-row md:flex-col xl:flex-row items-center md:items-center xl:items-center gap-3 sm:gap-4 lg:gap-5 shrink-0 max-w-[22rem] sm:max-w-[26rem] md:max-w-[11.5rem] lg:max-w-[14.5rem] xl:max-w-[26rem] 2xl:max-w-[28rem]">
 
-            {/* Tagline — Outfit Medium 20px Figma */}
-            <p
-              className="font-medium leading-[1.6] pb-2"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize:   "clamp(0.9rem, 1.389vw, 1.25rem)",
-                color:      "var(--color-accent-butter)",
-              }}
-            >
-              Dunia mainan robot lucu dan edukatif. Bermain seru, imajinasi melesat!
-            </p>
-          </div>
+  {/* Maskot Robot */}
+  <div
+    className="relative shrink-0"
+    style={{
+      width: "clamp(7.5rem, 14vw, 12.5rem)",
+      height: "clamp(7.5rem, 14vw, 12.5rem)",
+    }}
+  >
+    <Image
+      src="/assets/svg/maskot.svg"
+      alt="RoboEdu Maskot"
+      fill
+      priority
+      className="object-contain object-bottom drop-shadow-sm"
+    />
+  </div>
+
+  {/* Tagline */}
+  <p
+    className="font-medium leading-[1.6]"
+    style={{
+      fontFamily: "var(--font-body)",
+      fontSize: "clamp(0.825rem, 1.15vw, 1.15rem)",
+      color: "var(--color-accent-butter)",
+    }}
+  >
+    Dunia mainan robot lucu dan edukatif. Bermain seru, imajinasi melesat!
+  </p>
+
+</div>
+
 
           {/* ── Col 2 — Jelajahi ────────────────────────────── */}
-          {/* Heading: Unbounded Medium 24px. Links: Outfit Medium 20px. */}
           <nav aria-label="Navigasi Footer" className="flex flex-col shrink-0">
             <h3
-              className="font-medium leading-[1.3] tracking-[-0.02em] mb-4"
+              className="font-medium leading-[1.3] tracking-[-0.02em] mb-3 md:mb-4"
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize:   "clamp(1rem, 1.667vw, 1.5rem)",
+                fontSize:   "clamp(1.05rem, 1.4vw, 1.5rem)",
                 color:      "var(--color-accent-butter)",
               }}
             >
               Jelajahi
             </h3>
-            <ul className="flex flex-col">
+            {/* Mobile: 3 di kiri, 2 di kanan (grid 2 col x 3 row flow col) */}
+            <ul className="grid grid-cols-2 grid-rows-3 grid-flow-col gap-x-8 md:flex md:flex-col md:gap-x-0">
               {jelajahiLinks.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -145,7 +131,7 @@ export default function Footer() {
                     className="transition-opacity duration-200 hover:opacity-70 block"
                     style={{
                       fontFamily:  "var(--font-body)",
-                      fontSize:    "clamp(0.9rem, 1.389vw, 1.25rem)",
+                      fontSize:    "clamp(0.825rem, 1.1vw, 1.15rem)",
                       fontWeight:  500,
                       lineHeight:  "2",
                       color:       "var(--color-accent-butter)",
@@ -159,29 +145,28 @@ export default function Footer() {
           </nav>
 
           {/* ── Col 3 — Metode Pembayaran ───────────────────── */}
-          {/* Heading: Unbounded Medium 24px. Logo: 82×46px Figma. */}
           <div className="flex flex-col shrink-0">
             <h3
-              className="font-medium leading-[1.3] tracking-[-0.02em] mb-4"
+              className="font-medium leading-[1.3] tracking-[-0.02em] mb-3 md:mb-4"
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize:   "clamp(1rem, 1.667vw, 1.5rem)",
+                fontSize:   "clamp(1.05rem, 1.4vw, 1.5rem)",
                 color:      "var(--color-accent-butter)",
               }}
             >
               Metode Pembayaran
             </h3>
 
-            {/* Grid 3 kolom — logo 82×46px per Figma spec */}
+            {/* Grid 3 kolom logo payment */}
             <div
-              className="grid grid-cols-3 gap-y-[clamp(0.5rem,1vw,0.875rem)]"
-              style={{ columnGap: "clamp(0.75rem,2.2vw,2rem)" }}
+              className="grid grid-cols-3 gap-y-2 sm:gap-y-2.5 md:gap-y-2 lg:gap-y-3"
+              style={{ columnGap: "clamp(0.5rem, 1.4vw, 1.75rem)" }}
             >
               {paymentRows.flat().map((method) => (
                 <div
                   key={method.alt}
                   className="flex items-center justify-start"
-                  style={{ height: "clamp(1.875rem, 3.19vw, 2.875rem)" }}
+                  style={{ height: "clamp(1.6rem, 2.2vw, 2.6rem)" }}
                 >
                   <Image
                     src={method.src}
@@ -189,7 +174,7 @@ export default function Footer() {
                     width={82}
                     height={46}
                     className="h-full w-auto object-contain"
-                    style={{ maxWidth: "clamp(3.5rem, 5.69vw, 5.125rem)" }}
+                    style={{ maxWidth: "clamp(2.8rem, 4.4vw, 4.8rem)" }}
                   />
                 </div>
               ))}
@@ -197,20 +182,19 @@ export default function Footer() {
           </div>
 
           {/* ── Col 4 — Ikuti Kami ──────────────────────────── */}
-          {/* Heading: Unbounded Medium 24px. Icons: ~40px diameter. */}
           <div className="flex flex-col shrink-0">
             <h3
-              className="font-medium leading-[1.3] tracking-[-0.02em] mb-4"
+              className="font-medium leading-[1.3] tracking-[-0.02em] mb-3 md:mb-4"
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize:   "clamp(1rem, 1.667vw, 1.5rem)",
+                fontSize:   "clamp(1.05rem, 1.4vw, 1.5rem)",
                 color:      "var(--color-accent-butter)",
               }}
             >
               Ikuti Kami
             </h3>
 
-            <div className="flex flex-row gap-[clamp(0.5rem,1.1vw,1rem)]">
+            <div className="flex flex-row gap-2.5 sm:gap-3 md:gap-2 lg:gap-4">
               {socialLinks.map((social) => (
                 <Link
                   key={social.label}
@@ -218,8 +202,8 @@ export default function Footer() {
                   aria-label={`${social.label} roboedu`}
                   className="flex items-center justify-center rounded-full overflow-hidden transition-opacity duration-200 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                   style={{
-                    width:  "clamp(2rem, 2.78vw, 2.5rem)",
-                    height: "clamp(2rem, 2.78vw, 2.5rem)",
+                    width:  "clamp(1.9rem, 2.3vw, 2.5rem)",
+                    height: "clamp(1.9rem, 2.3vw, 2.5rem)",
                   }}
                 >
                   <Image
@@ -238,13 +222,6 @@ export default function Footer() {
       </div>
 
       {/* ── 3. Giant "roboedu" Wordmark ─────────────────────────── */}
-      {/*
-        containerType inline-size membuat 18cqw relatif terhadap lebar footer,
-        bukan viewport — sehingga wordmark selalu proporsional terhadap lebar
-        footer itu sendiri (bukan layar secara keseluruhan).
-        translate-y-[12%] menyebabkan huruf sedikit terpotong di bagian bawah,
-        persis seperti referensi desain.
-      */}
       <div
         className="w-full overflow-hidden"
         style={{ containerType: "inline-size" }}
@@ -254,7 +231,7 @@ export default function Footer() {
             className="translate-y-[12%] block"
             style={{
               fontFamily:    "var(--font-heading)",
-              fontSize:      "clamp(5rem, 20cqw, 20.25rem)",
+              fontSize:      "clamp(3rem, 20cqw, 20.25rem)",
               fontWeight:    900,
               color:         "var(--color-accent-butter)",
               letterSpacing: "-0.03em",
