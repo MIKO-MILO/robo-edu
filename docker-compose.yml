@@ -71,12 +71,12 @@ services:
       [
         "sh",
         "-c",
-        "set -eu; npm install; npm run db:push; npm run db:seed:products; exec npm run dev -- --webpack"
+        "set -eu; npm run db:push; npm run db:seed:products; exec npm run start"
       ]
     env_file:
       - .env
     environment:
-      WATCHPACK_POLLING: "true"
+      NODE_ENV: "production"
       # Override DATABASE_URL agar app container pakai hostname "mysql"
       # (bukan 127.0.0.1 yang hanya valid di lokal/XAMPP)
       DATABASE_URL: "mysql://roboedu:${DB_PASSWORD}@mysql:3306/roboedu"
@@ -89,23 +89,6 @@ services:
         condition: service_healthy
     ports:
       - "${APP_PORT:-3001}:3000"
-    volumes:
-      - ./app:/app/app
-      - ./components:/app/components
-      - ./contexts:/app/contexts
-      - ./hooks:/app/hooks
-      - ./lib:/app/lib
-      - ./public:/app/public
-      - ./src:/app/src
-      - ./types:/app/types
-      - ./drizzle:/app/drizzle
-      - ./next.config.ts:/app/next.config.ts
-      - ./tsconfig.json:/app/tsconfig.json
-      - ./postcss.config.mjs:/app/postcss.config.mjs
-      - ./components.json:/app/components.json
-      - ./drizzle.config.ts:/app/drizzle.config.ts
-      - ./proxy.ts:/app/proxy.ts
-    user: "${APP_USER:-0:0}"
     healthcheck:
       test:
         [
