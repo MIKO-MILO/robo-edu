@@ -10,13 +10,13 @@
 
 **Blocked by:** 23-complaint-refund-attachment-and-wa-fix (backend harus bisa menerima attachment_urls dan mengembalikan customer_phone)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Setelah submit komplain berhasil, toast sukses muncul dan halaman redirect ke detail order secara otomatis.
-- [ ] Setelah submit pengembalian berhasil, toast sukses muncul dan halaman redirect ke detail order secara otomatis.
-- [ ] Form komplain user memiliki field upload lampiran (maks 5 file, maks 5 MB/file).
-- [ ] Form pengembalian user memiliki field upload lampiran (maks 5 file, maks 5 MB/file).
-- [ ] Thumbnail atau nama file tampil setelah file dipilih; ada tombol hapus per file.
-- [ ] File diupload ke MinIO terlebih dahulu; URL-nya dikirim ke backend bersama form submission.
+- [x] Setelah submit komplain berhasil, toast sukses muncul dan halaman redirect ke detail order secara otomatis.
+- [x] Setelah submit pengembalian berhasil, toast sukses muncul dan halaman redirect ke detail order secara otomatis.
+- [x] Form komplain user memiliki field upload lampiran (maks 5 file, maks 5 MB/file).
+- [x] Form pengembalian user memiliki field upload lampiran (maks 5 file, maks 5 MB/file).
+- [x] Thumbnail atau nama file tampil setelah file dipilih; ada tombol hapus per file.
+- [x] File diupload ke MinIO terlebih dahulu; URL-nya dikirim ke backend bersama form submission.
 - [x] Layout detail complaint admin lebih compact dengan susunan 2 kolom yang rapi.
 - [x] Nomor WhatsApp customer muncul dengan benar di detail complaint admin.

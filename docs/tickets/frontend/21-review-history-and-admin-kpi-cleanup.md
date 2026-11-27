@@ -1,4 +1,4 @@
-# 21: Riwayat Ulasan User + Bersihkan KPI Admin Reviews
+<!-- # 21: Riwayat Ulasan User + Bersihkan KPI Admin Reviews
 
 **What to build:** Dua perbaikan kecil namun terpisah secara lokasi:
 
@@ -8,11 +8,12 @@
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Halaman `/profile/my-reviews` menampilkan daftar ulasan milik user yang sedang login.
-- [ ] Setiap entri menampilkan nama produk, rating bintang, komentar singkat, dan tanggal.
-- [ ] Link "Ulasan Saya" muncul di navigasi profil user.
+- [x] Halaman `/profile/my-reviews` menampilkan daftar ulasan milik user yang sedang login.
+- [x] Setiap entri menampilkan nama produk, rating bintang, komentar singkat, dan tanggal.
+- [x] Link "Ulasan Saya" muncul di navigasi profil user.
 - [ ] KPI card "Disembunyikan (Hidden)" tidak lagi muncul di halaman admin ulasan.
-- [ ] Grid KPI admin reviews tampil dalam 3 kolom.
-- [ ] Kolom komentar di tabel admin reviews terpotong setelah 1 baris (`line-clamp-1`).
+- [ ] Grid KPI admin reviews tampil dalam 3 kolom.- [x] Kolom komentar di tabel admin reviews terpotong setelah 1 baris (`line-clamp-1`). -->
+
+FITUR HIDDEN REVIEW DIKEMBALIKAN

@@ -1,10 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCcw, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  RefreshCcw,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  FileImage,
+  FileText,
+  Upload,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+
+// ── Types ───────────────────────────────────────────────────��──────────────────
 
 interface OrderItem {
   id: string;
@@ -19,6 +32,16 @@ interface OrderData {
   order_items: OrderItem[];
 }
 
+interface AttachmentFile {
+  localId: string;
+  file: File;
+  uploadedUrl: string | null;
+  isUploading: boolean;
+  uploadError: string | null;
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────────
+
 const RETURN_REASONS = [
   "Produk tidak sesuai deskripsi",
   "Produk rusak / cacat saat diterima",
@@ -26,6 +49,31 @@ const RETURN_REASONS = [
   "Produk tidak berfungsi",
   "Lainnya",
 ] as const;
+
+const MAX_ATTACHMENTS = 5;
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
+const ALLOWED_LABEL = "JPEG, PNG, WEBP, GIF, PDF";
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function isImage(file: File) {
+  return file.type.startsWith("image/");
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function RefundPage() {
   const params = useParams<{ id: string }>();
@@ -40,9 +88,14 @@ export default function RefundPage() {
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
+  const [addFileError, setAddFileError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Fetch order ────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!id) return;
@@ -54,7 +107,6 @@ export default function RefundPage() {
         const json = await res.json();
         if (!res.ok) throw new Error(json.message ?? "Gagal memuat pesanan.");
         const data = json.data as OrderData;
-        // Redirect if order status does not allow returns
         if (data.status !== "DELIVERED" && data.status !== "COMPLETED") {
           router.replace(`/profile/orders/${id}`);
           return;
@@ -68,26 +120,94 @@ export default function RefundPage() {
     })();
   }, [id, router]);
 
+  // ── Item selection ─────────────────────────────────────────────────────────
+
   function toggleItem(itemId: string) {
     setSelectedItemIds((prev) => {
       const next = new Set(prev);
-      if (next.has(itemId)) {
-        next.delete(itemId);
-      } else {
-        next.add(itemId);
-      }
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
       return next;
     });
   }
 
+  // ── File upload ────────────────────────────────────────────────────────────
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setAddFileError(null);
+    const selected = Array.from(e.target.files ?? []);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    const remaining = MAX_ATTACHMENTS - attachments.length;
+    if (remaining <= 0) return;
+
+    for (const file of selected.slice(0, remaining)) {
+      if (!ALLOWED_MIME_TYPES.has(file.type)) {
+        setAddFileError(`Tipe file "${file.name}" tidak didukung. Gunakan ${ALLOWED_LABEL}.`);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setAddFileError(`File "${file.name}" melebihi batas 5 MB.`);
+        return;
+      }
+
+      const localId = crypto.randomUUID();
+      setAttachments((prev) => [
+        ...prev,
+        { localId, file, uploadedUrl: null, isUploading: true, uploadError: null },
+      ]);
+      void uploadFile(localId, file);
+    }
+  }
+
+  async function uploadFile(localId: string, file: File) {
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await fetch("/api/upload/complaint-image", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error((json as { message?: string }).message ?? "Gagal mengunggah file.");
+      setAttachments((prev) =>
+        prev.map((a) =>
+          a.localId === localId
+            ? { ...a, isUploading: false, uploadedUrl: (json as { url: string }).url }
+            : a,
+        ),
+      );
+    } catch (err) {
+      setAttachments((prev) =>
+        prev.map((a) =>
+          a.localId === localId
+            ? {
+                ...a,
+                isUploading: false,
+                uploadError: err instanceof Error ? err.message : "Gagal mengunggah.",
+              }
+            : a,
+        ),
+      );
+    }
+  }
+
+  function removeAttachment(localId: string) {
+    setAttachments((prev) => prev.filter((a) => a.localId !== localId));
+    setAddFileError(null);
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+
+  const anyUploading = attachments.some((a) => a.isUploading);
+  const anyUploadFailed = attachments.some((a) => a.uploadError !== null);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!reason || !description.trim() || selectedItemIds.size === 0) return;
+    if (anyUploading || anyUploadFailed) return;
+
     setIsSubmitting(true);
     setSubmitError(null);
 
-    // Build a description that includes which items the user selected,
-    // since the backend endpoint is order-level (not per-item).
+    // Build a description that lists the selected items
     const selectedNames = order?.order_items
       .filter((item) => selectedItemIds.has(item.id))
       .map(
@@ -98,6 +218,10 @@ export default function RefundPage() {
       .join(", ");
     const fullDescription = `Produk yang dikembalikan: ${selectedNames}.\n\n${description.trim()}`;
 
+    const attachmentUrls = attachments
+      .filter((a) => a.uploadedUrl !== null)
+      .map((a) => a.uploadedUrl!);
+
     try {
       const res = await fetch(`/api/orders/${id}/refund`, {
         method: "POST",
@@ -105,11 +229,18 @@ export default function RefundPage() {
         body: JSON.stringify({
           reason,
           description: fullDescription,
+          ...(attachmentUrls.length > 0 ? { attachment_urls: attachmentUrls } : {}),
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.message ?? "Gagal mengajukan pengembalian.");
-      setSubmitted(true);
+      if (!res.ok) throw new Error((json as { message?: string }).message ?? "Gagal mengajukan pengembalian.");
+
+      toast.success("Pengajuan pengembalian dikirim!", {
+        description: "Tim kami akan meninjau dan menghubungi Anda segera.",
+      });
+      setTimeout(() => {
+        router.push(`/profile/orders/${id}`);
+      }, 300);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Gagal mengajukan pengembalian.");
     } finally {
@@ -117,7 +248,8 @@ export default function RefundPage() {
     }
   }
 
-  // ── Loading ──────────────────────────────────────────────────────────
+  // ── Loading / Error ────────────────────────────────────────────────────────
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -129,7 +261,6 @@ export default function RefundPage() {
     );
   }
 
-  // ── Fetch error (not a status mismatch — that redirects) ─────────────
   if (loadError) {
     return (
       <div className="flex flex-col items-center gap-4 py-24 text-center">
@@ -137,28 +268,6 @@ export default function RefundPage() {
         <p className="font-body text-sm text-muted-foreground">{loadError}</p>
         <Link href={`/profile/orders/${id}`}>
           <Button variant="outline" size="sm">Kembali ke Detail Pesanan</Button>
-        </Link>
-      </div>
-    );
-  }
-
-  // ── Success ──────────────────────────────────────────────────────────
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center gap-6 py-24 text-center">
-        <div className="p-4 rounded-full bg-accent-green border-2 border-foreground">
-          <CheckCircle2 className="w-10 h-10 text-foreground" />
-        </div>
-        <div>
-          <h2 className="font-heading font-bold text-xl text-foreground">
-            Pengajuan Pengembalian Dikirim
-          </h2>
-          <p className="font-body text-sm text-muted-foreground mt-1">
-            Tim kami akan meninjau pengajuan Anda dan menghubungi Anda segera.
-          </p>
-        </div>
-        <Link href={`/profile/orders/${id}`}>
-          <Button variant="primary" size="sm">Kembali ke Detail Pesanan</Button>
         </Link>
       </div>
     );
@@ -200,7 +309,7 @@ export default function RefundPage() {
         onSubmit={(e) => void handleSubmit(e)}
         className="bg-card border-2 border-foreground rounded-2xl p-6 flex flex-col gap-5"
       >
-        {/* Pilih produk yang dikembalikan */}
+        {/* Produk yang dikembalikan */}
         <div className="flex flex-col gap-2">
           <span className="font-body font-semibold text-sm text-foreground">
             Produk yang Dikembalikan <span className="text-red-500">*</span>
@@ -215,6 +324,7 @@ export default function RefundPage() {
                   type="checkbox"
                   checked={selectedItemIds.has(item.id)}
                   onChange={() => toggleItem(item.id)}
+                  disabled={isSubmitting}
                   className="accent-primary w-4 h-4 shrink-0"
                 />
                 <span className="font-body text-sm text-foreground leading-snug">
@@ -244,6 +354,7 @@ export default function RefundPage() {
                   value={r}
                   checked={reason === r}
                   onChange={() => setReason(r)}
+                  disabled={isSubmitting}
                   className="accent-primary w-4 h-4 shrink-0"
                 />
                 <span className="font-body text-sm text-foreground">{r}</span>
@@ -266,12 +377,114 @@ export default function RefundPage() {
             onChange={(e) => setDescription(e.target.value)}
             required
             rows={5}
+            disabled={isSubmitting}
             placeholder="Jelaskan kondisi produk dan alasan pengembalian secara detail..."
-            className="bg-background border-2 border-foreground rounded-xl px-3 py-2.5 font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            className="bg-background border-2 border-foreground rounded-xl px-3 py-2.5 font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none disabled:opacity-60"
           />
         </div>
 
-        {/* Error */}
+        {/* ── Attachment upload ─────────────────────────────────────────── */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="font-body font-semibold text-sm text-foreground">
+              Lampiran{" "}
+              <span className="font-normal text-muted-foreground">
+                (Opsional · maks {MAX_ATTACHMENTS} file · maks 5 MB/file)
+              </span>
+            </span>
+            <span className="text-xs text-muted-foreground font-body">
+              {attachments.length}/{MAX_ATTACHMENTS}
+            </span>
+          </div>
+
+          {/* File list */}
+          {attachments.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {attachments.map((att) => (
+                <div
+                  key={att.localId}
+                  className={[
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-colors",
+                    att.uploadError
+                      ? "border-red-300 bg-red-50"
+                      : att.isUploading
+                        ? "border-foreground/40 bg-muted/30 animate-pulse"
+                        : "border-foreground bg-muted/20",
+                  ].join(" ")}
+                >
+                  <div className="shrink-0">
+                    {isImage(att.file) ? (
+                      <FileImage className="w-5 h-5 text-primary" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-sm text-foreground truncate">{att.file.name}</p>
+                    <p className="font-body text-xs text-muted-foreground">
+                      {formatBytes(att.file.size)}
+                      {att.isUploading && <span className="ml-1.5 text-primary">· Mengunggah…</span>}
+                      {att.uploadedUrl && !att.isUploading && <span className="ml-1.5 text-emerald-600">· Terunggah</span>}
+                      {att.uploadError && <span className="ml-1.5 text-red-500">· {att.uploadError}</span>}
+                    </p>
+                  </div>
+                  {att.isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(att.localId)}
+                      disabled={isSubmitting}
+                      className="shrink-0 w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-red-100 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-60"
+                      aria-label="Hapus lampiran"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add file button */}
+          {attachments.length < MAX_ATTACHMENTS && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting || anyUploading}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border-2 border-dashed border-foreground hover:bg-muted transition-colors text-sm font-body text-muted-foreground disabled:opacity-60 cursor-pointer w-full justify-center"
+            >
+              <Upload className="w-4 h-4" />
+              Tambah Lampiran
+            </button>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={isSubmitting}
+          />
+
+          {addFileError && (
+            <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {addFileError}
+            </div>
+          )}
+
+          {anyUploadFailed && (
+            <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              Beberapa file gagal diunggah. Hapus dan coba lagi, atau lanjutkan tanpa lampiran tersebut.
+            </div>
+          )}
+        </div>
+
+        {/* Submit error */}
         {submitError && (
           <div className="flex items-center gap-2 text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -285,6 +498,8 @@ export default function RefundPage() {
           size="sm"
           disabled={
             isSubmitting ||
+            anyUploading ||
+            anyUploadFailed ||
             selectedItemIds.size === 0 ||
             !reason ||
             !description.trim()
@@ -292,7 +507,7 @@ export default function RefundPage() {
           className="gap-2 self-end"
         >
           {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          {isSubmitting ? "Mengirim..." : "Kirim Pengajuan Pengembalian"}
+          {anyUploading ? "Mengunggah lampiran…" : isSubmitting ? "Mengirim..." : "Kirim Pengajuan Pengembalian"}
         </Button>
       </form>
     </div>
