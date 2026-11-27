@@ -24,11 +24,10 @@ API PATCH status review yang sudah ada di backend tidak diubah — cukup tidak d
 
 **Status:** ready-for-agent
 
-- [ ] Tabel review tidak lagi memiliki kolom Status dan tombol hide/show.
-- [ ] Filter "Status" (VISIBLE/HIDDEN) tidak ada di toolbar.
-- [ ] Modal inline dan tombol "Buka Modal" / "Baca selebihnya" sudah dihapus dari tabel.
-- [ ] Setiap baris review memiliki tombol "Lihat Detail" yang mengarahkan ke `/admin/reviews/[id]`.
-- [ ] `GET /api/admin/reviews/[id]` mengembalikan data review beserta nama produk, nama user, email user, dan nomor order.
-- [ ] Halaman `/admin/reviews/[id]` menampilkan semua data tersebut dengan desain yang konsisten.
-- [ ] Halaman `/admin/reviews/[id]` menampilkan semua data tersebut dengan desain yang konsisten.
-- [ ] Tombol "Hapus Review" di halaman detail berfungsi dan mengarahkan kembali ke daftar setelah berhasil.
+- [x] Tabel review tidak lagi memiliki kolom Status dan tombol hide/show.
+- [x] Filter "Status" (VISIBLE/HIDDEN) tidak ada di toolbar.
+- [x] Modal inline dan tombol "Buka Modal" / "Baca selebihnya" sudah dihapus dari tabel.
+- [x] Setiap baris review memiliki tombol "Lihat Detail" yang mengarahkan ke `/admin/reviews/[id]`.
+- [x] `GET /api/admin/reviews/[id]` mengembalikan data review beserta nama produk, nama user, email user, dan nomor order.
+- [x] Halaman `/admin/reviews/[id]` menampilkan semua data tersebut dengan desain yang konsisten.
+- [x] Tombol "Hapus Review" di halaman detail berfungsi dan mengarahkan kembali ke daftar setelah berhasil.

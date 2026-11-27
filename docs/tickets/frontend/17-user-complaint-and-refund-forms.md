@@ -12,11 +12,11 @@ Desain kedua halaman menggunakan komponen UI yang sudah ada di codebase. Prinsip
 
 **Status:** ready-for-agent
 
-- [ ] Halaman `/profile/orders/[id]/complaint` tersedia dan dapat diakses dari tombol "Ajukan Komplain" di halaman detail order.
-- [ ] Form komplain memuat daftar item produk dari order yang bersangkutan.
-- [ ] Submit form komplain mengirim data ke `POST /api/complaints` dan menampilkan feedback sukses/error.
-- [ ] Halaman `/profile/orders/[id]/refund` tersedia dan dapat diakses dari tombol "Ajukan Pengembalian".
-- [ ] Form pengembalian memuat daftar item produk dari order yang bersangkutan.
-- [ ] Submit form pengembalian mengirim data ke endpoint refund user-facing dan menampilkan feedback sukses/error.
-- [ ] Kedua halaman redirect ke halaman detail order jika status order bukan `DELIVERED` atau `COMPLETED`.
-- [ ] Desain konsisten dengan sistem desain yang sudah ada (font, button variant, layout kartu).
+- [x] Halaman `/profile/orders/[id]/complaint` tersedia dan dapat diakses dari tombol "Ajukan Komplain" di halaman detail order.
+- [x] Form komplain memuat daftar item produk dari order yang bersangkutan.
+- [x] Submit form komplain mengirim data ke `POST /api/complaints` dan menampilkan feedback sukses/error.
+- [x] Halaman `/profile/orders/[id]/refund` tersedia dan dapat diakses dari tombol "Ajukan Pengembalian".
+- [x] Form pengembalian memuat daftar item produk dari order yang bersangkutan.
+- [x] Submit form pengembalian mengirim data ke endpoint refund user-facing dan menampilkan feedback sukses/error.
+- [x] Kedua halaman redirect ke halaman detail order jika status order bukan `DELIVERED` atau `COMPLETED`.
+- [x] Desain konsisten dengan sistem desain yang sudah ada (font, button variant, layout kartu).

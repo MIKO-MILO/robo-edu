@@ -269,10 +269,10 @@ export async function POST(
     }
 
     // Set order status = REFUNDED if total refunds (including this one) == payment.amount
-    if (refundStatus === "SUCCESS" || refundMethod === "MANUAL") {
-      // For MANUAL we include this refund in the total even though status is PENDING
-      // because the ticket spec says "if total refund = payment.amount → set REFUNDED"
-      // and the UI computes this after a successful POST.
+    if (refundStatus === "SUCCESS") {
+      // Only set REFUNDED when the refund is confirmed successful.
+      // MANUAL refunds stay PENDING until admin confirms — the order status
+      // will be updated separately when the manual refund is confirmed.
       const newTotal = alreadyRefunded + rawAmount;
       if (newTotal >= paymentAmount - 0.001) {
         await tx

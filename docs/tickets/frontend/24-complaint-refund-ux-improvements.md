@@ -18,5 +18,5 @@
 - [ ] Form pengembalian user memiliki field upload lampiran (maks 5 file, maks 5 MB/file).
 - [ ] Thumbnail atau nama file tampil setelah file dipilih; ada tombol hapus per file.
 - [ ] File diupload ke MinIO terlebih dahulu; URL-nya dikirim ke backend bersama form submission.
-- [ ] Layout detail complaint admin lebih compact dengan susunan 2 kolom yang rapi.
-- [ ] Nomor WhatsApp customer muncul dengan benar di detail complaint admin.
+- [x] Layout detail complaint admin lebih compact dengan susunan 2 kolom yang rapi.
+- [x] Nomor WhatsApp customer muncul dengan benar di detail complaint admin.

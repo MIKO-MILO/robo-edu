@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Filter pill kategori di halaman `/product` di-fetch dari `GET /api/admin/categories` (atau endpoint publik yang setara); menampilkan hanya kategori yang aktif; "Semua Produk" tetap ada sebagai opsi pertama.
-- [ ] Endpoint `GET /api/product` diperluas untuk menyertakan `rating_avg` (rata-rata rating, 1 desimal) dan `review_count` (jumlah review PUBLISHED) per produk; dihitung via subquery atau join ke tabel `reviews`.
-- [ ] Kartu produk di halaman listing menampilkan rating dan review count dari data API — bukan nilai hardcode `5` dan `"0 ulasan"`.
-- [ ] Jika produk belum punya review sama sekali, tampilkan `rating=0` dan `"Belum ada ulasan"` (atau sembunyikan bintang — konsisten dengan desain yang ada).
-- [ ] Perubahan di `GET /api/product` backward-compatible: field baru nullable sehingga tidak break halaman lain yang sudah konsumsi endpoint ini.
+- [x] Filter pill kategori di halaman `/product` di-fetch dari `GET /api/admin/categories` (atau endpoint publik yang setara); menampilkan hanya kategori yang aktif; "Semua Produk" tetap ada sebagai opsi pertama. *(Diimplementasikan via direct DB query di Server Component — setara dengan endpoint publik.)*
+- [x] Endpoint `GET /api/product` diperluas untuk menyertakan `rating_avg` (rata-rata rating, 1 desimal) dan `review_count` (jumlah review PUBLISHED) per produk; dihitung via subquery atau join ke tabel `reviews`.
+- [x] Kartu produk di halaman listing menampilkan rating dan review count dari data API — bukan nilai hardcode `5` dan `"0 ulasan"`.
+- [x] Jika produk belum punya review sama sekali, tampilkan `rating=0` dan `"Belum ada ulasan"` (atau sembunyikan bintang — konsisten dengan desain yang ada).
+- [x] Perubahan di `GET /api/product` backward-compatible: field baru nullable sehingga tidak break halaman lain yang sudah konsumsi endpoint ini.

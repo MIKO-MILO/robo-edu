@@ -1,4 +1,4 @@
-﻿# 04: Layar konfirmasi membership + pilihan metode pembayaran
+﻿<!-- # 04: Layar konfirmasi membership + pilihan metode pembayaran
 
 **What to build:** Halaman /reseller sudah ada tombol "Beli Membership Plus". Tambahkan layar konfirmasi sebelum customer melanjutkan ke pembayaran: menampilkan ringkasan paket (nama, harga, durasi, tanggal berlaku yang akan didapat), data akun dari profil (nama/email/telepon, read-only), dan pilihan metode pembayaran (komponen dari ticket 01 di-reuse). Setelah submit, memanggil POST /checkout/membership dan mengarahkan customer ke /reseller/payment/[id] (halaman dari ticket 02). Selama backend membership checkout belum tersedia, gunakan mock response yang mengembalikan ID pembelian dummy.
 
@@ -14,4 +14,4 @@
 - [ ] Jika user belum login dan menekan "Beli Membership Plus", redirect ke /login?redirect=/reseller.
 - [ ] Jika user sudah berstatus MEMBER, tombol CTA di /reseller berubah menjadi "Perpanjang Membership" dan layar konfirmasi menampilkan informasi bahwa masa berlaku akan diperpanjang dari tanggal berakhir yang ada.
 - [ ] Satu PENDING membership yang sudah ada: UI menampilkan opsi "Lanjutkan pembayaran yang ada" dengan link ke halaman pembayaran yang pending, bukan membuat pembelian baru.
-- [ ] Voucher tidak ditampilkan di layar konfirmasi ini (sesuai PRD — voucher tidak berlaku untuk membership).
+- [ ] Voucher tidak ditampilkan di layar konfirmasi ini (sesuai PRD — voucher tidak berlaku untuk membership). -->

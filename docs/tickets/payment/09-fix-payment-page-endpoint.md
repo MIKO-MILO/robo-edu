@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] `payment-instruction-page.tsx` untuk konteks `"order"` fetch ke `GET /api/orders/:id/payment` bukan `/payment-info`; response shape keduanya kompatibel (field `order`, `payment`, `payment_instruction` sama).
-- [ ] `POST /api/orders/:id/payment/check` dibuat: auth hanya pemilik order; panggil `coreApi.transaction.status(midtrans_order_id)` untuk attempt PENDING terakhir; jalankan pemetaan status yang sama dengan webhook (settlement/capture+accept → PAID, deny/cancel/failure → FAILED, expire → EXPIRED); update `payments` dan `orders` di DB; return `{ status, payment_instruction, expiry_time }`.
-- [ ] Jika order tidak ditemukan atau bukan milik user → 404.
-- [ ] Jika tidak ada attempt PENDING (sudah PAID/FAILED/EXPIRED) → return status saat ini tanpa memanggil Midtrans.
-- [ ] Tombol "Cek Status Pembayaran" di halaman payment berfungsi dan memperbarui UI tanpa reload halaman.
-- [ ] Polling otomatis (`/api/orders/:id/payment`) berhenti saat status terminal (PAID / FAILED / EXPIRED) tercapai.
+- [x] `payment-instruction-page.tsx` untuk konteks `"order"` fetch ke `GET /api/orders/:id/payment` bukan `/payment-info`; response shape keduanya kompatibel (field `order`, `payment`, `payment_instruction` sama).
+- [x] `POST /api/orders/:id/payment/check` dibuat: auth hanya pemilik order; panggil `coreApi.transaction.status(midtrans_order_id)` untuk attempt PENDING terakhir; jalankan pemetaan status yang sama dengan webhook (settlement/capture+accept → PAID, deny/cancel/failure → FAILED, expire → EXPIRED); update `payments` dan `orders` di DB; return `{ status, payment_instruction, expiry_time }`.
+- [x] Jika order tidak ditemukan atau bukan milik user → 404.
+- [x] Jika tidak ada attempt PENDING (sudah PAID/FAILED/EXPIRED) → return status saat ini tanpa memanggil Midtrans.
+- [x] Tombol "Cek Status Pembayaran" di halaman payment berfungsi dan memperbarui UI tanpa reload halaman.
+- [x] Polling otomatis (`/api/orders/:id/payment`) berhenti saat status terminal (PAID / FAILED / EXPIRED) tercapai.
