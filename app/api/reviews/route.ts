@@ -1,11 +1,89 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/src/db";
-import { reviews, reviewImages, orderItems, orders } from "@/src/db/schema";
+import { reviews, reviewImages, orderItems, orders, products } from "@/src/db/schema";
 import { getSessionUserId } from "@/src/lib/auth/session";
 import crypto from "node:crypto";
 
 export const runtime = "nodejs";
+
+// ── GET /api/reviews ──────────────────────────────────────────────────────────
+
+/**
+ * GET /api/reviews
+ *
+ * Returns all reviews written by the currently logged-in user, newest first.
+ * Each review includes the product name and any attached images.
+ *
+ * Query params:
+ *   page  — 1-based (default 1)
+ *   limit — rows per page, max 50 (default 20)
+ */
+export async function GET(request: NextRequest) {
+  const userId = await getSessionUserId();
+  if (!userId) {
+    return NextResponse.json(
+      { success: false, message: "Silakan login terlebih dahulu." },
+      { status: 401 },
+    );
+  }
+
+  const { searchParams } = request.nextUrl;
+  const page  = Math.max(1, Number(searchParams.get("page")  ?? "1"));
+  const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") ?? "20")));
+  const offset = (page - 1) * limit;
+
+  const rows = await db
+    .select({
+      id:          reviews.id,
+      rating:      reviews.rating,
+      comment:     reviews.comment,
+      status:      reviews.status,
+      createdAt:   reviews.createdAt,
+      productId:   reviews.productId,
+      productName: products.name,
+      orderItemId: reviews.orderItemId,
+    })
+    .from(reviews)
+    .innerJoin(products, eq(reviews.productId, products.id))
+    .where(eq(reviews.userId, userId))
+    .orderBy(desc(reviews.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const reviewIds = rows.map((r) => r.id);
+
+  // Batch-fetch images
+  const imageRows =
+    reviewIds.length > 0
+      ? await db
+          .select({ reviewId: reviewImages.reviewId, url: reviewImages.url })
+          .from(reviewImages)
+          .where(inArray(reviewImages.reviewId, reviewIds))
+      : [];
+
+  const imageMap: Record<string, string[]> = {};
+  for (const img of imageRows) {
+    if (!imageMap[img.reviewId]) imageMap[img.reviewId] = [];
+    imageMap[img.reviewId].push(img.url);
+  }
+
+  const data = rows.map((r) => ({
+    id:           r.id,
+    product_id:   r.productId,
+    product_name: r.productName,
+    order_item_id: r.orderItemId,
+    rating:       r.rating,
+    comment:      r.comment ?? null,
+    status:       r.status,
+    images:       imageMap[r.id] ?? [],
+    created_at:   r.createdAt.toISOString(),
+  }));
+
+  return NextResponse.json({ success: true, data });
+}
+
+
 
 /**
  * POST /api/reviews

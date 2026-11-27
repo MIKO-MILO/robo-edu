@@ -4,11 +4,11 @@
 
 **Blocked by:** backend/27 — endpoint `POST /api/upload/complaint-image` harus ada sebelum UI bisa menggunakannya
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Form complaint memiliki area upload file yang mendukung pilih file (JPEG/PNG/WEBP/PDF, maks 3 file, maks 10 MB per file)
-- [ ] Setiap file yang dipilih langsung diupload ke `POST /api/upload/complaint-image` dan hasilnya (URL) ditampilkan sebagai preview
-- [ ] Preview menampilkan nama file dan tombol hapus untuk membatalkan attachment sebelum submit
-- [ ] Saat submit, field `attachments` dikirim ke `POST /api/complaints` sebagai array `{ file_url, file_name, file_type }`
-- [ ] Jika upload gagal, pesan error ditampilkan di dekat komponen upload (bukan halaman error)
-- [ ] Tombol submit form dinonaktifkan selama ada file yang sedang diupload
+- [x] Form complaint memiliki area upload file yang mendukung pilih file (JPEG/PNG/WEBP/PDF, maks 3 file, maks 10 MB per file)
+- [x] Setiap file yang dipilih langsung diupload ke `POST /api/upload/complaint-image` dan hasilnya (URL) ditampilkan sebagai preview
+- [x] Preview menampilkan nama file dan tombol hapus untuk membatalkan attachment sebelum submit
+- [x] Saat submit, field `attachments` dikirim ke `POST /api/complaints` sebagai array `{ file_url, file_name, file_type }`
+- [x] Jika upload gagal, pesan error ditampilkan di dekat komponen upload (bukan halaman error)
+- [x] Tombol submit form dinonaktifkan selama ada file yang sedang diupload

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, Lock, Bell, LogOut, ShoppingCart, MapPin, CrownIcon, MessageSquareWarning } from "lucide-react";
+import { User, Lock, Bell, LogOut, ShoppingCart, MapPin, CrownIcon, MessageSquareWarning, Star } from "lucide-react";
 import clsx from "clsx";
 
 export default function Sidebar() {
@@ -16,6 +16,7 @@ export default function Sidebar() {
     { href: "/profile/orders", label: "Orders History", icon: ShoppingCart },
     { href: "/profile/membership", label: "Program Membership", icon: CrownIcon },
     { href: "/profile/complaints", label: "Komplain Saya", icon: MessageSquareWarning },
+    { href: "/profile/my-reviews", label: "Ulasan Saya", icon: Star },
     { href: "/profile/notifications", label: "Notifications", icon: Bell },
   ];
 
