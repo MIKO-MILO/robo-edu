@@ -10,3 +10,6 @@ export type {
   ReviewStats,
   ReviewTableProps,
 } from "./review-components";
+
+export { ReviewImageGallery } from "./review-image-gallery";
+export type { ReviewImage, ReviewImageGalleryProps } from "./review-image-gallery";

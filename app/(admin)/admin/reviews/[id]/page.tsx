@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { useToast } from "@/components/admin/use-toast";
+import { ReviewImageGallery } from "@/components/admin/reviews";
 import type { ReviewStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
@@ -38,6 +39,7 @@ interface ReviewDetail {
   user_name: string;
   user_email: string;
   order_number: string;
+  images: { id: string; url: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -237,6 +239,9 @@ export default function AdminReviewDetailPage({ params }: Props) {
               )}
             </div>
           </div>
+
+          {/* Image gallery — only rendered when review has photos */}
+          <ReviewImageGallery images={review.images} />
         </div>
 
         {/* Right sidebar */}
