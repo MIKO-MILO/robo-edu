@@ -10,9 +10,9 @@ Endpoint `GET /api/maintenance-status` sudah ada dan tidak perlu diubah.
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Halaman `/maintenance` tidak menampilkan link atau teks yang mengarahkan ke halaman admin login.
-- [ ] Halaman polling `GET /api/maintenance-status` setiap 5 detik.
-- [ ] Ketika maintenance dinonaktifkan admin, halaman user otomatis redirect ke `/` tanpa perlu refresh manual.
-- [ ] Polling berhenti saat komponen di-unmount (tidak ada memory leak).
+- [x] Halaman `/maintenance` tidak menampilkan link atau teks yang mengarahkan ke halaman admin login.
+- [x] Halaman polling `GET /api/maintenance-status` setiap 5 detik.
+- [x] Ketika maintenance dinonaktifkan admin, halaman user otomatis redirect ke `/` tanpa perlu refresh manual.
+- [x] Polling berhenti saat komponen di-unmount (tidak ada memory leak).

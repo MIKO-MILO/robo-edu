@@ -1,10 +1,38 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Wrench } from "lucide-react";
+
+const POLL_INTERVAL_MS = 5000;
 
 /**
  * Standalone maintenance page — no user/admin layout.
  * Renders when maintenance_mode = "true" and visitor is not an admin.
+ *
+ * Polls GET /api/maintenance-status every 5 s.
+ * When maintenance ends ({ active: false }), auto-redirects to homepage.
  */
 export default function MaintenancePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await fetch("/api/maintenance-status");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.active === false) {
+          router.push("/");
+        }
+      } catch {
+        // network error — silently ignore, will retry next interval
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [router]);
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center space-y-6">
@@ -28,18 +56,6 @@ export default function MaintenancePage() {
 
         {/* Divider */}
         <div className="h-px bg-border" />
-
-        {/* Footer note */}
-        <p className="font-body text-xs text-muted-foreground">
-          Jika Anda adalah admin,{" "}
-          <a
-            href="/admin/login"
-            className="font-semibold text-primary underline underline-offset-2 hover:no-underline"
-          >
-            login di sini
-          </a>
-          .
-        </p>
       </div>
     </div>
   );
