@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/cart-context";
 import { getProductRecommendations } from "@/src/lib/api/product";
 import type { Product } from "@/types/product";
 import { formatRupiah } from "@/lib/utils";
+import { RelatedProductsSection } from "@/app/(user)/product/[slug]/page";
 
 function formatPrice(val: number) {
   return formatRupiah(val);
@@ -118,9 +119,6 @@ export default function CartPage() {
   // ── Page Interactivity States ──────────────────────────────────────────────
   const [checkoutError, setCheckoutError] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>([]);
-
-  const recommendationSliderRef = useRef<HTMLDivElement>(null);
 
   // ── Cart Logic Handlers ────────────────────────────────────────────────────
   const handleQuantityChange = (id: string, delta: number) => {
@@ -142,19 +140,6 @@ export default function CartPage() {
       return next;
     });
     removeItem(id);
-  };
-
-  const handleAddToWishlist = (id: string) => {
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
-
-  const handleAddRecommendedToCart = async (prod: Product) => {
-    await addToCart({
-      productId: prod.id,
-      quantity: 1,
-    });
   };
 
   const handleCheckout = async () => {
@@ -185,16 +170,6 @@ export default function CartPage() {
     router.push("/checkout");
   };
 
-  const handleScrollSlider = (direction: "left" | "right") => {
-    if (recommendationSliderRef.current) {
-      const scrollAmount = 320;
-      recommendationSliderRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   // ── Calculations ───────────────────────────────────────────────────────────
   // Only selected AND in-stock items contribute to the subtotal.
   const selectedInStockItems = cartItems.filter(
@@ -208,7 +183,8 @@ export default function CartPage() {
   const total = subtotal + shipping;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 lg:pt-44 pb-6 sm:pb-8 lg:pb-12">
+    <>
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 lg:pt-44 pb-12 sm:pb-16 lg:pb-20">
       {/* 2-Column Main Layout: Cart List on Left, Summary on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-start">
         {/* LEFT COLUMN: Shopping Cart Header & Product List */}
@@ -239,7 +215,7 @@ export default function CartPage() {
           ) : (
             <div>
               {/* Desktop/Tablet Headers */}
-              <div className="hidden md:flex items-center bg-[#FAF6ED] rounded-2xl px-4 py-4 text-xs font-bold text-muted-foreground tracking-wider uppercase font-body mb-4 gap-3">
+              <div className="hidden md:flex items-center bg-[#FAF6ED] rounded-2xl px-4 sm:px-5 py-4 text-xs font-bold text-muted-foreground tracking-wider uppercase font-body mb-4 gap-4 lg:gap-6">
                 {/* Select-all checkbox */}
                 <div className="flex-shrink-0 w-5 flex items-center justify-center">
                   <input
@@ -255,8 +231,8 @@ export default function CartPage() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">Product</div>
-                <div className="w-32 text-center flex-shrink-0">Quantity</div>
-                <div className="w-28 text-right flex-shrink-0">Subtotal</div>
+                <div className="w-32 lg:w-36 text-center flex-shrink-0">Quantity</div>
+                <div className="w-36 lg:w-44 text-right flex-shrink-0">Subtotal</div>
               </div>
 
               {/* Cart Items List */}
@@ -268,7 +244,7 @@ export default function CartPage() {
                   return (
                     <div
                       key={item.id}
-                      className={`flex flex-col md:flex-row gap-3 md:gap-4 py-4 sm:py-5 px-4 sm:px-5 items-start md:items-center rounded-2xl shadow-sm transition-all duration-300 ${
+                      className={`flex flex-col md:flex-row gap-3 md:gap-5 lg:gap-6 py-4 sm:py-5 px-4 sm:px-5 items-start md:items-center rounded-2xl shadow-sm transition-all duration-300 ${
                         isOOS
                           ? "bg-muted/60 opacity-75"
                           : isSelected
@@ -364,11 +340,11 @@ export default function CartPage() {
                       </div>
 
                       {/* ── Quantity Selector ──────────────────────────────────── */}
-                      <div className="flex justify-between md:justify-center items-center py-2 md:py-0 border-t border-border/40 md:border-none w-full md:w-32 md:flex-shrink-0">
+                      <div className="flex justify-between md:justify-center items-center py-2 md:py-0 border-t border-border/40 md:border-none w-full md:w-32 lg:w-36 md:flex-shrink-0">
                         <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
                           Jumlah
                         </span>
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-1 sm:gap-1.5">
                           <button
                             onClick={() => handleQuantityChange(item.id, -1)}
                             disabled={isOOS}
@@ -390,7 +366,7 @@ export default function CartPage() {
                             </svg>
                           </button>
                           <span
-                            className={`font-body font-bold text-sm sm:text-base w-8 sm:w-10 text-center ${
+                            className={`font-body font-bold text-sm sm:text-base w-8 sm:w-9 text-center tabular-nums ${
                               isOOS ? "text-muted-foreground" : "text-foreground"
                             }`}
                           >
@@ -420,7 +396,7 @@ export default function CartPage() {
                       </div>
 
                       {/* ── Subtotal ───────────────────────────────────────────── */}
-                      <div className="flex justify-between md:justify-end items-center py-2 md:py-0 border-t border-border/40 md:border-none w-full md:w-28 md:flex-shrink-0">
+                      <div className="flex justify-between md:justify-end items-center py-2 md:py-0 border-t border-border/40 md:border-none w-full md:w-36 lg:w-44 md:flex-shrink-0">
                         <span className="md:hidden font-body text-xs sm:text-sm text-muted-foreground font-semibold">
                           Subtotal
                         </span>
@@ -429,7 +405,7 @@ export default function CartPage() {
                             Tidak dihitung
                           </span>
                         ) : (
-                          <span className="font-heading font-bold text-base sm:text-lg text-foreground">
+                          <span className="font-heading font-bold text-base sm:text-lg text-foreground whitespace-nowrap text-right">
                             {formatPrice(item.price * item.quantity)}
                           </span>
                         )}
@@ -467,43 +443,52 @@ export default function CartPage() {
 
         {/* RIGHT COLUMN: Order Summary Card */}
         <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 w-full">
-          <div className="bg-[#FAF6ED] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm">
+          <div className="bg-[#FAF6ED] rounded-3xl p-5 sm:p-6 lg:p-6 xl:p-8 shadow-sm">
             <h2 className="font-heading text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground mb-4 sm:mb-6 pb-2 border-b border-border">
               Ringkasan Pesanan
             </h2>
 
             <div className="space-y-3 sm:space-y-4 mb-6">
               {/* Selected item count */}
-              <div className="flex justify-between font-body text-xs sm:text-sm text-muted-foreground">
+              <div className="w-full flex justify-between items-center gap-4 font-body text-xs sm:text-sm text-muted-foreground">
                 <span>Item dipilih</span>
-                <span className="font-semibold">
+                <span className="font-semibold whitespace-nowrap">
                   {selectedIds.size} item
                 </span>
               </div>
 
               {/* Subtotal */}
-              <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
+              <div className="w-full flex justify-between items-center gap-4 font-body text-xs sm:text-sm lg:text-base text-foreground">
                 <span>Subtotal</span>
-                <span className="font-bold">{formatPrice(subtotal)}</span>
+                <span className="font-bold text-right whitespace-nowrap">
+                  {formatPrice(subtotal)}
+                </span>
               </div>
 
               {/* Shipping */}
-              <div className="flex justify-between font-body text-xs sm:text-sm lg:text-base text-foreground">
+              <div className="w-full flex justify-between items-center gap-4 font-body text-xs sm:text-sm lg:text-base text-foreground">
                 <span>Pengiriman</span>
-                <span className="font-bold text-success uppercase text-xs sm:text-sm bg-success-bg/20 px-2 py-0.5 rounded">
+                <span className="font-bold text-success uppercase text-xs sm:text-sm bg-success-bg/20 px-2 py-0.5 rounded whitespace-nowrap">
                   Gratis
                 </span>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-border pt-3 sm:pt-4">
-                <div className="flex justify-between items-end">
-                  <span className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground">
-                    Total
-                  </span>
-                  <span className="font-heading text-xl sm:text-2xl lg:text-3xl font-extrabold text-primary-900 leading-none">
-                    {formatPrice(total)}
-                  </span>
+              {/* Divider & Total */}
+              <div className="border-t border-border pt-4 sm:pt-5">
+                <div className="w-full flex items-center justify-between gap-3 sm:gap-4">
+                  <div className="shrink-0 flex flex-col">
+                    <span className="font-heading text-sm sm:text-base lg:text-lg font-bold text-foreground tracking-tight">
+                      Total
+                    </span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground font-body whitespace-nowrap">
+                      Termasuk PPN
+                    </span>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-heading text-base sm:text-lg lg:text-xl xl:text-2xl font-extrabold text-primary-900 leading-tight whitespace-nowrap block">
+                      {formatPrice(total)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -632,218 +617,14 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-
-      {/* RECOMMENDATIONS SECTION */}
-      {(recsLoading ||
-        recommendations.filter(
-          (p) =>
-            !cartItems.some((ci) => ci.productId === p.id) && p.stock > 0,
-        ).length > 0) && (
-        <div className="mt-12 sm:mt-16 pt-8 sm:pt-12 border-t border-border-strong/50">
-          {/* Recommendations Header with Slider Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 sm:mb-12 lg:mb-14">
-            <div className="relative inline-block pb-6 sm:pb-8 lg:pb-10">
-              <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
-                You might like
-              </h2>
-              <Image
-                src="/images/line.png"
-                alt=""
-                width={200}
-                height={82}
-                className="absolute left-1/2 -translate-x-1/2 w-40 top-8 -bottom-3 sm:left-3 sm:translate-x-0 sm:w-44 sm:top-8 sm:-bottom-4 lg:left-1/2 lg:-translate-x-1/2 lg:w-44 lg:top-10 lg:-bottom-3 h-auto object-contain pointer-events-none"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
-              <button
-                onClick={() => handleScrollSlider("left")}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-border-strong flex items-center justify-center bg-white text-foreground hover:border-foreground hover:bg-muted active:scale-90 transition-all duration-200 shadow-sm"
-                aria-label="Scroll left"
-              >
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 19.5L8.25 12l7.5-7.5"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={() => handleScrollSlider("right")}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-border-strong flex items-center justify-center bg-white text-foreground hover:border-foreground hover:bg-muted active:scale-90 transition-all duration-200 shadow-sm"
-                aria-label="Scroll right"
-              >
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Horizontal Card Slider */}
-          <div
-            ref={recommendationSliderRef}
-            className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scrollbar-none scroll-smooth snap-x snap-mandatory"
-          >
-            {recsLoading
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-64 sm:w-72 flex-shrink-0 bg-white rounded-3xl p-4 shadow-sm border border-border snap-start animate-pulse"
-                  >
-                    <div className="w-full aspect-square bg-muted rounded-2xl mb-4" />
-                    <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-muted rounded w-1/2 mb-4" />
-                    <div className="h-4 bg-muted rounded w-1/3" />
-                  </div>
-                ))
-              : recommendations
-                  .filter(
-                    (p) =>
-                      !cartItems.some((ci) => ci.productId === p.id) &&
-                      p.stock > 0,
-                  )
-                  .slice(0, 4)
-                  .map((prod) => {
-                    const isWishlisted = wishlist.includes(prod.id);
-                    const bgPalette = [
-                      "bg-accent-soft-blue/40",
-                      "bg-accent-yellow/40",
-                      "bg-accent-pink/40",
-                      "bg-accent-purple/40",
-                    ];
-                    const bgColor =
-                      bgPalette[
-                        recommendations.indexOf(prod) % bgPalette.length
-                      ];
-
-                    return (
-                      <div
-                        key={prod.id}
-                        className="w-64 sm:w-72 flex-shrink-0 bg-white rounded-3xl p-4 shadow-sm border border-border hover:shadow-md hover:scale-[1.01] transition-all duration-300 relative snap-start group"
-                      >
-                        {/* Wishlist Heart Button */}
-                        <button
-                          onClick={() => handleAddToWishlist(prod.id)}
-                          className="absolute top-6 right-6 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white flex items-center justify-center shadow-md border border-border hover:scale-105 active:scale-90 transition-transform duration-200 cursor-pointer"
-                          aria-label="Toggle wishlist"
-                        >
-                          {isWishlisted ? (
-                            <svg
-                              className="w-4 h-4 sm:w-5 sm:h-5 text-danger-bg fill-danger"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                            </svg>
-                          ) : (
-                            <svg
-                              className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground hover:text-danger transition-colors duration-200"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                              />
-                            </svg>
-                          )}
-                        </button>
-
-                        {/* Product Image */}
-                        <Link href={`/product/${prod.slug}`} tabIndex={-1}>
-                          <div
-                            className={`w-full aspect-square ${bgColor} rounded-2xl flex items-center justify-center p-6 border border-white relative overflow-hidden transition-transform duration-500`}
-                          >
-                            <Image
-                              src={
-                                prod.image || "/images/placeholder-product.jpg"
-                              }
-                              alt={prod.name}
-                              width={200}
-                              height={200}
-                              className="object-contain max-h-full transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleAddRecommendedToCart(prod);
-                              }}
-                              disabled={prod.stock === 0}
-                              className="absolute bottom-3 right-3 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-600 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                              aria-label={`Add ${prod.name} to cart`}
-                            >
-                              <svg
-                                className="w-4 h-4 sm:w-5 sm:h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </Link>
-
-                        {/* Product Details */}
-                        <div className="mt-4">
-                          <Link href={`/product/${prod.slug}`}>
-                            <h3 className="font-body text-sm sm:text-base font-bold text-foreground group-hover:text-primary transition-colors duration-200 truncate">
-                              {prod.name}
-                            </h3>
-                          </Link>
-                          <p className="font-body text-xs text-muted-foreground mb-3">
-                            {prod.category.name}
-                          </p>
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-baseline gap-2">
-                              <span className="font-body font-bold text-sm sm:text-base text-foreground">
-                                {formatPrice(prod.price.min ?? 0)}
-                              </span>
-                              {prod.price.max != null &&
-                                prod.price.max > (prod.price.min ?? 0) && (
-                                  <span className="font-body text-xs text-muted-foreground/60">
-                                    s/d {formatPrice(prod.price.max)}
-                                  </span>
-                                )}
-                            </div>
-                            {prod.stock === 0 && (
-                              <span className="font-body text-xs font-semibold text-danger bg-danger-bg/30 px-2 py-0.5 rounded-full">
-                                Habis
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+    {/* RECOMMENDATIONS SECTION (You Might Also Like) */}
+    <RelatedProductsSection
+      products={recommendations.filter(
+        (p) => !cartItems.some((ci) => ci.productId === p.id),
+      )}
+    />
+  </>
+);
 }
