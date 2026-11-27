@@ -13,12 +13,15 @@ import {
   Mail,
   Calendar,
   ShoppingBag,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { useToast } from "@/components/admin/use-toast";
 import { ReviewImageGallery } from "@/components/admin/reviews";
+import { StatusBadge } from "@/components/admin/status-badge";
 import type { ReviewStatus } from "@/types/enums";
 
 // ---------------------------------------------------------------------------
@@ -80,6 +83,7 @@ export default function AdminReviewDetailPage({ params }: Props) {
   const [error, setError]         = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
   // ── Fetch detail ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -103,6 +107,40 @@ export default function AdminReviewDetailPage({ params }: Props) {
     void load();
     return () => { cancelled = true; };
   }, [id]);
+
+  // ── Toggle status (hide / show) ───────────────────────────────────────
+  const handleToggleStatus = async () => {
+    if (!review) return;
+    const newStatus: ReviewStatus = review.status === "PUBLISHED" ? "HIDDEN" : "PUBLISHED";
+    setIsTogglingStatus(true);
+    try {
+      const res  = await fetch(`/api/admin/reviews/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message ?? "Gagal mengubah status.");
+
+      setReview((prev) => prev ? { ...prev, status: newStatus } : prev);
+      toast({
+        title: newStatus === "HIDDEN" ? "Ulasan Disembunyikan" : "Ulasan Ditampilkan",
+        description:
+          newStatus === "HIDDEN"
+            ? "Ulasan tidak akan muncul di halaman produk."
+            : "Ulasan kembali tampil di halaman produk.",
+        variant: "success",
+      });
+    } catch (err) {
+      toast({
+        title: "Gagal Mengubah Status",
+        description: err instanceof Error ? err.message : "Terjadi kesalahan.",
+        variant: "error",
+      });
+    } finally {
+      setIsTogglingStatus(false);
+    }
+  };
 
   // ── Delete ────────────────────────────────────────────────────────────
   const handleDelete = async () => {
@@ -197,21 +235,57 @@ export default function AdminReviewDetailPage({ params }: Props) {
             <h1 className="text-2xl font-heading font-bold text-foreground">
               Detail Ulasan Customer
             </h1>
-            <p className="text-xs text-muted-foreground font-mono">ID: {review.id}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-muted-foreground font-mono">ID: {review.id}</p>
+              <StatusBadge
+                status={review.status}
+                customLabel={review.status === "PUBLISHED" ? "Tampil di Produk" : "Disembunyikan"}
+                size="sm"
+                showDot
+              />
+            </div>
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          neo={false}
-          onClick={() => setShowDelete(true)}
-          className="gap-1.5 rounded-xl text-danger border-danger/30 hover:bg-danger-bg hover:border-danger font-heading font-bold text-xs self-start sm:self-auto"
-        >
-          <Trash2 className="size-3.5" />
-          Hapus Review
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            neo={false}
+            onClick={handleToggleStatus}
+            disabled={isTogglingStatus}
+            className={
+              review.status === "PUBLISHED"
+                ? "gap-1.5 rounded-xl text-warning border-warning/30 hover:bg-warning-bg hover:border-warning font-heading font-bold text-xs"
+                : "gap-1.5 rounded-xl text-success border-success/30 hover:bg-success-bg hover:border-success font-heading font-bold text-xs"
+            }
+          >
+            {review.status === "PUBLISHED" ? (
+              <>
+                <EyeOff className="size-3.5" />
+                {isTogglingStatus ? "Menyembunyikan..." : "Sembunyikan Ulasan"}
+              </>
+            ) : (
+              <>
+                <Eye className="size-3.5" />
+                {isTogglingStatus ? "Menampilkan..." : "Tampilkan Ulasan"}
+              </>
+            )}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            neo={false}
+            onClick={() => setShowDelete(true)}
+            className="gap-1.5 rounded-xl text-danger border-danger/30 hover:bg-danger-bg hover:border-danger font-heading font-bold text-xs"
+          >
+            <Trash2 className="size-3.5" />
+            Hapus Review
+          </Button>
+        </div>
       </div>
 
       {/* Two-column layout */}
