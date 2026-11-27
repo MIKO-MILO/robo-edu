@@ -55,16 +55,18 @@
   /* = pastel blue */
   --color-info-bg: #8ED8FF;
 
-  /* ===== ACCENT — Pastel (khusus aksen komponen: badge, tag, ilustrasi, chip kategori) ===== */
+/* ===== ACCENT — Pastel (khusus aksen komponen: badge, tag, ilustrasi, chip kategori) ===== */
   --color-accent-yellow: #FFF37E;
+  --color-accent-soft-yellow: #FFF0B6;
   --color-accent-purple: #A3B1FF;
   --color-accent-soft-blue: #C9E9F6;
+  --color-accent-sky: #3688CB;
+  --color-blue-soft: #B6DDFF;
   --color-accent-blue: #8ED8FF;
   --color-accent-green: #A9E8AE;
   --color-accent-pink: #FFC0DD;
   --color-accent-orange: #FFD9A0;
   --color-accent-peach: #FFAFA3;
-
   /* ==== ACCENT BUTTER === */
   --color-accent-butter: #FAF1CA;
 

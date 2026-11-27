@@ -228,7 +228,7 @@ export function ReviewTable({
         const commentText = row.comment || "(Tidak ada komentar)";
         return (
           <div className="max-w-[280px] md:max-w-[340px]">
-            <p className="text-xs text-foreground leading-relaxed line-clamp-2">
+            <p className="text-xs text-foreground leading-relaxed line-clamp-1">
               {commentText}
             </p>
           </div>

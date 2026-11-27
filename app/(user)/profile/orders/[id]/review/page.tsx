@@ -45,7 +45,7 @@ const RATING_LABELS: Record<number, string> = {
 };
 
 const MAX_FILES = 5;
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB — matches /api/upload/review-image
 
 function defaultFormState(): ItemFormState {
   return {
@@ -85,7 +85,7 @@ function ReviewSection({ item, form, onChange, onSubmit }: ReviewSectionProps) {
         continue;
       }
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        onChange({ error: `File "${file.name}" melebihi batas 10 MB.` });
+        onChange({ error: `File "${file.name}" melebihi batas 5 MB.` });
         continue;
       }
       toAdd.push(file);
@@ -199,7 +199,7 @@ function ReviewSection({ item, form, onChange, onSubmit }: ReviewSectionProps) {
           <span className="font-body font-bold text-xs text-foreground">
             Foto Produk{" "}
             <span className="font-normal text-muted-foreground">
-              (Opsional · maks {MAX_FILES} foto · maks 10 MB/foto)
+              (Opsional · maks {MAX_FILES} foto · maks 5 MB/foto)
             </span>
           </span>
           <span className="text-xs text-muted-foreground font-body">
@@ -372,7 +372,7 @@ export default function OrderReviewPage() {
     for (const file of files) {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/upload/minio", { method: "POST", body: fd });
+      const res = await fetch("/api/upload/review-image", { method: "POST", body: fd });
       const json = await res.json();
       if (!res.ok) throw new Error(json.message ?? "Gagal mengunggah foto.");
       urls.push(json.url as string);

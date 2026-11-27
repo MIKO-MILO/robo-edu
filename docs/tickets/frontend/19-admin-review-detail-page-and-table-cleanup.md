@@ -22,7 +22,7 @@ API PATCH status review yang sudah ada di backend tidak diubah — cukup tidak d
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Tabel review tidak lagi memiliki kolom Status dan tombol hide/show.
 - [x] Filter "Status" (VISIBLE/HIDDEN) tidak ada di toolbar.
