@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { useCart } from "@/contexts/cart-context";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -19,6 +20,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { totalItems } = useCart();
 
   /* Tutup menu kalau klik di luar */
   useEffect(() => {
@@ -129,8 +131,12 @@ export default function Navbar() {
           {/* Cart */}
           <Link
             href="/cart"
-            aria-label="Shopping Basket"
-            className="transition-opacity hover:opacity-80 flex items-center justify-center shrink-0"
+            aria-label={
+              totalItems > 0
+                ? `Keranjang belanja — ${totalItems} item`
+                : "Keranjang belanja"
+            }
+            className="relative transition-opacity hover:opacity-80 flex items-center justify-center shrink-0"
           >
             <Image
               src="/assets/svg/cart.svg"
@@ -139,6 +145,14 @@ export default function Navbar() {
               height={34}
               className={`${ICON_SIZE} object-contain`}
             />
+            {totalItems > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-badge-red text-white border border-white/80 flex items-center justify-center font-body font-bold text-[10px] leading-none animate-badge-float"
+              >
+                {totalItems > 99 ? "99+" : totalItems}
+              </span>
+            )}
           </Link>
 
           {/* Profile */}
