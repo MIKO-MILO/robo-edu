@@ -363,6 +363,220 @@ const PRODUCTS_SEED: ProductSeedRow[] = [
       },
     ],
   },
+  {
+    id: "prod-smart-home-kit",
+    categoryId: "cat-iot-starter",
+    productTypeId: "pt-bundle",
+    name: "Smart Home Automation IoT Kit ESP32",
+    slug: "smart-home-automation-iot-kit-esp32",
+    sku: "ROBO-IOT-SMARTHOME-V1",
+    description:
+      "Kit lengkap simulasi rumah pintar berbasis mikrokontroler ESP32 WiFi+Bluetooth. Dilengkapi relay 4-channel, sensor gerak PIR, sensor suhu DHT22, servo pengunci pintu, dan LCD I2C.",
+    status: "active",
+    variants: [
+      {
+        id: "var-smarthome-std-v1",
+        variantName: "Standard Kit",
+        sku: "VAR-SMARTHOME-STD",
+        price: 285000,
+        resellerPrice: 250000,
+        stock: 65,
+        weight: 600,
+        status: "active",
+      },
+      {
+        id: "var-smarthome-comp-v1",
+        variantName: "Complete (Include Miniatur Rumah Kayu)",
+        sku: "VAR-SMARTHOME-COMP",
+        price: 420000,
+        resellerPrice: 375000,
+        stock: 30,
+        weight: 1200,
+        status: "active",
+      },
+    ],
+    images: [
+      {
+        id: "img-smarthome-v1",
+        variantId: null,
+        imageUrl:
+          "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=IoT%20smart%20home%20automation%20kit%20with%20ESP32%20relays%20sensors%20and%20miniature%20wooden%20house%20model%20on%20white%20clean%20background%20studio%20lighting&image_size=square_hd",
+        altText: "Smart Home Automation IoT Kit ESP32",
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: "prod-quadruped-spider-robot",
+    categoryId: "cat-robot-kit",
+    productTypeId: "pt-physical",
+    name: "Spider Robot 4-Leg Quadruped Walking Kit",
+    slug: "spider-robot-quadruped-kit-v1",
+    sku: "ROBO-SPIDER-4L-V1",
+    description:
+      "Robot bionik berkaki 4 yang menirukan gerakan laba-laba. Ditenagai oleh 8 micro servo SG90 dan mikrokontroler Arduino Nano, mendukung berbagai mode berjalan dan menari.",
+    status: "active",
+    variants: [
+      {
+        id: "var-spider-diy-v1",
+        variantName: "DIY Kit Rakit Sendiri",
+        sku: "VAR-SPIDER-DIY-V1",
+        price: 345000,
+        resellerPrice: 300000,
+        stock: 45,
+        weight: 500,
+        status: "active",
+      },
+    ],
+    images: [
+      {
+        id: "img-spider-v1",
+        variantId: null,
+        imageUrl:
+          "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Cool%204%20legged%20spider%20quadruped%20robot%20made%20with%203D%20printed%20blue%20parts%20and%20servos%20on%20white%20background%20studio%20photography&image_size=square_hd",
+        altText: "Spider Robot 4-Leg Quadruped Walking Kit",
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: "prod-smart-weather-station",
+    categoryId: "cat-sensor-pack",
+    productTypeId: "pt-physical",
+    name: "Smart Weather Station Sensor Kit IoT",
+    slug: "smart-weather-station-sensor-kit-v1",
+    sku: "ROBO-SENSOR-WEATHER-V1",
+    description:
+      "Stasiun pemantau cuaca mini real-time yang mengukur suhu, kelembaban, tekanan udara (BMP280), intensitas cahaya, dan curah hujan. Terhubung ke dashboard cloud IoT.",
+    status: "active",
+    variants: [
+      {
+        id: "var-weather-bsc-v1",
+        variantName: "Weather Station Basic",
+        sku: "VAR-WEATHER-BSC-V1",
+        price: 215000,
+        resellerPrice: 185000,
+        stock: 70,
+        weight: 400,
+        status: "active",
+      },
+    ],
+    images: [
+      {
+        id: "img-weather-v1",
+        variantId: null,
+        imageUrl:
+          "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Miniature%20IoT%20weather%20station%20kit%20with%20OLED%20display%20showing%20temperature%20and%20humidity%20on%20clean%20background&image_size=square_hd",
+        altText: "Smart Weather Station Sensor Kit IoT",
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: "prod-acrylic-crawler-tank",
+    categoryId: "cat-robot-kit",
+    productTypeId: "pt-physical",
+    name: "Mini Tank Crawler Chassis Robot Kit",
+    slug: "mini-tank-crawler-chassis-kit",
+    sku: "ROBO-TANK-CRAWLER-V1",
+    description:
+      "Sasis robot tank beroda rantai (crawler) yang mampu melibas berbagai medan rintangan. Ditenagai 2 motor gearbox DC berkekuatan torsi tinggi dengan dudukan sensor fleksibel.",
+    status: "active",
+    variants: [
+      {
+        id: "var-tank-crawler-v1",
+        variantName: "Full Tank Chassis Kit",
+        sku: "VAR-TANK-CRAWLER-V1",
+        price: 295000,
+        resellerPrice: 260000,
+        stock: 50,
+        weight: 750,
+        status: "active",
+      },
+    ],
+    images: [
+      {
+        id: "img-tank-crawler-v1",
+        variantId: null,
+        imageUrl:
+          "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Miniature%20robotic%20tracked%20tank%20chassis%20with%20DC%20motors%20on%20white%20clean%20background%20studio%20photography&image_size=square_hd",
+        altText: "Mini Tank Crawler Chassis Robot Kit",
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: "prod-breadboard-power-starter",
+    categoryId: "cat-komponen-elektronika",
+    productTypeId: "pt-physical",
+    name: "Breadboard Power & Jumper Electronics Pack",
+    slug: "breadboard-power-jumper-pack-v1",
+    sku: "ROBO-KOMP-BREADBOARD-V1",
+    description:
+      "Paket kebutuhan dasar prototipe: 1x Breadboard 830 titik, modul power supply 3.3V/5V, 65 kabel jumper male-to-male fleksibel, 40 jumper DuPont, dan kotak komponen.",
+    status: "active",
+    variants: [
+      {
+        id: "var-breadboard-v1",
+        variantName: "Pack Lengkap",
+        sku: "VAR-BREADBOARD-V1",
+        price: 85000,
+        resellerPrice: 70000,
+        stock: 150,
+        weight: 300,
+        status: "active",
+      },
+    ],
+    images: [
+      {
+        id: "img-breadboard-v1",
+        variantId: null,
+        imageUrl:
+          "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Solderless%20breadboard%20with%20power%20module%20and%20colorful%20jumper%20wires%20neatly%20organized%20studio%20product%20photography&image_size=square_hd",
+        altText: "Breadboard Power & Jumper Electronics Pack",
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: "prod-obstacle-avoiding-robot",
+    categoryId: "cat-robot-kit",
+    productTypeId: "pt-physical",
+    name: "Obstacle Avoider Smart Car Robot Kit",
+    slug: "obstacle-avoider-smart-car-v1",
+    sku: "ROBO-AVOIDER-CAR-V1",
+    description:
+      "Mobil robot cerdas 2 roda dengan sensor ultrasonik bermotor servo untuk mendeteksi dan menghindari rintangan secara otomatis. Cocok untuk pemula segala usia.",
+    status: "active",
+    variants: [
+      {
+        id: "var-avoider-std-v1",
+        variantName: "Kit Standar Ultrasonik",
+        sku: "VAR-AVOIDER-STD-V1",
+        price: 260000,
+        resellerPrice: 225000,
+        stock: 90,
+        weight: 700,
+        status: "active",
+      },
+    ],
+    images: [
+      {
+        id: "img-avoider-v1",
+        variantId: null,
+        imageUrl:
+          "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Educational%20smart%20robot%20car%20with%20ultrasonic%20sensor%20eyes%20on%20top%20blue%20wheels%20studio%20photo%20white%20background&image_size=square_hd",
+        altText: "Obstacle Avoider Smart Car Robot Kit",
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+  },
 ];
 
 async function seed() {
