@@ -142,10 +142,10 @@ export async function GET(request: NextRequest) {
 
         // ── Review aggregates (PUBLISHED only) ──────────────────────────
         ratingAvg: sql<string | null>`ROUND(AVG(
-          CASE WHEN ${reviews.status} = 'published' THEN ${reviews.rating} END
+          CASE WHEN ${reviews.status} = 'PUBLISHED' THEN ${reviews.rating} END
         ), 1)`,
         reviewCount: sql<number>`COUNT(
-          CASE WHEN ${reviews.status} = 'published' THEN 1 END
+          CASE WHEN ${reviews.status} = 'PUBLISHED' THEN 1 END
         )`,
       })
       .from(products)
