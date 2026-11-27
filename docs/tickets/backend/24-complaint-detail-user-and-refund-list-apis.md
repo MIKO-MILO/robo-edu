@@ -12,10 +12,10 @@
 
 **Blocked by:** None (dapat dimulai segera)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `GET /api/complaints/[complaintId]` mengembalikan detail komplain milik user yang login; return 403 jika bukan miliknya.
+- [x] `GET /api/complaints/[complaintId]` mengembalikan detail komplain milik user yang login; return 403 jika bukan miliknya.
 - [x] `GET /api/complaints` mengembalikan daftar komplain milik user yang login.
-- [ ] `GET /api/admin/refunds` mengembalikan daftar semua refund dengan pagination; hanya dapat diakses admin.
-- [ ] `GET /api/orders/[id]/refund/[refundId]` mengembalikan detail refund; return 403 jika order bukan milik user.
-- [ ] Semua endpoint mengembalikan 401 jika tidak ada sesi valid.
+- [x] `GET /api/admin/refunds` mengembalikan daftar semua refund dengan pagination; hanya dapat diakses admin.
+- [x] `GET /api/orders/[id]/refund/[refundId]` mengembalikan detail refund; return 403 jika order bukan milik user.
+- [x] Semua endpoint mengembalikan 401 jika tidak ada sesi valid.
