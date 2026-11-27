@@ -4,8 +4,8 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `GET /api/admin/reviews/:id` menyertakan array `images: [{ id, url }]` di response — empty array jika review tidak punya gambar
-- [ ] Query mengambil semua baris dari `review_images` yang ber-`review_id` sesuai, dieksekusi dalam satu roundtrip (bukan N+1)
-- [ ] Response shape tetap backward-compatible — field yang sudah ada tidak berubah nama atau tipe
+- [x] `GET /api/admin/reviews/:id` menyertakan array `images: [{ id, url }]` di response — empty array jika review tidak punya gambar
+- [x] Query mengambil semua baris dari `review_images` yang ber-`review_id` sesuai, dieksekusi dalam satu roundtrip (bukan N+1)
+- [x] Response shape tetap backward-compatible — field yang sudah ada tidak berubah nama atau tipe
