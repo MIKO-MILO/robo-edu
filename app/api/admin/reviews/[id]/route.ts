@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
-import { reviews, users, products, orderItems, orders } from "@/src/db/schema";
+import { reviews, users, products, orderItems, orders, reviewImages } from "@/src/db/schema";
 import { requireAdmin } from "@/src/lib/auth/require-admin";
 
 export const runtime = "nodejs";
@@ -47,6 +47,11 @@ export async function GET(
     return NextResponse.json({ success: false, message: "Review tidak ditemukan." }, { status: 404 });
   }
 
+  const imageRows = await db
+    .select({ id: reviewImages.id, url: reviewImages.url })
+    .from(reviewImages)
+    .where(eq(reviewImages.reviewId, id));
+
   return NextResponse.json({
     success: true,
     data: {
@@ -63,6 +68,7 @@ export async function GET(
       user_name:     row.userName,
       user_email:    row.userEmail,
       order_number:  row.orderNumber,
+      images:        imageRows.map((img) => ({ id: img.id, url: img.url })),
     },
   });
 }
