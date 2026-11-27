@@ -38,6 +38,7 @@ async function fetchAdminReviews(params: {
   limit: number;
   q: string;
   rating: string;
+  status: string;
   sort: string;
 }): Promise<{ data: AdminReviewRow[]; meta: ReviewListMeta }> {
   const qs = new URLSearchParams({
@@ -47,6 +48,7 @@ async function fetchAdminReviews(params: {
   });
   if (params.q) qs.set("q", params.q);
   if (params.rating !== "ALL") qs.set("rating", params.rating);
+  if (params.status !== "ALL") qs.set("status", params.status);
 
   const res = await fetch(`/api/admin/reviews?${qs.toString()}`, { cache: "no-store" });
   const json = await res.json();
@@ -67,6 +69,7 @@ function AdminReviewsContent() {
   // ── URL params ────────────────────────────────────────────────────────
   const searchQuery  = searchParams.get("search") || "";
   const ratingFilter = searchParams.get("rating") || "ALL";
+  const statusFilter = searchParams.get("status") || "ALL";
   const sortBy       = searchParams.get("sortBy") || "created_at";
   const sortOrder    = searchParams.get("sortOrder") || "desc";
   const currentPage  = Math.max(1, Number(searchParams.get("page") ?? "1"));
@@ -81,6 +84,7 @@ function AdminReviewsContent() {
   // ── Delete dialog state ───────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<AdminReviewRow | null>(null);
   const [isDeleting, setIsDeleting]     = useState(false);
+  const [isTogglingId, setIsTogglingId] = useState<string | null>(null);
 
   // ── URL helpers ───────────────────────────────────────────────────────
   const pushParams = useCallback(
@@ -108,6 +112,7 @@ function AdminReviewsContent() {
         limit: LIMIT,
         q: searchQuery,
         rating: ratingFilter,
+        status: statusFilter,
         sort: `${sortBy}_${sortOrder}`,
       });
       setReviews(result.data);
@@ -117,7 +122,7 @@ function AdminReviewsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchQuery, ratingFilter, sortBy, sortOrder]);
+  }, [currentPage, searchQuery, ratingFilter, statusFilter, sortBy, sortOrder]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -127,6 +132,7 @@ function AdminReviewsContent() {
   // ── URL param handlers ────────────────────────────────────────────────
   const handleSearchChange = (val: string) => pushParams({ search: val, page: null });
   const handleRatingFilterChange = (val: string) => pushParams({ rating: val, page: null });
+  const handleStatusFilterChange = (val: string) => pushParams({ status: val, page: null });
   const handleSortChange = (val: string) => {
     const lastUnderscore = val.lastIndexOf("_");
     const field = val.slice(0, lastUnderscore);
@@ -134,6 +140,53 @@ function AdminReviewsContent() {
     if (field && order) pushParams({ sortBy: field, sortOrder: order, page: null });
   };
   const handlePageChange = (page: number) => pushParams({ page: page > 1 ? String(page) : null });
+
+  // ── Toggle Status (optimistic update) ────────────────────────────────
+  const handleToggleStatus = async (review: AdminReviewRow) => {
+    const newStatus = review.status === "PUBLISHED" ? "HIDDEN" : "PUBLISHED";
+
+    // 1. Optimistic update
+    setIsTogglingId(review.id);
+    setReviews((prev) =>
+      prev.map((r) => r.id === review.id ? { ...r, status: newStatus } : r),
+    );
+
+    try {
+      const res  = await fetch(`/api/admin/reviews/${review.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message ?? "Gagal mengubah status.");
+
+      toast({
+        title: newStatus === "HIDDEN" ? "Ulasan Disembunyikan" : "Ulasan Ditampilkan",
+        description:
+          newStatus === "HIDDEN"
+            ? "Ulasan tidak akan muncul di halaman produk."
+            : "Ulasan kembali tampil di halaman produk.",
+        variant: "success",
+      });
+
+      // Jika filter aktif, hapus baris yang tidak sesuai filter dari state
+      if (statusFilter !== "ALL") {
+        setReviews((prev) => prev.filter((r) => r.status === statusFilter));
+      }
+    } catch (err) {
+      // Rollback
+      setReviews((prev) =>
+        prev.map((r) => r.id === review.id ? { ...r, status: review.status } : r),
+      );
+      toast({
+        title: "Gagal Mengubah Status",
+        description: err instanceof Error ? err.message : "Terjadi kesalahan.",
+        variant: "error",
+      });
+    } finally {
+      setIsTogglingId(null);
+    }
+  };
 
   // ── Delete ────────────────────────────────────────────────────────────
   const handleConfirmDelete = async () => {
@@ -212,10 +265,21 @@ function AdminReviewsContent() {
         data={reviews}
         isLoading={isLoading}
         onDeleteReview={(review) => setDeleteTarget(review)}
+        onToggleStatus={handleToggleStatus}
         searchValue={searchQuery}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Cari produk, customer, atau komentar..."
         filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: statusFilter,
+            onChange: handleStatusFilterChange,
+            options: [
+              { value: "PUBLISHED", label: "Tampil" },
+              { value: "HIDDEN",    label: "Disembunyikan" },
+            ],
+          },
           {
             id: "rating",
             label: "Rating",
