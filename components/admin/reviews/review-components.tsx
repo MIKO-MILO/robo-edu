@@ -11,11 +11,14 @@ import {
   User,
   Calendar,
   ExternalLink,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DataTable, type ColumnDef, type DataTableFilter } from "@/components/admin/data-table";
 import { StarRating } from "@/components/ui/star-rating";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/admin/status-badge";
 import type { Review } from "@/types/review";
 
 export interface AdminReviewRow extends Review {
@@ -138,6 +141,7 @@ export interface ReviewTableProps {
   data: AdminReviewRow[];
   isLoading?: boolean;
   onDeleteReview: (review: AdminReviewRow) => void;
+  onToggleStatus?: (review: AdminReviewRow) => Promise<void>;
   searchValue?: string;
   onSearchChange?: (val: string) => void;
   searchPlaceholder?: string;
@@ -149,6 +153,7 @@ export function ReviewTable({
   data,
   isLoading = false,
   onDeleteReview,
+  onToggleStatus,
   searchValue,
   onSearchChange,
   searchPlaceholder,
@@ -242,12 +247,46 @@ export function ReviewTable({
       ),
     },
     {
+      key: "status",
+      header: "Status",
+      cell: (row) => (
+        <StatusBadge
+          status={row.status}
+          customLabel={row.status === "PUBLISHED" ? "Tampil" : "Disembunyikan"}
+          size="sm"
+          showDot
+        />
+      ),
+    },
+    {
       key: "actions",
       header: "Aksi",
       headerClassName: "text-right",
       className: "text-right",
       cell: (row) => (
         <div className="flex items-center justify-end gap-1.5">
+          {onToggleStatus && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              neo={false}
+              onClick={() => void onToggleStatus(row)}
+              className={
+                row.status === "PUBLISHED"
+                  ? "h-8 w-8 p-0 rounded-xl text-muted-foreground border-border hover:bg-muted transition-colors"
+                  : "h-8 w-8 p-0 rounded-xl text-success border-success/30 hover:bg-success-bg hover:border-success transition-colors"
+              }
+              title={row.status === "PUBLISHED" ? "Sembunyikan ulasan" : "Tampilkan ulasan"}
+            >
+              {row.status === "PUBLISHED" ? (
+                <EyeOff className="size-3.5" />
+              ) : (
+                <Eye className="size-3.5" />
+              )}
+            </Button>
+          )}
+
           <Button
             type="button"
             variant="outline"
