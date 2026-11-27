@@ -118,6 +118,12 @@ const adminNavItems: NavItem[] = [
     roles: ["SUPERADMIN", "ADMIN", "ADMIN_SALES"],
   },
   {
+    title: "Refunds",
+    href: "/admin/refunds",
+    icon: <CreditCard className="size-5" />,
+    roles: ["SUPERADMIN", "ADMIN", "ADMIN_SALES"],
+  },
+  {
     title: "Reports",
     href: "/admin/reports",
     icon: <FileBarChart className="size-5" />,

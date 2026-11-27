@@ -10,12 +10,12 @@
 
 **Blocked by:** 24-complaint-detail-user-and-refund-list-apis (semua endpoint harus tersedia sebelum halaman bisa dibangun)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Halaman `/profile/orders/[id]/complaint/[complaintId]` menampilkan detail komplain dengan semua field yang relevan.
-- [ ] Halaman `/profile/complaints` menampilkan daftar komplain milik user yang login.
-- [ ] Link "Komplain Saya" tersedia di navigasi profil user.
-- [ ] Halaman `/admin/refunds` menampilkan tabel semua refund dengan pagination dan filter status.
-- [ ] Setiap baris tabel refund admin memiliki link ke detail order terkait.
-- [ ] Halaman `/profile/orders/[id]/refund/[refundId]` menampilkan status dan detail refund user.
-- [ ] Semua halaman baru menggunakan desain yang konsisten dengan sistem desain yang sudah ada.
+- [x] Halaman `/profile/orders/[id]/complaint/[complaintId]` menampilkan detail komplain dengan semua field yang relevan.
+- [x] Halaman `/profile/complaints` menampilkan daftar komplain milik user yang login.
+- [x] Link "Komplain Saya" tersedia di navigasi profil user.
+- [x] Halaman `/admin/refunds` menampilkan tabel semua refund dengan pagination dan filter status.
+- [x] Setiap baris tabel refund admin memiliki link ke detail order terkait.
+- [x] Halaman `/profile/orders/[id]/refund/[refundId]` menampilkan status dan detail refund user.
+- [x] Semua halaman baru menggunakan desain yang konsisten dengan sistem desain yang sudah ada.
