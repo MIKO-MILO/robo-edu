@@ -4,7 +4,7 @@
 
 **Blocked by:** 36 — DB schema & API: landing page CMS config
 
-**Status:** ready-for-agent
+**Status:** ✅ done
 
 ## Vouchers (`/admin/vouchers`)
 
@@ -24,12 +24,30 @@
 
 ## Acceptance criteria
 
-- [ ] Kolom toggle "Landing Page" muncul di tabel `/admin/vouchers`
-- [ ] Toggle on voucher: data masuk ke `landing_featured_vouchers`, tampil di halaman landing publik
-- [ ] Toggle off voucher: data dihapus dari `landing_featured_vouchers`, hilang dari halaman landing publik
-- [ ] Toggle on diblokir dengan pesan jelas saat sudah ada 6 voucher featured
-- [ ] Voucher non-aktif tidak bisa di-toggle on
-- [ ] Kolom toggle "Featured" muncul di tabel `/admin/reviews`
-- [ ] Toggle on/off review bekerja sesuai dengan tabel `landing_featured_reviews`
-- [ ] Review non-PUBLISHED tidak bisa di-toggle on
-- [ ] Perubahan toggle langsung terlihat di halaman landing publik
+- [x] Kolom toggle "Landing Page" muncul di tabel `/admin/vouchers`
+- [x] Toggle on voucher: data masuk ke `landing_featured_vouchers`, tampil di halaman landing publik
+- [x] Toggle off voucher: data dihapus dari `landing_featured_vouchers`, hilang dari halaman landing publik
+- [x] Toggle on diblokir dengan pesan jelas saat sudah ada 6 voucher featured
+- [x] Voucher non-aktif tidak bisa di-toggle on
+- [x] Kolom toggle "Featured" muncul di tabel `/admin/reviews`
+- [x] Toggle on/off review bekerja sesuai dengan tabel `landing_featured_reviews`
+- [x] Review non-PUBLISHED tidak bisa di-toggle on
+- [x] Perubahan toggle langsung terlihat di halaman landing publik
+
+## Implementasi
+
+### File baru
+- `hooks/admin/landing-config/use-landing-featured.ts` — React Query hooks untuk GET/POST/DELETE featured vouchers & reviews
+- `components/admin/landing-featured-toggle.tsx` — Komponen toggle reusable dengan tooltip saat disabled
+
+### File diubah
+- `components/admin/vouchers/voucher-list.tsx` — Tambah kolom "Landing Page" dengan `LandingFeaturedToggle`
+- `components/admin/reviews/review-components.tsx` — Tambah kolom "Featured" dengan `LandingFeaturedToggle`
+
+### Perilaku toggle
+- State featured di-fetch sekali dari `GET /api/admin/landing-config/vouchers` dan `/reviews`, disimpan di React Query cache (`staleTime: 30s`)
+- Toggle on → `POST`, toggle off → `DELETE /:id` (by landing entry id, bukan voucher/review id)
+- Optimistic invalidation: setelah mutasi berhasil, query key di-invalidate sehingga list refresh otomatis
+- Disabled state + tooltip:
+  - Voucher: non-aktif (`is_active: false`) atau sudah 6 featured dan item belum di-featured
+  - Review: status bukan `PUBLISHED`
