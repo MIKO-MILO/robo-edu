@@ -75,7 +75,7 @@ export function InventoryFilters({
       >
         <AlertTriangleIcon className="size-4" />
         <span className="text-sm">
-          {lowStockOnly ? "Stok Menipis ✓" : "Stok Menipis"}
+          {lowStockOnly ? "Stok Menipis " : "Stok Menipis"}
         </span>
       </Button>
     </div>

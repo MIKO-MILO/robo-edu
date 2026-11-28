@@ -20,6 +20,184 @@ export interface InvoiceItem {
   subtotal: number;
 }
 
+export type ReceiptItem = InvoiceItem;
+
+export interface OrderReceiptData {
+  orderNumber: string;
+  orderDate: string;
+  status: string;
+  recipientName: string;
+  recipientPhone?: string;
+  shippingAddress?: string;
+  courierName?: string;
+  shippingService?: string;
+  trackingNumber?: string;
+  items: ReceiptItem[];
+  subtotal: number;
+  shippingCost: number;
+  discountAmount?: number;
+  voucherCode?: string | null;
+  total: number;
+  paymentMethod?: string;
+}
+
+/**
+ * Format plain text receipt / struk kasir tanpa styling dekoratif.
+ */
+export function generateReceiptText(data: OrderReceiptData): string {
+  const formatIDR = (num: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(num);
+
+  const divider = "=".repeat(48);
+  const subDivider = "-".repeat(48);
+
+  const lines: string[] = [
+    divider,
+    "                    ROBOEDU                     ",
+    "         Smart Learning & Robotic Toys          ",
+    "               www.roboedu.id                   ",
+    divider,
+    "STRUK BUKTI PEMESANAN",
+    subDivider,
+    `No. Pesanan     : ${data.orderNumber}`,
+    `Tanggal         : ${data.orderDate}`,
+    `Status          : ${data.status}`,
+    subDivider,
+    "DATA PENERIMA",
+    `Nama            : ${data.recipientName}`,
+    ...(data.recipientPhone ? [`No. HP          : ${data.recipientPhone}`] : []),
+    ...(data.shippingAddress ? [`Alamat          : ${data.shippingAddress}`] : []),
+    ...(data.courierName
+      ? [`Kurir           : ${data.courierName}${data.shippingService ? ` (${data.shippingService})` : ""}`]
+      : []),
+    ...(data.trackingNumber ? [`No. Resi        : ${data.trackingNumber}`] : []),
+    subDivider,
+    "RINCIAN PRODUK",
+    subDivider,
+  ];
+
+  data.items.forEach((item, index) => {
+    lines.push(`${index + 1}. ${item.name}`);
+    if (item.variant) {
+      lines.push(`   Varian   : ${item.variant}`);
+    }
+    lines.push(
+      `   Qty & Hrg: ${item.quantity} x ${formatIDR(item.price)} = ${formatIDR(item.subtotal)}`
+    );
+  });
+
+  lines.push(
+    subDivider,
+    "RINCIAN PEMBAYARAN",
+    subDivider,
+    `Subtotal Produk       : ${formatIDR(data.subtotal)}`,
+    `Ongkos Kirim          : ${formatIDR(data.shippingCost)}`
+  );
+
+  if (data.discountAmount && data.discountAmount > 0) {
+    lines.push(
+      `Diskon Promo${data.voucherCode ? ` (${data.voucherCode})` : ""} : -${formatIDR(data.discountAmount)}`
+    );
+  }
+
+  lines.push(
+    subDivider,
+    `TOTAL PEMBAYARAN      : ${formatIDR(data.total)}`,
+    subDivider,
+    ...(data.paymentMethod ? [`Metode Pembayaran     : ${data.paymentMethod}`] : []),
+    divider,
+    "       Terima kasih telah berbelanja di RoboEdu!       ",
+    "      Simpan struk ini sebagai bukti transaksi.        ",
+    divider
+  );
+
+  return lines.join("\r\n");
+}
+
+/**
+ * Membangun buffer file PDF 1.4 murni standar ISO 32000 tanpa library eksternal.
+ * Menghasilkan tampilan struk kasir polos dengan font monospaced Courier.
+ */
+export function buildReceiptPdfBytes(lines: string[]): Uint8Array {
+  const sanitize = (str: string) =>
+    str
+      .replace(/\\/g, "\\\\")
+      .replace(/\(/g, "\\(")
+      .replace(/\)/g, "\\)")
+      .replace(/[^\x20-\x7E]/g, " ");
+
+  // Standar A4 = 595.28 x 841.89 points
+  // Margin kiri: 45pt, Mulai Y: 800pt, Font: Courier 9.5pt, Leading (line height): 13.5pt
+  let contentStream = "BT\n/F1 9.5 Tf\n13.5 TL\n45 800 Td\n";
+  for (let i = 0; i < lines.length; i++) {
+    contentStream += "(" + sanitize(lines[i]) + ") '\n";
+  }
+  contentStream += "ET\n";
+
+  const encoder = new TextEncoder();
+  const streamBytes = encoder.encode(contentStream);
+  const streamLen = streamBytes.length;
+
+  const objects: string[] = [];
+  objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+  objects[2] = "<< /Type /Pages /Kids [3 0 R] /Count 1 >>";
+  objects[3] =
+    "<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 595 842] /Contents 5 0 R >>";
+  objects[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>";
+  objects[5] =
+    "<< /Length " + streamLen + " >>\nstream\n" + contentStream + "endstream";
+
+  let out = "%PDF-1.4\n";
+  const xref: string[] = [];
+  xref[0] = "0000000000 65535 f \n";
+
+  for (let i = 1; i <= 5; i++) {
+    const currentOffset = encoder.encode(out).length;
+    xref[i] = String(currentOffset).padStart(10, "0") + " 00000 n \n";
+    out += i + " 0 obj\n" + objects[i] + "\nendobj\n";
+  }
+
+  const startxref = encoder.encode(out).length;
+  out +=
+    "xref\n0 6\n" +
+    xref.join("") +
+    "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n" +
+    startxref +
+    "\n%%EOF\n";
+
+  return encoder.encode(out);
+}
+
+/**
+ * Unduh langsung file invoice berformat PDF standar polos seperti struk biasa.
+ */
+export function downloadOrderReceiptPdf(data: OrderReceiptData) {
+  const receiptText = generateReceiptText(data);
+  const lines = receiptText.split(/\r?\n/);
+  const pdfBytes = buildReceiptPdfBytes(lines);
+
+  const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `invoice-${data.orderNumber}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Unduh langsung struk pesanan sebagai file .txt tanpa modal popup.
+ */
+export function downloadOrderReceipt(data: OrderReceiptData) {
+  downloadOrderReceiptPdf(data);
+}
+
 export interface OrderInvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;

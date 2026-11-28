@@ -7,7 +7,7 @@ import { OrderPeriodSelect, type OrderPeriod } from "@/components/user/orders/or
 import { OrderCard } from "@/components/user/orders/order-card";
 import { OrderEmptyState } from "@/components/user/orders/order-empty-state";
 import { OrderTrackingModal, type TrackingStep } from "@/components/user/orders/order-tracking-modal";
-import { OrderInvoiceModal } from "@/components/user/orders/order-invoice-modal";
+import { downloadOrderReceiptPdf, type ReceiptItem } from "@/components/user/orders/order-invoice-modal";
 import { OrderReviewModal } from "@/components/user/orders/order-review-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Search, CheckCircle, Loader2, AlertCircle } from "lucide-react";
@@ -97,7 +97,6 @@ function OrdersContent() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Modal states
-  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<ApiOrder | null>(null);
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<ApiOrder | null>(null);
   const [selectedReviewOrder, setSelectedReviewOrder] = useState<ApiOrder | null>(null);
   const [loadingDetailId, setLoadingDetailId] = useState<string | null>(null);
@@ -232,7 +231,61 @@ function OrdersContent() {
     const order = orders.find((o) => o.order_number === orderNumber);
     if (!order) return;
     const detail = await fetchOrderDetail(order.id);
-    setSelectedInvoiceOrder(detail ?? order);
+    const target = detail ?? order;
+
+    const items: ReceiptItem[] =
+      target.all_items && target.all_items.length > 0
+        ? target.all_items.map((i) => ({
+            name: i.name,
+            variant: i.variant,
+            price: i.price,
+            quantity: i.quantity,
+            subtotal: i.subtotal,
+          }))
+        : target.first_item
+        ? [
+            {
+              name: target.first_item.product_name_snapshot,
+              variant: target.first_item.variant_name_snapshot,
+              price: target.subtotal,
+              quantity: target.item_count || 1,
+              subtotal: target.subtotal,
+            },
+          ]
+        : [];
+
+    downloadOrderReceiptPdf({
+      orderNumber: target.order_number,
+      orderDate: new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(target.created_at)),
+      status: target.status,
+      recipientName: target.recipient_name || "Pelanggan RoboEdu",
+      recipientPhone: target.recipient_phone,
+      shippingAddress: [
+        target.shipping_address,
+        target.shipping_city,
+        target.shipping_province,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      courierName: target.courier_name,
+      shippingService: target.shipping_service,
+      trackingNumber: target.tracking_number,
+      items,
+      subtotal: target.subtotal,
+      shippingCost: target.shipping_cost,
+      discountAmount: target.discount_amount,
+      voucherCode: target.voucher_code_snapshot,
+      total: target.total,
+      paymentMethod: target.courier_name ?? "Pembayaran Terverifikasi",
+    });
+
+    showToast(`Invoice PDF #${target.order_number} berhasil diunduh.`);
   }
 
   async function handleTrackPackage(orderNumber: string) {
@@ -464,35 +517,7 @@ function OrdersContent() {
         />
       )}
 
-      {selectedInvoiceOrder && (
-        <OrderInvoiceModal
-          isOpen
-          onClose={() => setSelectedInvoiceOrder(null)}
-          orderNumber={selectedInvoiceOrder.order_number}
-          orderDate={new Intl.DateTimeFormat("id-ID", {
-            day: "numeric", month: "short", year: "numeric",
-          }).format(new Date(selectedInvoiceOrder.created_at))}
-          status={selectedInvoiceOrder.status}
-          recipientName={selectedInvoiceOrder.recipient_name}
-          recipientPhone={selectedInvoiceOrder.recipient_phone}
-          shippingAddress={`${selectedInvoiceOrder.shipping_address}, ${selectedInvoiceOrder.shipping_city}, ${selectedInvoiceOrder.shipping_province}`}
-          items={
-            selectedInvoiceOrder.all_items?.map((i) => ({
-              name: i.name,
-              variant: i.variant,
-              price: i.price,
-              quantity: i.quantity,
-              subtotal: i.subtotal,
-            })) ?? []
-          }
-          subtotal={selectedInvoiceOrder.subtotal}
-          shippingCost={selectedInvoiceOrder.shipping_cost}
-          discountAmount={selectedInvoiceOrder.discount_amount}
-          voucherCode={selectedInvoiceOrder.voucher_code_snapshot}
-          total={selectedInvoiceOrder.total}
-          paymentMethod={selectedInvoiceOrder.courier_name ?? undefined}
-        />
-      )}
+
 
       {selectedReviewOrder && (
         <OrderReviewModal

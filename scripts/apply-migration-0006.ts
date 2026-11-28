@@ -60,7 +60,7 @@ async function run() {
   }
 
   await conn.end();
-  console.log("\n✓ Migration 0006 applied successfully.");
+  console.log("\n Migration 0006 applied successfully.");
 }
 
 run().catch((e) => {

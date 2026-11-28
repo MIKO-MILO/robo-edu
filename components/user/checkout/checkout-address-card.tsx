@@ -9,6 +9,7 @@ interface CheckoutAddressCardProps {
   onManage: () => void;
   onEdit: () => void;
   onChangeAddress: () => void;
+  notes?: string;
 }
 
 /**
@@ -22,17 +23,18 @@ export function CheckoutAddressCard({
   onManage,
   onEdit,
   onChangeAddress,
+  notes,
 }: CheckoutAddressCardProps) {
   return (
-    <div className="relative bg-accent-butter/60 border-2 border-border rounded-xl p-5">
+    <div className="relative bg-card border border-dashed border-primary/60 rounded-xl p-5 shadow-xs">
       {/* Header: Badges + Kelola */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="px-2.5 py-1 rounded-full bg-accent-green text-foreground text-xs font-extrabold border border-border neo-shadow-icon">
-            ✓ Alamat Utama
+          <span className="px-2.5 py-1 rounded-full bg-accent-green text-foreground text-xs font-extrabold shadow-xs">
+            Alamat Utama
           </span>
           {address.label && (
-            <span className="px-2.5 py-1 rounded-full bg-card text-foreground text-xs font-bold border border-border">
+            <span className="px-2.5 py-1 rounded-full bg-card text-foreground text-xs font-bold shadow-xs">
               {address.label}
             </span>
           )}
@@ -50,20 +52,36 @@ export function CheckoutAddressCard({
       <div className="mb-3">
         <div className="font-heading font-bold text-base sm:text-lg text-foreground flex items-center gap-2.5 flex-wrap">
           <span>{address.recipient_name}</span>
-          <span className="text-xs font-body font-normal text-muted-foreground bg-card/80 px-2.5 py-1 rounded-md border border-border/40">
+          <span className="text-xs font-body font-normal text-muted-foreground bg-card/80 px-2.5 py-1 rounded-md shadow-xs">
             {address.phone}
           </span>
         </div>
-        <p className="text-sm text-foreground mt-2 leading-relaxed font-medium">
+        <p className="text-sm text-foreground/70 mt-2 leading-relaxed font-medium">
           {address.address}
           {address.village && `, ${address.village}`}
           {`, ${address.district}, ${address.city}, ${address.province}`}
           {address.postal_code && ` ${address.postal_code}`}
         </p>
+
+        {/* Hasil Catatan Pengiriman */}
+        <div className="mt-3.5 rounded-xl border border-border/20 bg-muted/20 px-3 py-2.5">
+          <p className="text-[11px] font-bold text-muted-foreground mb-0.5">
+            Catatan Pengiriman:
+          </p>
+          {notes?.trim() ? (
+            <p className="text-xs text-foreground font-medium leading-relaxed">
+              {notes}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground/70 italic">
+              Tidak ada catatan pengiriman.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Footer: Confirmation Dot + Actions */}
-      <div className="mt-4 pt-4 border-t border-border/20 flex items-center justify-between flex-wrap gap-3 text-xs">
+      <div className="mt-4 pt-4 border-t border-border/15 flex items-center justify-between flex-wrap gap-3 text-xs">
         <span className="text-muted-foreground font-medium flex items-center gap-1.5">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
           Titik Pinpoint Maps Terkonfirmasi
@@ -71,13 +89,13 @@ export function CheckoutAddressCard({
         <div className="flex items-center gap-2">
           <button
             onClick={onEdit}
-            className="px-3 py-1.5 rounded-lg bg-card border border-border font-semibold text-xs hover:bg-muted/40 transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-accent-soft-blue text-foreground font-semibold text-xs shadow-xs hover:bg-accent-soft-blue/80 transition-colors"
           >
             Ubah Alamat
           </button>
           <button
             onClick={onChangeAddress}
-            className="px-3 py-1.5 rounded-lg bg-card border border-border font-semibold text-xs hover:bg-muted/40 transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-accent-soft-yellow text-foreground font-semibold text-xs shadow-xs hover:bg-accent-soft-yellow/80 transition-colors"
           >
             Pilih Alamat Lain
           </button>
@@ -93,7 +111,7 @@ export function CheckoutAddressCard({
  */
 export function CheckoutAddressEmpty({ onAddNew }: { onAddNew: () => void }) {
   return (
-    <div className="p-6 rounded-xl border-2 border-dashed border-border/40 bg-muted/20 flex flex-col items-center justify-center text-center gap-3">
+    <div className="p-6 rounded-xl border border-dashed border-border/20 bg-muted/20 flex flex-col items-center justify-center text-center gap-3">
       <MapPin className="w-10 h-10 text-muted-foreground/50" />
       <div>
         <p className="font-heading font-bold text-foreground text-sm">
@@ -103,7 +121,7 @@ export function CheckoutAddressEmpty({ onAddNew }: { onAddNew: () => void }) {
           Tambahkan alamat tujuan paket terlebih dahulu
         </p>
       </div>
-      <Button variant="accent-yellow" size="sm" onClick={onAddNew} neo>
+      <Button variant="accent-yellow" size="sm" onClick={onAddNew} neo={false} className="shadow-xs">
         + Tambah Alamat Baru
       </Button>
     </div>

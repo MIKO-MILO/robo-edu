@@ -44,13 +44,10 @@ export function CheckoutVoucherWidget({
   }
 
   return (
-    <div className="bg-card rounded-2xl p-6 border-2 border-border">
+    <div className="bg-card rounded-2xl p-6 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-accent-yellow border-2 border-border neo-shadow-icon flex items-center justify-center shrink-0">
-            <Tag className="w-3.5 h-3.5 text-foreground" />
-          </span>
           <h3 className="font-heading font-extrabold text-base text-foreground">
             Voucher &amp; Promo
           </h3>
@@ -62,7 +59,7 @@ export function CheckoutVoucherWidget({
 
       {/* Applied State */}
       {appliedVoucher ? (
-        <div className="mb-3 p-3 rounded-xl bg-accent-green/40 border-2 border-border flex items-center justify-between">
+        <div className="mb-3 p-3 rounded-xl bg-accent-green/40 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
             <div>
@@ -82,14 +79,14 @@ export function CheckoutVoucherWidget({
           <button
             onClick={onRemove}
             title="Hapus Voucher"
-            className="w-6 h-6 rounded-full bg-card border border-border text-foreground hover:bg-danger-bg flex items-center justify-center shrink-0 transition-colors"
+            className="w-6 h-6 rounded-full bg-card/80 text-foreground hover:bg-danger-bg flex items-center justify-center shrink-0 transition-colors shadow-xs"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       ) : (
         /* Empty State */
-        <div className="mb-3 p-3 rounded-xl border-2 border-dashed border-border/40 bg-muted/20 flex items-center gap-2.5">
+        <div className="mb-3 p-3 rounded-xl border border-dashed border-border/20 bg-muted/20 flex items-center gap-2.5">
           <Ticket className="w-4 h-4 text-muted-foreground shrink-0" />
           <div>
             <p className="font-bold text-foreground text-xs">
@@ -112,16 +109,16 @@ export function CheckoutVoucherWidget({
             setError(null);
           }}
           placeholder={appliedVoucher ? "Masukkan kode promo lain" : "Masukkan kode promo"}
-          className="flex-grow text-xs uppercase tracking-wider font-bold rounded-xl border-2 border-border bg-card px-3.5 h-10 focus-visible:ring-1"
+          className="flex-grow text-xs uppercase tracking-wider font-bold rounded-xl border border-border/20 bg-card px-3.5 h-10 focus-visible:ring-1"
           disabled={isLoading}
         />
         <Button
           type="submit"
-          variant="accent-yellow"
+          variant="card"
           size="sm"
-          neo
+          neo={false}
           disabled={isLoading || !code.trim()}
-          className="shrink-0 rounded-xl font-heading font-extrabold text-xs"
+          className="shrink-0 rounded-xl bg-accent-soft-yellow hover:bg-accent-soft-yellow/80 text-foreground font-medium text-xs shadow-xs transition-colors"
         >
           {isLoading ? "..." : "Terapkan"}
         </Button>

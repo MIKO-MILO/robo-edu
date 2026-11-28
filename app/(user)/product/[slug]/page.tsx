@@ -433,9 +433,8 @@ function ProductInfoSection({ product }: { product: ProductDetail }) {
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 font-heading font-bold text-lg md:text-xl uppercase tracking-wide transition-colors relative shrink-0 cursor-pointer ${
-                isActive ? "text-primary-700" : "text-muted-foreground hover:text-primary"
-              }`}
+              className={`pb-3 font-heading font-bold text-lg md:text-xl uppercase tracking-wide transition-colors relative shrink-0 cursor-pointer ${isActive ? "text-primary-700" : "text-muted-foreground hover:text-primary"
+                }`}
             >
               {labels[tab]}
               {isActive && (
@@ -594,7 +593,7 @@ export default function ProductDetailPage() {
         );
         setRelatedProducts(filtered.slice(0, 3));
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       active = false;
@@ -654,7 +653,7 @@ export default function ProductDetailPage() {
     <>
       <main className="w-full px-4 md:px-16 pt-35 md:pt-50 pb-12 bg-background min-h-screen">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-10 gap-10">
-          
+
           {/* Left Column: Inline Galeri Media */}
           <div className="lg:col-span-5">
             <InlineProductMediaGallery
@@ -726,7 +725,7 @@ export default function ProductDetailPage() {
                   {isAdding
                     ? "Menambahkan..."
                     : addedSuccess
-                      ? "✓ Ditambahkan"
+                      ? " Ditambahkan"
                       : !product.inStock
                         ? "Stok Habis"
                         : "Tambah Ke Keranjang"}
