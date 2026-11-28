@@ -28,3 +28,6 @@ export * from "./complaint-attachment";
 export * from "./email-log";
 export * from "./audit-log";
 export * from "./contact-message";
+export * from "./landing-config";
+export * from "./landing-featured-voucher";
+export * from "./landing-featured-review";

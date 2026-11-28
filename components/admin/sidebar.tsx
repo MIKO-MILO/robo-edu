@@ -20,6 +20,7 @@ import {
   Phone,
   CreditCard,
   Truck,
+  LayoutTemplate,
   ChevronLeft,
   ChevronRight,
   Bot,
@@ -151,6 +152,12 @@ const adminNavItems: NavItem[] = [
     title: "Kelola Pengiriman",
     href: "/admin/shipping-settings",
     icon: <Truck className="size-5" />,
+    roles: ["SUPERADMIN", "ADMIN"],
+  },
+  {
+    title: "Kelola Landing Page",
+    href: "/admin/landing-page",
+    icon: <LayoutTemplate className="size-5" />,
     roles: ["SUPERADMIN", "ADMIN"],
   },
 ];

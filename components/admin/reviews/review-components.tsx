@@ -19,6 +19,12 @@ import { DataTable, type ColumnDef, type DataTableFilter } from "@/components/ad
 import { StarRating } from "@/components/ui/star-rating";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { LandingFeaturedToggle } from "@/components/admin/landing-featured-toggle";
+import {
+  useLandingFeaturedReviews,
+  useAddFeaturedReview,
+  useRemoveFeaturedReview,
+} from "@/hooks/admin/landing-config/use-landing-featured";
 import type { Review } from "@/types/review";
 
 export interface AdminReviewRow extends Review {
@@ -162,6 +168,27 @@ export function ReviewTable({
 }: ReviewTableProps) {
   const router = useRouter();
 
+  // ── Featured reviews state ────────────────────────────────────────────
+  const { data: featuredEntries, isLoading: isFeaturedLoading } = useLandingFeaturedReviews();
+  const addFeatured    = useAddFeaturedReview();
+  const removeFeatured = useRemoveFeaturedReview();
+
+  // Map review_id → entry id for quick lookup
+  const featuredByReviewId = React.useMemo(() => {
+    const map = new Map<string, string>();
+    featuredEntries?.forEach((e) => map.set(e.review_id, e.id));
+    return map;
+  }, [featuredEntries]);
+
+  const handleToggleFeatured = (review: AdminReviewRow) => {
+    const entryId = featuredByReviewId.get(review.id);
+    if (entryId) {
+      removeFeatured.mutate(entryId);
+    } else {
+      addFeatured.mutate(review.id);
+    }
+  };
+
   const columns: ColumnDef<AdminReviewRow>[] = [
     {
       key: "product_name",
@@ -257,6 +284,31 @@ export function ReviewTable({
           showDot
         />
       ),
+    },
+    {
+      key: "featured",
+      header: "Featured",
+      cell: (row) => {
+        const isFeatured = featuredByReviewId.has(row.id);
+        const isPending  =
+          (addFeatured.isPending    && addFeatured.variables    === row.id) ||
+          (removeFeatured.isPending  && removeFeatured.variables === featuredByReviewId.get(row.id));
+
+        let disabledReason: string | undefined;
+        if (row.status !== "PUBLISHED") {
+          disabledReason = "Hanya ulasan yang berstatus Tampil (PUBLISHED) dapat ditampilkan di landing page.";
+        }
+
+        return (
+          <LandingFeaturedToggle
+            isFeatured={isFeatured}
+            isLoading={isFeaturedLoading}
+            isPending={isPending}
+            disabledReason={disabledReason}
+            onToggle={() => handleToggleFeatured(row)}
+          />
+        );
+      },
     },
     {
       key: "actions",

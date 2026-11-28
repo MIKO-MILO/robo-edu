@@ -17,6 +17,14 @@ import { Edit2Icon, Trash2Icon, TicketIcon, EyeIcon } from "lucide-react";
 import { mapVoucherToPromoItem } from "@/types/voucher";
 import { VoucherCardMulti, VoucherTicketSingle } from "@/components/user/landing";
 import { cn } from "@/lib/utils";
+import { LandingFeaturedToggle } from "@/components/admin/landing-featured-toggle";
+import {
+  useLandingFeaturedVouchers,
+  useAddFeaturedVoucher,
+  useRemoveFeaturedVoucher,
+} from "@/hooks/admin/landing-config/use-landing-featured";
+
+const MAX_FEATURED_VOUCHERS = 6;
 
 export interface VoucherTableProps {
   data: Voucher[];
@@ -46,6 +54,29 @@ export function VoucherList({
   const [previewVoucher, setPreviewVoucher] = useState<Voucher | null>(null);
   const [previewMode, setPreviewMode] = useState<"multi" | "single">("multi");
   const [previewThemeIndex, setPreviewThemeIndex] = useState(0);
+
+  // ── Featured vouchers state ───────────────────────────────────────────
+  const { data: featuredEntries, isLoading: isFeaturedLoading } = useLandingFeaturedVouchers();
+  const addFeatured    = useAddFeaturedVoucher();
+  const removeFeatured = useRemoveFeaturedVoucher();
+
+  const featuredCount    = featuredEntries?.length ?? 0;
+  const isAtLimit        = featuredCount >= MAX_FEATURED_VOUCHERS;
+  // Map voucher_id → entry id for quick lookup
+  const featuredByVoucherId = useMemo(() => {
+    const map = new Map<string, string>();
+    featuredEntries?.forEach((e) => map.set(e.voucher_id, e.id));
+    return map;
+  }, [featuredEntries]);
+
+  const handleToggleFeatured = (voucher: Voucher) => {
+    const entryId = featuredByVoucherId.get(voucher.id);
+    if (entryId) {
+      removeFeatured.mutate(entryId);
+    } else {
+      addFeatured.mutate(voucher.id);
+    }
+  };
 
   const previewPromoItem = useMemo(() => {
     if (!previewVoucher) return null;
@@ -98,6 +129,7 @@ export function VoucherList({
               <th className="py-3.5 px-4 font-bold">Limit Penggunaan</th>
               <th className="py-3.5 px-4 font-bold">Masa Berlaku</th>
               <th className="py-3.5 px-4 font-bold">Status</th>
+              <th className="py-3.5 px-4 font-bold">Landing Page</th>
               <th className="py-3.5 px-4 font-bold text-right">Aksi</th>
             </tr>
           </thead>
@@ -147,6 +179,33 @@ export function VoucherList({
                   <StatusBadge 
                     status={voucher.is_active ? "ACTIVE" : "INACTIVE"}
                   />
+                </td>
+
+                {/* Landing Page toggle */}
+                <td className="py-3 px-4">
+                  {(() => {
+                    const isFeatured = featuredByVoucherId.has(voucher.id);
+                    const isPending  =
+                      (addFeatured.isPending    && addFeatured.variables    === voucher.id) ||
+                      (removeFeatured.isPending  && removeFeatured.variables === featuredByVoucherId.get(voucher.id));
+
+                    let disabledReason: string | undefined;
+                    if (!voucher.is_active) {
+                      disabledReason = "Hanya voucher aktif yang dapat ditampilkan di landing page.";
+                    } else if (isAtLimit && !isFeatured) {
+                      disabledReason = "Maksimal 6 voucher dapat ditampilkan di landing page.";
+                    }
+
+                    return (
+                      <LandingFeaturedToggle
+                        isFeatured={isFeatured}
+                        isLoading={isFeaturedLoading}
+                        isPending={isPending}
+                        disabledReason={disabledReason}
+                        onToggle={() => handleToggleFeatured(voucher)}
+                      />
+                    );
+                  })()}
                 </td>
 
                 {/* Actions */}

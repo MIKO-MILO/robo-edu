@@ -1,6 +1,22 @@
 "use client";
 
-export default function TextMarquee() {
+export interface TextMarqueeProps {
+  /** Daftar teks yang berjalan di pita. Fallback ke default jika kosong. */
+  items?: string[];
+}
+
+const DEFAULT_ITEMS = ["ROBOEDU", "INTERAKTIF", "KREATIF", "EDUKATIF"];
+
+export default function TextMarquee({ items }: TextMarqueeProps) {
+  // Validasi: hanya item non-kosong; fallback ke default jika tidak ada
+  const cleanItems = (items ?? []).filter((t) => t && t.trim().length > 0);
+  const finalItems = cleanItems.length > 0 ? cleanItems : DEFAULT_ITEMS;
+
+  // Bangun teks berjalan: ulangi daftar item cukup banyak kali agar pita
+  // terisi sepanjang path SVG, dipisah bullet (•).
+  const onePass = finalItems.join(" • ");
+  const repeated = Array.from({ length: 4 }, () => onePass).join(" • ");
+
   return (
     <div className="relative w-full overflow-hidden -mt-12 max-[375px]:-mt-8 sm:-mt-16 md:-mt-16 lg:-mt-14 xl:-mt-24 z-20 flex items-center justify-center pb-4 sm:pb-6 pointer-events-none">
       <div className="w-full min-w-[1000px] flex justify-center items-center scale-[1.08] max-[375px]:scale-[1.15] sm:scale-110 md:scale-[1.20] lg:scale-[1.35] xl:scale-125 transition-transform">
@@ -39,7 +55,7 @@ export default function TextMarquee() {
                 dur="15s"
                 repeatCount="indefinite"
               />
-              ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF • ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF • ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF • ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF
+              {repeated}
             </textPath>
           </text>
         </svg>

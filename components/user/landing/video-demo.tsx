@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Play, X } from "lucide-react";
+import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl } from "@/src/lib/landing/youtube";
 
 // ==========================================
 // 1. TYPES & INTERFACES (Backend-Ready)
@@ -78,6 +79,7 @@ function VideoThumbnail({
 }
 
 // Molecule: Video Modal / Popup Player
+// Mendukung URL YouTube (embed iframe) dan file lokal (<video> fallback).
 function VideoModal({
   isOpen,
   videoSrc,
@@ -88,6 +90,8 @@ function VideoModal({
   onClose: () => void;
 }) {
   if (!isOpen) return null;
+
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(videoSrc);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -101,9 +105,19 @@ function VideoModal({
         </button>
 
         <div className="relative w-full aspect-video bg-black flex items-center justify-center">
-          <video src={videoSrc} controls autoPlay className="w-full h-full object-contain">
-            Browser Anda tidak mendukung pemutar video.
-          </video>
+          {youtubeEmbedUrl ? (
+            <iframe
+              src={youtubeEmbedUrl}
+              title="Video Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          ) : (
+            <video src={videoSrc} controls autoPlay className="w-full h-full object-contain">
+              Browser Anda tidak mendukung pemutar video.
+            </video>
+          )}
         </div>
       </div>
     </div>
@@ -120,6 +134,13 @@ export default function VideoDemo({
   videoSrc = "/videos/demo.mp4",
 }: VideoDemoProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Jika videoSrc adalah URL YouTube, gunakan thumbnail YouTube secara otomatis
+  // kecuali thumbnailSrc sudah di-override secara eksplisit
+  const resolvedThumbnail =
+    thumbnailSrc && thumbnailSrc !== "/images/foto.jpg"
+      ? thumbnailSrc
+      : getYouTubeThumbnailUrl(videoSrc) ?? thumbnailSrc;
 
   return (
     <section className="relative bg-background pt-14 sm:pt-28 pb-10 sm:pb-10 text-foreground overflow-x-clip">
@@ -154,7 +175,7 @@ export default function VideoDemo({
           {/* Left Column - Video Preview Container */}
           <div className="lg:col-span-6 flex justify-center lg:justify-end relative lg:-ml-4 xl:-ml-8 z-10">
             <VideoThumbnail
-              thumbnailSrc={thumbnailSrc}
+              thumbnailSrc={resolvedThumbnail}
               altText={`Video Demo: ${title}`}
               onOpen={() => setIsOpen(true)}
             />
