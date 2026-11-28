@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileText, Printer, Download, CheckCircle2 } from "lucide-react";
+import { FileText, Download, CheckCircle2 } from "lucide-react";
 import { OrderStatus } from "@/types";
 
 export interface InvoiceItem {
@@ -241,8 +241,22 @@ export function OrderInvoiceModal({
     }).format(amount);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPdf = () => {
+    downloadOrderReceiptPdf({
+      orderNumber,
+      orderDate,
+      status,
+      recipientName,
+      recipientPhone,
+      shippingAddress,
+      items,
+      subtotal,
+      shippingCost,
+      discountAmount,
+      voucherCode,
+      total,
+      paymentMethod,
+    });
   };
 
   return (
@@ -367,26 +381,15 @@ export function OrderInvoiceModal({
             Tutup
           </Button>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Button
-              variant="card"
-              onClick={handlePrint}
-              size="default"
-              className="flex-1 sm:flex-initial flex items-center gap-2"
-            >
-              <Printer className="w-4 h-4 stroke-[2.5]" />
-              Cetak
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handlePrint}
-              size="default"
-              className="flex-1 sm:flex-initial flex items-center gap-2"
-            >
-              <Download className="w-4 h-4 stroke-[2.5]" />
-              Unduh PDF
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            onClick={handleDownloadPdf}
+            size="default"
+            className="w-full sm:w-auto flex items-center gap-2"
+          >
+            <Download className="w-4 h-4 stroke-[2.5]" />
+            Unduh PDF
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
