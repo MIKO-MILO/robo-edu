@@ -420,9 +420,9 @@ export function VoucherTicketSingle({
       {/* ======================================================== */}
       {/* 2. KONTEN UTAMA                                          */}
       {/* ======================================================== */}
-      <div className="relative z-10 h-full w-full grid grid-cols-12 gap-0 sm:gap-2 items-center">
-        {/* Bagian Kiri-Tengah */}
-        <div className="col-span-12 sm:col-span-10 h-full px-6 sm:pl-9 md:pl-12 lg:pl-14 xl:pl-16 sm:pr-6 md:pr-8 lg:pr-4 py-5 flex items-center justify-center sm:justify-start lg:justify-center gap-0 lg:gap-6 xl:gap-10">
+      <div className="relative z-10 h-full w-full flex items-center">
+        {/* Bagian Kiri-Tengah — flex-1 min-w-0 agar tidak overflow mendorong stub kanan */}
+        <div className="flex-1 min-w-0 h-full px-6 sm:pl-9 md:pl-12 lg:pl-14 xl:pl-16 sm:pr-6 md:pr-8 lg:pr-4 py-5 flex items-center justify-center sm:justify-start lg:justify-center gap-0 lg:gap-6 xl:gap-10">
           {/* Gambar produk hanya tampil di desktop (>= lg) */}
           <div className="hidden lg:flex relative w-72 xl:w-80 h-full lg:pl-2 xl:pl-0 pr-2 xl:pr-4 items-center justify-center shrink-0">
             <Image
@@ -442,7 +442,7 @@ export function VoucherTicketSingle({
                 {item.tipeDiskon}
               </span>
 
-              <h3 className="w-full text-lg sm:text-2xl md:text-4xl lg:text-3xl xl:text-[42px] font-black text-white leading-[1.15] sm:leading-[1.1] tracking-tight mt-0.5 drop-shadow-[0_1.5px_0_rgba(37,71,138,0.25)]">
+              <h3 className="w-full text-lg sm:text-2xl md:text-4xl lg:text-3xl xl:text-[42px] font-black text-white leading-[1.15] sm:leading-[1.1] tracking-tight mt-0.5 drop-shadow-[0_1.5px_0_rgba(37,71,138,0.25)] line-clamp-2">
                 {item.nama}
               </h3>
             </div>
@@ -516,7 +516,7 @@ export function VoucherTicketSingle({
         {/* ======================================================== */}
         {/* 3. BAGIAN KANAN (>= sm)                                  */}
         {/* ======================================================== */}
-        <div className="hidden sm:flex relative col-span-2 h-full pl-2 sm:pr-6 md:pr-9 lg:pr-11 xl:pr-15 py-4 items-center justify-center">
+        <div className="hidden sm:flex relative shrink-0 h-full pl-2 sm:pr-6 md:pr-9 lg:pr-11 xl:pr-15 py-4 items-center justify-center">
           <button
             type="button"
             onClick={handleAction}
