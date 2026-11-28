@@ -12,18 +12,49 @@ export const LANDING_FEATURED_REVIEWS_KEY  = ["admin", "landing-config", "review
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface FeaturedVoucherEntry {
-  id: string;        // landing_featured_vouchers.id
-  voucher_id: string;
-  sort_order: number;
+/** Detail voucher yang di-embed oleh GET /api/admin/landing-config/vouchers */
+export interface FeaturedVoucherDetail {
+  id: string;
+  code: string;
+  name: string;
+  discount_type: string;
+  discount_value: number;
+  minimum_purchase: number;
+  maximum_discount: number | null;
+  start_at: string;
+  end_at: string;
+  is_active: boolean;
+}
+
+/** Detail review yang di-embed oleh GET /api/admin/landing-config/reviews */
+export interface FeaturedReviewDetail {
+  id: string;
+  user_name: string;
+  rating: number;
+  comment: string | null;
+  status: string;
   created_at: string;
 }
 
+export interface FeaturedVoucherEntry {
+  id: string;          // landing_featured_vouchers.id
+  voucher_id: string;
+  sort_order: number;
+  created_at: string;
+  voucher: FeaturedVoucherDetail;
+}
+
 export interface FeaturedReviewEntry {
-  id: string;        // landing_featured_reviews.id
+  id: string;          // landing_featured_reviews.id
   review_id: string;
   sort_order: number;
   created_at: string;
+  review: FeaturedReviewDetail;
+}
+
+export interface ReorderItem {
+  id: string;
+  sort_order: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -122,6 +153,39 @@ export function useRemoveFeaturedVoucher() {
   });
 }
 
+/** Reorder featured vouchers. Accepts new sorted list and derives sort_order from index. */
+export function useReorderFeaturedVouchers() {
+  const queryClient = useQueryClient();
+  const { toast }   = useToast();
+
+  return useMutation({
+    mutationFn: async (items: ReorderItem[]) => {
+      const res  = await fetch("/api/admin/landing-config/vouchers/reorder", {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(items),
+      });
+      const json = await res.json() as { success: boolean; message?: string };
+      if (!res.ok) throw new Error(json.message ?? `HTTP ${res.status}`);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: LANDING_FEATURED_VOUCHERS_KEY });
+      toast({
+        title: "Urutan Voucher Disimpan",
+        description: "Urutan tampil voucher di landing page telah diperbarui.",
+        variant: "success",
+      });
+    },
+    onError: (err: Error) => {
+      toast({
+        title: "Gagal Menyimpan Urutan",
+        description: err.message,
+        variant: "error",
+      });
+    },
+  });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Hooks — Reviews
 // ─────────────────────────────────────────────────────────────────────────────
@@ -193,6 +257,39 @@ export function useRemoveFeaturedReview() {
     onError: (err: Error) => {
       toast({
         title: "Gagal Menghapus",
+        description: err.message,
+        variant: "error",
+      });
+    },
+  });
+}
+
+/** Reorder featured reviews. */
+export function useReorderFeaturedReviews() {
+  const queryClient = useQueryClient();
+  const { toast }   = useToast();
+
+  return useMutation({
+    mutationFn: async (items: ReorderItem[]) => {
+      const res  = await fetch("/api/admin/landing-config/reviews/reorder", {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(items),
+      });
+      const json = await res.json() as { success: boolean; message?: string };
+      if (!res.ok) throw new Error(json.message ?? `HTTP ${res.status}`);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: LANDING_FEATURED_REVIEWS_KEY });
+      toast({
+        title: "Urutan Review Disimpan",
+        description: "Urutan tampil review di landing page telah diperbarui.",
+        variant: "success",
+      });
+    },
+    onError: (err: Error) => {
+      toast({
+        title: "Gagal Menyimpan Urutan",
         description: err.message,
         variant: "error",
       });

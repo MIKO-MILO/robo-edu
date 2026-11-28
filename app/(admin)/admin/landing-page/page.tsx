@@ -6,16 +6,19 @@ import { HeroEditorSection } from "@/components/admin/landing/hero-section";
 import { AboutEditorSection } from "@/components/admin/landing/about-section";
 import { InfoCardsEditorSection } from "@/components/admin/landing/info-cards-section";
 import { MarqueeEditorSection } from "@/components/admin/landing/marquee-section";
+import { VouchersOrderSection } from "@/components/admin/landing/vouchers-order-section";
+import { ReviewsOrderSection } from "@/components/admin/landing/reviews-order-section";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab definitions — ticket 38 covers the first 4 sections.
-// Ticket 39 (VideoDemo, FAQ, Vouchers, Reviews) will add more tabs here.
+// Tab definitions
 // ─────────────────────────────────────────────────────────────────────────────
 const TABS = [
   { key: "hero",      label: "Hero" },
   { key: "about",     label: "About" },
   { key: "infoCards", label: "Info Cards" },
   { key: "marquee",   label: "Marquee" },
+  { key: "vouchers",  label: "Vouchers" },
+  { key: "reviews",   label: "Reviews" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -62,6 +65,8 @@ export default function AdminLandingPageCMS() {
       {activeTab === "about"     && <AboutEditorSection />}
       {activeTab === "infoCards" && <InfoCardsEditorSection />}
       {activeTab === "marquee"   && <MarqueeEditorSection />}
+      {activeTab === "vouchers"  && <VouchersOrderSection />}
+      {activeTab === "reviews"   && <ReviewsOrderSection />}
     </div>
   );
 }

@@ -236,13 +236,17 @@ export default async function HomePage() {
       />
       <TextMarquee items={config.marquee.items} />
       <CardProduct products={landingProducts.length > 0 ? landingProducts : undefined} />
-      <DiskonPromo
-        promos={featuredVouchers.length > 0 ? featuredVouchers : undefined}
-        displayMode={
-          featuredVouchers.length === 0 ? undefined :
-          featuredVouchers.length === 1 ? "single" : "multi"
-        }
-      />
+      {/* DiskonPromo:
+          - 0 voucher → section disembunyikan (tidak render sama sekali)
+          - 1 voucher → single ticket
+          - 2 voucher → multi card (2 sejajar, tanpa arrow karena promos.length <= 2)
+          - 3–6 voucher → multi card dengan arrow carousel */}
+      {featuredVouchers.length > 0 && (
+        <DiskonPromo
+          promos={featuredVouchers}
+          displayMode={featuredVouchers.length === 1 ? "single" : "multi"}
+        />
+      )}
       <VideoDemo
         title={config.videoDemo.title}
         description={config.videoDemo.description}
