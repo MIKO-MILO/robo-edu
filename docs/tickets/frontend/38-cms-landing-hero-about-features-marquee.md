@@ -4,7 +4,7 @@
 
 **Blocked by:** 36 — DB schema & API: landing page CMS config
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Halaman `/admin/landing-page`
 
@@ -46,12 +46,12 @@ Jumlah kartu tetap 4, ikon tidak bisa diganti (dikontrol developer).
 
 ## Acceptance criteria
 
-- [ ] Halaman `/admin/landing-page` dapat diakses oleh admin
-- [ ] Editor Hero menampilkan nilai terkini dari DB (atau default jika belum ada)
-- [ ] Simpan Hero: perubahan tersimpan dan langsung terlihat di landing publik
-- [ ] Editor About menampilkan dan menyimpan semua field dengan benar
-- [ ] Editor InfoCardsList menampilkan dan menyimpan judul & deskripsi 4 kartu
-- [ ] Editor TextMarquee: tambah/edit/hapus item teks bekerja; minimal 1 item divalidasi
-- [ ] Simpan TextMarquee: teks marquee di halaman publik berubah sesuai input
-- [ ] Validasi: field wajib tidak boleh kosong sebelum bisa disimpan
-- [ ] UI konsisten dengan pola halaman admin lain di repo ini
+- [x] Halaman `/admin/landing-page` dapat diakses oleh admin
+- [x] Editor Hero menampilkan nilai terkini dari DB (atau default jika belum ada)
+- [x] Simpan Hero: perubahan tersimpan dan langsung terlihat di landing publik
+- [x] Editor About menampilkan dan menyimpan semua field dengan benar
+- [x] Editor InfoCardsList menampilkan dan menyimpan judul & deskripsi 4 kartu
+- [x] Editor TextMarquee: tambah/edit/hapus item teks bekerja; minimal 1 item divalidasi
+- [x] Simpan TextMarquee: teks marquee di halaman publik berubah sesuai input
+- [x] Validasi: field wajib tidak boleh kosong sebelum bisa disimpan
+- [x] UI konsisten dengan pola halaman admin lain di repo ini

@@ -1,18 +1,21 @@
 "use client";
 
-const DEFAULT_ITEMS = ["ROBOEDU", "INTERAKTIF", "KREATIF", "EDUKATIF"];
-
 export interface TextMarqueeProps {
+  /** Daftar teks yang berjalan di pita. Fallback ke default jika kosong. */
   items?: string[];
 }
 
-export default function TextMarquee({ items }: TextMarqueeProps) {
-  const resolvedItems = items && items.length > 0 ? items : DEFAULT_ITEMS;
+const DEFAULT_ITEMS = ["ROBOEDU", "INTERAKTIF", "KREATIF", "EDUKATIF"];
 
-  // Repeat items until we have enough to fill the marquee path comfortably.
-  // We duplicate the joined string 4× so the animation loop is seamless.
-  const joined = resolvedItems.map((s) => s.toUpperCase()).join(" • ");
-  const marqueeText = Array(4).fill(joined).join(" • ");
+export default function TextMarquee({ items }: TextMarqueeProps) {
+  // Validasi: hanya item non-kosong; fallback ke default jika tidak ada
+  const cleanItems = (items ?? []).filter((t) => t && t.trim().length > 0);
+  const finalItems = cleanItems.length > 0 ? cleanItems : DEFAULT_ITEMS;
+
+  // Bangun teks berjalan: ulangi daftar item cukup banyak kali agar pita
+  // terisi sepanjang path SVG, dipisah bullet (•).
+  const onePass = finalItems.join(" • ");
+  const repeated = Array.from({ length: 4 }, () => onePass).join(" • ");
 
   return (
     <div className="relative w-full overflow-hidden -mt-12 max-[375px]:-mt-8 sm:-mt-16 md:-mt-16 lg:-mt-14 xl:-mt-24 z-20 flex items-center justify-center pb-4 sm:pb-6 pointer-events-none">
@@ -52,7 +55,7 @@ export default function TextMarquee({ items }: TextMarqueeProps) {
                 dur="15s"
                 repeatCount="indefinite"
               />
-              {marqueeText}
+              {repeated}
             </textPath>
           </text>
         </svg>
