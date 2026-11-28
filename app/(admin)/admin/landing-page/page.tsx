@@ -6,19 +6,34 @@ import { HeroEditorSection } from "@/components/admin/landing/hero-section";
 import { AboutEditorSection } from "@/components/admin/landing/about-section";
 import { InfoCardsEditorSection } from "@/components/admin/landing/info-cards-section";
 import { MarqueeEditorSection } from "@/components/admin/landing/marquee-section";
+<<<<<<< Updated upstream
 import { VouchersOrderSection } from "@/components/admin/landing/vouchers-order-section";
 import { ReviewsOrderSection } from "@/components/admin/landing/reviews-order-section";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tab definitions
+=======
+import { VideoDemoEditorSection } from "@/components/admin/landing/video-demo-section";
+import { FAQEditorSection } from "@/components/admin/landing/faq-section";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab definitions
+// ticket 38: Hero, About, InfoCards, Marquee
+// ticket 39: VideoDemo, FAQ
+>>>>>>> Stashed changes
 // ─────────────────────────────────────────────────────────────────────────────
 const TABS = [
   { key: "hero",      label: "Hero" },
   { key: "about",     label: "About" },
   { key: "infoCards", label: "Info Cards" },
   { key: "marquee",   label: "Marquee" },
+<<<<<<< Updated upstream
   { key: "vouchers",  label: "Vouchers" },
   { key: "reviews",   label: "Reviews" },
+=======
+  { key: "videoDemo", label: "Video Demo" },
+  { key: "faq",       label: "FAQ" },
+>>>>>>> Stashed changes
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -65,8 +80,13 @@ export default function AdminLandingPageCMS() {
       {activeTab === "about"     && <AboutEditorSection />}
       {activeTab === "infoCards" && <InfoCardsEditorSection />}
       {activeTab === "marquee"   && <MarqueeEditorSection />}
+<<<<<<< Updated upstream
       {activeTab === "vouchers"  && <VouchersOrderSection />}
       {activeTab === "reviews"   && <ReviewsOrderSection />}
+=======
+      {activeTab === "videoDemo" && <VideoDemoEditorSection />}
+      {activeTab === "faq"       && <FAQEditorSection />}
+>>>>>>> Stashed changes
     </div>
   );
 }

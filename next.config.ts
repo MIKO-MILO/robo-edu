@@ -65,6 +65,12 @@ const nextConfig: NextConfig = {
         port: "9000",
         pathname: "/**",
       },
+      // YouTube thumbnails (auto-generated from video URL)
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -4,7 +4,7 @@
 
 **Blocked by:** 38 — CMS Landing Page: editor Hero, About, InfoCards, Marquee
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Editor Section: Video Demo
 
@@ -30,11 +30,11 @@ Perilaku player di halaman publik: saat pengunjung klik tombol play, muncul popu
 
 ## Acceptance criteria
 
-- [ ] Editor VideoDemo menampilkan nilai terkini dari DB
-- [ ] Validasi URL YouTube: format tidak valid ditolak sebelum simpan
-- [ ] Simpan VideoDemo: judul, deskripsi, dan URL tersimpan; popup di halaman publik memutar video YouTube yang baru
-- [ ] Editor FAQ promo banner: semua field tersimpan dan terlihat di halaman publik
-- [ ] Editor FAQ accordion: tambah/edit/hapus item bekerja
-- [ ] Reorder FAQ accordion: urutan tersimpan dan tercermin di halaman publik
-- [ ] Minimal 1 item FAQ divalidasi sebelum simpan
-- [ ] Halaman `/admin/landing-page` tetap satu halaman dengan tiket 38 (tab/accordion yang sama, section baru ditambahkan)
+- [x] Editor VideoDemo menampilkan nilai terkini dari DB
+- [x] Validasi URL YouTube: format tidak valid ditolak sebelum simpan
+- [x] Simpan VideoDemo: judul, deskripsi, dan URL tersimpan; popup di halaman publik memutar video YouTube yang baru
+- [x] Editor FAQ promo banner: semua field tersimpan dan terlihat di halaman publik
+- [x] Editor FAQ accordion: tambah/edit/hapus item bekerja
+- [x] Reorder FAQ accordion: urutan tersimpan dan tercermin di halaman publik
+- [x] Minimal 1 item FAQ divalidasi sebelum simpan
+- [x] Halaman `/admin/landing-page` tetap satu halaman dengan tiket 38 (tab/accordion yang sama, section baru ditambahkan)

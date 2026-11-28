@@ -14,6 +14,7 @@ import {
   type LandingVideoDemoConfig,
   type LandingFAQConfig,
 } from "@/src/lib/landing/defaults";
+import { isValidYouTubeUrl } from "@/src/lib/landing/youtube";
 
 export const runtime = "nodejs";
 
@@ -78,6 +79,12 @@ function validateVideoDemo(v: unknown): string[] {
   const obj = v as Record<string, unknown>;
   if (typeof obj.title !== "string" || !obj.title.trim())
     errors.push("videoDemo.title wajib diisi.");
+  if (typeof obj.videoSrc === "string" && obj.videoSrc.trim()) {
+    if (!isValidYouTubeUrl(obj.videoSrc.trim()))
+      errors.push("videoDemo.videoSrc harus berupa URL YouTube yang valid.");
+  } else if (obj.videoSrc !== undefined) {
+    errors.push("videoDemo.videoSrc wajib diisi dengan URL YouTube.");
+  }
   return errors;
 }
 
