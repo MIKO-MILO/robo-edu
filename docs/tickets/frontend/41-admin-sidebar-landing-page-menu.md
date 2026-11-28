@@ -4,7 +4,7 @@
 
 **Blocked by:** 38 — CMS Landing Page: editor Hero, About, InfoCards, Marquee
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Detail
 
@@ -15,7 +15,7 @@
 
 ## Acceptance criteria
 
-- [ ] Item "Landing Page" muncul di sidebar admin
-- [ ] Klik item mengarahkan ke `/admin/landing-page`
-- [ ] Highlight aktif berfungsi saat berada di halaman `/admin/landing-page`
-- [ ] Tampilan konsisten dengan item sidebar lainnya (ikon, tipografi, spacing)
+- [x] Item "Landing Page" muncul di sidebar admin
+- [x] Klik item mengarahkan ke `/admin/landing-page`
+- [x] Highlight aktif berfungsi saat berada di halaman `/admin/landing-page`
+- [x] Tampilan konsisten dengan item sidebar lainnya (ikon, tipografi, spacing)
