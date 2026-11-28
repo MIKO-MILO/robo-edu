@@ -51,9 +51,9 @@ export function CheckoutShippingOption({
   return (
     <label
       className={cn(
-        "relative flex items-center justify-between p-4 rounded-xl border-2 border-border cursor-pointer transition-all",
+        "relative flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all shadow-xs",
         isSelected
-          ? "bg-accent-soft-blue/20"
+          ? "bg-accent-soft-blue/30 ring-1 ring-primary"
           : "bg-card hover:bg-muted/30"
       )}
     >
@@ -65,7 +65,7 @@ export function CheckoutShippingOption({
           value={option.service}
           checked={isSelected}
           onChange={() => onSelect(option)}
-          className="w-5 h-5 text-primary border-2 border-border focus:ring-ring accent-primary cursor-pointer"
+          className="w-5 h-5 text-primary focus:ring-ring accent-primary cursor-pointer"
         />
         <div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -75,7 +75,7 @@ export function CheckoutShippingOption({
             {option.badge && (
               <span
                 className={cn(
-                  "px-2 py-0.5 text-[10px] font-black rounded-full border border-border",
+                  "px-2 py-0.5 text-[10px] font-black rounded-full shadow-xs",
                   badgeBg
                 )}
               >
@@ -83,7 +83,7 @@ export function CheckoutShippingOption({
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-[11px] leading-relaxed text-muted-foreground mt-0.5">
             Estimasi tiba:{" "}
             <strong className="text-foreground">{option.estimate}</strong>
             {option.note && ` · ${option.note}`}

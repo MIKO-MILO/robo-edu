@@ -16,6 +16,8 @@ import {
 import { CheckoutVoucherWidget } from "@/components/user/checkout/checkout-voucher-widget";
 import { CheckoutOrderSummary } from "@/components/user/checkout/checkout-order-summary";
 import { CheckoutAddressModal } from "@/components/user/checkout/checkout-address-modal";
+import { AddressForm, type AddressFormData } from "@/components/user/profile/address-form";
+import { getSavedAddressNotes, saveAddressNotes } from "@/lib/address-notes";
 import type { SelectedPayment } from "@/components/user/checkout/checkout-payment-method-selector";
 
 import type { UserAddress } from "@/types/user";
@@ -114,6 +116,9 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<ValidateVoucherResponseData | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [editingAddressData, setEditingAddressData] = useState<AddressFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<SelectedPayment | null>(null);
@@ -211,6 +216,21 @@ export default function CheckoutPage() {
     void fetchPageData();
   }, [fetchPageData]);
 
+  // Sync catatan pengiriman dari alamat yang dipilih
+  useEffect(() => {
+    if (!selectedAddress) {
+      setNotes("");
+      return;
+    }
+    const saved = getSavedAddressNotes({
+      recipientName: selectedAddress.recipient_name,
+      phone: selectedAddress.phone,
+      address: selectedAddress.address,
+      postalCode: selectedAddress.postal_code,
+    });
+    setNotes(saved);
+  }, [selectedAddress]);
+
   // ── Derived summary ───────────────────────────────────────────────────
   const subtotal = cartItems.reduce((sum, item) => sum + item.line_total, 0);
   const shippingCost = selectedShipping?.cost ?? 0;
@@ -298,6 +318,55 @@ export default function CheckoutPage() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subtotal]);
+
+  // ── Address form inline handlers ───────────────────────────────────────
+  function openAddAddressForm() {
+    setEditingAddressId(null);
+    setEditingAddressData(null);
+    setIsAddressFormOpen(true);
+  }
+
+  function openEditAddressForm(addr: UserAddress) {
+    setEditingAddressId(addr.id);
+    setEditingAddressData({
+      label: addr.label ?? "",
+      recipientName: addr.recipient_name,
+      phone: addr.phone,
+      address: addr.address,
+      province: addr.province,
+      city: addr.city,
+      district: addr.district,
+      village: addr.village ?? "",
+      postalCode: addr.postal_code ?? "",
+      isPrimary: addr.is_primary,
+      notes: getSavedAddressNotes({
+        recipientName: addr.recipient_name,
+        phone: addr.phone,
+        address: addr.address,
+        postalCode: addr.postal_code,
+      }),
+    });
+    setIsAddressFormOpen(true);
+  }
+
+  async function handleSaveAddress(data: AddressFormData) {
+    const isEditing = Boolean(editingAddressId);
+    const url = isEditing
+      ? `/api/profile/addresses/${editingAddressId}`
+      : "/api/profile/addresses";
+
+    const res = await fetch(url, {
+      method: isEditing ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message ?? "Gagal menyimpan alamat.");
+
+    saveAddressNotes(data, data.notes ?? "");
+    setNotes((data.notes ?? "").trim());
+    await fetchPageData();
+  }
 
   // ── Submit order ──────────────────────────────────────────────────────
   async function handleSubmitOrder() {
@@ -427,11 +496,11 @@ export default function CheckoutPage() {
           <AlertCircle className="w-12 h-12 text-red-400" />
           <p className="font-body text-sm text-muted-foreground">{pageError}</p>
           <div className="flex gap-3">
-            <Button variant="outline" size="sm" onClick={() => void fetchPageData()}>
+            <Button variant="outline" size="sm" neo={false} onClick={() => void fetchPageData()}>
               Coba Lagi
             </Button>
             <Link href="/cart">
-              <Button variant="primary" size="sm">Kembali ke Keranjang</Button>
+              <Button variant="primary" size="sm" neo={false}>Kembali ke Keranjang</Button>
             </Link>
           </div>
         </div>
@@ -444,7 +513,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-background">
       {/* Page Header */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 lg:pt-44 pb-4">
-        <div className="bg-card rounded-2xl p-4 sm:p-5 border-2 border-border flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-heading font-black text-2xl sm:text-3xl text-foreground tracking-tight">
               Checkout
@@ -455,9 +524,9 @@ export default function CheckoutPage() {
           </div>
           <Link
             href="/cart"
-            className="inline-flex items-center gap-1.5 px-4 h-8 rounded-full border-2 border-border bg-card text-foreground font-body font-semibold text-xs neo-shadow neo-shadow-hover transition-all"
+            className="inline-flex items-center gap-1.5 px-4 h-8 rounded-full border border-primary bg-card hover:bg-primary-100/40 text-foreground font-body font-semibold text-xs transition-all shadow-xs"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3.5 h-3.5 text-primary" />
             Kembali ke Keranjang
           </Link>
         </div>
@@ -471,20 +540,17 @@ export default function CheckoutPage() {
           <div className="lg:col-span-7 space-y-6">
 
             {/* Section 1 — Alamat */}
-            <section className="bg-card rounded-2xl p-6 border-2 border-border">
+            <section className="bg-card rounded-2xl p-6 shadow-sm">
               <CheckoutSectionHeader
-                step={1}
                 title="Alamat Pengiriman"
                 subtitle="Pastikan rincian alamat dan kontak penerima sudah tepat"
-                iconBg="bg-accent-yellow"
-                icon={<MapPin className="w-4 h-4 text-foreground" />}
                 rightElement={
                   <Button
                     onClick={() => setIsAddressModalOpen(true)}
                     variant="primary"
                     size="xs"
-                    neo
-                    className="rounded-full"
+                    neo={false}
+                    className="rounded-full shadow-xs"
                   >
                     + Ganti Alamat
                   </Button>
@@ -495,29 +561,22 @@ export default function CheckoutPage() {
                 <CheckoutAddressCard
                   address={selectedAddress}
                   onManage={() => setIsAddressModalOpen(true)}
-                  onEdit={() => setIsAddressModalOpen(true)}
+                  onEdit={() => openEditAddressForm(selectedAddress)}
                   onChangeAddress={() => setIsAddressModalOpen(true)}
+                  notes={notes}
                 />
               ) : (
                 <CheckoutAddressEmpty
-                  onAddNew={() => router.push("/profile/addresses")}
+                  onAddNew={openAddAddressForm}
                 />
               )}
             </section>
 
             {/* Section 2 — Items */}
-            <section className="bg-card rounded-2xl p-6 border-2 border-border">
+            <section className="bg-card rounded-2xl p-6 shadow-sm">
               <CheckoutSectionHeader
-                step={2}
                 title={`Item Pesanan (${cartItems.length} Produk)`}
                 subtitle="Diambil langsung dari kuota produksi RoboEdu"
-                iconBg="bg-accent-soft-blue"
-                icon={<Package className="w-4 h-4 text-foreground" />}
-                // rightElement={
-                //   <span className="text-xs font-bold bg-accent-yellow px-2.5 py-1 rounded-full border border-border neo-shadow-icon">
-                //     Made-By-Order Quota
-                //   </span>
-                // }
               />
 
               <div className="space-y-3">
@@ -530,28 +589,17 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="mt-4 p-3 rounded-xl bg-accent-soft-blue/30 border border-border flex items-center gap-2.5 text-xs text-foreground font-medium">
+              <div className="mt-4 p-3 rounded-xl bg-accent-soft-blue/30 flex items-center gap-2.5 text-xs text-foreground font-medium">
                 <Info className="w-4 h-4 text-primary shrink-0" />
                 Semua pesanan dicek QC oleh teknisi RoboEdu dan dikemas aman dengan bubble wrap berlapis tebal.
               </div>
             </section>
 
             {/* Section 3 — Kurir */}
-            <section className="bg-card rounded-2xl p-6 border-2 border-border">
+            <section className="bg-card rounded-2xl p-6 shadow-sm">
               <CheckoutSectionHeader
-                step={3}
                 title="Pilihan Layanan Kurir"
                 subtitle="Pengiriman resmi terintegrasi dengan tracking otomatis"
-                iconBg="bg-accent-green"
-                icon={<Truck className="w-4 h-4 text-foreground" />}
-                rightElement={
-                  shippingOptions[0] && (
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 border-2 border-border text-xs font-black text-red-600">
-                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                      {shippingOptions[0].provider_name.toUpperCase()}
-                    </div>
-                  )
-                }
               />
 
               <div className="space-y-3">
@@ -564,27 +612,6 @@ export default function CheckoutPage() {
                   />
                 ))}
               </div>
-            </section>
-
-            {/* Section 4 — Catatan */}
-            <section className="bg-card rounded-2xl p-6 border-2 border-border">
-              <CheckoutSectionHeader
-                step={4}
-                title="Catatan Pengiriman"
-                subtitle="Instruksi khusus kepada teknisi pengepakan atau petugas kurir"
-                iconBg="bg-accent-orange"
-                icon={<FileText className="w-4 h-4 text-foreground" />}
-              />
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Contoh: Paket harap dititipkan di Pos Security depan Lab bila tidak ada di tempat."
-                rows={2}
-                className="w-full rounded-xl border-2 border-border p-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring bg-accent-butter/20 font-medium resize-none"
-              />
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Opsional — tidak mempengaruhi proses pengiriman.
-              </p>
             </section>
           </div>
 
@@ -635,8 +662,21 @@ export default function CheckoutPage() {
         }}
         onAddNew={() => {
           setIsAddressModalOpen(false);
-          router.push("/profile/addresses");
+          openAddAddressForm();
         }}
+        onEdit={(addr) => {
+          setIsAddressModalOpen(false);
+          openEditAddressForm(addr);
+        }}
+      />
+
+      {/* Inline Add / Edit Address Form */}
+      <AddressForm
+        open={isAddressFormOpen}
+        onClose={() => setIsAddressFormOpen(false)}
+        initialData={editingAddressData}
+        isFirstAddress={addresses.length === 0}
+        onSave={handleSaveAddress}
       />
     </div>
   );

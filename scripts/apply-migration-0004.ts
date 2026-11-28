@@ -51,7 +51,7 @@ async function run() {
         errMsg.includes("Duplicate entry") ||
         errMsg.includes("doesn't exist") ||
         errMsg.includes("check that column") ||
-        errMsg.includes("Can't create") 
+        errMsg.includes("Can't create")
       ) {
         console.warn(`[${i + 1}/${stmts.length}] SKIP (already applied or not needed): ${stmt.slice(0, 70).replace(/\n/g, " ")}`);
       } else {
@@ -63,7 +63,7 @@ async function run() {
   }
 
   await conn.end();
-  console.log("\n✓ Migration 0004 applied successfully.");
+  console.log("\n Migration 0004 applied successfully.");
 }
 
 run().catch((e) => {

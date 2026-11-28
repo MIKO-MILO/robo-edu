@@ -266,9 +266,9 @@ export function CheckoutPaymentMethodSelector({
         onChange={(e) => handleOvoPhoneChange(e.target.value)}
         placeholder="Contoh: 08123456789"
         className={cn(
-          "w-full rounded-xl border-2 border-border px-4 py-2.5",
+          "w-full rounded-xl border border-border/20 px-4 py-2.5",
           "text-sm font-semibold text-foreground placeholder:text-muted-foreground/60",
-          "focus:outline-none focus:ring-2 focus:ring-ring bg-accent-butter/20",
+          "focus:outline-none focus:ring-2 focus:ring-ring bg-accent-butter/20 shadow-xs",
         )}
       />
       <p className="text-[11px] text-muted-foreground mt-1">
@@ -283,10 +283,10 @@ export function CheckoutPaymentMethodSelector({
       <div className="mt-2">
         {/* Selected summary chip — tampil setelah memilih */}
         {selected && (
-          <div className="flex items-center gap-2.5 mb-3 px-3 py-2 rounded-xl border-2 border-primary bg-accent-soft-blue/20">
+          <div className="flex items-center gap-2.5 mb-3 px-3 py-2 rounded-xl bg-accent-soft-blue/30 shadow-xs">
             <span
               className={cn(
-                "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
+                "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black",
                 selected.bg,
                 selected.color,
               )}
@@ -313,7 +313,7 @@ export function CheckoutPaymentMethodSelector({
         </div>
 
         {/* Always-visible scrollable list */}
-        <div className="border-2 border-border rounded-xl overflow-hidden">
+        <div className="border border-border/15 rounded-xl overflow-hidden shadow-xs">
           <MethodList />
         </div>
 
@@ -344,12 +344,12 @@ export function CheckoutPaymentMethodSelector({
           onClick={() => setOpen((v) => !v)}
           className={cn(
             "w-full flex items-center justify-between gap-2",
-            "px-4 py-3 border-2 border-border bg-card",
-            "font-body text-sm font-semibold text-foreground",
+            "px-4 py-3 border border-border/15 bg-card",
+            "font-body text-sm font-semibold text-foreground shadow-xs",
             "transition-all focus:outline-none focus:ring-2 focus:ring-ring",
             open
-              ? "rounded-t-xl rounded-b-none border-b-2 border-b-foreground ring-2 ring-ring"
-              : "rounded-xl neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",
+              ? "rounded-t-xl rounded-b-none border-b border-b-border/20 ring-2 ring-ring"
+              : "rounded-xl hover:bg-muted/20",
           )}
           aria-haspopup="listbox"
           aria-expanded={open}
@@ -358,7 +358,7 @@ export function CheckoutPaymentMethodSelector({
             <span className="flex items-center gap-2.5 min-w-0">
               <span
                 className={cn(
-                  "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
+                  "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black",
                   selected.bg,
                   selected.color,
                 )}
@@ -385,8 +385,8 @@ export function CheckoutPaymentMethodSelector({
           <MethodList
             className={cn(
               "w-full",
-              "bg-card border-2 border-t-0 border-border rounded-b-xl",
-              "shadow-[2px_4px_0px_0px_#3D2900]",
+              "bg-card border border-t-0 border-border/15 rounded-b-xl",
+              "shadow-lg",
               "py-1",
             )}
           />
@@ -419,11 +419,11 @@ export function CheckoutPaymentMethodSelector({
           onClick={() => setOpen((v) => !v)}
           className={cn(
             "w-full flex items-center justify-between gap-2",
-            "px-4 py-3 rounded-xl border-2 border-border bg-card",
+            "px-4 py-3 rounded-xl border border-border/15 bg-card shadow-xs",
             "font-body text-sm font-semibold text-foreground",
             "transition-all focus:outline-none focus:ring-2 focus:ring-ring",
             open && "ring-2 ring-ring",
-            "neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",
+            "hover:bg-muted/20",
           )}
           aria-haspopup="listbox"
           aria-expanded={open}
@@ -432,7 +432,7 @@ export function CheckoutPaymentMethodSelector({
             <span className="flex items-center gap-2.5 min-w-0">
               <span
                 className={cn(
-                  "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black border border-border/40",
+                  "shrink-0 w-10 h-7 rounded-md flex items-center justify-center text-[10px] font-black",
                   selected.bg,
                   selected.color,
                 )}
@@ -459,8 +459,8 @@ export function CheckoutPaymentMethodSelector({
           <MethodList
             className={cn(
               "absolute z-50 w-full mt-1.5",
-              "bg-card border-2 border-border rounded-xl",
-              "shadow-[4px_4px_0px_0px_#3D2900]",
+              "bg-card border border-border/15 rounded-xl",
+              "shadow-xl",
               "max-h-[min(22rem,50svh)] overflow-y-auto",
               "py-1",
             )}

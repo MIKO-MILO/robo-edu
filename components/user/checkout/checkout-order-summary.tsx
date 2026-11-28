@@ -71,8 +71,8 @@ export function CheckoutOrderSummary({
   onPaymentChange,
 }: CheckoutOrderSummaryProps) {
   return (
-    <div className="bg-card rounded-2xl p-6 border-2 border-border">
-      <h3 className="font-heading font-black text-lg text-foreground mb-4 pb-2 border-b-2 border-border/15">
+    <div className="bg-card rounded-2xl p-6 shadow-sm">
+      <h3 className="font-heading font-black text-lg text-foreground mb-4 pb-2 border-b border-dashed border-border/20">
         Ringkasan Pembayaran
       </h3>
 
@@ -124,7 +124,7 @@ export function CheckoutOrderSummary({
         </div>
 
         {/* Total */}
-        <div className="pt-4 mt-2 border-t-2 border-dashed border-border">
+        <div className="pt-4 mt-2 border-t-2 border-dashed border-border/70">
           <div className="flex justify-between items-baseline">
             <div>
               <span className="text-xs font-bold uppercase text-muted-foreground block">
@@ -143,11 +143,13 @@ export function CheckoutOrderSummary({
         </div>
       </div>
 
-      {/* Payment Method Selector — tepat di bawah nominal total */}
-      <CheckoutPaymentMethodSelector
-        value={selectedPayment}
-        onChange={onPaymentChange}
-      />
+      {/* Payment Method Selector — cukup diberi gap ke atas tanpa garis horizontal */}
+      <div className="mt-6">
+        <CheckoutPaymentMethodSelector
+          value={selectedPayment}
+          onChange={onPaymentChange}
+        />
+      </div>
 
       {/* CTA Button */}
       <div className="mt-4">
@@ -155,8 +157,8 @@ export function CheckoutOrderSummary({
           onClick={onSubmit}
           disabled={isSubmitting || !summary || !selectedPayment}
           variant="primary"
-          neo
-          className="w-full py-4 rounded-full font-heading font-black text-base flex items-center justify-center gap-3"
+          neo={false}
+          className="w-full py-4 rounded-full font-heading font-black text-base flex items-center justify-center gap-3 shadow-md hover:bg-primary-600"
         >
           <span>{isSubmitting ? "Memproses..." : "Bayar Sekarang"}</span>
           {!isSubmitting && <ArrowRight className="w-5 h-5" />}
@@ -166,25 +168,8 @@ export function CheckoutOrderSummary({
         </p>
       </div>
 
-      {/* Payment Methods */}
-      {/* <div className="mt-6 pt-5 border-t-2 border-border/15">
-        <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider block mb-3 text-center">
-          Didukung Pembayaran Instan &amp; Otomatis:
-        </span>
-        <div className="grid grid-cols-4 gap-2">
-          {PAYMENT_METHODS.map((method) => (
-            <div
-              key={method.label}
-              className={`h-9 rounded-lg border border-border/40 bg-card flex items-center justify-center p-1 text-[11px] font-black ${method.color}`}
-            >
-              {method.label}
-            </div>
-          ))}
-        </div>
-      </div> */}
-
       {/* Trust Badges */}
-      <div className="mt-5 space-y-2.5 pt-4 border-t border-border/20 text-xs">
+      <div className="mt-5 space-y-2.5 pt-4 border-t border-dashed border-border/20 text-xs">
         {TRUST_BADGES.map((badge, i) => (
           <div key={i} className="flex items-start gap-2.5 text-foreground">
             {badge.icon}

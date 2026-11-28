@@ -33,13 +33,13 @@ export function CheckoutOrderItem({
   const thumbnailBg = "bg-accent-pink/40"; // TODO: rotate bg per item index via prop
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 rounded-xl border-2 border-border bg-card hover:bg-muted/20 transition-all">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 rounded-xl bg-card hover:bg-muted/20 transition-all shadow-xs">
       {/* Left: Thumbnail + Detail */}
       <div className="flex items-center gap-3.5">
         {/* Thumbnail */}
         <div
           className={cn(
-            "w-20 h-20 rounded-xl border-2 border-border p-2 flex items-center justify-center shrink-0 neo-shadow-icon overflow-hidden",
+            "w-20 h-20 rounded-xl p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-xs",
             thumbnailBg
           )}
         >
@@ -57,12 +57,12 @@ export function CheckoutOrderItem({
 
         {/* Product Info */}
         <div>
-          <h3 className="font-heading font-extrabold text-sm sm:text-base text-foreground mt-1">
+          <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground mt-1">
             {item.product_name}
           </h3>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <div className="flex items-center gap-2 mt-2.5 flex-wrap">
             {item.variant_name && (
-              <span className="text-xs font-medium bg-muted text-foreground px-2 py-0.5 rounded border border-border/40">
+              <span className="text-xs font-medium bg-muted text-foreground px-2 py-0.5 rounded">
                 Varian: <strong>{item.variant_name}</strong>
               </span>
             )}
@@ -82,14 +82,14 @@ export function CheckoutOrderItem({
       </div>
 
       {/* Right: Price */}
-      <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-border/20">
+      <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-border/15">
         {isMember && (
-          <span className="px-2 py-0.5 text-[10px] font-black rounded bg-accent-yellow text-foreground border border-border inline-block mb-1">
+          <span className="px-2 py-0.5 text-[10px] font-black rounded bg-accent-yellow text-foreground inline-block mb-1 shadow-xs">
             Harga Member
           </span>
         )}
         {!isMember && (
-          <span className="px-2 py-0.5 text-[10px] font-black rounded bg-accent-green/60 text-emerald-900 border border-border inline-block mb-1">
+          <span className="px-2 py-0.5 text-[10px] font-black rounded bg-accent-green/60 text-emerald-900 inline-block mb-1 shadow-xs">
             Harga Resmi
           </span>
         )}

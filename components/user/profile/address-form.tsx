@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, MapPin, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, MapPin, CheckCircle2, AlertCircle, X, ChevronDown } from "lucide-react";
+import { getSavedAddressNotes, saveAddressNotes } from "@/lib/address-notes";
 
 export interface AddressFormData {
   label: string;
@@ -23,6 +26,7 @@ export interface AddressFormData {
   village: string;
   postalCode: string;
   isPrimary: boolean;
+  notes?: string;
 }
 
 const EMPTY_FORM: AddressFormData = {
@@ -36,6 +40,7 @@ const EMPTY_FORM: AddressFormData = {
   village: "",
   postalCode: "",
   isPrimary: false,
+  notes: "",
 };
 
 interface PostalSuggestion {
@@ -53,6 +58,19 @@ interface AddressFormProps {
   isFirstAddress?: boolean;
   onSave: (data: AddressFormData) => Promise<void>;
 }
+
+const REGION_FIELDS: Array<{
+  key: "province" | "city" | "district" | "village";
+  label: string;
+  placeholder: string;
+}> = [
+  { key: "province", label: "Provinsi", placeholder: "mis. Jawa Barat" },
+  { key: "city", label: "Kota / Kabupaten", placeholder: "mis. Bandung" },
+  { key: "district", label: "Kecamatan", placeholder: "mis. Coblong" },
+  { key: "village", label: "Kelurahan / Desa", placeholder: "mis. Lebakgede" },
+];
+
+const FORM_CONTROL_CLASS = "bg-card border-border-strong focus-visible:border-ring";
 
 export function AddressForm({
   open,
@@ -77,7 +95,10 @@ export function AddressForm({
     if (open) {
       setForm(
         initialData
-          ? { ...initialData }
+          ? {
+              ...initialData,
+              notes: initialData.notes ?? getSavedAddressNotes(initialData),
+            }
           : { ...EMPTY_FORM, isPrimary: isFirstAddress },
       );
       setError(null);
@@ -174,6 +195,7 @@ export function AddressForm({
     setIsSaving(true);
     try {
       await onSave(form);
+      saveAddressNotes(form, form.notes ?? "");
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyimpan alamat.");
@@ -189,76 +211,85 @@ export function AddressForm({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen && !isSaving) onClose(); }}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-heading text-lg font-bold text-foreground">
+      <DialogContent
+        showCloseButton={false}
+        className="w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-card p-6 sm:p-7 gap-5"
+      >
+        <DialogHeader className="flex flex-row items-center justify-between gap-4">
+          <DialogTitle className="font-heading text-xl font-bold text-foreground">
             {isEditing ? "Edit Alamat" : "Tambah Alamat Baru"}
           </DialogTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            neo={false}
+            onClick={() => { if (!isSaving) onClose(); }}
+            aria-label="Tutup"
+            className="w-9 h-9 rounded-full bg-muted/60 hover:bg-muted text-foreground shrink-0"
+          >
+            <X className="w-4 h-4" strokeWidth={2.2} />
+          </Button>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Label & Recipient */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-foreground">
-                Label <span className="text-danger">*</span>
-              </label>
+          {/* Label, Recipient & Phone */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormField label="Label" required>
               <Input
                 placeholder="mis. Rumah, Kantor"
                 value={form.label}
                 maxLength={50}
                 onChange={(e) => set("label", e.target.value)}
+                className={FORM_CONTROL_CLASS}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-foreground">
-                Nama Penerima <span className="text-danger">*</span>
-              </label>
+            </FormField>
+            <FormField label="Nama Penerima" required>
               <Input
                 placeholder="Nama lengkap penerima"
                 value={form.recipientName}
                 maxLength={150}
                 onChange={(e) => set("recipientName", e.target.value)}
+                className={FORM_CONTROL_CLASS}
               />
-            </div>
+            </FormField>
+            <FormField label="Nomor HP" required>
+              <Input
+                placeholder="mis. 08123456789"
+                value={form.phone}
+                maxLength={30}
+                onChange={(e) => set("phone", e.target.value)}
+                className={FORM_CONTROL_CLASS}
+              />
+            </FormField>
           </div>
 
-          {/* Phone */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-foreground">
-              Nomor HP <span className="text-danger">*</span>
-            </label>
-            <Input
-              placeholder="mis. 08123456789"
-              value={form.phone}
-              maxLength={30}
-              onChange={(e) => set("phone", e.target.value)}
-            />
-          </div>
+          {/* Full address & Delivery notes side-by-side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Alamat Lengkap" required>
+              <Textarea
+                placeholder="Nama jalan, nomor rumah, RT/RW, dll."
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+                rows={2}
+                className={`${FORM_CONTROL_CLASS} min-h-[72px]`}
+              />
+            </FormField>
 
-          {/* Full address */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-foreground">
-              Alamat Lengkap <span className="text-danger">*</span>
-            </label>
-            <textarea
-              placeholder="Nama jalan, nomor rumah, RT/RW, dll."
-              value={form.address}
-              onChange={(e) => set("address", e.target.value)}
-              rows={3}
-              className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm font-body text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 resize-none"
-            />
+            <FormField label="Catatan Pengiriman">
+              <Textarea
+                placeholder="Contoh: Paket harap dititipkan di Pos Security depan Lab bila tidak ada di tempat."
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+                rows={2}
+                className={`${FORM_CONTROL_CLASS} min-h-[72px]`}
+              />
+            </FormField>
           </div>
 
           {/* ── Kode Pos — autofill trigger ── */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-foreground">
-              Kode Pos <span className="text-danger">*</span>
-            </label>
-            <p className="text-xs text-muted-foreground -mt-0.5">
-              Isikan kode pos, nanti akan terisi otomatis.
-            </p>
-            <div className="flex items-center gap-2 max-w-[200px]">
+          <FormField label="Kode Pos" required>
+            <div className="flex items-center gap-2 max-w-[220px]">
               <div className="relative flex-1">
                 <Input
                   placeholder="mis. 40132"
@@ -268,10 +299,10 @@ export function AddressForm({
                   onChange={(e) => handlePostalCodeChange(e.target.value)}
                   className={
                     postalStatus === "found"
-                      ? "border-green-500 focus-visible:ring-green-300"
+                      ? "bg-card border-success focus-visible:ring-success/30"
                       : postalStatus === "error"
-                      ? "border-red-500 focus-visible:ring-red-300"
-                      : ""
+                      ? "bg-card border-danger focus-visible:ring-danger/30"
+                      : FORM_CONTROL_CLASS
                   }
                 />
               </div>
@@ -279,17 +310,17 @@ export function AddressForm({
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground shrink-0" />
               )}
               {postalStatus === "found" && (
-                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
               )}
               {postalStatus === "error" && (
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                <AlertCircle className="w-4 h-4 text-danger shrink-0" />
               )}
             </div>
 
             {/* Status message */}
             {postalMessage && (
               <p className={`text-xs flex items-center gap-1 ${
-                postalStatus === "found" ? "text-green-600" : "text-red-500"
+                postalStatus === "found" ? "text-success" : "text-danger"
               }`}>
                 {postalMessage}
               </p>
@@ -327,80 +358,46 @@ export function AddressForm({
                 </ul>
               </div>
             )}
-          </div>
+          </FormField>
 
           {/* ── Wilayah (autofilled, tapi bisa diedit manual) ── */}
           <div className="flex flex-col gap-3">
             {/* Banner autofill berhasil */}
             {regionFilled && postalStatus === "found" && !showSuggestions && (
-              <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2 text-xs text-success bg-success-bg/30 border border-success/30 rounded-xl px-3 py-2">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                 Wilayah otomatis terisi dari kode pos. Bisa diedit manual jika perlu.
               </div>
             )}
 
-            {/* Province & City */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-foreground">
-                  Provinsi <span className="text-danger">*</span>
-                </label>
-                <Input
-                  placeholder="mis. Jawa Barat"
-                  value={form.province}
-                  maxLength={100}
-                  onChange={(e) => set("province", e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-foreground">
-                  Kota / Kabupaten <span className="text-danger">*</span>
-                </label>
-                <Input
-                  placeholder="mis. Bandung"
-                  value={form.city}
-                  maxLength={100}
-                  onChange={(e) => set("city", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* District & Village */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-foreground">
-                  Kecamatan <span className="text-danger">*</span>
-                </label>
-                <Input
-                  placeholder="mis. Coblong"
-                  value={form.district}
-                  maxLength={100}
-                  onChange={(e) => set("district", e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-foreground">
-                  Kelurahan / Desa <span className="text-danger">*</span>
-                </label>
-                <Input
-                  placeholder="mis. Lebakgede"
-                  value={form.village}
-                  maxLength={100}
-                  onChange={(e) => set("village", e.target.value)}
-                />
-              </div>
+            {/* Province, City, District & Village */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {REGION_FIELDS.map((field) => (
+                <FormField key={field.key} label={field.label} required>
+                  <div className="relative">
+                    <Input
+                      placeholder={field.placeholder}
+                      value={form[field.key]}
+                      maxLength={100}
+                      onChange={(e) => set(field.key, e.target.value)}
+                      className={`${FORM_CONTROL_CLASS} pr-8`}
+                    />
+                    <ChevronDown className="w-4 h-4 text-muted-foreground pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+                  </div>
+                </FormField>
+              ))}
             </div>
           </div>
 
           {/* Primary checkbox */}
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label className="flex items-center gap-2.5 cursor-pointer select-none pt-1">
             <input
               type="checkbox"
               checked={form.isPrimary}
               onChange={(e) => set("isPrimary", e.target.checked)}
-              className="w-4 h-4 accent-primary rounded"
+              className="w-4 h-4 accent-primary rounded border-border/60"
             />
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-foreground/80">
               Jadikan sebagai alamat utama
             </span>
           </label>
@@ -410,23 +407,27 @@ export function AddressForm({
             <p className="text-sm text-danger font-medium">{error}</p>
           )}
 
-          <DialogFooter className="pt-1">
+          <DialogFooter className="pt-4 mt-1 border-t border-border/15 flex items-center justify-end gap-3">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
+              neo={false}
               onClick={onClose}
               disabled={isSaving}
+              className="rounded-full px-5 text-muted-foreground hover:text-foreground font-semibold"
             >
               Batal
             </Button>
             <Button
               type="submit"
               variant="primary"
+              neo={false}
               disabled={isSaving}
+              className="rounded-full px-6 shadow-xs"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
                   Menyimpan...
                 </>
               ) : isEditing ? (
