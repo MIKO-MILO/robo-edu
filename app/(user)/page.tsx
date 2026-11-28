@@ -234,7 +234,7 @@ export default async function HomePage() {
           };
         })}
       />
-      <TextMarquee />
+      <TextMarquee items={config.marquee.items} />
       <CardProduct products={landingProducts.length > 0 ? landingProducts : undefined} />
       <DiskonPromo
         promos={featuredVouchers.length > 0 ? featuredVouchers : undefined}
@@ -246,6 +246,7 @@ export default async function HomePage() {
       <VideoDemo
         title={config.videoDemo.title}
         description={config.videoDemo.description}
+        thumbnailSrc={config.videoDemo.thumbnailSrc}
         videoSrc={config.videoDemo.videoSrc}
       />
       <Testimoni reviews={featuredReviews} />

@@ -1,6 +1,19 @@
 "use client";
 
-export default function TextMarquee() {
+const DEFAULT_ITEMS = ["ROBOEDU", "INTERAKTIF", "KREATIF", "EDUKATIF"];
+
+export interface TextMarqueeProps {
+  items?: string[];
+}
+
+export default function TextMarquee({ items }: TextMarqueeProps) {
+  const resolvedItems = items && items.length > 0 ? items : DEFAULT_ITEMS;
+
+  // Repeat items until we have enough to fill the marquee path comfortably.
+  // We duplicate the joined string 4× so the animation loop is seamless.
+  const joined = resolvedItems.map((s) => s.toUpperCase()).join(" • ");
+  const marqueeText = Array(4).fill(joined).join(" • ");
+
   return (
     <div className="relative w-full overflow-hidden -mt-12 max-[375px]:-mt-8 sm:-mt-16 md:-mt-16 lg:-mt-14 xl:-mt-24 z-20 flex items-center justify-center pb-4 sm:pb-6 pointer-events-none">
       <div className="w-full min-w-[1000px] flex justify-center items-center scale-[1.08] max-[375px]:scale-[1.15] sm:scale-110 md:scale-[1.20] lg:scale-[1.35] xl:scale-125 transition-transform">
@@ -39,7 +52,7 @@ export default function TextMarquee() {
                 dur="15s"
                 repeatCount="indefinite"
               />
-              ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF • ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF • ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF • ROBOEDU • INTERAKTIF • KREATIF • EDUKATIF
+              {marqueeText}
             </textPath>
           </text>
         </svg>

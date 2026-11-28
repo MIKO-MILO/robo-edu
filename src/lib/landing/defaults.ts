@@ -94,6 +94,7 @@ export const DEFAULT_MARQUEE: LandingMarqueeConfig = {
 export interface LandingVideoDemoConfig {
   title: string;
   description: string;
+  thumbnailSrc: string;
   videoSrc: string;
 }
 
@@ -101,6 +102,7 @@ export const DEFAULT_VIDEO_DEMO: LandingVideoDemoConfig = {
   title: "Merakit Robot Pertama",
   description:
     "Saksikan keseruan anak-anak belajar merakit robot dengan langkah-langkah yang mudah dipahami, interaktif, dan penuh keceriaan.",
+  thumbnailSrc: "/images/foto.jpg",
   videoSrc: "/videos/demo.mp4",
 };
 
