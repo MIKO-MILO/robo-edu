@@ -6,6 +6,14 @@ import Image from "next/image";
 import { ArrowRight, Play } from "lucide-react";
 import { useState, useEffect } from "react";
 
+export interface HeroSectionProps {
+  headline?: string;
+  description?: string;
+  ctaPrimaryLabel?: string;
+  ctaPrimaryUrl?: string;
+  ctaSecondaryLabel?: string;
+}
+
 const dynamicItems = [
     {
         text: "Usia 6+ Tahun!",
@@ -24,7 +32,13 @@ const dynamicItems = [
     },
 ];
 
-export default function HeroSection() {
+export default function HeroSection({
+    headline = "Rakit & Mainkan Robot Impian Anak",
+    description = "Bantu si kecil belajar coding dan logika teknologi sejak dini melalui kit robotik interaktif yang seru, aman, dan mudah dimainkan.",
+    ctaPrimaryLabel = "Jelajahi Mainan Robot",
+    ctaPrimaryUrl = "/product",
+    ctaSecondaryLabel = "Tonton Demo",
+}: HeroSectionProps = {}) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [displayedText, setDisplayedText] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
@@ -132,21 +146,9 @@ export default function HeroSection() {
 
                     {/* Judul Utama */}
                     <h1 className="relative font-heading text-2xl xs:text-3xl sm:text-4xl lg:text-[2.65rem] xl:text-5xl font-bold leading-tight sm:leading-[1.25] lg:leading-[1.18] text-landing-navy tracking-tight max-w-xl lg:max-w-none">
-                        <span className="block lg:inline">
-                            Rakit & Mainkan{""}
-                           <span className="inline-block relative w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 align-middle -mt-10 sm:-mt-16 lg:-mt-20 -ml-1 sm:-ml-2">
-                            <Image
-                                src="/images/line.webp"
-                                alt="Aksen Judul"
-                                fill
-                                className="object-contain"
-                                priority
-                            />
+                        <span className="block">
+                            {headline}
                         </span>
-                        </span>{""}
-                        <span className="block mt-1 sm:mt-2 lg:mt-0 lg:inline">
-                            Robot Impian Anak
-                        </span>{""}
 
                         {/* Badge Teks Dinamis */}
                         <span className="block mt-3 sm:mt-4 lg:mt-4">
@@ -164,16 +166,16 @@ export default function HeroSection() {
 
                     {/* Subteks Deskripsi */}
                     <p className="font-body text-xs sm:text-base lg:text-base xl:text-lg text-landing-navy/85 leading-relaxed max-w-md sm:max-w-xl font-normal px-2 sm:px-0">
-                        Bantu si kecil belajar coding dan logika teknologi sejak dini melalui kit robotik interaktif yang seru, aman, dan mudah dimainkan.
+                        {description}
                     </p>
 
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-1 sm:pt-2 w-full sm:w-auto px-4 sm:px-0">
                         <Link
-                            href="/product"
+                            href={ctaPrimaryUrl}
                             className={`inline-flex items-center justify-center gap-2.5 font-extrabold text-xs sm:text-sm px-6 py-3.5 rounded-full hover:scale-105 transition-all duration-300 ease-in-out w-full sm:w-auto ${currentStyle.bg} ${currentStyle.textColor}`}
                         >
-                            <span>Jelajahi Mainan Robot</span>
+                            <span>{ctaPrimaryLabel}</span>
                             <ArrowRight className="w-4 h-4 text-current" />
                         </Link>
 
@@ -184,7 +186,7 @@ export default function HeroSection() {
                             <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/80 flex items-center justify-center">
                                 <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-landing-navy fill-landing-navy ml-0.5" />
                             </div>
-                            <span>Tonton Demo</span>
+                            <span>{ctaSecondaryLabel}</span>
                         </button>
                     </div>
                 </div>

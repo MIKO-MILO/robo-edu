@@ -12,7 +12,7 @@ export interface InfoCardItem {
   translateY: string; // CSS transform translateY
 }
 
-const defaultCards: InfoCardItem[] = [
+export const defaultCards: InfoCardItem[] = [
   {
     id: 1,
     title: "Aman Untuk Usia 6+",
