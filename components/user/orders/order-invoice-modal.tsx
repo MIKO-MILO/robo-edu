@@ -52,14 +52,26 @@ export function generateReceiptText(data: OrderReceiptData): string {
       maximumFractionDigits: 0,
     }).format(num);
 
-  const divider = "=".repeat(48);
-  const subDivider = "-".repeat(48);
+  // Lebar total 68 karakter agar kolom ke samping muat rapi di PDF A4 (Courier ~8.5pt)
+  const width = 68;
+  const divider = "=".repeat(width);
+  const subDivider = "-".repeat(width);
+
+  const padRight = (text: string, len: number) => {
+    const clean = text.length > len ? text.slice(0, len - 1) + "…" : text;
+    return clean.padEnd(len, " ");
+  };
+
+  const padLeft = (text: string, len: number) => {
+    const clean = text.length > len ? text.slice(0, len) : text;
+    return clean.padStart(len, " ");
+  };
 
   const lines: string[] = [
     divider,
-    "                    ROBOEDU                     ",
-    "         Smart Learning & Robotic Toys          ",
-    "               www.roboedu.id                   ",
+    "                         ROBOEDU                                    ",
+    "               Smart Learning & Robotic Toys                        ",
+    "                     www.roboedu.id                                 ",
     divider,
     "STRUK BUKTI PEMESANAN",
     subDivider,
@@ -78,15 +90,15 @@ export function generateReceiptText(data: OrderReceiptData): string {
     subDivider,
     "RINCIAN PRODUK",
     subDivider,
+    // Header ke samping: No(3) + Spasi(1) + Produk(23) + Spasi(1) + Qty(4) + Spasi(1) + Harga(15) + Spasi(1) + Subtotal(15) = 68
+    `${padRight("No", 3)} ${padRight("Produk", 23)} ${padLeft("Qty", 4)} ${padLeft("Harga", 15)} ${padLeft("Subtotal", 15)}`,
+    subDivider,
   ];
 
   data.items.forEach((item, index) => {
-    lines.push(`${index + 1}. ${item.name}`);
-    if (item.variant) {
-      lines.push(`   Varian   : ${item.variant}`);
-    }
+    const label = item.variant ? `${item.name} (${item.variant})` : item.name;
     lines.push(
-      `   Qty & Hrg: ${item.quantity} x ${formatIDR(item.price)} = ${formatIDR(item.subtotal)}`
+      `${padRight(String(index + 1), 3)} ${padRight(label, 23)} ${padLeft(String(item.quantity), 4)} ${padLeft(formatIDR(item.price), 15)} ${padLeft(formatIDR(item.subtotal), 15)}`
     );
   });
 
@@ -110,14 +122,13 @@ export function generateReceiptText(data: OrderReceiptData): string {
     subDivider,
     ...(data.paymentMethod ? [`Metode Pembayaran     : ${data.paymentMethod}`] : []),
     divider,
-    "       Terima kasih telah berbelanja di RoboEdu!       ",
-    "      Simpan struk ini sebagai bukti transaksi.        ",
+    "            Terima kasih telah berbelanja di RoboEdu!               ",
+    "           Simpan struk ini sebagai bukti transaksi.                ",
     divider
   );
 
   return lines.join("\r\n");
 }
-
 /**
  * Membangun buffer file PDF 1.4 murni standar ISO 32000 tanpa library eksternal.
  * Menghasilkan tampilan struk kasir polos dengan font monospaced Courier.

@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, MapPin, CheckCircle2, AlertCircle, X, ChevronDown } from "lucide-react";
+import { Loader2, MapPin, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { getSavedAddressNotes, saveAddressNotes } from "@/lib/address-notes";
 
 export interface AddressFormData {
@@ -374,16 +374,13 @@ export function AddressForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {REGION_FIELDS.map((field) => (
                 <FormField key={field.key} label={field.label} required>
-                  <div className="relative">
-                    <Input
-                      placeholder={field.placeholder}
-                      value={form[field.key]}
-                      maxLength={100}
-                      onChange={(e) => set(field.key, e.target.value)}
-                      className={`${FORM_CONTROL_CLASS} pr-8`}
-                    />
-                    <ChevronDown className="w-4 h-4 text-muted-foreground pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
-                  </div>
+                  <Input
+                    placeholder={field.placeholder}
+                    value={form[field.key]}
+                    maxLength={100}
+                    onChange={(e) => set(field.key, e.target.value)}
+                    className={FORM_CONTROL_CLASS}
+                  />
                 </FormField>
               ))}
             </div>
